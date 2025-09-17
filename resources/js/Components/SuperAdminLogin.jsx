@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
+import { router } from '@inertiajs/react';
 
 // Animation keyframes
 const revealText = {
@@ -11,16 +12,86 @@ const revealText = {
 
 export default function SuperAdminLogin() {
     const [emailOrPhone, setEmailOrPhone] = useState('');
+    const [otp, setOtp] = useState('');
+    const [showOtpScreen, setShowOtpScreen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleEmailSubmit = async (e) => {
         e.preventDefault();
-        // Add login logic here
+        setIsLoading(true);
+        setError('');
+        setMessage('');
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                },
+                body: JSON.stringify({ email: emailOrPhone }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMessage(data.message);
+                setShowOtpScreen(true);
+            } else {
+                setError(data.message);
+            }
+        } catch (error) {
+            setError('An error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleOtpSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+        setMessage('');
+
+        try {
+            const response = await fetch('/verify-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                },
+                body: JSON.stringify({ otp }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMessage(data.message);
+                // Redirect to dashboard
+                window.location.href = data.redirect || '/superadmin/dashboard';
+            } else {
+                setError(data.message);
+            }
+        } catch (error) {
+            setError('An error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleBackToEmail = () => {
+        setShowOtpScreen(false);
+        setOtp('');
+        setError('');
+        setMessage('');
     };
 
     return (
-        <div className="min-h-screen flex bg-[#E8D4B7] font-montserrat">
+    <div className="min-h-screen flex bg-gradient-to-b from-[#E8D4B7] via-[#f7e9d0] to-[#934790] font-montserrat">
             {/* left Side - Login Form */}
-            <div className="w-1/2 flex flex-col items-center justify-center p-8">
+        <div className="w-1/2 flex flex-col items-center justify-center p-8">
                 <motion.div
                     className="mb-6"
                     initial={{ x: -100, opacity: 0 }}   // start off-screen left
@@ -61,51 +132,120 @@ export default function SuperAdminLogin() {
                             </div>
 
                             {/* Email/Phone Input */}
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                            {!showOtpScreen ? (
+                                <form onSubmit={handleEmailSubmit} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Enter your email <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            placeholder="example@zoominsurancebrokers.com"
+                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all"
+                                            value={emailOrPhone}
+                                            onChange={(e) => setEmailOrPhone(e.target.value)}
+                                            required
+                                            disabled={isLoading}
+                                        />
+                                    </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Enter your email <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="example@zoominsurancebrokers.com"
-                                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all"
-                                        value={emailOrPhone}
-                                        onChange={(e) => setEmailOrPhone(e.target.value)}
-                                        required
-                                    />
-                                </div>
+                                    {message && (
+                                        <div className="p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg text-sm">
+                                            {message}
+                                        </div>
+                                    )}
 
-                                <button
-                                    type="submit"
-                                    className="w-full bg-[#934790] text-white py-2.5 rounded-lg hover:bg-[#6A0066] transition-colors"
-                                >
-                                    Sign in
-                                </button>
+                                    {error && (
+                                        <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+                                            {error}
+                                        </div>
+                                    )}
 
-                                {/* Terms and Privacy */}
-                                <div className="flex items-start gap-2 mt-4">
-                                    <input
-                                        type="checkbox"
-                                        id="terms"
-                                        className="mt-1 rounded outline-none  transition-all"
-                                        required
-                                        checked
-                                        readOnly
-                                    />
-                                    <label htmlFor="terms" className="text-sm text-gray-600">
-                                        By signing in to Zoom Connect you agree with{' '}
-                                        <a href="#" className="text-[#6A0066]">
-                                            Privacy policy
-                                        </a>{' '}
-                                        and{' '}
-                                        <a href="#" className="text-[#6A0066]">
-                                            Terms of use
-                                        </a>
-                                    </label>
-                                </div>
-                            </form>
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-[#934790] text-white py-2.5 rounded-lg hover:bg-[#6A0066] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? 'Sending OTP...' : 'Send OTP'}
+                                    </button>
+
+                                    {/* Terms and Privacy */}
+                                    <div className="flex items-start gap-2 mt-4">
+                                        <input
+                                            type="checkbox"
+                                            id="terms"
+                                            className="mt-1 rounded outline-none transition-all"
+                                            required
+                                            checked
+                                            readOnly
+                                        />
+                                        <label htmlFor="terms" className="text-sm text-gray-600">
+                                            By signing in to Zoom Connect you agree with{' '}
+                                            <a href="#" className="text-[#6A0066]">
+                                                Privacy policy
+                                            </a>{' '}
+                                            and{' '}
+                                            <a href="#" className="text-[#6A0066]">
+                                                Terms of use
+                                            </a>
+                                        </label>
+                                    </div>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleOtpSubmit} className="space-y-4">
+                                    <div className="text-center mb-4">
+                                        <h3 className="text-lg font-semibold text-gray-800">Verify OTP</h3>
+                                        <p className="text-sm text-gray-600 mt-1">
+                                            We've sent a 6-digit code to {emailOrPhone}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Enter OTP <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="000000"
+                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all text-center text-2xl font-mono tracking-widest"
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                            required
+                                            disabled={isLoading}
+                                            maxLength={6}
+                                        />
+                                    </div>
+
+                                    {message && (
+                                        <div className="p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg text-sm">
+                                            {message}
+                                        </div>
+                                    )}
+
+                                    {error && (
+                                        <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+                                            {error}
+                                        </div>
+                                    )}
+
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-[#934790] text-white py-2.5 rounded-lg hover:bg-[#6A0066] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={isLoading || otp.length !== 6}
+                                    >
+                                        {isLoading ? 'Verifying...' : 'Verify OTP'}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleBackToEmail}
+                                        className="w-full bg-gray-200 text-gray-700 py-2.5 rounded-lg hover:bg-gray-300 transition-colors"
+                                        disabled={isLoading}
+                                    >
+                                        Back to Email
+                                    </button>
+                                </form>
+                            )}
 
                             {/* Download App Section */}
                             <div className="mt-8 flex border-t border-gray-200 pt-2">
@@ -129,15 +269,11 @@ export default function SuperAdminLogin() {
                 {/* Video Background */}
                 <div className="">
                     <div className="absolute inset-0 z-0 top-[10%]">
-                        <video
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
+                        <img
+                            src="/assets/images/loginVector.png"
+                            alt="Login Page Animation"
                             className="w-full h-full object-cover"
-                        >
-                            <source src="/assets/videos/loginPageVideo.mp4" type="video/mp4" />
-                        </video>
+                        />
                     </div>
                 </div>
 
