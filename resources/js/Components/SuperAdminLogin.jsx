@@ -89,9 +89,9 @@ export default function SuperAdminLogin() {
     };
 
     return (
-    <div className="min-h-screen flex bg-gradient-to-b from-[#E8D4B7] via-[#f7e9d0] to-[#934790] font-montserrat">
+    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-b from-[#E8D4B7] via-[#f7e9d0] to-[#934790] font-montserrat">
             {/* left Side - Login Form */}
-        <div className="w-1/2 flex flex-col items-center justify-center p-8">
+            <div className="w-full md:w-1/2 flex flex-col items-center justify-center px-4 py-8 sm:px-6 md:p-8">
                 <motion.div
                     className="mb-6"
                     initial={{ x: -100, opacity: 0 }}   // start off-screen left
@@ -104,7 +104,7 @@ export default function SuperAdminLogin() {
                     </h1>
 
                 </motion.div>
-                <div className="w-[450px] max-w-md">
+                <div className="w-full max-w-md">
                     <div className="bg-white rounded-3xl p-8 shadow-lg">
 
                         <div className="space-y-4">
@@ -250,8 +250,8 @@ export default function SuperAdminLogin() {
                             {/* Download App Section */}
                             <div className="mt-8 flex border-t border-gray-200 pt-2">
                                 <div className="w-full text-left flex flex-col justify-center">
-                                    <h3 className="text-2xl font-semibold text-gray-800">Download the app</h3>
-                                    <p className="text-gray-600 mt-2">Access healthcare at your fingertips!</p>
+                                    <h3 className="text-xl md:text-2xl font-semibold text-gray-800">Download the app</h3>
+                                    <p className="text-sm md:text-base text-gray-600 mt-2">Access healthcare at your fingertips!</p>
                                 </div>
                                 <img
                                     src="/assets/images/zoomConnectQR.png"
@@ -265,21 +265,18 @@ export default function SuperAdminLogin() {
                 </div>
             </div>
 
-            <div className="w-1/2 relative overflow-hidden">
-                {/* Video Background */}
-                <div className="">
-                    <div className="absolute inset-0 z-0 top-[10%]">
-                        <img
-                            src="/assets/images/loginVector.png"
-                            alt="Login Page Animation"
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
+            <div className="hidden md:block md:w-1/2 relative overflow-hidden ">
+                {/* Video Background (only visible on md and up) */}
+                <div className="absolute inset-0 z-0 top-[10%] w-full h-full">
+                    <img
+                        src="/assets/images/loginVector.png"
+                        alt="Login Page Animation"
+                        className="w-full h-full object-cover"
+                    />
                 </div>
-
-
             </div>
 
         </div>
     );
 }
+
