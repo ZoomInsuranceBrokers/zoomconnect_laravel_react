@@ -117,39 +117,4 @@ class AuthController extends Controller
         }
     }
 
-    public function dashboard(Request $request)
-    {
-        if (!Session::get('superadmin_authenticated')) {
-            return redirect('/login');
-        }
-
-        $userData = [
-            'email' => Session::get('superadmin_email'),
-            'user_id' => Session::get('superadmin_user_id'),
-            'user_name' => Session::get('superadmin_user_name'),
-            'login_time' => Session::get('login_time')
-        ];
-
-        return Inertia::render('SuperAdminDashboard', [
-            'user' => $userData
-        ]);
-    }
-
-    public function logout(Request $request)
-    {
-        Session::forget([
-            'superadmin_authenticated',
-            'is_superadmin',
-            'superadmin_email',
-            'superadmin_user_id',
-            'superadmin_user_name',
-            'login_time'
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out successfully',
-            'redirect' => '/login'
-        ]);
-    }
 }

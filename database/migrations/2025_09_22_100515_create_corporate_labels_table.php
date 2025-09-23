@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('user_master', function (Blueprint $table) {
-            $table->rememberToken();
+        Schema::create('corporate_labels', function (Blueprint $table) {
+            $table->id();
+            $table->string('label');
+            $table->text('remark')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('user_master', function (Blueprint $table) {
-            $table->dropRememberToken();
-        });
+        Schema::dropIfExists('corporate_labels');
     }
 };

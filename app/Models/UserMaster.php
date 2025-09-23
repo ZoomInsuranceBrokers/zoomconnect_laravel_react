@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserMaster extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'user_master';
 
@@ -15,8 +17,10 @@ class UserMaster extends Authenticatable
     const UPDATED_AT = 'updated_on';
 
     protected $primaryKey = 'user_id';
+
     protected $fillable = [
         'user_id',
+        'role_id',
         'token',
         'full_name',
         'first_name',
@@ -38,6 +42,11 @@ class UserMaster extends Authenticatable
      *
      * @return string
      */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
     public function getAuthPassword()
     {
         return $this->pwd;
