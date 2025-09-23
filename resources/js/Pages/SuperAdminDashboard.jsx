@@ -46,7 +46,7 @@ export default function SuperAdminDashboard() {
             </div>
 
             {/* Bottom Section: Recent Transactions & Saving Goals */}
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Recent Transactions */}
                 <Card className="col-span-2">
                     <CardHeader>Recent transactions</CardHeader>
