@@ -1,8 +1,8 @@
 import React from 'react';
-import SuperAdminLayout from '../Layouts/SuperAdmin/Layout';
-import { useTheme } from '../Context/ThemeContext';
-import { Card, CardHeader, CardContent } from '../Components/Card';
-import { useColorInversion } from '../Hooks/useColorInversion';
+import SuperAdminLayout from '../../Layouts/SuperAdmin/Layout';
+import { useTheme } from '../../Context/ThemeContext';
+import { Card, CardHeader, CardContent } from '../../Components/Card';
+import { useColorInversion } from '../../Hooks/useColorInversion';
 
 export default function SuperAdminDashboard() {
     const { darkMode } = useTheme();
