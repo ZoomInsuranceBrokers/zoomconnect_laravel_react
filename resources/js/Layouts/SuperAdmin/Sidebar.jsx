@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../Context/ThemeContext';
 import { Link } from '@inertiajs/react';
 
-export default function Sidebar({ open = true, onClose }) {
+export default function Sidebar({ open = true, onToggle }) {
     const { darkMode, toggleDarkMode } = useTheme();
     const currentRoute = window.location.pathname;
     const [openMenus, setOpenMenus] = useState({});
@@ -31,10 +31,27 @@ export default function Sidebar({ open = true, onClose }) {
         : 'fixed top-0 -left-64 flex md:static md:left-0 md:flex';
 
     return (
-        <aside
-            className={`${sidebarBase} ${sidebarMobile} ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#F5F6FF] text-black'}`}
-            style={{ minHeight: '100vh' }}
-        >
+        <>
+            {/* Mobile menu button (toggle) - always visible on mobile */}
+            <div className={`md:hidden fixed top-4 z-50 transition-all duration-300 ${open ? 'left-60 md:left-64' : 'left-0'}`} style={{ pointerEvents: 'auto' }}>
+                <button
+                    className={`p-2 rounded-r-lg bg-[#934790] text-white hover:bg-[#6A0066] transition-colors duration-200 shadow-lg`}
+                    onClick={onToggle}
+                    aria-label={open ? 'Close sidebar' : 'Open sidebar'}
+                >
+                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        {open ? (
+                            <path d="M15 18l-6-6 6-6" /> // left arrow
+                        ) : (
+                            <path d="M9 6l6 6-6 6" /> // right arrow
+                        )}
+                    </svg>
+                </button>
+            </div>
+            <aside
+                className={`${sidebarBase} ${sidebarMobile} ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#F5F6FF] text-black'}`}
+                style={{ minHeight: '100vh' }}
+            >
             {/* Logo */}
             <div className="flex items-center justify-center h-16 md:h-24 mb-2">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5B6FFF] to-[#A685FA] flex items-center justify-center mr-3">
@@ -48,18 +65,7 @@ export default function Sidebar({ open = true, onClose }) {
                 </span>
             </div>
 
-            {/* Mobile menu button (close) - only visible on mobile */}
-            <div className="md:hidden absolute -right-10 top-4">
-                <button
-                    className="p-2 rounded-r-lg bg-[#934790] text-white hover:bg-[#6A0066] transition-colors duration-200 z-40"
-                    onClick={onClose}
-                    aria-label="Close sidebar"
-                >
-                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
-            </div>
+
 
             {/* Menu */}
             <nav className="flex-1 pt-2 pb-4">
@@ -180,6 +186,27 @@ export default function Sidebar({ open = true, onClose }) {
                                         <span>Corporate Labels</span>
                                     </Link>
                                 </li>
+                                  <li>
+                                    <Link
+                                        href="/superadmin/corporate/groups"
+                                        className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                            currentRoute === '/superadmin/corporate/groups'
+                                                ? 'text-[#934790]'
+                                                : `hover:text-[#934790] ${
+                                                      darkMode ? 'text-gray-300' : 'text-gray-600'
+                                                  }`
+                                        }`}
+                                    >
+                                        <span
+                                            className={`w-2 h-2 rounded-full ${
+                                                currentRoute === '/superadmin/corporate/groups'
+                                                    ? 'bg-[#934790]'
+                                                    : 'bg-gray-400'
+                                            }`}
+                                        ></span>
+                                        <span>Corporate Groups</span>
+                                    </Link>
+                                </li>
                             </ul>
                         )}
                     </li>
@@ -272,6 +299,8 @@ export default function Sidebar({ open = true, onClose }) {
                     </span>
                 </button>
             </div>
-        </aside>
+            {/* ...existing code... */}
+            </aside>
+        </>
     );
 }
