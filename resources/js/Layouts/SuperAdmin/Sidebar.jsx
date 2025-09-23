@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../Context/ThemeContext';
 import { Link } from '@inertiajs/react';
 
-export default function Sidebar() {
+export default function Sidebar({ open = true, onClose }) {
     const { darkMode, toggleDarkMode } = useTheme();
     const currentRoute = window.location.pathname;
     const [openMenus, setOpenMenus] = useState({});
@@ -24,11 +24,16 @@ export default function Sidebar() {
         }));
     };
 
+    // Sidebar classes for overlay on mobile, static on md+
+    const sidebarBase = 'h-full w-60 md:w-64 flex-col font-montserrat border-r border-[#E6E8F5] transition-all duration-300 z-30';
+    const sidebarMobile = open
+        ? 'fixed top-0 left-0 flex shadow-2xl md:static md:shadow-none'
+        : 'fixed top-0 -left-64 flex md:static md:left-0 md:flex';
+
     return (
         <aside
-            className={`h-full hidden md:flex w-full md:w-64 flex-col font-montserrat border-r border-[#E6E8F5] relative transition-all duration-300 ${
-                darkMode ? 'bg-gray-900 text-white' : 'bg-[#F5F6FF] text-black'
-            }`}
+            className={`${sidebarBase} ${sidebarMobile} ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#F5F6FF] text-black'}`}
+            style={{ minHeight: '100vh' }}
         >
             {/* Logo */}
             <div className="flex items-center justify-center h-16 md:h-24 mb-2">
@@ -41,6 +46,19 @@ export default function Sidebar() {
                     <span className="text-[#5B6FFF]">Zoom</span>
                     <span className={darkMode ? 'text-white' : 'text-[#22223B]'}>Connect</span>
                 </span>
+            </div>
+
+            {/* Mobile menu button (close) - only visible on mobile */}
+            <div className="md:hidden absolute -right-10 top-4">
+                <button
+                    className="p-2 rounded-r-lg bg-[#934790] text-white hover:bg-[#6A0066] transition-colors duration-200 z-40"
+                    onClick={onClose}
+                    aria-label="Close sidebar"
+                >
+                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
             </div>
 
             {/* Menu */}
