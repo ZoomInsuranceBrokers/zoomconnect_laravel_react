@@ -16,6 +16,7 @@ export default {
             fontFamily: {
                 sans: ['Montserrat', 'Figtree', ...defaultTheme.fontFamily.sans],
                 montserrat: ['Montserrat', 'sans-serif'],
+                dmserif: ['"DM Serif Display"', 'serif'],
             },
             colors: {
                 primary: {
