@@ -28,8 +28,9 @@ export default function Sidebar({ open = true, onToggle }) {
     };
 
     // Sidebar classes for overlay on mobile, static on md+
-    const sidebarBase =
-        "h-full w-60 md:w-64 flex-col font-montserrat border-r border-[#E6E8F5] transition-all duration-300 z-30";
+    const sidebarBase = `h-full w-60 md:w-64 flex-col font-montserrat border-r border-[#E6E8F5] transition-all duration-300 ${open ? 'z-30' : 'z-0'}`;
+
+
     const sidebarMobile = open
         ? "fixed top-0 left-0 flex shadow-2xl md:static md:shadow-none"
         : "fixed top-0 -left-64 flex md:static md:left-0 md:flex";
@@ -444,40 +445,34 @@ export default function Sidebar({ open = true, onToggle }) {
                             darkMode ? "bg-[#934790]" : "bg-gray-300"
                         }`}
                     >
-                        <span
-                            className={`h-5 w-5 rounded-full shadow-md flex items-center justify-center transition-transform duration-300 ${
-                                darkMode
-                                    ? "translate-x-6 bg-[#22223B]"
-                                    : "bg-white"
-                            }`}
-                        >
-                            {darkMode ? (
-                                <svg
-                                    width="16"
-                                    height="16"
-                                    fill="none"
-                                    stroke="#FFD700"
-                                    strokeWidth="2"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
-                                </svg>
-                            ) : (
-                                <svg
-                                    width="16"
-                                    height="16"
-                                    fill="none"
-                                    stroke="#FFD700"
-                                    strokeWidth="2"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle cx="12" cy="12" r="5" />
-                                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                                </svg>
-                            )}
-                        </span>
-                    </button>
-                </div>
+                        {darkMode ? (
+                            <svg
+                                width="16"
+                                height="16"
+                                fill="none"
+                                stroke="#FFD700"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                            >
+                                <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
+                            </svg>
+                        ) : (
+                            <svg
+                                width="16"
+                                height="16"
+                                fill="none"
+                                stroke="#FFD700"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle cx="12" cy="12" r="5" />
+                                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                            </svg>
+                        )}
+                    </span>
+                </button>
+            </div>
+            
             </aside>
         </>
     );

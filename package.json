@@ -23,6 +23,8 @@
         "vite": "^7.0.6"
     },
     "dependencies": {
-        "framer-motion": "^12.23.12"
+        "@fontsource/dm-serif-display": "^5.2.8",
+        "framer-motion": "^12.23.12",
+        "react-countup": "^6.5.3"
     }
 }
