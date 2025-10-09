@@ -41,5 +41,24 @@ Route::prefix('superadmin')->group(function () {
     Route::post('/corporate/groups', [SuperAdminController::class, 'corporateGroupsStore'])->name('corporate.groups.store');
     Route::put('/corporate/groups/{group}', [SuperAdminController::class, 'corporateGroupsUpdate'])->name('corporate.groups.update');
     Route::delete('/corporate/groups/{group}', [SuperAdminController::class, 'corporateGroupsDestroy'])->name('corporate.groups.destroy');
+
+    // Corporate lists Routes
+    Route::get('/corporate/list', [SuperAdminController::class, 'corporateList'])->name('corporate.list.index');
+    Route::get('/corporate/create', [SuperAdminController::class, 'corporateCreate'])->name('corporate.create');
+    Route::post('/corporate/store', [SuperAdminController::class, 'corporateStore'])->name('corporate.store');
+
+    // Wellness Module Routes
+    Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
+    Route::post('/wellness/vendor-list', [SuperAdminController::class, 'vendorStore'])->name('superadmin.wellness.vendor.store');
+    Route::put('/wellness/vendor/{vendor}', [SuperAdminController::class, 'vendorUpdate'])->name('superadmin.wellness.vendor.update');
+    Route::put('/wellness/vendor/{vendor}/toggle-status', [SuperAdminController::class, 'vendorToggleStatus'])->name('wellness.vendor.toggle-status');
+    Route::get('/wellness/category-list', [SuperAdminController::class, 'categoryList'])->name('superadmin.wellness.category.index');
+    Route::post('/wellness/category-list', [SuperAdminController::class, 'categoryStore'])->name('superadmin.wellness.category.store');
+    Route::put('/wellness/category/{category}', [SuperAdminController::class, 'categoryUpdate'])->name('superadmin.wellness.category.update');
+    Route::put('/wellness/category/{category}/toggle-status', [SuperAdminController::class, 'categoryToggleStatus'])->name('superadmin.wellness.category.toggle-status');
+    Route::get('/wellness/services', [SuperAdminController::class, 'servicesList'])->name('superadmin.wellness.services.index');
+    Route::post('/wellness/services', [SuperAdminController::class, 'servicesStore'])->name('superadmin.wellness.services.store');
+    Route::put('/wellness/services/{service}', [SuperAdminController::class, 'servicesUpdate'])->name('superadmin.wellness.services.update');
+    Route::put('/wellness/services/{service}/toggle-status', [SuperAdminController::class, 'servicesToggleStatus'])->name('superadmin.wellness.services.toggle-status');
 });
 // });

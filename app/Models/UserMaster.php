@@ -51,4 +51,19 @@ class UserMaster extends Authenticatable
     {
         return $this->pwd;
     }
+
+    public function companiesAsRm()
+    {
+        return $this->hasMany(CompanyMaster::class, 'rm_id', 'id');
+    }
+
+    public function companiesAsSalesRm()
+    {
+        return $this->hasMany(CompanyMaster::class, 'sales_rm_id', 'id');
+    }
+
+    public function companiesAsSalesVertical()
+    {
+        return $this->hasMany(CompanyMaster::class, 'sales_vertical_id', 'id');
+    }
 }
