@@ -10,11 +10,19 @@ export default function SuperAdminLayout({ user, children }) {
   const handleSidebarToggle = () => setSidebarOpen((prev) => !prev);
 
   return (
-    <div className={`flex h-screen max-h-screen w-full font-montserrat overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Topbar user={user} />
-        <main className="flex-1 overflow-y-auto p-2 md:p-4 transition-colors duration-300">
+  <div className={`relative min-h-screen w-full font-montserrat ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen`}> 
+      {/* Fixed Sidebar */}
+  <div className="fixed top-0 left-0 z-30 w-64">
+        <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />
+      </div>
+      {/* Main content area with left margin for sidebar */}
+      <div className="ml-0 md:ml-64 flex flex-col min-h-screen">
+        {/* Fixed Topbar */}
+        <div className="fixed top-0 left-0 md:left-64 right-0 z-20">
+          <Topbar user={user} />
+        </div>
+        {/* Main content below topbar */}
+        <main className="flex-1 pt-[64px] md:pt-[80px] p-2 md:p-4 overflow-y-auto transition-colors duration-300">
           {children}
         </main>
       </div>

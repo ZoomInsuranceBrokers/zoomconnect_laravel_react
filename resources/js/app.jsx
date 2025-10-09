@@ -1,5 +1,6 @@
 import '../css/app.css';
 import './bootstrap';
+import "@fontsource/dm-serif-display";
 
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from './Context/ThemeContext';

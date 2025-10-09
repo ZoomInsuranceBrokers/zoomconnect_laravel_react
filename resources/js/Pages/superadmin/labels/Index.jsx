@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
+import SuperAdminLayout from '../../../Layouts/SuperAdmin/Layout';
 import { Head, router } from '@inertiajs/react';
-import { useTheme } from '../../../../Context/ThemeContext';
+import { useTheme } from '../../../Context/ThemeContext';
 
 export default function Index({ labels }) {
     const { darkMode } = useTheme();
@@ -40,25 +40,12 @@ export default function Index({ labels }) {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredLabels.slice(indexOfFirstItem, indexOfLastItem);
 
-
-    // Update total pages when filtered labels or itemsPerPage change
+    // Update total pages when filtered labels change
     useEffect(() => {
         setTotalPages(Math.max(1, Math.ceil(filteredLabels.length / itemsPerPage)));
-    }, [filteredLabels.length, itemsPerPage]);
-
-    // Only reset currentPage when search or filter changes
-    useEffect(() => {
+        // Reset to first page when filters change
         setCurrentPage(1);
-    }, [search, filter]);
-
-
-    useEffect(() => {
-        setTotalPages(Math.max(1, Math.ceil(filteredLabels.length / itemsPerPage)));
-    }, [filteredLabels.length, itemsPerPage]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [search, filter]);
+    }, [filteredLabels.length, itemsPerPage, search, filter]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -127,7 +114,7 @@ export default function Index({ labels }) {
     return (
         <SuperAdminLayout>
             <Head title="Customer Labels" />
-            <div className={`p-4 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${isModalOpen ? 'blur-sm' : ''}`}> 
+            <div className={`p-4 ${isModalOpen ? 'blur-sm' : ''}`}>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-3">
                     <h1 className={`text-base md:text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -341,7 +328,7 @@ export default function Index({ labels }) {
                 </div>
 
                 {/* Card layout for mobile */}
-                <div className="block sm:hidden">
+                <div className="sm:hidden">
                     {currentItems.length === 0 ? (
                         <div className={`text-center py-6 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No labels found.</div>
                     ) : (
@@ -400,12 +387,10 @@ export default function Index({ labels }) {
 
                 {/* Pagination Controls */}
                 {filteredLabels.length > 0 && (
-                    <div className={`px-6 py-3 flex items-center justify-between  ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <div className={`px-6 py-3 flex items-center justify-between border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                         <div className="flex-1 flex justify-between sm:hidden">
                             <button
-                                onClick={() => {
-                                    if (currentPage > 1) setCurrentPage(currentPage - 1);
-                                }}
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
                                 className={`relative inline-flex items-center px-4 py-2 text-[11px] md:text-xs font-medium rounded-md ${currentPage === 1
                                     ? `${darkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-100 text-gray-400'} cursor-not-allowed`
@@ -538,8 +523,8 @@ export default function Index({ labels }) {
                                     <textarea
                                         value={modalData.remark}
                                         onChange={(e) => setModalData({ ...modalData, remark: e.target.value })}
-                                        rows={2}
-                                        className={`w-full px-3 py-2 text-sm border rounded-xl focus:ring-2 focus:ring-[#934790] focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                                        rows={3}
+                                        className={`w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-[#934790] focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
                                             }`}
                                     />
                                 </div>

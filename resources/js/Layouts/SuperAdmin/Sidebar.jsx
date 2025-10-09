@@ -25,7 +25,7 @@ export default function Sidebar({ open = true, onToggle }) {
     };
 
     // Sidebar classes for overlay on mobile, static on md+
-    const sidebarBase = 'h-full w-60 md:w-64 flex-col font-montserrat border-r border-[#E6E8F5] transition-all duration-300 z-30';
+    const sidebarBase = `h-full w-60 md:w-64 flex-col font-montserrat border-r border-[#E6E8F5] transition-all duration-300 ${open ? 'z-30' : 'z-0'}`;
     const sidebarMobile = open
         ? 'fixed top-0 left-0 flex shadow-2xl md:static md:shadow-none'
         : 'fixed top-0 -left-64 flex md:static md:left-0 md:flex';
@@ -299,7 +299,7 @@ export default function Sidebar({ open = true, onToggle }) {
                     </span>
                 </button>
             </div>
-            {/* ...existing code... */}
+            
             </aside>
         </>
     );
