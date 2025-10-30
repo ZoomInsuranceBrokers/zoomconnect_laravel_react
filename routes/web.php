@@ -60,5 +60,55 @@ Route::prefix('superadmin')->group(function () {
     Route::post('/wellness/services', [SuperAdminController::class, 'servicesStore'])->name('superadmin.wellness.services.store');
     Route::put('/wellness/services/{service}', [SuperAdminController::class, 'servicesUpdate'])->name('superadmin.wellness.services.update');
     Route::put('/wellness/services/{service}/toggle-status', [SuperAdminController::class, 'servicesToggleStatus'])->name('superadmin.wellness.services.toggle-status');
+
+    // Marketing Module Routes
+    Route::get('/marketing/campaigns', [SuperAdminController::class, 'marketingCampaigns'])->name('superadmin.marketing.campaigns.index');
+    Route::post('/marketing/campaigns', [SuperAdminController::class, 'marketingCampaignsStore'])->name('superadmin.marketing.campaigns.store');
+    Route::put('/marketing/campaigns/{campaign}', [SuperAdminController::class, 'marketingCampaignsUpdate'])->name('superadmin.marketing.campaigns.update');
+    Route::delete('/marketing/campaigns/{campaign}', [SuperAdminController::class, 'marketingCampaignsDestroy'])->name('superadmin.marketing.campaigns.destroy');
+
+    Route::get('/marketing/welcome-mailer', [SuperAdminController::class, 'marketingWelcomeMailer'])->name('superadmin.marketing.welcome-mailer.index');
+    Route::post('/marketing/welcome-mailer', [SuperAdminController::class, 'marketingWelcomeMailerStore'])->name('superadmin.marketing.welcome-mailer.store');
+    Route::put('/marketing/welcome-mailer/{mailer}', [SuperAdminController::class, 'marketingWelcomeMailerUpdate'])->name('superadmin.marketing.welcome-mailer.update');
+    Route::delete('/marketing/welcome-mailer/{mailer}', [SuperAdminController::class, 'marketingWelcomeMailerDestroy'])->name('superadmin.marketing.welcome-mailer.destroy');
+
+    Route::get('/marketing/message-template', [SuperAdminController::class, 'marketingMessageTemplate'])->name('superadmin.marketing.message-template.index');
+    Route::get('/marketing/message-template/create', [SuperAdminController::class, 'marketingMessageTemplateCreate'])->name('superadmin.marketing.message-template.create');
+    Route::post('/marketing/message-template', [SuperAdminController::class, 'marketingMessageTemplateStore'])->name('superadmin.marketing.message-template.store');
+    Route::get('/marketing/message-template/{template}', [SuperAdminController::class, 'marketingMessageTemplateShow'])->name('superadmin.marketing.message-template.show');
+    Route::get('/marketing/message-template/{template}/edit', [SuperAdminController::class, 'marketingMessageTemplateEdit'])->name('superadmin.marketing.message-template.edit');
+    Route::put('/marketing/message-template/{template}', [SuperAdminController::class, 'marketingMessageTemplateUpdate'])->name('superadmin.marketing.message-template.update');
+    Route::delete('/marketing/message-template/{template}', [SuperAdminController::class, 'marketingMessageTemplateDestroy'])->name('superadmin.marketing.message-template.destroy');
+
+    Route::get('/marketing/push-notifications', [SuperAdminController::class, 'marketingPushNotifications'])->name('superadmin.marketing.push-notifications.index');
+    Route::post('/marketing/push-notifications', [SuperAdminController::class, 'marketingPushNotificationsStore'])->name('superadmin.marketing.push-notifications.store');
+    Route::put('/marketing/push-notifications/{notification}', [SuperAdminController::class, 'marketingPushNotificationsUpdate'])->name('superadmin.marketing.push-notifications.update');
+    Route::delete('/marketing/push-notifications/{notification}', [SuperAdminController::class, 'marketingPushNotificationsDestroy'])->name('superadmin.marketing.push-notifications.destroy');
+
+    // Policy Module Routes
+    Route::get('/policy/enrollment-lists', [SuperAdminController::class, 'policyEnrollmentLists'])->name('superadmin.policy.enrollment-lists.index');
+    Route::get('/policy/enrollment-lists/create', [SuperAdminController::class, 'policyEnrollmentListsCreate'])->name('superadmin.policy.enrollment-lists.create');
+    Route::post('/policy/enrollment-lists', [SuperAdminController::class, 'policyEnrollmentListsStore'])->name('superadmin.policy.enrollment-lists.store');
+    Route::post('/policy/enrollment-lists/validate-step', [SuperAdminController::class, 'validateEnrollmentStep'])->name('superadmin.policy.enrollment-lists.validate-step');
+    Route::get('/policy/enrollment-lists/{enrollment}/edit', [SuperAdminController::class, 'policyEnrollmentListsEdit'])->name('superadmin.policy.enrollment-lists.edit');
+    Route::put('/policy/enrollment-lists/{enrollment}', [SuperAdminController::class, 'policyEnrollmentListsUpdate'])->name('superadmin.policy.enrollment-lists.update');
+    Route::put('/policy/enrollment-lists/{enrollment}/toggle-status', [SuperAdminController::class, 'policyEnrollmentListsToggleStatus'])->name('superadmin.policy.enrollment-lists.toggle-status');
+    Route::put('/policy/enrollment-lists/{enrollment}/make-active', [SuperAdminController::class, 'policyEnrollmentListsMakeActive'])->name('superadmin.policy.enrollment-lists.make-active');
+    Route::put('/policy/enrollment-lists/{enrollment}/make-inactive', [SuperAdminController::class, 'policyEnrollmentListsMakeInactive'])->name('superadmin.policy.enrollment-lists.make-inactive');
+    Route::delete('/policy/enrollment-lists/{enrollment}', [SuperAdminController::class, 'policyEnrollmentListsDestroy'])->name('superadmin.policy.enrollment-lists.destroy');
+    Route::get('/policy/enrollment-details/{enrollment}', [SuperAdminController::class, 'policyEnrollmentDetails'])->name('superadmin.policy.enrollment-details');
+    Route::get('/policy/open-enrollment-portal/{enrollment}', [SuperAdminController::class, 'openEnrollmentPortal'])->name('superadmin.open-enrollment-portal');
+    Route::post('/create-enrollment-period/{enrollment}', [SuperAdminController::class, 'createEnrollmentPeriod'])->name('superadmin.create-enrollment-period');
+    Route::get('/select-employees-for-portal/{enrollmentPeriod}', [SuperAdminController::class, 'selectEmployeesForPortal'])->name('superadmin.select-employees-for-portal');
+    Route::post('/policy/employee-mapping', [SuperAdminController::class, 'employeeMapping'])->name('superadmin.policy.employee-mapping');
+    Route::get('/view-live-portal/{enrollmentPeriod}', [SuperAdminController::class, 'viewLivePortal'])->name('superadmin.view-live-portal');
+    Route::get('/view-enrollment-period-details/{enrollmentPeriod}', [SuperAdminController::class, 'viewEnrollmentPeriodDetails'])->name('superadmin.view-enrollment-period-details');
+    Route::get('/enrollment-period-details/{enrollmentPeriod}', [SuperAdminController::class, 'enrollmentPeriodDetails'])->name('superadmin.enrollment-period-details');
+    Route::get('/policy/edit-enrollment-period/{enrollmentPeriod}', [SuperAdminController::class, 'editEnrollmentPeriod'])->name('superadmin.edit-enrollment-period');
+    Route::put('/update-enrollment-period/{enrollmentPeriod}', [SuperAdminController::class, 'updateEnrollmentPeriod'])->name('superadmin.update-enrollment-period');
+
+    // Fill Enrollment Routes
+    Route::get('/fill-enrollment/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'fillEnrollment'])->name('superadmin.fill-enrollment');
+    Route::post('/fill-enrollment/submit', [SuperAdminController::class, 'submitEnrollment'])->name('superadmin.submit-enrollment');
 });
 // });
