@@ -5,18 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\CorporateLabel;
 use App\Models\CorporateGroup;
 use App\Models\CompanyMaster;
+use App\Models\MessageTemplate;
 use App\Models\UserMaster;
 use App\Models\WellnessService;
 use App\Models\WellnessCategory;
 use App\Models\Vendor;
+use App\Models\EnrollmentDetail;
+use App\Models\EnrollmentConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class SuperAdminController extends Controller
 {
@@ -899,4 +904,1857 @@ class SuperAdminController extends Controller
     /////////////////////////////////////////////////////////////////////////
     ///////////////////////// Wellness Vendors and Services /////////////////
     /////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////// Marketing Module /////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Display campaigns listing page
+     */
+    public function marketingCampaigns()
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        // Here you would typically fetch campaigns from database
+        // For now returning empty array as placeholder
+        return Inertia::render('superadmin/Marketing/Campaigns', [
+            'user' => $user,
+            'campaigns' => []
+        ]);
+    }
+
+    /**
+     * Store new campaign
+     */
+    public function marketingCampaignsStore(Request $request)
+    {
+        // Placeholder method for campaign creation
+        // Add validation and store logic here
+        return redirect()->route('superadmin.marketing.campaigns.index')
+            ->with('success', 'Campaign created successfully.');
+    }
+
+    /**
+     * Update existing campaign
+     */
+    public function marketingCampaignsUpdate(Request $request, $campaign)
+    {
+        // Placeholder method for campaign update
+        // Add validation and update logic here
+        return redirect()->route('superadmin.marketing.campaigns.index')
+            ->with('success', 'Campaign updated successfully.');
+    }
+
+    /**
+     * Delete campaign
+     */
+    public function marketingCampaignsDestroy($campaign)
+    {
+        // Placeholder method for campaign deletion
+        // Add deletion logic here
+        return redirect()->route('superadmin.marketing.campaigns.index')
+            ->with('success', 'Campaign deleted successfully.');
+    }
+
+    /**
+     * Display welcome mailer page
+     */
+    public function marketingWelcomeMailer()
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        return Inertia::render('superadmin/Marketing/WelcomeMailer', [
+            'user' => $user,
+            'mailers' => []
+        ]);
+    }
+
+    /**
+     * Store new welcome mailer
+     */
+    public function marketingWelcomeMailerStore(Request $request)
+    {
+        return redirect()->route('superadmin.marketing.welcome-mailer.index')
+            ->with('success', 'Welcome mailer created successfully.');
+    }
+
+    /**
+     * Update existing welcome mailer
+     */
+    public function marketingWelcomeMailerUpdate(Request $request, $mailer)
+    {
+        return redirect()->route('superadmin.marketing.welcome-mailer.index')
+            ->with('success', 'Welcome mailer updated successfully.');
+    }
+
+    /**
+     * Delete welcome mailer
+     */
+    public function marketingWelcomeMailerDestroy($mailer)
+    {
+        return redirect()->route('superadmin.marketing.welcome-mailer.index')
+            ->with('success', 'Welcome mailer deleted successfully.');
+    }
+
+    /**
+     * Display message template page
+     */
+    public function marketingMessageTemplate()
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        $templates = MessageTemplate::orderBy('created_at', 'desc')->get();
+        $categories = MessageTemplate::getCategories();
+
+        return Inertia::render('superadmin/Marketing/MessageTemplate', [
+            'user' => $user,
+            'templates' => $templates,
+            'categories' => $categories
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new message template
+     */
+    public function marketingMessageTemplateCreate()
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        $categories = MessageTemplate::getCategories();
+
+        return Inertia::render('superadmin/Marketing/CreateMessageTemplate', [
+            'user' => $user,
+            'categories' => $categories
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified message template
+     */
+    public function marketingMessageTemplateEdit(MessageTemplate $template)
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        $categories = MessageTemplate::getCategories();
+
+        return Inertia::render('superadmin/Marketing/CreateMessageTemplate', [
+            'user' => $user,
+            'template' => $template,
+            'categories' => $categories
+        ]);
+    }
+
+    /**
+     * Display the specified message template
+     */
+    public function marketingMessageTemplateShow(MessageTemplate $template)
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        return Inertia::render('superadmin/Marketing/ShowMessageTemplate', [
+            'user' => $user,
+            'template' => $template
+        ]);
+    }
+
+    /**
+     * Store new message template
+     */
+    public function marketingMessageTemplateStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'subject' => 'required|string|max:500',
+            'body' => 'required|string',
+            'is_logo_sent' => 'nullable|boolean',
+            'logo_position' => 'nullable|in:left,right,top,bottom,center',
+            'is_company_logo_sent' => 'nullable|boolean',
+            'company_logo_position' => 'nullable|in:left,right,top,bottom,center',
+            'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'attachment' => 'nullable|file|mimes:pdf,doc,docx,txt,zip|max:10240',
+            'status' => 'nullable|boolean'
+        ]);
+
+        // Ensure boolean fields are properly set
+        $validated['is_logo_sent'] = $request->has('is_logo_sent') ? (bool) $request->input('is_logo_sent') : false;
+        $validated['is_company_logo_sent'] = $request->has('is_company_logo_sent') ? (bool) $request->input('is_company_logo_sent') : false;
+        $validated['status'] = $request->has('status') ? (bool) $request->input('status') : true;
+
+        // Handle file uploads
+        if ($request->hasFile('banner_image')) {
+            $validated['banner_image'] = $request->file('banner_image')->store('message_templates/banners', 'public');
+        }
+
+        if ($request->hasFile('attachment')) {
+            $validated['attachment'] = $request->file('attachment')->store('message_templates/attachments', 'public');
+        }
+
+        // Set user IDs
+        $validated['created_by'] = Session::get('superadmin_user.id', 1);
+        $validated['updated_by'] = Session::get('superadmin_user.id', 1);
+
+        MessageTemplate::create($validated);
+
+        return redirect()->route('superadmin.marketing.message-template.index')
+            ->with('success', 'Message template created successfully.');
+    }
+
+    /**
+     * Update existing message template
+     */
+    public function marketingMessageTemplateUpdate(Request $request, MessageTemplate $template)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'subject' => 'required|string|max:500',
+            'body' => 'required|string',
+            'is_logo_sent' => 'nullable|boolean',
+            'logo_position' => 'nullable|in:left,right,top,bottom,center',
+            'is_company_logo_sent' => 'nullable|boolean',
+            'company_logo_position' => 'nullable|in:left,right,top,bottom,center',
+            'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'attachment' => 'nullable|file|mimes:pdf,doc,docx,txt,zip|max:10240',
+            'status' => 'nullable|boolean'
+        ]);
+
+        // Ensure boolean fields are properly set
+        $validated['is_logo_sent'] = $request->has('is_logo_sent') ? (bool) $request->input('is_logo_sent') : false;
+        $validated['is_company_logo_sent'] = $request->has('is_company_logo_sent') ? (bool) $request->input('is_company_logo_sent') : false;
+        $validated['status'] = $request->has('status') ? (bool) $request->input('status') : true;
+
+        // Remove file fields from validated array to avoid null updates
+        unset($validated['banner_image']);
+        unset($validated['attachment']);
+
+        // Handle file uploads - keep existing files if no new files uploaded
+        if ($request->hasFile('banner_image')) {
+            // Delete old banner image if exists
+            if ($template->banner_image) {
+                \Storage::disk('public')->delete($template->banner_image);
+            }
+            $validated['banner_image'] = $request->file('banner_image')->store('message_templates/banners', 'public');
+        }
+
+        if ($request->hasFile('attachment')) {
+            // Delete old attachment if exists
+            if ($template->attachment) {
+                \Storage::disk('public')->delete($template->attachment);
+            }
+            $validated['attachment'] = $request->file('attachment')->store('message_templates/attachments', 'public');
+        }
+
+        $validated['updated_by'] = Session::get('superadmin_user.id', 1);
+
+        $template->update($validated);
+
+        return redirect()->route('superadmin.marketing.message-template.index')
+            ->with('success', 'Message template updated successfully.');
+    }
+
+    /**
+     * Delete message template
+     */
+    public function marketingMessageTemplateDestroy(MessageTemplate $template)
+    {
+        $template->delete();
+
+        return redirect()->route('superadmin.marketing.message-template.index')
+            ->with('success', 'Message template deleted successfully.');
+    }
+
+    /**
+     * Display push notifications page
+     */
+    public function marketingPushNotifications()
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        return Inertia::render('superadmin/Marketing/PushNotifications', [
+            'user' => $user,
+            'notifications' => []
+        ]);
+    }
+
+    /**
+     * Store new push notification
+     */
+    public function marketingPushNotificationsStore(Request $request)
+    {
+        return redirect()->route('superadmin.marketing.push-notifications.index')
+            ->with('success', 'Push notification created successfully.');
+    }
+
+    /**
+     * Update existing push notification
+     */
+    public function marketingPushNotificationsUpdate(Request $request, $notification)
+    {
+        return redirect()->route('superadmin.marketing.push-notifications.index')
+            ->with('success', 'Push notification updated successfully.');
+    }
+
+    /**
+     * Delete push notification
+     */
+    public function marketingPushNotificationsDestroy($notification)
+    {
+        return redirect()->route('superadmin.marketing.push-notifications.index')
+            ->with('success', 'Push notification deleted successfully.');
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////// Marketing Module /////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////// Policy Module ////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Display enrollment lists
+     */
+    public function policyEnrollmentLists(Request $request)
+    {
+        $search = $request->get('search');
+        $status = $request->get('status');
+
+        $enrollments = EnrollmentDetail::with(['company'])
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('enrolment_name', 'LIKE', "%{$search}%")
+                        ->orWhere('corporate_enrolment_name', 'LIKE', "%{$search}%")
+                        ->orWhereHas('company', function ($companyQuery) use ($search) {
+                            $companyQuery->where('comp_name', 'LIKE', "%{$search}%");
+                        });
+                });
+            })
+            ->when($status !== null && $status !== '', function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return Inertia::render('superadmin/policy/EnrollmentLists', [
+            'enrollments' => $enrollments,
+            'filters' => [
+                'search' => $search,
+                'status' => $status
+            ]
+        ]);
+    }
+
+    /**
+     * Show the form for creating new enrollment
+     */
+    public function policyEnrollmentListsCreate()
+    {
+        $companies = CompanyMaster::where('status', 1)->get(['comp_id as id', 'comp_name']);
+        $messageTemplates = MessageTemplate::where('status', 1)->get(['id', 'name', 'category', 'subject', 'body', 'banner_image', 'attachment', 'status']);
+
+        return Inertia::render('superadmin/policy/CreateEnrollment', [
+            'companies' => $companies,
+            'messageTemplates' => $messageTemplates
+        ]);
+    }
+
+    /**
+     * Store new enrollment
+     */
+    public function policyEnrollmentListsStore(Request $request)
+    {
+        // Custom validation for complex multi-step form
+        $this->validateEnrollmentData($request);
+
+        try {
+            // Process the form data
+            $processedData = $this->processEnrollmentData($request);
+
+            // Save directly to EnrollmentDetail without creating separate config
+            $processedData['creation_status'] = 1;
+
+            EnrollmentDetail::create($processedData);
+
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Enrollment created successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Enrollment creation failed: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to create enrollment. Please try again.'])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Validate enrollment data with comprehensive rules
+     */
+    private function validateEnrollmentData(Request $request)
+    {
+        $rules = [
+            // Basic Details
+            'cmp_id' => 'required|exists:company_master,comp_id',
+            'enrolment_name' => 'required|string|max:255',
+            'corporate_enrolment_name' => 'required|string|max:255',
+            'policy_start_date' => 'required|date',
+            'policy_end_date' => 'required|date|after:policy_start_date',
+
+            // JSON/Array fields - can be JSON strings or arrays
+            'family_defination' => 'required',
+            'rating_config' => 'required',
+            'extra_coverage_plans' => 'nullable',
+            'mail_configuration' => 'required',
+
+            // Step 6: Additional Settings
+            'twin_allowed' => 'required|boolean',
+            'is_self_allowed_by_default' => 'required|boolean',
+            'grade_exclude' => 'nullable',
+            'enrollment_statements' => 'nullable',
+
+            'status' => 'required|boolean'
+        ];
+
+        $messages = [
+            'cmp_id.required' => 'Please select a company.',
+            'cmp_id.exists' => 'The selected company is invalid.',
+            'enrolment_name.required' => 'Enrollment name is required.',
+            'corporate_enrolment_name.required' => 'Corporate enrollment name is required.',
+            'policy_start_date.required' => 'Policy start date is required.',
+            'policy_end_date.required' => 'Policy end date is required.',
+            'policy_end_date.after' => 'Policy end date must be after the policy start date.',
+            'family_defination.required' => 'Family definition is required.',
+            'rating_config.required' => 'Rating configuration is required.',
+            'mail_configuration.required' => 'Mail configuration is required.',
+        ];
+
+        $validated = $request->validate($rules, $messages);
+
+        return $validated;
+    }
+
+    /**
+     * Process enrollment data for storage
+     */
+    private function processEnrollmentData(Request $request)
+    {
+        $data = $request->all();
+
+        // Handle JSON fields - decode if they are strings, keep as arrays if already arrays
+        $data['family_defination'] = is_string($data['family_defination'])
+            ? json_decode($data['family_defination'], true)
+            : $data['family_defination'];
+
+        $data['rating_config'] = is_string($data['rating_config'])
+            ? json_decode($data['rating_config'], true)
+            : $data['rating_config'];
+
+        $data['extra_coverage_plans'] = is_string($data['extra_coverage_plans'])
+            ? json_decode($data['extra_coverage_plans'], true)
+            : $data['extra_coverage_plans'];
+
+        $data['mail_configuration'] = is_string($data['mail_configuration'])
+            ? json_decode($data['mail_configuration'], true)
+            : $data['mail_configuration'];
+
+        $data['enrollment_statements'] = is_string($data['enrollment_statements'])
+            ? json_decode($data['enrollment_statements'], true)
+            : $data['enrollment_statements'];
+
+        $data['grade_exclude'] = is_string($data['grade_exclude'])
+            ? json_decode($data['grade_exclude'], true)
+            : $data['grade_exclude'];
+
+        // Extract rator_type from rating_config for easier querying
+        if (isset($data['rating_config']['plan_type'])) {
+            $data['rator_type'] = $data['rating_config']['plan_type'];
+        }
+
+        // Extract and set reminder mail configuration fields
+        if (isset($data['mail_configuration']['reminder_mail'])) {
+            $reminderMail = $data['mail_configuration']['reminder_mail'];
+            $data['reminder_mail_enable'] = $reminderMail['enabled'] ?? false;
+            $data['frequency_of_reminder_mail'] = $reminderMail['frequency'] ?? null;
+            $data['frequency_days'] = $reminderMail['frequency_value'] ?? null;
+        }
+
+        // Set default values for boolean fields
+        $data['twin_allowed'] = $data['twin_allowed'] ?? false;
+        $data['is_self_allowed_by_default'] = $data['is_self_allowed_by_default'] ?? true;
+        $data['send_welcome_mail'] = false; // Can be set based on mail config
+        $data['send_confirmation_mail'] = false; // Can be set based on mail config
+        $data['send_deadline_reminder'] = $data['reminder_mail_enable'] ?? false;
+        $data['send_completion_mail'] = false; // Can be set based on mail config
+        $data['auto_reminder_enable'] = $data['reminder_mail_enable'] ?? false;
+        $data['manual_reminder_enable'] = false; // Default to false
+
+        // Set enrollment directory name based on enrollment name
+        $data['enrolment_directory_name'] = strtolower(str_replace(' ', '_', $data['enrolment_name'])) . '_' . time();
+
+        // Ensure status is boolean
+        $data['status'] = $data['status'] ?? true;
+
+        return $data;
+    }
+
+    /**
+     * Validate decoded JSON data
+     */
+    private function validateDecodedData(Request $request)
+    {
+        // Decode JSON fields for validation
+        $familyDef = json_decode($request->family_defination, true);
+        $ratingConfig = json_decode($request->rating_config, true);
+        $extraCoverage = json_decode($request->extra_coverage_plans, true);
+        $mailConfig = json_decode($request->mail_configuration, true);
+
+        $errors = [];
+
+        // Validate family definition
+        if (!$familyDef) {
+            $errors['family_defination'] = 'Invalid family definition format.';
+        } else {
+            $errors = array_merge($errors, $this->validateFamilyDefinitionData($familyDef));
+        }
+
+        // Validate rating config
+        if (!$ratingConfig) {
+            $errors['rating_config'] = 'Invalid rating configuration format.';
+        } else {
+            $errors = array_merge($errors, $this->validateRatingConfigData($ratingConfig));
+        }
+
+        // Validate extra coverage
+        if (!$extraCoverage) {
+            $errors['extra_coverage_plans'] = 'Invalid extra coverage format.';
+        } else {
+            $errors = array_merge($errors, $this->validateExtraCoverageData($extraCoverage));
+        }
+
+        // Validate mail config
+        if (!$mailConfig) {
+            $errors['mail_configuration'] = 'Invalid mail configuration format.';
+        } else {
+            $errors = array_merge($errors, $this->validateMailConfigData($mailConfig));
+        }
+
+        if (!empty($errors)) {
+            throw \Illuminate\Validation\ValidationException::withMessages($errors);
+        }
+    }
+
+    /**
+     * Validate family definition data
+     */
+    private function validateFamilyDefinitionData($familyDef)
+    {
+        $errors = [];
+
+        // Check if at least one family member is enabled
+        $enabledMembers = [];
+        foreach (['self', 'spouse', 'kid', 'parent', 'parent_in_law', 'sibling', 'partners', 'others'] as $member) {
+            if (($familyDef[$member] ?? '0') === '1') {
+                $enabledMembers[] = $member;
+            }
+        }
+
+        if (empty($enabledMembers)) {
+            $errors['family_defination'] = 'At least one family member type must be enabled.';
+        }
+
+        // Validate age ranges for enabled members
+        foreach ($enabledMembers as $member) {
+            $minAge = (int)($familyDef["{$member}_min_age"] ?? 0);
+            $maxAge = (int)($familyDef["{$member}_max_age"] ?? 0);
+
+            if ($maxAge < $minAge) {
+                $errors["family_defination.{$member}_age_range"] = "Maximum age must be greater than or equal to minimum age for {$member}.";
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Validate rating configuration data
+     */
+    private function validateRatingConfigData($ratingConfig)
+    {
+        $errors = [];
+
+        if (!isset($ratingConfig['plan_type'])) {
+            $errors['rating_config.plan_type'] = 'Plan type is required.';
+        }
+
+        if (!isset($ratingConfig['base_sum_insured_type'])) {
+            $errors['rating_config.base_sum_insured_type'] = 'Base sum insured type is required.';
+        } else {
+            if ($ratingConfig['base_sum_insured_type'] === 'fixed') {
+                if (!isset($ratingConfig['base_sum_insured']) || $ratingConfig['base_sum_insured'] === '' || $ratingConfig['base_sum_insured'] === null) {
+                    $errors['rating_config.base_sum_insured'] = 'Base sum insured amount is required.';
+                } elseif ($ratingConfig['base_sum_insured'] < 0) {
+                    $errors['rating_config.base_sum_insured'] = 'Base sum insured cannot be negative.';
+                }
+            } elseif ($ratingConfig['base_sum_insured_type'] === 'grade_wise') {
+                if (!isset($ratingConfig['grade_wise_sum_insured']) || empty($ratingConfig['grade_wise_sum_insured'])) {
+                    $errors['rating_config.grade_wise_sum_insured'] = 'At least one grade is required for grade-wise sum insured.';
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Validate extra coverage data
+     */
+    private function validateExtraCoverageData($extraCoverage)
+    {
+        $errors = [];
+
+        // Extra coverage is optional, so only validate if plans exist
+        if (empty($extraCoverage)) {
+            return $errors; // No validation needed if no extra coverage
+        }
+
+        foreach ($extraCoverage as $index => $plan) {
+            if (empty($plan['plan_name'])) {
+                $errors["extra_coverage_plans.{$index}.plan_name"] = 'Plan name is required.';
+            }
+
+            // Check if at least one coverage is enabled
+            $coverages = $plan['extra_coverages'] ?? [];
+            $hasEnabledCoverage = false;
+
+            foreach (['co_pay', 'maternity', 'room_rent'] as $coverageType) {
+                if (isset($coverages[$coverageType]['enabled']) && $coverages[$coverageType]['enabled']) {
+                    $hasEnabledCoverage = true;
+                    break;
+                }
+            }
+
+            if (!$hasEnabledCoverage) {
+                $errors["extra_coverage_plans.{$index}"] = 'At least one coverage type must be enabled in each plan.';
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Validate mail configuration data
+     */
+    private function validateMailConfigData($mailConfig)
+    {
+        $errors = [];
+
+        if (!isset($mailConfig['enrollment_mail']['template_id']) || empty($mailConfig['enrollment_mail']['template_id'])) {
+            $errors['mail_configuration.enrollment_mail.template_id'] = 'Enrollment mail template is required.';
+        }
+
+        if (isset($mailConfig['reminder_mail']['enabled']) && $mailConfig['reminder_mail']['enabled']) {
+            if (!isset($mailConfig['reminder_mail']['template_id']) || empty($mailConfig['reminder_mail']['template_id'])) {
+                $errors['mail_configuration.reminder_mail.template_id'] = 'Reminder mail template is required when reminder mail is enabled.';
+            }
+
+            if (!isset($mailConfig['reminder_mail']['frequency']) || empty($mailConfig['reminder_mail']['frequency'])) {
+                $errors['mail_configuration.reminder_mail.frequency'] = 'Reminder frequency is required when reminder mail is enabled.';
+            }
+
+            if (!isset($mailConfig['reminder_mail']['frequency_value']) || $mailConfig['reminder_mail']['frequency_value'] < 1) {
+                $errors['mail_configuration.reminder_mail.frequency_value'] = 'Frequency value must be at least 1.';
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Validate data integrity
+     */
+    private function validateDataIntegrity($data)
+    {
+        // Ensure family definition consistency
+        if (isset($data['family_defination'])) {
+            foreach (['self', 'spouse', 'kid', 'parent', 'parent_in_law', 'sibling', 'partners', 'others'] as $member) {
+                if (($data['family_defination'][$member] ?? '0') === '0') {
+                    $data['family_defination']["{$member}_no"] = '0';
+                }
+            }
+        }
+
+        // Additional integrity checks can be added here
+        return $data;
+    }
+
+    /**
+     * Validate a specific enrollment step
+     */
+    public function validateEnrollmentStep(Request $request)
+    {
+        $step = $request->input('step');
+        $stepData = $request->input('data', []);
+
+        try {
+            switch ($step) {
+                case 1:
+                    $this->validateBasicDetails($stepData);
+                    break;
+                case 2:
+                    $this->validateFamilyDefinitionStep($stepData);
+                    break;
+                case 3:
+                    $this->validateRatingConfigurationStep($stepData);
+                    break;
+                case 4:
+                    $this->validateExtraCoverageStep($stepData);
+                    break;
+                case 5:
+                    $this->validateMailConfigurationStep($stepData);
+                    break;
+                default:
+                    return response()->json(['valid' => false, 'errors' => ['step' => 'Invalid step']], 422);
+            }
+
+            return response()->json(['valid' => true]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['valid' => false, 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['valid' => false, 'errors' => ['general' => $e->getMessage()]], 422);
+        }
+    }
+
+    /**
+     * Validate basic details step
+     */
+    private function validateBasicDetails($data)
+    {
+        $rules = [
+            'cmp_id' => 'required|exists:company_master,comp_id',
+            'enrolment_name' => 'required|string|max:255|regex:/^[a-zA-Z0-9\s\-_]+$/',
+            'corporate_enrolment_name' => 'required|string|max:255|regex:/^[a-zA-Z0-9\s\-_]+$/',
+            'policy_start_date' => 'required|date',
+            'policy_end_date' => 'required|date|after:policy_start_date',
+        ];
+
+        $messages = [
+            'cmp_id.required' => 'Please select a company.',
+            'cmp_id.exists' => 'The selected company is invalid.',
+            'enrolment_name.required' => 'Enrollment name is required.',
+            'enrolment_name.regex' => 'Enrollment name can only contain letters, numbers, spaces, hyphens, and underscores.',
+            'corporate_enrolment_name.required' => 'Corporate enrollment name is required.',
+            'corporate_enrolment_name.regex' => 'Corporate enrollment name can only contain letters, numbers, spaces, hyphens, and underscores.',
+            'policy_start_date.required' => 'Policy start date is required.',
+            'policy_end_date.required' => 'Policy end date is required.',
+            'policy_end_date.after' => 'Policy end date must be after the policy start date.',
+        ];
+
+        $validator = \Validator::make($data, $rules, $messages);
+
+        if ($validator->fails()) {
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+    }
+
+    /**
+     * Validate family definition step
+     */
+    private function validateFamilyDefinitionStep($data)
+    {
+        if (!isset($data['family_defination'])) {
+            throw new \Exception('Family definition is required.');
+        }
+
+        $familyDef = $data['family_defination'];
+        if (is_string($familyDef)) {
+            $familyDef = json_decode($familyDef, true);
+        }
+
+        $errors = $this->validateFamilyDefinitionData($familyDef);
+
+        if (!empty($errors)) {
+            $validator = \Validator::make([], []);
+            foreach ($errors as $field => $message) {
+                $validator->errors()->add($field, $message);
+            }
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+    }
+
+    /**
+     * Validate rating configuration step
+     */
+    private function validateRatingConfigurationStep($data)
+    {
+        if (!isset($data['rating_config'])) {
+            throw new \Exception('Rating configuration is required.');
+        }
+
+        $ratingConfig = $data['rating_config'];
+        if (is_string($ratingConfig)) {
+            $ratingConfig = json_decode($ratingConfig, true);
+        }
+
+        $errors = $this->validateRatingConfigData($ratingConfig);
+
+        if (!empty($errors)) {
+            $validator = \Validator::make([], []);
+            foreach ($errors as $field => $message) {
+                $validator->errors()->add($field, $message);
+            }
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+    }
+
+    /**
+     * Validate extra coverage step
+     */
+    private function validateExtraCoverageStep($data)
+    {
+        // Extra coverage is optional, so we only validate if it exists
+        if (!isset($data['extra_coverage_plans']) || empty($data['extra_coverage_plans'])) {
+            return; // No validation needed if no extra coverage
+        }
+
+        $extraCoverage = $data['extra_coverage_plans'];
+        if (is_string($extraCoverage)) {
+            $extraCoverage = json_decode($extraCoverage, true);
+        }
+
+        $errors = $this->validateExtraCoverageData($extraCoverage);
+
+        if (!empty($errors)) {
+            $validator = \Validator::make([], []);
+            foreach ($errors as $field => $message) {
+                $validator->errors()->add($field, $message);
+            }
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+    }
+
+    /**
+     * Validate mail configuration step
+     */
+    private function validateMailConfigurationStep($data)
+    {
+        if (!isset($data['mail_configuration'])) {
+            throw new \Exception('Mail configuration is required.');
+        }
+
+        $mailConfig = $data['mail_configuration'];
+        if (is_string($mailConfig)) {
+            $mailConfig = json_decode($mailConfig, true);
+        }
+
+        $errors = $this->validateMailConfigData($mailConfig);
+
+        if (!empty($errors)) {
+            $validator = \Validator::make([], []);
+            foreach ($errors as $field => $message) {
+                $validator->errors()->add($field, $message);
+            }
+            throw new \Illuminate\Validation\ValidationException($validator);
+        }
+    }
+
+    /**
+     * Show edit form for enrollment
+     */
+    public function policyEnrollmentListsEdit($id)
+    {
+        $enrollment = EnrollmentDetail::findOrFail($id);
+        $companies = CompanyMaster::where('status', 1)->get(['comp_id as id', 'comp_name']);
+        $messageTemplates = MessageTemplate::where('status', 1)->get(['id', 'name', 'category', 'subject', 'body', 'banner_image', 'attachment', 'status']);
+
+        return Inertia::render('superadmin/policy/EditEnrollment', [
+            'enrollment' => $enrollment,
+            'companies' => $companies,
+            'messageTemplates' => $messageTemplates
+        ]);
+    }
+
+    /**
+     * Update enrollment
+     */
+    public function policyEnrollmentListsUpdate(Request $request, $id)
+    {
+        $enrollment = EnrollmentDetail::findOrFail($id);
+
+        // Use the same validation as create
+        $this->validateEnrollmentData($request);
+
+        try {
+            // Process the form data
+            $processedData = $this->processEnrollmentData($request);
+
+            // Update the enrollment
+            $enrollment->update($processedData);
+
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('success', 'Enrollment updated successfully!');
+        } catch (\Exception $e) {
+            Log::error('Enrollment update failed: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to update enrollment. Please try again.'])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Toggle enrollment status
+     */
+    public function policyEnrollmentListsToggleStatus($id)
+    {
+        try {
+            $enrollment = EnrollmentDetail::findOrFail($id);
+            $enrollment->status = !$enrollment->status;
+            $enrollment->save();
+
+            $status = $enrollment->status ? 'activated' : 'deactivated';
+
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', "Enrollment {$status} successfully!")
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Toggle enrollment status failed: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to update enrollment status.']);
+        }
+    }
+
+    /**
+     * Make enrollment active
+     */
+    public function policyEnrollmentListsMakeActive($id)
+    {
+        try {
+            $enrollment = EnrollmentDetail::findOrFail($id);
+
+            if ($enrollment->status) {
+                return redirect()->route('superadmin.policy.enrollment-lists.index')
+                    ->with('message', 'Enrollment is already active!')
+                    ->with('messageType', 'info');
+            }
+
+            $enrollment->status = true;
+            $enrollment->save();
+
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Enrollment activated successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Make enrollment active failed: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to activate enrollment.']);
+        }
+    }
+
+    /**
+     * Make enrollment inactive
+     */
+    public function policyEnrollmentListsMakeInactive($id)
+    {
+        try {
+            $enrollment = EnrollmentDetail::findOrFail($id);
+
+            if (!$enrollment->status) {
+                return redirect()->route('superadmin.policy.enrollment-lists.index')
+                    ->with('message', 'Enrollment is already inactive!')
+                    ->with('messageType', 'info');
+            }
+
+            $enrollment->status = false;
+            $enrollment->save();
+
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Enrollment deactivated successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Make enrollment inactive failed: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to deactivate enrollment.']);
+        }
+    }
+
+    /**
+     * Delete enrollment
+     */
+    public function policyEnrollmentListsDestroy($id)
+    {
+        try {
+            $enrollment = EnrollmentDetail::findOrFail($id);
+            $enrollment->delete();
+
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Enrollment deleted successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Enrollment deletion failed: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to delete enrollment. Please try again.']);
+        }
+    }
+
+    /**
+     * Show enrollment details and periods
+     */
+    public function policyEnrollmentDetails($id)
+    {
+        try {
+            // Get the enrollment details
+            $enrollmentDetail = EnrollmentDetail::with('company')->findOrFail($id);
+
+            // Get enrollment periods using the specific query
+            $enrollmentPeriods = \DB::select("
+                SELECT enrolment_period.*, enrolment_details.corporate_enrolment_name
+                FROM enrolment_period
+                INNER JOIN enrolment_details ON enrolment_period.enrolment_id = enrolment_details.id
+                WHERE enrolment_period.enrolment_id = ?
+                ORDER BY enrolment_period.portal_end_date DESC
+            ", [$id]);
+
+            // Convert to array if needed
+            $enrollmentPeriods = collect($enrollmentPeriods)->map(function ($period) {
+                return (array) $period;
+            })->toArray();
+
+            return Inertia::render('superadmin/policy/EnrollmentDetails', [
+                'enrollmentDetail' => $enrollmentDetail,
+                'enrollmentPeriods' => $enrollmentPeriods
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Enrollment details fetch failed: ' . $e->getMessage());
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Failed to load enrollment details.')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * View enrollment period details with smart redirection
+     */
+    public function viewEnrollmentPeriodDetails($enrollmentPeriodId)
+    {
+        try {
+            $enrollmentPeriod = DB::table('enrolment_period')->where('id', $enrollmentPeriodId)->first();
+            if (!$enrollmentPeriod) {
+                return redirect()->route('superadmin.policy.enrollment-lists.index')
+                    ->with('message', 'Enrollment period not found.')
+                    ->with('messageType', 'error');
+            }
+
+            // Redirect based on creation_status
+            switch ($enrollmentPeriod->creation_status) {
+                case 1:
+                    // Redirect to select employees
+                    return redirect()->route('superadmin.select-employees-for-portal', $enrollmentPeriod->id);
+                case 2:
+                    // Redirect to live portal
+                    return redirect()->route('superadmin.view-live-portal', $enrollmentPeriod->id);
+                default:
+                    // Fallback to enrollment details
+                    return redirect()->route('superadmin.policy.enrollment-details', $enrollmentPeriod->enrolment_id);
+            }
+        } catch (\Exception $e) {
+            Log::error('View enrollment period details failed: ' . $e->getMessage());
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Failed to load enrollment period details.')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Open new enrollment portal
+     */
+    public function openEnrollmentPortal($id)
+    {
+        try {
+            // Get the enrollment details
+            $enrollmentDetail = EnrollmentDetail::with('company')->findOrFail($id);
+            return Inertia::render('superadmin/policy/OpenEnrollmentPortal', [
+                'enrollmentDetail' => $enrollmentDetail
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Open enrollment portal failed: ' . $e->getMessage());
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Failed to open enrollment portal.')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Create a new enrollment period
+     */
+    public function createEnrollmentPeriod(Request $request, $id)
+    {
+        try {
+
+            // Validate the request
+            $validated = $request->validate([
+                'enrolment_portal_name' => 'required|string|max:255',
+                'portal_start_date' => 'required|date',
+                'portal_end_date' => 'required|date|after:portal_start_date',
+            ]);
+
+            // Get the enrollment detail
+            $enrollmentDetail = EnrollmentDetail::findOrFail($id);
+
+            // Create the enrollment period
+            $enrollmentPeriod = new \App\Models\EnrollmentPeriod();
+            $enrollmentPeriod->enrolment_id = $enrollmentDetail->id;
+            $enrollmentPeriod->cmp_id = $enrollmentDetail->cmp_id;
+            $enrollmentPeriod->enrolment_portal_name = $validated['enrolment_portal_name'];
+            $enrollmentPeriod->portal_start_date = $validated['portal_start_date'];
+            $enrollmentPeriod->portal_end_date = $validated['portal_end_date'];
+            $enrollmentPeriod->creation_status = 1;
+            $enrollmentPeriod->is_active = 1;
+            $enrollmentPeriod->is_delete = 0;
+            $enrollmentPeriod->save();
+
+            // Redirect to select employees page
+            return redirect()->route('superadmin.select-employees-for-portal', $enrollmentPeriod->id)
+                ->with('message', 'Enrollment portal created successfully!')
+                ->with('messageType', 'success');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Create enrollment period failed: ' . $e->getMessage());
+            return back()
+                ->with('message', 'Failed to create enrollment period. Please try again.')
+                ->with('messageType', 'error')
+                ->withInput();
+        }
+    }
+
+    /**
+     * Show select employees for portal page
+     */
+    public function selectEmployeesForPortal($enrollmentPeriodId)
+    {
+        try {
+            // Get the enrollment period with related data
+            $enrollmentPeriod = \App\Models\EnrollmentPeriod::with(['enrollmentDetail.company'])->findOrFail($enrollmentPeriodId);
+            // Get enrollment details
+            $enrollmentDetail = $enrollmentPeriod->enrollmentDetail;
+            // Get family definition from enrollment details
+            $familyDefinition = is_string($enrollmentDetail->family_defination)
+                ? json_decode($enrollmentDetail->family_defination, true)
+                : $enrollmentDetail->family_defination;
+
+            // Get grade exclusions from enrollment details
+            $gradeExclusions = is_string($enrollmentDetail->grade_exclude)
+                ? json_decode($enrollmentDetail->grade_exclude, true)
+                : $enrollmentDetail->grade_exclude;
+            $gradeExclusions = $gradeExclusions ?? [];
+
+            // Get currently mapped employees for THIS specific enrollment period
+            $currentPortalMappedIds = \DB::table('enrolment_mapping_master')
+                ->where('enrolment_id', $enrollmentPeriod->enrolment_id)
+                ->where('status', 1)
+                ->where('enrolment_period_id', $enrollmentPeriod->id)
+                ->where('cmp_id', $enrollmentPeriod->cmp_id)
+                ->pluck('emp_id')
+                ->toArray();
+
+            // Get employees mapped to ANY portal of this enrollment (for exclusion in edit mode)
+            $allEnrollmentMappedIds = \DB::table('enrolment_mapping_master')
+                ->where('enrolment_id', $enrollmentPeriod->enrolment_id)
+                ->where('status', 1)
+                ->where('cmp_id', $enrollmentPeriod->cmp_id)
+                ->pluck('emp_id')
+                ->toArray();
+
+            // Start building the query for employees
+            $query = \DB::table('company_employees')
+                ->select([
+                    'company_employees.*',
+                    \DB::raw("CASE WHEN company_employees.id IN (" .
+                        (empty($currentPortalMappedIds) ? "0" : implode(',', $currentPortalMappedIds)) .
+                        ") THEN 'true' ELSE 'false' END as is_mapped_in_enrolment_id")
+                ])
+                ->where('company_employees.is_delete', 0)
+                ->where('company_employees.company_id', $enrollmentPeriod->cmp_id);
+
+            // For creation_status = 1 (first time), exclude all already mapped employees
+            // For creation_status = 2 (editing), exclude employees mapped to OTHER portals, but include current portal employees
+            if ($enrollmentPeriod->creation_status == 1) {
+                // First time: exclude all mapped employees
+                if (!empty($allEnrollmentMappedIds)) {
+                    $query->whereNotIn('company_employees.id', $allEnrollmentMappedIds);
+                }
+            } else {
+                // Edit mode: exclude employees mapped to other portals, keep current portal employees
+                $otherPortalMappedIds = array_diff($allEnrollmentMappedIds, $currentPortalMappedIds);
+                if (!empty($otherPortalMappedIds)) {
+                    $query->whereNotIn('company_employees.id', $otherPortalMappedIds);
+                }
+            }
+            // Apply family definition filters if self is enabled
+            if (isset($familyDefinition['self']) && $familyDefinition['self'] == '1') {
+                // Calculate age range
+                $minAgeYears = (int)($familyDefinition['self_min_age'] ?? 18);
+                $maxAgeYears = (int)($familyDefinition['self_max_age'] ?? 65);
+
+                $minAgeDate = now()->subYears($minAgeYears)->format('Y-m-d');
+                $maxAgeDate = now()->subYears($maxAgeYears)->format('Y-m-d');
+
+                // Apply age filters
+                $query->where('dob', '<', $minAgeDate)
+                    ->where('dob', '>', $maxAgeDate);
+
+                // Apply gender filters
+                $selfGender = $familyDefinition['self_gender'] ?? 'all';
+                if ($selfGender === 'both') {
+                    $query->whereIn('gender', ['male', 'female', 'other']);
+                } elseif ($selfGender === 'all') {
+                    // No gender restriction
+                } elseif (in_array($selfGender, ['male', 'female', 'other'])) {
+                    $query->where('gender', $selfGender);
+                }
+            }
+            // Apply grade exclusions
+            if (!empty($gradeExclusions)) {
+                // Handle both "A BAND" and "A" formats by checking both forms
+                $gradeExclusionPatterns = [];
+                foreach ($gradeExclusions as $grade) {
+                    $gradeExclusionPatterns[] = $grade;
+                    // If it contains "BAND", also try without "BAND"
+                    if (strpos($grade, ' BAND') !== false) {
+                        $gradeExclusionPatterns[] = str_replace(' BAND', '', $grade);
+                    } else {
+                        // If it doesn't contain "BAND", also try with "BAND"
+                        $gradeExclusionPatterns[] = $grade . ' BAND';
+                    }
+                }
+
+                $query->whereNotIn('grade', array_unique($gradeExclusionPatterns));
+            }
+
+            // Execute query and get results
+            $employees = $query->orderBy('is_mapped_in_enrolment_id', 'desc')->get();
+
+            return Inertia::render('superadmin/policy/SelectEmployeesForPortal', [
+                'enrollmentPeriod' => $enrollmentPeriod,
+                'unmappedEmployees' => $employees, // All employees (mapped and unmapped)
+                'mappedEmployeeIds' => $currentPortalMappedIds, // IDs of currently selected employees
+                'familyDefinition' => $familyDefinition,
+                'gradeExclusions' => $gradeExclusions,
+                'debugInfo' => [
+                    'sampleGrades' => DB::table('company_employees')
+                        ->where('is_delete', 0)
+                        ->whereNotNull('grade')
+                        ->distinct()
+                        ->pluck('grade')
+                        ->take(20)
+                        ->toArray(),
+                    'gradeExclusions' => $gradeExclusions,
+                    'gradeExclusionPatterns' => isset($gradeExclusionPatterns) ? $gradeExclusionPatterns : []
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Select employees for portal failed: ' . $e->getMessage());
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Failed to load employee selection page.')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Handle employee mapping to enrollment portal (matches CodeIgniter logic)
+     */
+    public function employeeMapping(Request $request)
+    {
+        try {
+
+            $validatedData = $request->validate([
+                'office' => 'required|array|min:1',
+                'office.*' => 'integer|exists:company_employees,id',
+                'portal_id' => 'required|integer|exists:enrolment_period,id',
+                'enrolment_id' => 'required|integer'
+            ]);
+
+            $employees = $validatedData['office'];
+            $portalId = $validatedData['portal_id'];
+            $enrolmentId = $validatedData['enrolment_id'];
+
+            $enrollmentPeriod = \App\Models\EnrollmentPeriod::with(['enrollmentDetail.company'])->findOrFail($portalId);
+
+            // Step 1: Set status = 0 for existing mappings with this portal and enrollment
+            DB::table('enrolment_mapping_master')
+                ->where('enrolment_period_id', $portalId)
+                ->where('enrolment_id', $enrolmentId)
+                ->update(['status' => 0, 'updated_at' => now()]);
+
+            // Step 2: Process each selected employee
+            foreach ($employees as $employeeId) {
+                // Check if employee has any mapping for this enrollment (any period)
+                $existingMapping = DB::table('enrolment_mapping_master')
+                    ->where('enrolment_id', $enrolmentId)
+                    ->where('emp_id', $employeeId)
+                    ->first();
+
+                if ($existingMapping) {
+                    // Update existing mapping to active
+                    DB::table('enrolment_mapping_master')
+                        ->where('enrolment_id', $enrolmentId)
+                        ->where('emp_id', $employeeId)
+                        ->update(['status' => 1, 'enrolment_period_id' => $portalId, 'updated_at' => now()]);
+
+                    // If no current mapping exists, continue (don't create new one)
+                } else {
+                    // Employee doesn't exist in enrollment, create new mapping
+                    DB::table('enrolment_mapping_master')->insert([
+                        'emp_id' => $employeeId,
+                        'cmp_id' =>  $enrollmentPeriod->cmp_id, // Default to 1 if no session
+                        'enrolment_id' => $enrolmentId,
+                        'enrolment_period_id' => $portalId,
+                        'submit_status' => 0,
+                        'view_status' => 0,
+                        'status' => 1,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+            }
+
+            // Step 3: Get enrollment portal and check creation status
+            $enrollmentPeriod = DB::table('enrolment_period')->where('id', $portalId)->first();
+
+            if ($enrollmentPeriod->creation_status > 1) {
+                // Redirect to view live portal
+                return redirect()->route('superadmin.view-live-portal', $enrollmentPeriod->id)
+                    ->with('message', 'Employees successfully assigned!')
+                    ->with('messageType', 'success');
+            } else {
+                // Update creation status to 2 and redirect to view live portal
+                DB::table('enrolment_period')
+                    ->where('id', $portalId)
+                    ->update(['creation_status' => 2, 'updated_at' => now()]);
+
+                return redirect()->route('superadmin.view-live-portal', $enrollmentPeriod->id)
+                    ->with('message', 'Employees successfully assigned!')
+                    ->with('messageType', 'success');
+            }
+        } catch (\Exception $e) {
+
+            Log::error('Employee mapping failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to assign employees. Please try again.')
+                ->with('messageType', 'error')
+                ->withInput();
+        }
+    }
+
+    /**
+     * View live enrollment portal (matches CodeIgniter logic)
+     */
+    public function viewLivePortal($enrollmentPeriodId)
+    {
+        try {
+            $enrollmentPeriod = DB::table('enrolment_period')->where('id', $enrollmentPeriodId)->first();
+
+            if (!$enrollmentPeriod) {
+                return redirect()->route('superadmin.policy.enrollment-lists.index')
+                    ->with('message', 'Enrollment portal not found.')
+                    ->with('messageType', 'error');
+            }
+
+            $enrollmentDetail = DB::table('enrolment_details')->where('id', $enrollmentPeriod->enrolment_id)->first();
+
+            // Handle creation status redirects
+            switch ($enrollmentPeriod->creation_status) {
+                case 1:
+                    return redirect()->route('superadmin.select-employees-for-portal', $enrollmentPeriod->id);
+                case 2:
+                    // Continue to show portal (send mailers page would be here)
+                    break;
+            }
+
+
+            // Get total selected employees count
+            $totalSelectedEmployees = DB::select("
+                SELECT COUNT(*) AS count
+                FROM enrolment_mapping_master
+                INNER JOIN company_employees ON enrolment_mapping_master.emp_id = company_employees.id
+                WHERE enrolment_mapping_master.status = 1
+                AND enrolment_mapping_master.enrolment_id = ?
+                AND enrolment_mapping_master.enrolment_period_id = ?
+                AND company_employees.is_delete = 0
+            ", [$enrollmentDetail->id, $enrollmentPeriod->id]);
+            // Get total enrolled employees count
+            $totalEnrolledEmployees = DB::select("
+                SELECT COUNT(*) AS count
+                FROM enrolment_mapping_master
+                INNER JOIN company_employees ON enrolment_mapping_master.emp_id = company_employees.id
+                WHERE enrolment_mapping_master.status = 1
+                AND enrolment_mapping_master.enrolment_id = ?
+                AND enrolment_mapping_master.enrolment_period_id = ?
+                AND company_employees.is_delete = 0
+                AND enrolment_mapping_master.submit_status = 1
+            ", [$enrollmentDetail->id, $enrollmentPeriod->id]);
+
+            // Get employee list with enrollment status
+            $employees = DB::select("
+                SELECT
+                    ce.id,
+                    ce.employees_code,
+                    ce.full_name,
+                    ce.email,
+                    ce.gender,
+                    ce.designation,
+                    ce.grade,
+                    emm.submit_status,
+                    emm.view_status,
+                    CASE
+                        WHEN emm.submit_status = 1 THEN 'ENROLLED'
+                        WHEN emm.view_status = 1 THEN 'VISITED'
+                        ELSE 'NOT VISITED'
+                    END as status
+                FROM enrolment_mapping_master emm
+                INNER JOIN company_employees ce ON emm.emp_id = ce.id
+                WHERE emm.status = 1
+                AND emm.enrolment_id = ?
+                AND emm.enrolment_period_id = ?
+                AND ce.is_delete = 0
+                ORDER BY ce.full_name
+            ", [$enrollmentDetail->id, $enrollmentPeriod->id]);
+
+            return Inertia::render('superadmin/policy/ViewLivePortal', [
+                'enrollmentPeriod' => $enrollmentPeriod,
+                'enrollmentDetail' => $enrollmentDetail,
+                'totalSelectedEmployees' => $totalSelectedEmployees[0]->count ?? 0,
+                'totalEnrolledEmployees' => $totalEnrolledEmployees[0]->count ?? 0,
+                'employees' => $employees
+            ]);
+        } catch (\Exception $e) {
+            Log::error('View live portal failed: ' . $e->getMessage());
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Failed to load enrollment portal.')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Show enrollment period details
+     */
+    public function enrollmentPeriodDetails($enrollmentPeriodId)
+    {
+        try {
+            $enrollmentPeriod = \App\Models\EnrollmentPeriod::with(['enrollmentDetail.company'])->findOrFail($enrollmentPeriodId);
+
+            return Inertia::render('superadmin/policy/EnrollmentPeriodDetails', [
+                'enrollmentPeriod' => $enrollmentPeriod
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Enrollment period details failed: ' . $e->getMessage());
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Failed to load enrollment period details.')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Show edit enrollment period form
+     */
+    public function editEnrollmentPeriod($enrollmentPeriodId)
+    {
+        try {
+            $enrollmentPeriod = \App\Models\EnrollmentPeriod::with(['enrollmentDetail.company'])->findOrFail($enrollmentPeriodId);
+            $enrollmentDetail = $enrollmentPeriod->enrollmentDetail;
+
+            // Format dates for HTML date inputs (YYYY-MM-DD)
+            $enrollmentPeriod->portal_start_date = $enrollmentPeriod->portal_start_date ?
+                date('Y-m-d', strtotime($enrollmentPeriod->portal_start_date)) : '';
+            $enrollmentPeriod->portal_end_date = $enrollmentPeriod->portal_end_date ?
+                date('Y-m-d', strtotime($enrollmentPeriod->portal_end_date)) : '';
+
+            return Inertia::render('superadmin/policy/EditEnrollmentPeriod', [
+                'enrollmentPeriod' => $enrollmentPeriod,
+                'enrollmentDetail' => $enrollmentDetail
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Edit enrollment period failed: ' . $e->getMessage());
+            return redirect()->route('superadmin.policy.enrollment-lists.index')
+                ->with('message', 'Failed to load enrollment period for editing.')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Update enrollment period
+     */
+    public function updateEnrollmentPeriod(Request $request, $enrollmentPeriodId)
+    {
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'enrolment_portal_name' => 'required|string|max:255',
+                'portal_start_date' => 'required|date',
+                'portal_end_date' => 'required|date|after:portal_start_date',
+            ]);
+
+            // Find the enrollment period
+            $enrollmentPeriod = \App\Models\EnrollmentPeriod::findOrFail($enrollmentPeriodId);
+
+            // Update the enrollment period
+            $enrollmentPeriod->enrolment_portal_name = $validated['enrolment_portal_name'];
+            $enrollmentPeriod->portal_start_date = $validated['portal_start_date'];
+            $enrollmentPeriod->portal_end_date = $validated['portal_end_date'];
+            $enrollmentPeriod->save();
+
+            return redirect()->route('superadmin.view-live-portal', $enrollmentPeriod->id)
+                ->with('message', 'Enrollment portal period updated successfully!')
+                ->with('messageType', 'success');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Update enrollment period failed: ' . $e->getMessage());
+            return back()
+                ->with('message', 'Failed to update enrollment period. Please try again.')
+                ->with('messageType', 'error')
+                ->withInput();
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////// Policy Module ////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Show fill enrollment form
+     */
+    public function fillEnrollment($enrollmentPeriodId, $employeeId)
+    {
+        try {
+
+            // Get the enrollment period with related data
+            $enrollmentPeriod = \App\Models\EnrollmentPeriod::with([
+                'enrollmentDetail',
+            ])->findOrFail($enrollmentPeriodId);
+            // Get the employee
+            $employee = \App\Models\CompanyEmployee::findOrFail($employeeId);
+
+            // Get enrollment detail and config
+            $enrollmentDetail = $enrollmentPeriod->enrollmentDetail;
+
+            // Parse family definition from enrollment detail JSON
+            $familyDefinitionJson = is_string($enrollmentDetail->family_defination)
+                ? json_decode($enrollmentDetail->family_defination, true)
+                : $enrollmentDetail->family_defination;
+
+            $familyDefinition = [
+                'self' => [
+                    'enabled' => ($familyDefinitionJson['self'] ?? '0') === '1',
+                    'no' => $familyDefinitionJson['self_no'] ?? 1,
+                    'min_age' => $familyDefinitionJson['self_min_age'] ?? 18,
+                    'max_age' => $familyDefinitionJson['self_max_age'] ?? 65,
+                    'gender' => $familyDefinitionJson['self_gender'] ?? 'both'
+                ],
+                'spouse' => [
+                    'enabled' => ($familyDefinitionJson['spouse'] ?? '0') === '1',
+                    'no' => $familyDefinitionJson['spouse_no'] ?? 1,
+                    'min_age' => $familyDefinitionJson['spouse_min_age'] ?? 18,
+                    'max_age' => $familyDefinitionJson['spouse_max_age'] ?? 65,
+                    'gender' => $familyDefinitionJson['spouse_gender'] ?? 'both'
+                ],
+                'kid' => [
+                    'enabled' => ($familyDefinitionJson['kid'] ?? '0') === '1',
+                    'no' => $familyDefinitionJson['kid_no'] ?? 2,
+                    'min_age' => $familyDefinitionJson['kid_min_age'] ?? 0,
+                    'max_age' => $familyDefinitionJson['kid_max_age'] ?? 25,
+                    'gender' => $familyDefinitionJson['kid_gender'] ?? 'both'
+                ],
+                'parent' => [
+                    'enabled' => ($familyDefinitionJson['parent'] ?? '0') === '1',
+                    'no' => $familyDefinitionJson['parent_no'] ?? 2,
+                    'min_age' => $familyDefinitionJson['parent_min_age'] ?? 45,
+                    'max_age' => $familyDefinitionJson['parent_max_age'] ?? 80,
+                    'gender' => $familyDefinitionJson['parent_gender'] ?? 'both'
+                ],
+                'parent_in_law' => [
+                    'enabled' => ($familyDefinitionJson['parent_in_law'] ?? '0') === '1',
+                    'no' => $familyDefinitionJson['parent_in_law_no'] ?? 2,
+                    'min_age' => $familyDefinitionJson['parent_in_law_min_age'] ?? 45,
+                    'max_age' => $familyDefinitionJson['parent_in_law_max_age'] ?? 80,
+                    'gender' => $familyDefinitionJson['parent_in_law_gender'] ?? 'both'
+                ],
+                'sibling' => [
+                    'enabled' => ($familyDefinitionJson['sibling'] ?? '0') === '1',
+                    'no' => $familyDefinitionJson['sibling_no'] ?? 2,
+                    'min_age' => $familyDefinitionJson['sibling_min_age'] ?? 18,
+                    'max_age' => $familyDefinitionJson['sibling_max_age'] ?? 65,
+                    'gender' => $familyDefinitionJson['sibling_gender'] ?? 'both'
+                ],
+                'partners' => [
+                    'enabled' => ($familyDefinitionJson['partners'] ?? '0') === '1',
+                    'no' => $familyDefinitionJson['partners_no'] ?? 1,
+                    'min_age' => $familyDefinitionJson['partners_min_age'] ?? 18,
+                    'max_age' => $familyDefinitionJson['partners_max_age'] ?? 65,
+                    'gender' => $familyDefinitionJson['partners_gender'] ?? 'both'
+                ],
+                'others' => [
+                    'enabled' => ($familyDefinitionJson['others'] ?? '0') === '1',
+                    'no' => $familyDefinitionJson['others_no'] ?? 2,
+                    'min_age' => $familyDefinitionJson['others_min_age'] ?? 18,
+                    'max_age' => $familyDefinitionJson['others_max_age'] ?? 65,
+                    'gender' => $familyDefinitionJson['others_gender'] ?? 'both'
+                ]
+            ];
+
+            // Parse rating config to get available plans
+            $ratingConfigJson = is_string($enrollmentDetail->rating_config)
+                ? json_decode($enrollmentDetail->rating_config, true)
+                : $enrollmentDetail->rating_config;
+
+            $availablePlans = [
+                'basePlans' => [],
+                'topupPlans' => []
+            ];
+
+            if (isset($ratingConfigJson['plans']) && is_array($ratingConfigJson['plans'])) {
+                foreach ($ratingConfigJson['plans'] as $plan) {
+                    $planData = [
+                        'id' => $plan['id'] ?? 0,
+                        'plan_name' => $plan['plan_name'] ?? 'Unknown Plan',
+                        'sum_insured' => (int)($plan['sum_insured'] ?? 0),
+                        'premium_amount' => (int)($plan['premium_amount'] ?? 0),
+                        'employee_premium' => (int)($plan['premium_amount'] ?? 0),
+                        'company_premium' => 0, // Default to 0, can be configured
+                        'description' => $plan['description'] ?? 'Health insurance plan',
+                        'age_brackets' => $plan['age_brackets'] ?? []
+                    ];
+
+                    // For now, treat all plans as base plans
+                    // You can add logic here to differentiate between base and topup plans
+                    $availablePlans['basePlans'][] = $planData;
+                }
+            }
+
+            // Parse extra coverage plans
+            $extraCoveragePlansJson = is_string($enrollmentDetail->extra_coverage_plans)
+                ? json_decode($enrollmentDetail->extra_coverage_plans, true)
+                : $enrollmentDetail->extra_coverage_plans;
+
+            $extraCoveragePlans = [];
+
+            if (is_array($extraCoveragePlansJson)) {
+                foreach ($extraCoveragePlansJson as $extraPlan) {
+                    $extraCoverageData = [
+                        'id' => $extraPlan['id'] ?? 0,
+                        'plan_name' => $extraPlan['plan_name'] ?? 'Extra Coverage Plan',
+                        'premium' => (int)($extraPlan['premium_amount'] ?? 0),
+                        'employee_contribution' => (int)($extraPlan['premium_amount'] ?? 0),
+                        'description' => $extraPlan['description'] ?? 'Additional insurance coverage',
+                        'coverage_type' => $extraPlan['coverage_type'] ?? 'Additional Coverage',
+                        'features' => [],
+                        'waiting_period' => $extraPlan['waiting_period'] ?? '30 days',
+                        'pre_existing_coverage' => $extraPlan['pre_existing_coverage'] ?? 'After waiting period',
+                        'cashless_hospitals' => $extraPlan['cashless_hospitals'] ?? 'Network hospitals',
+                        'claim_settlement_ratio' => $extraPlan['claim_settlement_ratio'] ?? '95%'
+                    ];
+
+                    // Parse extra coverages like co_pay, maternity, room_rent
+                    if (isset($extraPlan['extra_coverages']) && is_array($extraPlan['extra_coverages'])) {
+                        foreach ($extraPlan['extra_coverages'] as $coverageType => $coverage) {
+                            if (isset($coverage['enabled']) && $coverage['enabled']) {
+                                $extraCoverageData['features'][] = ucfirst(str_replace('_', ' ', $coverageType)) .
+                                    ': ₹' . number_format($coverage['amount'] ?? 0);
+                            }
+                        }
+                    }
+
+                    if (empty($extraCoverageData['features'])) {
+                        $extraCoverageData['features'] = ['Additional health benefits'];
+                    }
+
+                    $extraCoveragePlans[] = $extraCoverageData;
+                }
+            }
+
+            // Parse enrollment statements
+            $enrollmentStatementsJson = is_string($enrollmentDetail->enrollment_statements)
+                ? json_decode($enrollmentDetail->enrollment_statements, true)
+                : $enrollmentDetail->enrollment_statements;
+
+            $enrollmentStatements = is_array($enrollmentStatementsJson) ? $enrollmentStatementsJson : [];
+
+            return Inertia::render('superadmin/policy/FillEnrollment', [
+                'enrollmentPeriod' => $enrollmentPeriod,
+                'enrollmentDetail' => $enrollmentDetail,
+                'employee' => $employee,
+                'familyDefinition' => $familyDefinition,
+                'availablePlans' => $availablePlans,
+                'extraCoveragePlans' => $extraCoveragePlans,
+                'enrollmentStatements' => $enrollmentStatements
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Fill enrollment page failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to load enrollment form. Please try again.')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Submit enrollment data
+     */
+    public function submitEnrollment(Request $request)
+    {
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'employee_id' => 'required|integer',
+                'enrollment_period_id' => 'required|integer',
+                'enrollment_detail_id' => 'required|integer',
+                'enrollment_config_id' => 'nullable|integer',
+                'dependents' => 'array',
+                'selectedPlans' => 'required|array',
+                'extraCoverage' => 'nullable|array',
+                'premiumCalculations' => 'required|array'
+            ]);
+
+            DB::beginTransaction();
+
+            // Get employee and enrollment data
+            $employee = \App\Models\CompanyEmployee::findOrFail($validated['employee_id']);
+            $enrollmentPeriod = \App\Models\EnrollmentPeriod::findOrFail($validated['enrollment_period_id']);
+
+            // Save enrollment data for employee
+            $this->saveEnrollmentData(
+                $employee,
+                $validated,
+                'SELF',
+                $validated['selectedPlans']['employee'] ?? null
+            );
+
+            // Save enrollment data for dependents
+            if (!empty($validated['dependents'])) {
+                foreach ($validated['dependents'] as $dependent) {
+                    $this->saveEnrollmentData(
+                        $employee,
+                        $validated,
+                        $dependent['relation'],
+                        $validated['selectedPlans'][$dependent['id']] ?? null,
+                        $dependent
+                    );
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('superadmin.view-live-portal', $validated['enrollment_period_id'])
+                ->with('message', 'Enrollment submitted successfully!')
+                ->with('messageType', 'success');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Submit enrollment failed: ' . $e->getMessage());
+            return back()
+                ->with('message', 'Failed to submit enrollment. Please try again.')
+                ->with('messageType', 'error')
+                ->withInput();
+        }
+    }
+
+    /**
+     * Save enrollment data for a member
+     */
+    private function saveEnrollmentData($employee, $formData, $relation, $selectedPlans = null, $dependent = null)
+    {
+        // Create enrollment data record
+        $enrollmentData = new \App\Models\EnrollmentData();
+
+        // Basic information
+        $enrollmentData->emp_id = $employee->id;
+        $enrollmentData->cmp_id = $employee->company_id;
+        $enrollmentData->enrolment_id = $formData['enrollment_detail_id'];
+        $enrollmentData->enrolment_portal_id = $formData['enrollment_period_id'];
+
+        // Member information
+        if ($relation === 'SELF') {
+            $enrollmentData->insured_name = $employee->full_name;
+            $enrollmentData->gender = $employee->gender;
+            $enrollmentData->dob = $employee->date_of_birth;
+            $enrollmentData->date_of_joining = $employee->date_of_joining;
+        } else {
+            $enrollmentData->insured_name = $dependent['insured_name'];
+            $enrollmentData->gender = $dependent['gender'];
+            $enrollmentData->dob = $dependent['dob'];
+        }
+
+        $enrollmentData->relation = $relation;
+        $enrollmentData->detailed_relation = $dependent['detailed_relation'] ?? $relation;
+
+        // Premium calculations
+        $premiumCalc = $formData['premiumCalculations'];
+
+        if ($selectedPlans && isset($selectedPlans['basePlan'])) {
+            // Calculate base premium for this member (simplified calculation)
+            $basePremium = $this->calculatePlanPremium($selectedPlans['basePlan'], 'base');
+            $enrollmentData->base_premium_on_employee = $basePremium['employee'];
+            $enrollmentData->base_premium_on_company = $basePremium['company'];
+            $enrollmentData->base_sum_insured = $basePremium['sum_insured'];
+        }
+
+        if ($selectedPlans && isset($selectedPlans['topupPlan'])) {
+            // Calculate topup premium for this member
+            $topupPremium = $this->calculatePlanPremium($selectedPlans['topupPlan'], 'topup');
+            $enrollmentData->topup_premium_on_employee = $topupPremium['employee'];
+            $enrollmentData->topup_premium_on_company = $topupPremium['company'];
+            $enrollmentData->topup_sum_insured = $topupPremium['sum_insured'];
+        }
+
+        // Extra coverage (only for employee)
+        if ($relation === 'SELF' && !empty($formData['extraCoverage'])) {
+            $enrollmentData->extra_coverage_plan = $formData['extraCoverage']['plan_name'];
+            $enrollmentData->extra_coverage_premium = $formData['extraCoverage']['premium'] ?? 0;
+        }
+
+        // System fields
+        $enrollmentData->created_by = 'SuperAdmin';
+        $enrollmentData->updated_by = 'SuperAdmin';
+
+        $enrollmentData->save();
+
+        return $enrollmentData;
+    }
+
+    /**
+     * Calculate premium for a specific plan
+     */
+    private function calculatePlanPremium($planId, $planType)
+    {
+        // This is a simplified calculation - in real implementation,
+        // you would fetch actual plan details from database
+        $planDetails = [
+            'base' => [
+                1 => ['employee' => 12000, 'company' => 8000, 'sum_insured' => 300000],
+                2 => ['employee' => 18000, 'company' => 12000, 'sum_insured' => 500000],
+            ],
+            'topup' => [
+                1 => ['employee' => 6000, 'company' => 0, 'sum_insured' => 200000],
+                2 => ['employee' => 12000, 'company' => 0, 'sum_insured' => 500000],
+            ]
+        ];
+
+        return $planDetails[$planType][$planId] ?? ['employee' => 0, 'company' => 0, 'sum_insured' => 0];
+    }
 }
