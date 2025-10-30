@@ -89,23 +89,25 @@ export default function SuperAdminLogin() {
     };
 
     return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-b from-[#E8D4B7] via-[#f7e9d0] to-[#934790] font-montserrat">
+        <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-b from-[#E8D4B7] via-[#f7e9d0] to-[#934790] font-montserrat">
             {/* left Side - Login Form */}
             <div className="w-full md:w-1/2 flex flex-col items-center justify-center px-4 py-8 sm:px-6 md:p-8">
-                <motion.div
-                    className="mb-6"
-                    initial={{ x: -100, opacity: 0 }}   // start off-screen left
-                    animate={{ x: 0, opacity: 1 }}      // slide into place
-                    transition={{ duration: 1, ease: "easeOut" }} // smooth
-                >
-                    <h1 className="text-5xl font-bold tracking-wide">
-                        <span className="text-[#FF0066]">Zoom</span>
-                        <span className="text-[#934790]">Connect</span>
-                    </h1>
 
-                </motion.div>
                 <div className="w-full max-w-md">
                     <div className="bg-white rounded-3xl p-8 shadow-lg">
+                        <motion.div
+                            className="mb-6 flex justify-center"
+                            initial={{ x: -100, opacity: 0 }}   // start off-screen left
+                            animate={{ x: 0, opacity: 1 }}      // slide into place
+                            transition={{ duration: 1, ease: "easeOut" }} // smooth
+                        >
+                            <img
+                                src="/assets/logo/ZoomConnect-logo.png"
+                                alt="ZoomConnect Logo"
+                                className="h-10 w-auto"
+                            />
+
+                        </motion.div>
 
                         <div className="space-y-4">
 

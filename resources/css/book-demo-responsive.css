@@ -1,0 +1,48 @@
+/* Responsive tweaks for Book Demo page */
+.book-demo-page {
+  /* base spacing adjustments if needed */
+}
+
+/* Stack the columns on tablet and smaller */
+@media (max-width: 1024px) {
+  .book-demo-page .book-demo-left {
+    position: relative !important;
+    top: auto !important;
+    padding: 2rem !important;
+    border-radius: 1rem !important;
+    order: 2;
+  }
+  .book-demo-page .book-demo-right {
+    order: 1;
+    margin-bottom: 1rem;
+    padding: 1.25rem !important;
+    border-radius: 1rem !important;
+  }
+  .book-demo-page .bg-gradient-to-br {
+    min-height: auto !important;
+  }
+}
+
+/* On very small screens, make left panel concise */
+@media (max-width: 640px) {
+  .book-demo-page .book-demo-left {
+    padding: 1.5rem !important;
+  }
+  .book-demo-page .book-demo-left h1,
+  .book-demo-page .book-demo-left h3 {
+    font-size: 1.25rem !important;
+  }
+  .book-demo-page .book-demo-right {
+    padding: 1rem !important;
+  }
+  .book-demo-page .bg-gradient-to-br .absolute {
+    display: none !important;
+  }
+}
+
+/* Improve form fields spacing */
+.book-demo-page input,
+.book-demo-page select,
+.book-demo-page textarea {
+  font-size: 0.96rem;
+}
