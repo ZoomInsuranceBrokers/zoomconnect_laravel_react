@@ -1,4 +1,11 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useTheme } from '../../Context/ThemeContext';
+import { FaLinkedinIn, FaInstagram, FaFacebookF, FaBars, FaTimes } from 'react-icons/fa';
+import { Link } from '@inertiajs/react';
 
 // FAQ data for ZoomConnect Employee Dashboard
 const faqs = [
@@ -45,13 +52,131 @@ const faqs = [
         answer: "Yes, security is our top priority. We implement industry-standard security measures to protect your personal and health information. Your data is encrypted and only authorized personnel can access it."
     }
 ];
-import React, { useState, useEffect } from 'react';
-import { useTheme } from '../../Context/ThemeContext';
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Certification Carousel Component
+const CertificationCarousel = () => {
+    const certifications = [
+        {
+            image: "/assets/logo/iso_logo-2022.png",
+            title: "ISO 27001:2022",
+            subtitle: "certified",
+            hasCircle: true
+        },
+        {
+            image: "/assets/logo/Best Insurance Broker of the Year.png",
+            title: "Best Insurance Broker of the Year",
+            subtitle: "Certified",
+            hasCircle: false
+        },
+        {
+            image: "/assets/logo/𝐁𝐞𝐬𝐭 𝐂𝐒𝐑 𝐈𝐧𝐢𝐭𝐢𝐚𝐭𝐢𝐯𝐞 𝐀𝐰𝐚𝐫𝐝.png",
+            title: "𝐁𝐞𝐬𝐭 𝐂𝐒𝐑 𝐈𝐧𝐢𝐭𝐢𝐚𝐭𝐢𝐯𝐞 Award",
+            subtitle: "Certified",
+            hasCircle: false
+        }
+    ];
+
+    return (
+        <section className="w-full relative mt-2 pb-0 bg-transparent overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#934790] to-[#571754] transform -skew-y-3 origin-top-right shadow-lg"></div>
+            <div className="relative z-10 container mx-auto flex flex-col md:flex-row gap-8 items-center min-w-[250px] px-8 pt-24 pb-12">
+                {/* Left: Compliance & Certification Heading */}
+                <div className="flex-1 flex items-center">
+                    <div>
+                        <h3 className="text-white text-lg md:text-xl font-semibold mb-2">Trust in our</h3>
+                        <div className="text-white text-xl md:text-3xl font-bold leading-tight mb-2">
+                            Compliance<br className="hidden md:block" />& Certification
+                        </div>
+                        <div className="text-white text-lg md:text-xl font-medium max-w-xl">
+                            when it comes to managing your employee benefits.
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right: Scrolling Carousel */}
+                <div className="flex-[2] relative overflow-hidden">
+                    <style>{`
+                        @keyframes scroll-left {
+                            0% {
+                                transform: translateX(0);
+                            }
+                            100% {
+                                transform: translateX(-33.333%);
+                            }
+                        }
+                        .animate-scroll {
+                            animation: scroll-left 10s linear infinite;
+                        }
+                        .animate-scroll:hover {
+                            animation-play-state: paused;
+                        }
+                    `}</style>
+                    
+                    <div className="flex gap-8 animate-scroll">
+                        {/* Render certifications 3 times for seamless loop */}
+                        {[...certifications, ...certifications, ...certifications].map((cert, index) => (
+                            <div 
+                                key={index} 
+                                className="flex flex-col items-center justify-center flex-shrink-0 transform transition-all duration-300 min-w-[200px] h-[280px]"
+                            >
+                                <div className="flex flex-col items-center justify-start h-full">
+                                    {cert.hasCircle ? (
+                                        <div className="bg-white rounded-full p-4 md:p-2 shadow-lg hover:shadow-xl mb-4">
+                                            <img
+                                                src={cert.image}
+                                                alt={cert.title}
+                                                className="w-18 h-18 md:w-20 md:h-20 object-contain"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="mb-4 flex items-center justify-center" style={{ height: '96px' }}>
+                                            <img 
+                                                src={cert.image} 
+                                                alt={cert.title} 
+                                                className="w-16 h-16 md:w-20 md:h-20" 
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="text-white text-lg md:text-xl font-bold mb-1 text-center">{cert.title}</div>
+                                    <div className="text-white text-base md:text-lg font-medium text-center">{cert.subtitle}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
 
 export default function Home() {
     // FAQ accordion state
     const [openFaqIdx, setOpenFaqIdx] = useState(null);
     const { darkMode, toggleDarkMode } = useTheme();
+    
+    // Trusted Companies Logos
+    const trustedCompanies = [
+        { name: 'Wipro', logo: '/assets/logo/Gray logo/Wipro-01.png', height: 'h-12' },
+        { name: 'Panasonic', logo: '/assets/logo/Gray logo/Panasonic-01.png', height: 'h-12' },
+        { name: 'Sasken', logo: '/assets/logo/Gray logo/Sasken-01.png', height: 'h-12' },
+        { name: 'Munjal Showa', logo: '/assets/logo/Gray logo/Munjal Showa-01.png', height: 'h-12' },
+        { name: 'JBM Group', logo: '/assets/logo/Gray logo/JBM group-01.png', height: 'h-12' },
+        { name: 'Orient Bell', logo: '/assets/logo/Gray logo/Orientbell-01.png', height: 'h-20' },
+        { name: 'Sindhuja', logo: '/assets/logo/Gray logo/Sindhuja-01.png', height: 'h-12' },
+        { name: 'Hamdard', logo: '/assets/logo/Gray logo/Hamdard-01.png', height: 'h-12' },
+        { name: 'Vivo', logo: '/assets/logo/Gray logo/Vivo-01.png', height: 'h-12' },
+        { name: 'Paytm', logo: '/assets/logo/Gray logo/Paytm-01.png', height: 'h-12' },
+        { name: 'Novel Healthtech', logo: '/assets/logo/Gray logo/Novel Healthtech-01.png', height: 'h-12' },
+        { name: 'Lenskart', logo: '/assets/logo/Gray logo/Lenskart-01.png', height: 'h-12' },
+        { name: 'Lava', logo: '/assets/logo/Gray logo/Lava-01.png', height: 'h-12' },
+        { name: 'eClerx', logo: '/assets/logo/Gray logo/eClerx-01.png', height: 'h-12' },
+        { name: 'CCspl', logo: '/assets/logo/Gray logo/CCspl-01.png', height: 'h-12' },
+        { name: 'Apollo', logo: '/assets/logo/Gray logo/apollo logo-01.png', height: 'h-12' },
+        { name: 'Fusion', logo: '/assets/logo/Gray logo/Fusion-01.png', height: 'h-12' },
+    ];
+    
     // Testimonials data
     const testimonials = [
         {
@@ -97,6 +222,81 @@ export default function Home() {
             quote: 'I needed my health insurance e-card urgently during a hospital visit, and ZoomConnect saved the day. I downloaded it instantly through the app—no emails, no waiting. It’s so convenient to have everything I need right at my fingertips.'
         },
     ];
+
+    // Navigation links with dropdown items
+    const navLinks = [
+        { 
+            label: 'Product', 
+            href: '#product',
+            dropdownItems: [
+                { label: 'Group Medical Cover', href: '#gmc', description: 'Comprehensive health insurance for your entire team' },
+                { label: 'Group Accident Cover', href: '#gpa', description: 'Protection against unforeseen accidents and injuries' },
+                { label: 'Wellness Programs', href: '#wellness', description: 'Holistic wellness solutions for employee well-being' },
+                { label: 'Telehealth Services', href: '#telehealth', description: 'Virtual healthcare consultations anytime, anywhere' },
+            ]
+        },
+        { 
+            label: 'Experience', 
+            href: '#experience',
+            dropdownItems: [
+                { label: 'Employee Platform', href: '#employee', description: 'Easy-to-use dashboard for managing benefits' },
+                { label: 'Employer Platform', href: '#employer', description: 'Complete control and insights for HR teams' },
+                { label: 'Mobile App', href: '#mobile', description: 'Access your benefits on the go with our app' },
+            ]
+        },
+        { 
+            label: 'Solutions', 
+            href: '#solutions',
+            dropdownItems: [
+                { label: 'Small Teams', href: '#small-teams', description: 'Flexible plans designed for startups and SMEs' },
+                { label: 'Large Enterprises', href: '#large-teams', description: 'Scalable solutions for large organizations' },
+                { label: 'Hybrid Workforce', href: '#hybrid', description: 'Benefits that work for remote and on-site teams' },
+            ]
+        },
+        { 
+            label: 'Explore', 
+            href: '#explore',
+            dropdownItems: [
+                { label: 'Resources', href: '#resources', description: 'Guides, whitepapers, and helpful materials' },
+                { label: 'Blog', href: '#blog', description: 'Latest insights on employee benefits and wellness' },
+                { label: 'Case Studies', href: '#cases', description: 'Success stories from our clients' },
+                { label: 'FAQs', href: '#faq', description: 'Find answers to common questions' },
+            ]
+        },
+        { 
+            label: 'Company', 
+            href: '#company',
+            dropdownItems: [
+                { label: 'About Us', href: '#about', description: 'Learn about our mission and values' },
+                { label: 'Careers', href: '#careers', description: 'Join our growing team of professionals' },
+                { label: 'Contact', href: '#contact', description: 'Get in touch with our team' },
+            ]
+        },
+    ];
+
+    // Dropdown hover state
+    const [hoveredNav, setHoveredNav] = useState(null);
+    const [closeTimeout, setCloseTimeout] = useState(null);
+    
+    // Mobile menu state
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Handle smooth dropdown closing with delay
+    const handleMouseEnter = (label) => {
+        if (closeTimeout) {
+            clearTimeout(closeTimeout);
+            setCloseTimeout(null);
+        }
+        setHoveredNav(label);
+    };
+
+    const handleMouseLeave = () => {
+        const timeout = setTimeout(() => {
+            setHoveredNav(null);
+        }, 150); // 150ms delay before closing
+        setCloseTimeout(timeout);
+    };
+
     // Animation state
     const [activeIdx, setActiveIdx] = useState(0);
     useEffect(() => {
@@ -105,6 +305,56 @@ export default function Home() {
         }, 3500);
         return () => clearInterval(interval);
     }, [testimonials.length]);
+
+    // Scroll-triggered pinning and card reveals for the Beyond section
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const cards = gsap.utils.toArray('.card').map((card) =>
+            gsap.from(card, {
+                opacity: 0,
+                y: 40,
+                duration: 0.6,
+                ease: 'power2.out',
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top 80%',
+                    toggleActions: 'play none none reverse',
+                },
+            })
+        );
+
+        const mm = ScrollTrigger.matchMedia({
+            '(min-width: 1024px)': () => {
+                const section = document.querySelector('.beyond-group-section');
+                const left = section?.querySelector('.left-content');
+                const right = section?.querySelector('.right-content');
+
+                if (!section || !left || !right) return undefined;
+
+                const pinTrigger = ScrollTrigger.create({
+                    trigger: section,
+                    start: 'top top',
+                    end: () => `+=${Math.max(0, right.scrollHeight - window.innerHeight)}`,
+                    pin: left,
+                    scrub: true,
+                    anticipatePin: 1,
+                });
+
+                return () => pinTrigger.kill();
+            },
+        });
+
+        ScrollTrigger.refresh();
+
+        return () => {
+            cards.forEach((tween) => {
+                tween.scrollTrigger?.kill();
+                tween.kill();
+            });
+            mm.revert();
+        };
+    }, []);
     // Arc positions for 3 visible avatars
     const arcPositions = [
         { left: '-2px', top: '32px' }, // top
@@ -118,6 +368,29 @@ export default function Home() {
         return [prev, activeIdx, next];
     };
     const arcIndices = getArcIndices();
+
+
+
+    const socialLinks = [
+        {
+            label: 'LinkedIn',
+            href: 'https://www.linkedin.com/company/zoomconnect',
+            Icon: FaLinkedinIn,
+        },
+        {
+            label: 'Facebook',
+            href: 'https://www.facebook.com/zoomconnect',
+            Icon: FaFacebookF,
+        },
+        {
+            label: 'Instagram',
+            href: 'https://www.instagram.com/zoomconnect',
+            Icon: FaInstagram,
+        },
+    ];
+
+    const officeCities = ['Gurgaon', 'Bangalore', 'Kolkata', 'Pune', 'Mumbai', 'Chennai', 'Ahemdabad'];
+    const currentYear = new Date().getFullYear();
     return (
         <div className={`min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-hidden ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#efe4ef85] text-gray-900'}`}>
             {/* Starry background effect (simple SVG or CSS) */}
@@ -132,26 +405,104 @@ export default function Home() {
                 </svg>
             </div>
             {/* Header */}
-            <header className="fixed top-0 left-0 w-full flex justify-between items-center px-6 py-6 z-30  dark:bg-gray-900/40  backdrop-blur-lg dark:border-gray-800/60 ">
-                <div className="flex items-center">
-                    <img src="/assets/logo/ZoomConnect-logo.png" alt="ZoomConnect Logo" className="h-8 w-auto" />
-                </div>
-                <nav className="hidden md:flex gap-8 text-sm font-semibold">
-                    <a href="#product" className="hover:text-[#934790] transition">+ Product</a>
-                    <a href="#experience" className="hover:text-[#934790] transition">+ Experience</a>
-                    <a href="#solutions" className="hover:text-[#934790] transition">+ Solutions</a>
-                    <a href="#explore" className="hover:text-[#934790] transition">+ Explore</a>
-                    <a href="#company" className="hover:text-[#934790] transition">+ Company</a>
+            <header className={`fixed top-0 left-0 w-full flex justify-between items-center py-3 px-6 md:py-6 z-30 backdrop-blur-lg dark:border-gray-800/60 transition-all duration-500 ${
+                hoveredNav 
+                    ? 'bg-[#fff5e5] shadow-lg' 
+                    : 'dark:bg-gray-900/40 bg-transparent'
+            }`}>
+                <Link href="/" className="flex items-center">
+                    <img src="/assets/logo/ZoomConnect-logo.png" alt="ZoomConnect Logo" className="h-5 w-auto md:h-8 md:w-auto" />
+                </Link>
+                <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
+                    {navLinks.map(({ href, label, dropdownItems }) => (
+                        <div
+                            key={label}
+                            className="relative"
+                            onMouseLeave={handleMouseLeave}
+                        >
+                            <a
+                                href={href}
+                                className="relative inline-flex items-center pb-1 text-[0.75rem] uppercase tracking-[0.12em] text-[#432821] transition-all duration-300 before:content-['+'] before:mr-2 before:text-[#dd4b63] before:text-base before:transition-all before:duration-300 after:absolute after:left-0 after:-bottom-[0.35rem] after:h-[1px] after:w-0 after:bg-[#dd4b63] after:transition-all after:duration-300 hover:text-[#dd4b63] hover:before:content-['−'] hover:after:w-full focus-visible:outline-none"
+                                onMouseEnter={() => handleMouseEnter(label)}
+                            >
+                                {label}
+                            </a>
+                            
+                            {/* Full Screen Dropdown Menu */}
+                            {dropdownItems && (
+                                <div
+                                    className={`fixed left-0 right-0 top-[72px] min-h-[70vh] bg-[#fff5e5]  transition-all duration-300 shadow-md ${
+                                        hoveredNav === label
+                                            ? 'opacity-100 visible translate-y-0'
+                                            : 'opacity-0 invisible -translate-y-4'
+                                    }`}
+                                    style={{ 
+                                        zIndex: 40,
+                                        pointerEvents: hoveredNav === label ? 'auto' : 'none'
+                                    }}
+                                    onMouseEnter={() => handleMouseEnter(label)}
+                                >
+                                    <div className="container mx-auto px-6 py-12">
+                                        <div className="max-w-7xl mx-auto">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                                                {dropdownItems.map((item, idx) => (
+                                                    <a
+                                                        key={idx}
+                                                        href={item.href}
+                                                        className="group p-6 rounded-xl hover:bg-[#dd4b63]/5 transition-all duration-300 border border-transparent hover:border-[#dd4b63]/20"
+                                                    >
+                                                        <div className="flex items-start gap-4 ">
+                                                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#dd4b63]/10 flex items-center justify-center group-hover:bg-[#dd4b63] transition-colors duration-300">
+                                                                <span className="text-[#dd4b63] group-hover:text-white font-bold text-sm transition-colors duration-300">
+                                                                    {idx + 1}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <h3 className="text-base font-semibold text-gray-800 group-hover:text-[#dd4b63] transition-colors duration-300 mb-2">
+                                                                    {item.label}
+                                                                </h3>
+                                                                <p className="text-sm text-gray-600 leading-relaxed">
+                                                                    {item.description || 'Explore our comprehensive solutions'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                            
+                                            {/* Optional CTA at the bottom */}
+                                            <div className="mt-10 py-8 border-t border-gray-200 absolute bottom-0 left-16 right-10 px-6">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <h4 className="text-lg font-semibold text-gray-800 mb-1">Need help choosing?</h4>
+                                                        <p className="text-sm text-gray-600">Talk to our experts to find the perfect solution</p>
+                                                    </div>
+                                                    <button className="px-6 py-3 bg-[#ff3052] text-white rounded-lg font-semibold hover:bg-[#c43a53] transition-colors duration-300">
+                                                        Contact Us
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </nav>
-                <div className="flex gap-3 items-center">
+                
+                {/* Desktop Actions - Hidden on Mobile */}
+                <div className="hidden md:flex gap-3 items-center">
                     <button className="relative overflow-hidden font-bold px-3 py-1 rounded text-sm shadow transition flex items-center bg-transparent border border-[#934790] text-[#934790] group">
                         <span className="absolute left-1/2 bottom-0 w-0 h-0 bg-[#934790] rounded-full opacity-0 group-hover:w-[200%] group-hover:h-[400%] group-hover:opacity-100 transition-all duration-500 ease-out -translate-x-1/2 z-0"></span>
                         <span className="relative z-10 group-hover:text-white transition-colors duration-300">Log In</span>
                     </button>
-                    <button className="relative overflow-hidden font-bold px-3 py-1 rounded text-sm shadow transition flex items-center bg-[#934790] text-white group">
+                    <Link 
+                        href="/book-demo"
+                        className="relative overflow-hidden font-bold px-3 py-1 rounded text-sm shadow transition flex items-center bg-[#934790] text-white group"
+                    >
                         <span className="absolute left-1/2 bottom-0 w-0 h-0 bg-[#6A0066] rounded-full opacity-0 group-hover:w-[200%] group-hover:h-[400%] group-hover:opacity-100 transition-all duration-500 ease-out -translate-x-1/2 z-0"></span>
                         <span className="relative z-10">Book a Demo</span>
-                    </button>
+                    </Link>
                     {/* Dark Mode Toggle */}
                     <div className="flex items-center gap-3 pl-4">
                         {/* <span className="text-xs font-medium font-montserrat">Dark Mode</span> */}
@@ -176,24 +527,99 @@ export default function Home() {
                         </button>
                     </div>
                 </div>
-            </header>
-            {/* Hero Section */}
-            <main className="min-h-screen flex flex-col items-center justify-center w-full z-10">
-                <h1 className={`font-dmserif text-4xl md:text-6xl font-normal text-center leading-tight mb-6  ${darkMode ? ' text-white' : ' text-gray-800'}`}>
-                    ZoomConnect Is The New<br />
-                    Standard of Employee<br />
-                    Health Benefits
-                </h1>
-                <hr className="w-64 border-t-2 border-[#934790] my-4" />
-                <p className="text-lg md:text-lg text-center mb-8 ">
-                    World class insurance and healthcare, designed to protect your teams and their families.
-                </p>
-                <button className="relative overflow-hidden font-bold px-8 py-2 rounded-lg text-lg shadow-lg transition flex items-center gap-2 bg-[#934790] text-white group">
-                    {/* Animated ellipse background */}
-                    <span className="absolute left-1/2 bottom-0 w-0 h-0 bg-[#6A0066] rounded-full opacity-0 group-hover:w-[200%] group-hover:h-[400%] group-hover:opacity-100 transition-all duration-500 ease-out -translate-x-1/2 z-0"></span>
-                    <span className="relative z-10">Book a Demo</span>
-                    <span className="inline-block transform  relative z-10">→</span>
+                
+                {/* Mobile Menu Button - Visible only on Mobile */}
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="md:hidden flex items-center justify-center w-10 h-10 text-[#934790] hover:bg-[#934790]/10 rounded-lg transition-colors duration-300"
+                    aria-label="Toggle mobile menu"
+                >
+                    {isMobileMenuOpen ? <FaTimes className="w-5 h-5" /> : <FaBars className="w-5 h-5" />}
                 </button>
+            </header>
+            
+            {/* Mobile Menu Dropdown */}
+            {isMobileMenuOpen && (
+                <div className="md:hidden fixed top-[72px] left-0 right-0 bg-white shadow-lg z-40 max-h-[calc(100vh-72px)] overflow-y-auto">
+                    <div className="px-6 py-4 space-y-4">
+                        {navLinks.map(({ href, label, dropdownItems }) => (
+                            <div key={label} className="border-b border-gray-100 pb-4">
+                                <a
+                                    href={href}
+                                    className="block text-base font-semibold text-[#432821] mb-2"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    {label}
+                                </a>
+                                {dropdownItems && (
+                                    <div className="pl-4 space-y-2">
+                                        {dropdownItems.map((item, idx) => (
+                                            <a
+                                                key={idx}
+                                                href={item.href}
+                                                className="block py-2 text-sm text-gray-600 hover:text-[#dd4b63] transition-colors"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                {item.label}
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                        
+                        {/* Mobile Actions */}
+                        <div className="pt-4 space-y-3">
+                            <button 
+                                className="w-full px-4 py-2 border border-[#934790] text-[#934790] rounded font-semibold hover:bg-[#934790] hover:text-white transition-colors duration-300"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Log In
+                            </button>
+                            <Link
+                                href="/book-demo"
+                                className="block w-full px-4 py-2 bg-[#934790] text-white text-center rounded font-semibold hover:bg-[#7a3677] transition-colors duration-300"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Book a Demo
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Hero Section */}
+            <main className="min-h-screen flex flex-col items-center justify-center  md:w-full z-10 mt-5 relative">
+                {/* Background image */}
+                <div className="absolute inset-0 z-0 opacity-70">
+                    <img 
+                        src="/assets/images/wavy lines-01.png" 
+                        alt="Background" 
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+                
+                {/* Content */}
+                <div className="relative z-10 flex flex-col items-center px-4 md:px-0">
+                    <h1 className={`font-dmserif text-3xl md:text-6xl font-normal text-center leading-tight mb-6  ${darkMode ? ' text-white' : ' text-gray-800'}`}>
+                        ZoomConnect Is The New<br className="hidden md:block" />
+                        Standard of Employee<br className="hidden md:block" />
+                        Health Benefits
+                    </h1>
+                    <hr className="w-64 border-t-2 border-[#934790] my-4" />
+                    <p className="text-base md:text-lg text-center mb-8 ">
+                        World class insurance and healthcare, designed to protect your teams and their families.
+                    </p>
+                    <Link 
+                        href="/book-demo"
+                        className="relative overflow-hidden font-bold px-4 md:px-8 py-2 rounded-lg text-sm md:text-lg shadow-lg transition flex items-center gap-2 bg-[#934790] text-white group"
+                    >
+                        {/* Animated ellipse background */}
+                        <span className="absolute left-1/2 bottom-0 w-0 h-0 bg-[#6A0066] rounded-full opacity-0 group-hover:w-[200%] group-hover:h-[400%] group-hover:opacity-100 transition-all duration-500 ease-out -translate-x-1/2 z-0"></span>
+                        <span className="relative z-10">Book a Demo</span>
+                        <span className="inline-block transform  relative z-10">→</span>
+                    </Link>
+                </div>
             </main>
             {/* Trusted Companies Section */}
             <section className="w-full mb-4 py-16 flex flex-col items-center justify-center ">
@@ -204,23 +630,14 @@ export default function Home() {
                 {/* Marquee effect for trusted companies */}
                 <div className="overflow-hidden w-full max-w-full mx-auto mt-10">
                     <div className="flex items-center gap-16 animate-marquee whitespace-nowrap">
-                        <img src="/assets/logo/logos for web/Wipro Enterprises Private Limited.png" alt="Wipro Enterprises Private Limited" className="h-12 w-auto" />
-                        <img src="/assets/logo/logos for web/PANASONIC ENERGY INDIA COMPANY LIMITED.png" alt="PANASONIC ENERGY INDIA COMPANY LIMITED" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/SASKEN TECHNOLOGIES LIMITED.webp" alt="SASKEN TECHNOLOGIES LIMITED" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/Munjal Showa Limited.webp" alt="Munjal Showa Limited" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/JBM INDUSTRIES LIMITED.png" alt="JBM INDUSTRIES LIMITED" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/ORIENT BELL LIMITED.png" alt="ORIENT BELL LIMITED" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/Sindhuja Microcredit Private Limited.png" alt="Sindhuja Microcredit Private Limited" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/hamdard.png" alt="hamdard" className="h-12 w-auto   brightness-200" />
-                        <img src="/assets/logo/logos for web/vivo-1.png" alt="vivo" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/paytm-1.png" alt="paytm" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/noevlhealth tech-1.png" alt="noevlhealth tech" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/lenskart-1.png" alt="lenskart" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/lava-1.png" alt="lava" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/eclerk-1.png" alt="eclerk" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/ccspl-1.png" alt="ccspl" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/apollo-1.png" alt="apollo" className="h-12 w-auto  " />
-                        <img src="/assets/logo/logos for web/FUSION MICRO FINANCE LIMITED.png" alt="FUSION MICRO FINANCE LIMITED" className="h-12 w-auto  " />
+                        {trustedCompanies.map((company, index) => (
+                            <img 
+                                key={index}
+                                src={company.logo} 
+                                alt={company.name} 
+                                className={`${company.height} w-auto`}
+                            />
+                        ))}
                     </div>
                 </div>
             </section>
@@ -228,14 +645,17 @@ export default function Home() {
             {/* Health Benefits Section */}
             <section className="w-full py-16 flex flex-col items-center justify-center">
                 <div className="w-[95%] px-4 bg-[#E8D4B7]/80 rounded-3xl h-[600px] backdrop-blur-lg">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start overflow-hidden h-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start overflow-hidden h-full relative">
                         {/* Benefits Grid - Left Side */}
-                        <div className="grid grid-cols-3 gap-6 ">
+                        <div className="z-[1] bg-gradient-to-b from-[#E8D4B7]/70 to-transparent h-[70px] absolute top-0 left-0 right-0 rounded-tl-md rounded-tr-md"></div>
+                        <div className="z-[1] bg-gradient-to-t from-[#E8D4B7]/70 to-transparent h-[70px] absolute bottom-0 left-0 right-0 rounded-bl-md rounded-br-md"></div>
+
+                        <div className="grid grid-cols-3 gap-6  ">
                             {/* Column 1: Up */}
                             <div className=" h-96 flex flex-col items-center">
                                 <div className="vertical-marquee-up flex flex-col gap-6">
                                     {/* Repeat cards for seamless loop */}
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -243,7 +663,7 @@ export default function Home() {
                                         </div>
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Full body<br />health checkups</h3>
                                     </div>
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -251,7 +671,7 @@ export default function Home() {
                                         </div>
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Group Accident<br />Cover</h3>
                                     </div>
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -260,29 +680,29 @@ export default function Home() {
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Maternal<br />Wellness</h3>
                                     </div>
                                     {/* Duplicate for seamless loop */}
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Full body<br />health checkups</h3>
+                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Full body<br className="hidden md:block" />health checkups</h3>
                                     </div>
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Group Accident<br />Cover</h3>
+                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Group Accident<br className="hidden md:block" />Cover</h3>
                                     </div>
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Maternal<br />Wellness</h3>
+                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Maternal<br className="hidden md:block" />Wellness</h3>
                                     </div>
                                 </div>
                             </div>
@@ -290,24 +710,24 @@ export default function Home() {
                             {/* Column 2: Down */}
                             <div className=" h-96 flex flex-col items-center">
                                 <div className="vertical-marquee-down flex flex-col gap-6">
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Vision<br />Checkups</h3>
+                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Vision<br className="hidden md:block" />Checkups</h3>
                                     </div>
-                                    <div className="bg-white p-8 rounded-lg  flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg  flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Surgical <br /> Assistance</h3>
+                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Surgical <br className="hidden md:block" /> Assistance</h3>
                                     </div>
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center  hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center  hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -316,16 +736,16 @@ export default function Home() {
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Medicine</h3>
                                     </div>
                                     {/* Duplicate for seamless loop */}
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Vision<br />Checkups</h3>
+                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat">Vision<br className="hidden md:block" />Checkups</h3>
                                     </div>
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -333,13 +753,13 @@ export default function Home() {
                                         </div>
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Talk to Doctor (Specialists)</h3>
                                     </div>
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center  text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center  text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat text-left">Condition <br /> Management Program</h3>
+                                        <h3 className="text-gray-800 text-sm font-medium font-montserrat text-left">Condition <br className="hidden md:block" /> Management Program</h3>
                                     </div>
                                 </div>
                             </div>
@@ -347,7 +767,7 @@ export default function Home() {
                             {/* Column 3: Up */}
                             <div className=" h-96 flex flex-col items-center">
                                 <div className="vertical-marquee-up flex flex-col gap-6">
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -356,7 +776,7 @@ export default function Home() {
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Group Medical Cover</h3>
                                     </div>
                                     {/* Duplicate for seamless loop */}
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -364,7 +784,7 @@ export default function Home() {
                                         </div>
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Lab Tests</h3>
                                     </div>
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -372,7 +792,7 @@ export default function Home() {
                                         </div>
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Talk to Doctor (GP)</h3>
                                     </div>
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -380,7 +800,7 @@ export default function Home() {
                                         </div>
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Maternity Care Program Comprehensive</h3>
                                     </div>
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center  hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48">
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center  hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -394,7 +814,7 @@ export default function Home() {
                         {/* Content - Right Side */}
                         <div className="flex flex-col items-start justify-center h-full w-full py-16">
                             <h2 className="text-4xl md:text-5xl font-dmserif font-medium text-[#2D1836] mb-6 leading-tight text-left ">Health Benefits<br />Simplified</h2>
-                            <p className="text-gray-700 text-md mb-10 max-w-lg text-left">
+                            <p className="text-gray-700 text-base mb-10 max-w-lg text-left">
                                 At <span className="text-[#934790] font-bold">ZoomConnect</span>, we recognize the vital importance of <span className=" font-semibold">wellness</span> for both individuals and organizations. That’s why we provide a <span className=" font-semibold">comprehensive suite</span> of wellness and value-added services, thoughtfully designed to tackle today’s global health challenges—<span className=" font-bold">all at exclusive discounted rates</span>.
                             </p>
 
@@ -430,10 +850,12 @@ export default function Home() {
                                     <img
                                         src={testimonials[idx].img}
                                         alt={testimonials[idx].name}
-                                        className={`rounded-full border-2 bg-gray-100 border-gray-500 shadow ${i === 1 ? 'w-16 h-16' : 'w-14 h-14'}`}
+                                        className={`rounded-full border-2 bg-gray-100 border-gray-500 shadow ${i === 1 ? 'w-20 h-20' : 'w-14 h-14'}`}
                                     />
                                     <div>
                                         <div className="text-black font-semibold font-montserrat">{testimonials[idx].name}</div>
+                                        <div className="mt-6 h-px w-full bg-white/20"></div>
+
                                         <div className="flex items-center gap-1 text-green-500 text-sm font-semibold">
 
                                             {testimonials[idx].rating}
@@ -445,8 +867,8 @@ export default function Home() {
                     </div>
                     {/* Right: Large Quote */}
                     <div className="md:w-1/2 w-full flex flex-col justify-center items-center p-10 bg-[#934790]">
-                        <blockquote className="text-md md:text-xl font-montserrat italic text-white/80  text-center max-w-xl mx-auto transition-all duration-700" key={activeIdx}>
-                            “<span style={{ fontWeight: 'bold', fontSize: '1.6em', lineHeight: '1', display: 'inline-block' }}>{testimonials[activeIdx].quote.charAt(0)}</span>{testimonials[activeIdx].quote.slice(1)}”
+                        <blockquote className="text-md md:text-lg font-montserrat italic text-white/80  text-center max-w-xl mx-auto transition-all duration-700" key={activeIdx}>
+                            “<span style={{ fontWeight: 'bold', fontSize: '1.5em', lineHeight: '1', display: 'inline-block' }}>{testimonials[activeIdx].quote.charAt(0)}</span>{testimonials[activeIdx].quote.slice(1)}”
                         </blockquote>
                     </div>
                 </div>
@@ -454,24 +876,134 @@ export default function Home() {
 
             {/* Beyond Group Mediclaim Section - Card Grid */}
             <section className="w-full flex flex-col items-center justify-center ">
-                <div className="w-full pt-20 pb-48 flex flex-col items-center justify-center bg-gradient-to-b from-[#E8D4B7]/70 via-[#E8D4B7]/50 to-[#E8D4B7]/20">
-                    <h2 className="font-dmserif text-3xl md:text-5xl font-medium text-center mb-4 ">Beyond Group Mediclaim</h2>
+                <div className="w-full pt-20 pb-48 flex flex-col items-center justify-center bg-gradient-to-b from-[#E8D4B7]/70 via-[#E8D4B7]/50 to-[#E8D4B7]/20 beyond-group-section relative">
+                    <div className="container mx-auto px-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start relative">
+                            {/* Left column pinned via GSAP */}
+                            <div className="left-content lg:pt-32">
+                                <h2 className="font-dmserif text-3xl md:text-5xl font-medium text-gray-800 mb-6">
+                                    Beyond Group <br className="hidden md:block" />
+                                    Mediclaim
+                                </h2>
+                                <p className="text-gray-600 text-md mb-8 max-w-lg">
+                                    Zoom Insurance Brokers offers a wide range of insurance solutions tailored to meet your diverse needs. In addition to our comprehensive group mediclaim coverage, we specialize in:
+                                </p>
+                                {/* <img src="/assets/images/Family Insurance Icons.png" alt="Beyond Group Mediclaim" className=" absolute w-40 h-auto" /> */}
+                                {/* <button className="bg-transparent border-2 border-[#934790] text-[#934790] px-8 py-3 rounded-lg font-semibold hover:bg-[#934790] hover:text-white transition-all duration-300">
+                                LEARN MORE
+                            </button> */}
+                            </div>
+
+                            {/* Right column cards */}
+                            <div className="right-content space-y-12 pb-8">
+                                {/* Row 1 - First 2 cards */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                        <div className="flex flex-col items-center text-center">
+                                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                                <img src="/assets/icons/ship-solid-full.svg" alt="Marine Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                Marine Insurance
+                                            </h3>
+                                            <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                Protect your marine assets with our tailored marine insurance policies, covering both hull and cargo risks.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                        <div className="flex flex-col items-center text-center">
+                                            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                                <img src="/assets/icons/gears-solid-full.svg" alt="Specialty Lines" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                Specialty Lines
+                                            </h3>
+                                            <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                Explore our specialized insurance offerings, including aviation, construction, energy, and more.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Row 2 - Next 2 cards */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                        <div className="flex flex-col items-center text-center">
+                                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                                <img src="/assets/icons/credit-card-regular-full.svg" alt="Trade Credit Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                Trade Credit Insurance
+                                            </h3>
+                                            <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                Mitigate the risk of non-payment from your customers with our trade credit insurance solutions.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                        <div className="flex flex-col items-center text-center">
+                                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                                <img src="/assets/icons/shield-virus-solid-full.svg" alt="Cyber Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                Cyber Insurance
+                                            </h3>
+                                            <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                Safeguard your digital assets and protect against cyber threats with our comprehensive cyber insurance coverage.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Row 3 - Last 2 cards */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                        <div className="flex flex-col items-center text-center">
+                                            <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                                <img src="/assets/icons/handshake-regular-full.svg" alt="Reinsurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                Reinsurance
+                                            </h3>
+                                            <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                Access specialized reinsurance coverage to manage your risk exposure effectively.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                        <div className="flex flex-col items-center text-center">
+                                            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                                <img src="/assets/icons/leaf-solid-full.svg" alt="Agriculture Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                Agriculture Insurance
+                                            </h3>
+                                            <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                Protect your agricultural operations against various risks with our tailored agriculture insurance solutions.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* <h2 className="font-dmserif text-3xl md:text-5xl font-medium text-center mb-4 ">Beyond Group Mediclaim</h2>
 
                     <div className="w-[95%] max-w-7xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 auto-rows-[minmax(110px,1fr)]">
-                        {/* First row: 4 cards */}
                         <div className="relative rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-start h-72 min-h-[80px] bg-[#FAF8F1] transition-transform duration-300 hover:scale-105 p-4 text-center">
-                            {/* Marine Insurance - Ship icon */}
                             <img src="/assets/icons/ship-solid-full.svg" alt="Marine Insurance" className="w-14 h-14 object-contain mb-4 text-gray-800 filter " />
                             <span className="text-gray-800 text-2xl font-semibold mb-2">Marine Insurance</span>
                             <span className="text-gray-800 text-base font-normal">Protect your marine assets with our tailored marine insurance policies, covering both hull and cargo risks.</span>
                         </div>
-                        {/* Second row: black card (col-span-2), 2 more cards */}
                         <div className="px-6 py-6 text-center text-base font-montserrat relative col-span-2 flex flex-col items-start justify-start min-h-[110px] ">
                             <p className="text-sm md:text-lg text-gray-800 font-normal text-center mb-10 max-w-3xl ">Zoom Insurance Brokers offers a wide range of insurance solutions tailored to meet your diverse needs. In addition to our comprehensive group mediclaim coverage, we specialize in</p>
-                            {/* <div className="mt-6 border-t-2 border-cyan-400 pt-4 text-cyan-200 font-semibold tracking-wide text-base">WHY WE'RE DOING THIS</div> */}
                         </div>
                         <div className="relative rounded-xl shadow-lg overflow-hidden flex flex-col items-start justify-start h-72 min-h-[80px] bg-[#FAF8F1] transition-transform duration-300 hover:scale-105 p-4">
-                            {/* Specialty Lines - Settings/Gear icon */}
                             <div className="w-full flex justify-center">
                                 <img src="/assets/icons/gears-solid-full.svg" alt="Specialty Lines" className="w-14 h-14 object-contain mb-4 text-gray-800 filter" />
                             </div>
@@ -480,7 +1012,6 @@ export default function Home() {
                         </div>
 
                         <div className="relative rounded-xl shadow-lg overflow-hidden flex flex-col items-start justify-start h-72 min-h-[80px] bg-[#FAF8F1] transition-transform duration-300 hover:scale-105 p-4">
-                            {/* Trade Credit Insurance - Credit Card/Wallet icon */}
                             <div className="w-full flex justify-center">
                                 <img src="/assets/icons/credit-card-regular-full.svg" alt="Trade Credit Insurance" className="w-14 h-14 object-contain mb-4 text-gray-800 filter" />
                             </div>
@@ -488,7 +1019,6 @@ export default function Home() {
                             <span className="text-gray-800 text-base font-normal text-center w-full">Mitigate the risk of non-payment from your customers with our trade credit insurance solutions.</span>
                         </div>
                         <div className="relative rounded-xl shadow-lg overflow-hidden flex flex-col items-start justify-start h-72 min-h-[80px] bg-[#FAF8F1] transition-transform duration-300 hover:scale-105 p-4">
-                            {/* Cyber Insurance - Cyber/Shield icon */}
                             <div className="w-full flex justify-center">
                                 <img src="/assets/icons/shield-virus-solid-full.svg" alt="Cyber Insurance" className="w-14 h-14 object-contain mb-4 text-gray-800 filter" />
                             </div>
@@ -497,7 +1027,6 @@ export default function Home() {
                         </div>
 
                         <div className="relative rounded-xl shadow-lg overflow-hidden flex flex-col items-start justify-start h-72 min-h-[80px] bg-[#FAF8F1] transition-transform duration-300 hover:scale-105 p-4">
-                            {/* Reinsurance - Handshake/Agreement icon */}
                             <div className="w-full flex justify-center">
                                 <img src="/assets/icons/handshake-regular-full.svg" alt="Reinsurance" className="w-14 h-14 object-contain mb-4 text-gray-800 filter" />
                             </div>
@@ -505,14 +1034,13 @@ export default function Home() {
                             <span className="text-gray-800 text-base font-normal text-center w-full">Access specialized reinsurance coverage to manage your risk exposure effectively.</span>
                         </div>
                         <div className="relative rounded-xl shadow-lg overflow-hidden flex flex-col items-start justify-start h-72 min-h-[80px] bg-[#FAF8F1] transition-transform duration-300 hover:scale-105 p-4">
-                            {/* Agriculture Insurance - Plant/Leaf icon */}
                             <div className="w-full flex justify-center">
                                 <img src="/assets/icons/leaf-solid-full.svg" alt="Agriculture Insurance" className="w-14 h-14 object-contain mb-4 text-gray-800 filter" />
                             </div>
                             <span className="text-gray-800 text-2xl font-semibold mb-2 text-center w-full">Agriculture Insurance</span>
                             <span className="text-gray-800 text-base font-normal text-center w-full">Protect your agricultural operations against various risks with our tailored agriculture insurance solutions.</span>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </section>
 
@@ -523,7 +1051,7 @@ export default function Home() {
                     <div className="flex-1 flex items-center   py-12 ">
                         <div>
                             <h3 className="text-white text-lg md:text-xl font-semibold mb-2">We take</h3>
-                            <div className="text-white text-3xl md:text-5xl font-bold leading-tight mb-2">customer<br />satisfaction</div>
+                            <div className="text-white text-3xl md:text-5xl font-bold leading-tight mb-2">customer<br className="hidden md:block" />satisfaction</div>
                             <div className="text-white text-lg md:text-xl font-medium">Very seriously</div>
                         </div>
                     </div>
@@ -548,7 +1076,7 @@ export default function Home() {
                 </div>
                 <div className="w-[90%] pt-8 pb-16 max-w-6xl mx-auto flex flex-col md:flex-row items-start">
                     <div className="w-full md:w-1/3 flex flex-col items-center md:items-start justify-center pr-0 md:pr-8">
-                        <h2 className="font-dmserif text-3xl md:text-5xl font-medium text-start mb-10 max-w-2xl text-gray-800 sticky top-32">Got questions?<br />We've got answers</h2>
+                        <h2 className="font-dmserif text-3xl md:text-5xl font-medium text-start mb-10 max-w-2xl text-gray-800 sticky top-32">Got questions?<br className="hidden md:block" />We've got answers</h2>
 
                         <img src="/assets/images/FAQ.png" alt="FAQ Illustration" className="w-48 h-48 md:w-72 md:h-72 object-contain mb-6" />
                     </div>
@@ -594,54 +1122,299 @@ export default function Home() {
             </section>
 
             {/* Customer Satisfaction Section - Reference Style with Angle Effect */}
-            <section className="w-full relative mt-2 pb-0 bg-transparent overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#934790] to-[#571754] transform -skew-y-3 origin-top-right shadow-lg"></div>
-                <div className="relative z-10 container mx-auto flex flex-col md:flex-row gap-8 items-center min-w-[250px] px-8 py-24">
-                    {/* Left: Compliance & Certification Heading */}
-                    <div className="flex-1 flex items-center">
-                        <div>
-                            <h3 className="text-white text-lg md:text-xl font-semibold mb-2">Trust in our</h3>
-                            <div className="text-white text-xl md:text-3xl font-bold leading-tight mb-2">Compliance<br />& Certification</div>
-                            <div className="text-white text-lg md:text-xl font-medium max-w-xl">when it comes to managing your employee benefits.</div>
-                        </div>
-                    </div>
-                    {/* Right: Stat/Certification Cards */}
-                    <div className="flex-[2] grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Stat 1: AICPA SOC 2 */}
-                        <div className="flex flex-col items-center justify-center transform hover:-translate-y-1 transition-transform duration-300">
-                            <img src="/assets/icons/aicpa-soc2.svg" alt="AICPA SOC 2" className="w-16 h-16 mb-2" />
-                            <div className="text-white text-lg font-bold mb-1">AICPA SOC 2</div>
-                            <div className="text-white text-base font-medium text-center">certified</div>
-                        </div>
-                        {/* Stat 2: ISO 27001 */}
-                        <div className="flex flex-col items-center justify-center transform hover:-translate-y-1 transition-all duration-300">
-                            <div className="bg-white rounded-full p-4 shadow-lg hover:shadow-xl mb-2">
-                                <img 
-                                    src="https://firstplusweb.com/wp-content/uploads/2023/01/iso-27001.png" 
-                                    alt="ISO 27001 Information Security Management" 
-                                    className="w-20 h-20 object-contain" 
-                                />
+            <CertificationCarousel />
+
+            {/* Schedule a Call CTA */}
+            <section className="w-full py-16  relative">
+                <div className="container mx-auto px-6 lg:px-12">
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#441752] via-[#571754] to-[#934790] shadow-2xl">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-8 lg:px-16 py-14">
+                            <div className="space-y-6">
+                                <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-white/70">
+                                    <span className="inline-block h-2 w-2 rounded-full bg-white/70"></span>
+                                    Ready when you are
+                                </span>
+                                <h2 className="font-dmserif text-3xl md:text-5xl text-white leading-snug">
+                                    Unlock bespoke Group Benefits<br className="hidden md:block" /> for your teams
+                                </h2>
+                                <p className="text-white/80 text-base md:text-md max-w-xl">
+                                    Schedule a quick conversation with our benefits specialists or jump straight into a tailored demo. We’ll craft a plan that mirrors your company culture and protects every employee.
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <Link
+                                        href="/book-demo"
+                                        className="px-8 py-3 rounded-xl bg-white text-[#571754] font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-center inline-block"
+                                    >
+                                        Book a Demo
+                                    </Link>
+
+                                </div>
                             </div>
-                            <div className="text-white text-lg font-bold mb-1">ISO 27001</div>
-                            <div className="text-white text-base font-medium text-center">Certified</div>
-                        </div>
-                        {/* Stat 3: ISO 9001 Badge */}
-                        <div className="flex flex-col items-center justify-center transform hover:-translate-y-1 transition-all duration-300">
-                            <div className="bg-white rounded-full p-4 shadow-lg hover:shadow-xl mb-2">
-                                <img 
-                                    src="https://www.arenasolutions.com/wp-content/uploads/what-is-iso-9001-compliance.png" 
-                                    alt="ISO 9001:2015 Certified" 
-                                    className="w-20 h-20 object-contain" 
-                                />
+
+                            <div className="relative flex justify-center lg:justify-end">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, amount: 0.4 }}
+                                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                                    className="relative w-full max-w-sm"
+                                >
+                                    <div className="absolute -top-10 -left-6 h-24 w-24 rounded-full bg-white/10 blur-2xl"></div>
+                                    <div className="absolute -bottom-12 -right-10 h-28 w-28 rounded-full bg-[#FF0066]/30 blur-3xl"></div>
+                                    <div className="relative rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-6 shadow-xl">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-white">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c3.866 0 7-1.79 7-4s-3.134-4-7-4-7 1.79-7 4 3.134 4 7 4zm0 0v6" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 14c0 2.21 3.134 4 7 4s7-1.79 7-4" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 19c0 2.21 3.134 4 7 4s7-1.79 7-4" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="text-white/70 text-sm">ZoomConnect Advisor</p>
+                                                    <p className="text-white font-semibold">Live support</p>
+                                                </div>
+                                            </div>
+                                            <span className="text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full bg-white/15 text-white/80">
+                                                Online
+                                            </span>
+                                        </div>
+                                        <div className="space-y-4 text-white/80 text-sm">
+                                            <div className="flex items-start gap-3">
+                                                <span className="mt-1 h-2 w-2 rounded-full bg-[#FF9BD2]"></span>
+                                                <p>Customise coverage across GMC, GPA, GTL and wellness add-ons.</p>
+                                            </div>
+                                            <div className="flex items-start gap-3">
+                                                <span className="mt-1 h-2 w-2 rounded-full bg-[#FFD166]"></span>
+                                                <p>Compare quotes from top insurers in under 24 hours.</p>
+                                            </div>
+                                            <div className="flex items-start gap-3">
+                                                <span className="mt-1 h-2 w-2 rounded-full bg-[#7AD9FF]"></span>
+                                                <p>Dedicated claims desk with proactive SLAs.</p>
+                                            </div>
+                                        </div>
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            whileInView={{ opacity: 1, scale: 1 }}
+                                            viewport={{ once: true, amount: 0.6 }}
+                                            transition={{ delay: 0.4, duration: 0.6, ease: 'easeOut' }}
+                                            className="mt-8 rounded-xl bg-white/15 px-5 py-4 text-white/90 text-sm"
+                                        >
+                                            "ZoomConnect took us from fragmented benefits to a unified employee experience in weeks."
+                                        </motion.div>
+                                    </div>
+                                </motion.div>
                             </div>
-                            <div className="text-white text-lg font-bold mb-1">ISO 9001:2015</div>
-                            <div className="text-white text-base font-medium text-center">Certified</div>
                         </div>
-                        
-                        
                     </div>
                 </div>
             </section>
+
+
+            <footer className='relative w-full mt-24 text-white bg-[#571754]'>
+                <div className="absolute inset-0 overflow-hidden">
+                    <span className="absolute -top-24 -left-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"></span>
+                    <span className="absolute top-1/3 right-[-5rem] h-72 w-72 rounded-full bg-[#FF6F91]/20 blur-[120px]"></span>
+                    <span className="absolute bottom-[-6rem] left-1/4 h-72 w-72 rounded-full bg-[#7AD9FF]/15 blur-[120px]"></span>
+                </div>
+                <div className="relative z-10 mx-auto w-full px-6 md:pt-16 lg:px-12">
+                    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-start">
+                        <div className="w-[100%] md:w-[80%] max-w-2xl lg:max-w-none  flex flex-col items-center lg:items-start text-center lg:text-left">
+                            <h2 className="mt-6 font-dmserif text-3xl md:text-3xl">
+                                Subscribe to People First <br className="hidden md:block" /> Dispatch
+                            </h2>
+                            <p className="mt-4 max-w-xl text-sm text-white/70">
+                                A weekly digest of fresh perspectives, product updates, and resources crafted for people-first teams.
+                            </p>
+
+                            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                                <motion.a
+                                    whileHover={{ y: -2 }}
+                                    href="https://play.google.com/store/apps/details?id=com.zoomconnect"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="flex items-center gap-3  px-5 py-3 text-left text-white transition "
+                                >
+                                    <img src="/assets/logo/logos for web/google play-01 1.png" alt="Get it on Google Play" className="h-8 w-auto object-contain" />
+
+                                    <img src="/assets/logo/logos for web/app store-01 1.png" alt="Download on the App Store" className="h-8 w-auto object-contain " />
+                                </motion.a>
+                            </div>
+                        </div>
+                        <div className="hidden self-stretch lg:flex lg:justify-center lg:px-10" aria-hidden="true">
+                            <div
+                                className="h-full w-px self-stretch rounded-full"
+                                style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.25), rgba(255,255,255,0.05))' }}
+                            ></div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-8 md:gap-40 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 ">
+                            <div className="min-w-[150px]">
+                                <div className="flex items-center text-sm font-semibold uppercase  text-white">
+                                    {/* <span className="text-base">🛡️</span> */}
+                                    <span className="">ZoomConnect </span>
+                                </div>
+                                <ul className="mt-4 space-y-3 text-xs">
+                                    <li>
+                                        <a href="#insurance" className="text-white/75  transition-colors hover:text-white">About Us</a>
+                                    </li>
+                                    <li>
+                                        <a href="#product" className="text-white/75 transition-colors hover:text-white">Contact Us</a>
+                                    </li>
+                                    <li>
+                                        <a href="#solutions" className="text-white/75 transition-colors hover:text-white">Privacy Policy</a>
+                                    </li>
+                                    <li>
+                                        <a href="#resources" className="text-white/75 transition-colors hover:text-white">Terms & Conditions</a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="min-w-[150px]">
+                                <div className="flex items-center text-sm font-semibold uppercase text-white">
+                                    {/* <span className="text-base">✨</span> */}
+                                    <span className="">Wellness</span>
+                                </div>
+                                <ul className="mt-4 space-y-3 text-xs">
+                                    <li>
+                                        <a href="#wellness" className="text-white/75 transition-colors hover:text-white">Wellness Overview</a>
+                                    </li>
+                                    <li>
+                                        <a href="#telehealth" className="text-white/75 transition-colors hover:text-white">Telehealth</a>
+                                    </li>
+                                    <li>
+                                        <a href="#fitness" className="text-white/75 transition-colors hover:text-white">Fitness</a>
+                                    </li>
+                                    <li>
+                                        <a href="#mental-wellness" className="text-white/75 transition-colors hover:text-white">Mental Wellness</a>
+                                    </li>
+                                    <li>
+                                        <a href="#maternity" className="text-white/75 transition-colors hover:text-white">Maternity Box</a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="min-w-[150px]">
+                                <div className="flex items-center text-sm font-semibold uppercase text-white">
+                                    {/* <span className="text-base">🖥️</span> */}
+                                    <span className="">Platform</span>
+                                </div>
+                                <ul className="mt-4 space-y-3 text-xs">
+                                    <li>
+                                        <a href="#employee-platform" className="text-white/75 transition-colors hover:text-white">Employee</a>
+                                    </li>
+                                    <li>
+                                        <a href="#employer-platform" className="text-white/75 transition-colors hover:text-white">Employer</a>
+                                    </li>
+                                    <li>
+                                        <a href="#integrations" className="text-white/75 transition-colors hover:text-white">Integrations</a>
+                                    </li>
+                                </ul>
+
+                                <div className="mt-8 flex items-center text-sm font-semibold uppercase  text-white">
+                                    {/* <span className="text-base">💡</span> */}
+                                    <span className="">Solutions</span>
+                                </div>
+                                <ul className="mt-4 space-y-3 text-xs">
+                                    <li>
+                                        <a href="#small-teams" className="text-white/75 transition-colors hover:text-white">Small Teams</a>
+                                    </li>
+                                    <li>
+                                        <a href="#large-teams" className="text-white/75 transition-colors hover:text-white">Large Teams</a>
+                                    </li>
+                                    <li>
+                                        <a href="#hybrid" className="text-white/75 transition-colors hover:text-white">Hybrid Workforce</a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="min-w-[150px]">
+                                <div className="flex items-center text-sm font-semibold uppercase text-white">
+                                    {/* <span className="text-base">📚</span> */}
+                                    <span className="">Resources</span>
+                                </div>
+                                <ul className="mt-4 space-y-3 text-xs">
+                                    <li>
+                                        <a href="/careers" className="text-white/75 transition-colors hover:text-white">Careers</a>
+                                    </li>
+                                    <li>
+                                        <a href="#company" className="text-white/75 transition-colors hover:text-white">About Us</a>
+                                    </li>
+                                    <li>
+                                        <a href="#contact" className="text-white/75 transition-colors hover:text-white">Contact Us</a>
+                                    </li>
+                                    <li>
+                                        <a href="#faq" className="text-white/75 transition-colors hover:text-white">FAQs</a>
+                                    </li>
+                                    <li>
+                                        <a href="#testimonials" className="text-white/75 transition-colors hover:text-white">Testimonials</a>
+                                    </li>
+                                    <li>
+                                        <a href="#guides" className="text-white/75 transition-colors hover:text-white">Guides & Blogs</a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div className="mt-14 flex flex-col gap-5 pt-2 lg:flex-col lg:items-center lg:justify-between">
+                        <div className="relative w-[100%] md:w-[80%] flex items-center justify-center gap-1 md:gap-6 py-2 before:content-[''] before:absolute before:left-0 before:top-1/2 before:h-px before:w-[30%] md:before:w-[35%] before:bg-white/30 after:content-[''] after:absolute after:right-0 after:top-1/2 after:h-px after:w-[30%] md:after:w-[35%] after:bg-white/30">
+                            {socialLinks.map(({ label, href, Icon }) => (
+                                <motion.a
+                                    key={label}
+                                    href={href}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    whileHover={{ y: -2 }}
+                                    className="flex h-8 w-8 items-center justify-center text-white/60 transition hover:text-white"
+                                >
+                                    <span className="sr-only">{label}</span>
+                                    <Icon className="h-5 w-5" />
+                                </motion.a>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-col gap-4 text-sm text-white/70 md:flex-row md:items-center md:gap-6">
+
+                            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs uppercase tracking-[0.3em] text-white/50">
+                                {officeCities.map((city) => (
+                                    <span
+                                        key={city}
+                                        className="relative before:mr-4 before:text-[0.5rem] before:font-semibold before:text-white/30 before:content-['◆'] first:before:hidden"
+                                    >
+                                        {city}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div className="mt-4 w-full flex justify-center" >
+                        <img src="/assets/logo/ZOOMCONNECT WITH PEOPLE-02.png" alt="ZoomConnect Logo" className="h-full mt-4" />
+                    </div>
+
+                    <div className="mt-10 border-t border-white/40 pt-2 flex flex-col items-center"></div>
+
+                    <div className="mt-2 flex flex-col gap-6 text-xs text-white/45 md:flex-col md:justify-between md:items-center">
+                        <div className="leading-relaxed space-y-1 max-w-full text-center md:text-center">
+                            <p>
+                                <span className="font-semibold text-white/70">Registered & Corporate Office:</span> D-104, Udyog Vihar Phase V, Sector-19, Gurugram, Haryana-122016. CIN: U66000HR2008PTC065899.
+                            </p>
+                            <p>
+                                <span className="font-semibold text-white/70">IRDAI Licence No.: 389.</span> Licence Category: Composite. Licence Expiry: 1st January 2027.
+                            </p>
+                            <p>
+                                Insurance is a subject matter of solicitation.Kindly read all policy related documents and take expert advice before taking any insurance or investment decisions.
+                            </p>
+                        </div>
+                        <div className="md:text-center mb-4">
+                            <p className="text-[10px]"> Developed by Novel Healthtech Solutions Pvt. Ltd. </p>
+                           <p> © {currentYear} ZoomConnect Private Limited. All rights reserved. </p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
 
         </div>
     );
