@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\ProductController;
 
 Route::get('/', function () {
     return Inertia::render('Public/Home');
@@ -129,3 +130,19 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
     });
 // });
 // });
+
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////// --- Product Pages Routes --- ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+// Product Routes
+Route::prefix('products')->name('products.')->group(function () {
+    Route::get('/group-medical-cover', [ProductController::class, 'groupMedicalCover'])->name('group-medical-cover');
+    Route::get('/group-accident-cover', [ProductController::class, 'groupAccidentCover'])->name('group-accident-cover');
+    Route::get('/group-term-life', [ProductController::class, 'groupTermLife'])->name('group-term-life');
+    Route::get('/wellness-programs', [ProductController::class, 'wellnessPrograms'])->name('wellness-programs');
+    Route::get('/telehealth-services', [ProductController::class, 'telehealthServices'])->name('telehealth-services');
+});
+
+// Contact Us Route
+Route::get('/contact-us', [ProductController::class, 'contactUs'])->name('contact-us');
