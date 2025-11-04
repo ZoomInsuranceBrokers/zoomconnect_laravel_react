@@ -6,6 +6,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTheme } from '../../Context/ThemeContext';
 import { FaLinkedinIn, FaInstagram, FaFacebookF, FaBars, FaTimes } from 'react-icons/fa';
 import { Link } from '@inertiajs/react';
+import Lottie from "lottie-react";
+
+
 
 // FAQ data for ZoomConnect Employee Dashboard
 const faqs = [
@@ -65,38 +68,38 @@ const CertificationCarousel = () => {
             hasCircle: true
         },
         {
-            image: "/assets/logo/Best Insurance Broker of the Year.png",
+            image: "/assets/logo/BestBrokers2023.png",
             title: "Best Insurance Broker of the Year",
-            subtitle: "Certified",
-            hasCircle: false
+            // subtitle: "Certified",
+            hasCircle: true
         },
         {
-            image: "/assets/logo/𝐁𝐞𝐬𝐭 𝐂𝐒𝐑 𝐈𝐧𝐢𝐭𝐢𝐚𝐭𝐢𝐯𝐞 𝐀𝐰𝐚𝐫𝐝.png",
-            title: "𝐁𝐞𝐬𝐭 𝐂𝐒𝐑 𝐈𝐧𝐢𝐭𝐢𝐚𝐭𝐢𝐯𝐞 Award",
-            subtitle: "Certified",
-            hasCircle: false
+            image: "/assets/logo/BestCSR.png",
+            title: "Best CSR Initiative Award",
+            // subtitle: "Certified",
+            hasCircle: true
         }
     ];
 
     return (
         <section className="w-full relative mt-2 pb-0 bg-transparent overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#934790] to-[#571754] transform -skew-y-3 origin-top-right shadow-lg"></div>
-            <div className="relative z-10 container mx-auto flex flex-col md:flex-row gap-8 items-center min-w-[250px] px-8 pt-24 pb-12">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#934790] to-[#850e7f] transform -skew-y-3 origin-top-right shadow-lg"></div>
+            <div className="relative z-10 container mx-auto flex flex-col md:flex-row gap-8 items-center min-w-[250px]h-[400px] px-8 pt-24 pb-16">
                 {/* Left: Compliance & Certification Heading */}
                 <div className="flex-1 flex items-center">
                     <div>
-                        <h3 className="text-white text-lg md:text-xl font-semibold mb-2">Trust in our</h3>
                         <div className="text-white text-xl md:text-3xl font-bold leading-tight mb-2">
-                            Compliance<br className="hidden md:block" />& Certification
+                            Awarded for Innovation.<br />
+                            Certified for Trust.
                         </div>
-                        <div className="text-white text-lg md:text-xl font-medium max-w-xl">
-                            when it comes to managing your employee benefits.
+                        <div className="text-white text-lg md:text-base font-extralight max-w-xl">
+                            Every accolade we receive and every certification we earn reflects our commitment to secure technology, exceptional service, and uncompromised compliance for organizations and their employees.
                         </div>
                     </div>
                 </div>
 
                 {/* Right: Scrolling Carousel */}
-                <div className="flex-[2] relative overflow-hidden">
+                <div className="flex-[1] relative overflow-hidden">
                     <style>{`
                         @keyframes scroll-left {
                             0% {
@@ -113,33 +116,39 @@ const CertificationCarousel = () => {
                             animation-play-state: paused;
                         }
                     `}</style>
-                    
+
                     <div className="flex gap-8 animate-scroll">
                         {/* Render certifications 3 times for seamless loop */}
                         {[...certifications, ...certifications, ...certifications].map((cert, index) => (
-                            <div 
-                                key={index} 
-                                className="flex flex-col items-center justify-center flex-shrink-0 transform transition-all duration-300 min-w-[200px] h-[280px]"
+                            <div
+                                key={index}
+                                className="flex flex-col items-center justify-center flex-shrink-0 transform transition-all duration-300 min-w-[200px]"
                             >
                                 <div className="flex flex-col items-center justify-start h-full">
                                     {cert.hasCircle ? (
-                                        <div className="bg-white rounded-full p-4 md:p-2 shadow-lg hover:shadow-xl mb-4">
+                                        <div className=" rounded-full p-4 md:p-0 hover:shadow-xl mb-4">
                                             <img
                                                 src={cert.image}
                                                 alt={cert.title}
-                                                className="w-18 h-18 md:w-20 md:h-20 object-contain"
+                                                className="w-18 h-18 md:w-24 md:h-24 object-contain"
                                             />
                                         </div>
                                     ) : (
-                                        <div className="mb-4 flex items-center justify-center" style={{ height: '96px' }}>
-                                            <img 
-                                                src={cert.image} 
-                                                alt={cert.title} 
-                                                className="w-16 h-16 md:w-20 md:h-20" 
+                                        <div className="mb-4 flex items-center justify-center " style={{ height: '96px' }}>
+                                            <img
+                                                src={cert.image}
+                                                alt={cert.title}
+                                                className="w-16 h-16 md:w-20 md:h-20 rounded-full"
                                             />
                                         </div>
                                     )}
-                                    <div className="text-white text-lg md:text-xl font-bold mb-1 text-center">{cert.title}</div>
+                                    <div className="text-white text-lg md:text-lg font-bold mb-1 text-center">
+                                        {cert.title === 'ISO 27001:2022'
+                                            ? cert.title
+                                            : cert.title.split(' ').length > 1
+                                                ? <>{cert.title.split(' ').slice(0, Math.ceil(cert.title.split(' ').length / 2)).join(' ')}<br />{cert.title.split(' ').slice(Math.ceil(cert.title.split(' ').length / 2)).join(' ')}</>
+                                                : cert.title}
+                                    </div>
                                     <div className="text-white text-base md:text-lg font-medium text-center">{cert.subtitle}</div>
                                 </div>
                             </div>
@@ -155,28 +164,56 @@ export default function Home() {
     // FAQ accordion state
     const [openFaqIdx, setOpenFaqIdx] = useState(null);
     const { darkMode, toggleDarkMode } = useTheme();
-    
+
+    // State to track if nav should be white
+    const [navWhite, setNavWhite] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const header = document.querySelector('header');
+            const darkSections = document.querySelectorAll('.bg-gradient-to-r');
+            let overlap = false;
+            if (header && darkSections.length > 0) {
+                const headerRect = header.getBoundingClientRect();
+                darkSections.forEach(section => {
+                    const sectionRect = section.getBoundingClientRect();
+                    // Check if header vertically overlaps the section
+                    if (
+                        headerRect.bottom > sectionRect.top &&
+                        headerRect.top < sectionRect.bottom
+                    ) {
+                        overlap = true;
+                    }
+                });
+            }
+            setNavWhite(overlap);
+        };
+        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     // Trusted Companies Logos
     const trustedCompanies = [
-        { name: 'Wipro', logo: '/assets/logo/Gray logo/Wipro-01.png', height: 'h-12' },
-        { name: 'Panasonic', logo: '/assets/logo/Gray logo/Panasonic-01.png', height: 'h-12' },
+        { name: 'Wipro', logo: '/assets/logo/Gray logo/Wipro-01.png', height: 'h-16' },
+        { name: 'Panasonic', logo: '/assets/logo/Gray logo/Panasonic-01.png', height: 'h-16' },
         { name: 'Sasken', logo: '/assets/logo/Gray logo/Sasken-01.png', height: 'h-12' },
         { name: 'Munjal Showa', logo: '/assets/logo/Gray logo/Munjal Showa-01.png', height: 'h-12' },
         { name: 'JBM Group', logo: '/assets/logo/Gray logo/JBM group-01.png', height: 'h-12' },
         { name: 'Orient Bell', logo: '/assets/logo/Gray logo/Orientbell-01.png', height: 'h-20' },
-        { name: 'Sindhuja', logo: '/assets/logo/Gray logo/Sindhuja-01.png', height: 'h-12' },
-        { name: 'Hamdard', logo: '/assets/logo/Gray logo/Hamdard-01.png', height: 'h-12' },
+        { name: 'Sindhuja', logo: '/assets/logo/Gray logo/Sindhuja-01.png', height: 'h-16' },
+        { name: 'Hamdard', logo: '/assets/logo/Gray logo/Hamdard-01.png', height: 'h-16' },
         { name: 'Vivo', logo: '/assets/logo/Gray logo/Vivo-01.png', height: 'h-12' },
         { name: 'Paytm', logo: '/assets/logo/Gray logo/Paytm-01.png', height: 'h-12' },
-        { name: 'Novel Healthtech', logo: '/assets/logo/Gray logo/Novel Healthtech-01.png', height: 'h-12' },
-        { name: 'Lenskart', logo: '/assets/logo/Gray logo/Lenskart-01.png', height: 'h-12' },
+        { name: 'Novel Healthtech', logo: '/assets/logo/Gray logo/Novel Healthtech-01.png', height: 'h-16' },
+        { name: 'Lenskart', logo: '/assets/logo/Gray logo/Lenskart-01.png', height: 'h-16' },
         { name: 'Lava', logo: '/assets/logo/Gray logo/Lava-01.png', height: 'h-12' },
         { name: 'eClerx', logo: '/assets/logo/Gray logo/eClerx-01.png', height: 'h-12' },
         { name: 'CCspl', logo: '/assets/logo/Gray logo/CCspl-01.png', height: 'h-12' },
         { name: 'Apollo', logo: '/assets/logo/Gray logo/apollo logo-01.png', height: 'h-12' },
         { name: 'Fusion', logo: '/assets/logo/Gray logo/Fusion-01.png', height: 'h-12' },
     ];
-    
+
     // Testimonials data
     const testimonials = [
         {
@@ -225,18 +262,19 @@ export default function Home() {
 
     // Navigation links with dropdown items
     const navLinks = [
-        { 
-            label: 'Product', 
+        {
+            label: 'Product',
             href: '#product',
             dropdownItems: [
-                { label: 'Group Medical Cover', href: '#gmc', description: 'Comprehensive health insurance for your entire team' },
+                { label: 'Group Medical Cover', href: '/group-medical-cover', description: 'Comprehensive health insurance for your entire team' },
                 { label: 'Group Accident Cover', href: '#gpa', description: 'Protection against unforeseen accidents and injuries' },
+                { label: 'Group Term Life', href: '#gtl', description: 'Life insurance coverage to protect your employees and their families' },
                 { label: 'Wellness Programs', href: '#wellness', description: 'Holistic wellness solutions for employee well-being' },
                 { label: 'Telehealth Services', href: '#telehealth', description: 'Virtual healthcare consultations anytime, anywhere' },
             ]
         },
-        { 
-            label: 'Experience', 
+        {
+            label: 'Experience',
             href: '#experience',
             dropdownItems: [
                 { label: 'Employee Platform', href: '#employee', description: 'Easy-to-use dashboard for managing benefits' },
@@ -244,8 +282,8 @@ export default function Home() {
                 { label: 'Mobile App', href: '#mobile', description: 'Access your benefits on the go with our app' },
             ]
         },
-        { 
-            label: 'Solutions', 
+        {
+            label: 'Solutions',
             href: '#solutions',
             dropdownItems: [
                 { label: 'Small Teams', href: '#small-teams', description: 'Flexible plans designed for startups and SMEs' },
@@ -253,8 +291,8 @@ export default function Home() {
                 { label: 'Hybrid Workforce', href: '#hybrid', description: 'Benefits that work for remote and on-site teams' },
             ]
         },
-        { 
-            label: 'Explore', 
+        {
+            label: 'Explore',
             href: '#explore',
             dropdownItems: [
                 { label: 'Resources', href: '#resources', description: 'Guides, whitepapers, and helpful materials' },
@@ -263,8 +301,8 @@ export default function Home() {
                 { label: 'FAQs', href: '#faq', description: 'Find answers to common questions' },
             ]
         },
-        { 
-            label: 'Company', 
+        {
+            label: 'Company',
             href: '#company',
             dropdownItems: [
                 { label: 'About Us', href: '#about', description: 'Learn about our mission and values' },
@@ -277,7 +315,7 @@ export default function Home() {
     // Dropdown hover state
     const [hoveredNav, setHoveredNav] = useState(null);
     const [closeTimeout, setCloseTimeout] = useState(null);
-    
+
     // Mobile menu state
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -389,10 +427,10 @@ export default function Home() {
         },
     ];
 
-    const officeCities = ['Gurgaon', 'Bangalore', 'Kolkata', 'Pune', 'Mumbai', 'Chennai', 'Ahemdabad'];
+    const officeCities = ['Gurgaon', 'Bangalore', 'Pune', 'Mumbai', 'Chennai'];
     const currentYear = new Date().getFullYear();
     return (
-        <div className={`min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-hidden ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#efe4ef85] text-gray-900'}`}>
+        <div className={`min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-hidden ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#ffceea78] text-gray-900'}`}>
             {/* Starry background effect (simple SVG or CSS) */}
             <div className="absolute inset-0 pointer-events-none z-0">
                 {/* You can use a star SVG, animated canvas, or just a gradient for demo */}
@@ -405,11 +443,10 @@ export default function Home() {
                 </svg>
             </div>
             {/* Header */}
-            <header className={`fixed top-0 left-0 w-full flex justify-between items-center py-3 px-6 md:py-6 z-30 backdrop-blur-lg dark:border-gray-800/60 transition-all duration-500 ${
-                hoveredNav 
-                    ? 'bg-[#fff5e5] shadow-lg' 
-                    : 'dark:bg-gray-900/40 bg-transparent'
-            }`}>
+            <header className={`fixed top-0 left-0 w-full flex justify-between items-center py-3 px-6 md:py-6 z-30 backdrop-blur-lg dark:border-gray-800/60 transition-all duration-500 ${hoveredNav
+                ? 'bg-[#fff5e5] shadow-lg'
+                : 'dark:bg-gray-900/40 bg-transparent'
+                }`}>
                 <Link href="/" className="flex items-center">
                     <img src="/assets/logo/ZoomConnect-logo.png" alt="ZoomConnect Logo" className="h-5 w-auto md:h-8 md:w-auto" />
                 </Link>
@@ -422,21 +459,20 @@ export default function Home() {
                         >
                             <a
                                 href={href}
-                                className="relative inline-flex items-center pb-1 text-[0.75rem] uppercase tracking-[0.12em] text-[#432821] transition-all duration-300 before:content-['+'] before:mr-2 before:text-[#dd4b63] before:text-base before:transition-all before:duration-300 after:absolute after:left-0 after:-bottom-[0.35rem] after:h-[1px] after:w-0 after:bg-[#dd4b63] after:transition-all after:duration-300 hover:text-[#dd4b63] hover:before:content-['−'] hover:after:w-full focus-visible:outline-none"
+                                className={`relative inline-flex items-center pb-1 text-[0.75rem] uppercase tracking-[0.12em] transition-all duration-300 before:content-['+'] before:mr-2 before:text-[#dd4b63] before:text-base before:transition-all before:duration-300 after:absolute after:left-0 after:-bottom-[0.35rem] after:h-[1px] after:w-0 after:bg-[#dd4b63] after:transition-all after:duration-300 hover:text-[#dd4b63] hover:before:content-['−'] hover:after:w-full focus-visible:outline-none ${navWhite ? 'text-white' : 'text-[#432821]'}`}
                                 onMouseEnter={() => handleMouseEnter(label)}
                             >
                                 {label}
                             </a>
-                            
+
                             {/* Full Screen Dropdown Menu */}
                             {dropdownItems && (
                                 <div
-                                    className={`fixed left-0 right-0 top-[72px] min-h-[70vh] bg-[#fff5e5]  transition-all duration-300 shadow-md ${
-                                        hoveredNav === label
-                                            ? 'opacity-100 visible translate-y-0'
-                                            : 'opacity-0 invisible -translate-y-4'
-                                    }`}
-                                    style={{ 
+                                    className={`fixed left-0 right-0 top-[72px] min-h-[70vh] bg-[#ffe6c9]  transition-all duration-300 shadow-md ${hoveredNav === label
+                                        ? 'opacity-100 visible translate-y-0'
+                                        : 'opacity-0 invisible -translate-y-4'
+                                        }`}
+                                    style={{
                                         zIndex: 40,
                                         pointerEvents: hoveredNav === label ? 'auto' : 'none'
                                     }}
@@ -444,12 +480,12 @@ export default function Home() {
                                 >
                                     <div className="container mx-auto px-6 py-12">
                                         <div className="max-w-7xl mx-auto">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 overflow-y-auto max-h-[50vh] pr-4">
                                                 {dropdownItems.map((item, idx) => (
                                                     <a
                                                         key={idx}
                                                         href={item.href}
-                                                        className="group p-6 rounded-xl hover:bg-[#dd4b63]/5 transition-all duration-300 border border-transparent hover:border-[#dd4b63]/20"
+                                                        className="group p-4 rounded-xl hover:bg-[#dd4b63]/5 transition-all duration-300 border border-transparent hover:border-[#dd4b63]/20"
                                                     >
                                                         <div className="flex items-start gap-4 ">
                                                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#dd4b63]/10 flex items-center justify-center group-hover:bg-[#dd4b63] transition-colors duration-300">
@@ -469,17 +505,19 @@ export default function Home() {
                                                     </a>
                                                 ))}
                                             </div>
-                                            
-                                            {/* Optional CTA at the bottom */}
-                                            <div className="mt-10 py-8 border-t border-gray-200 absolute bottom-0 left-16 right-10 px-6">
-                                                <div className="flex items-center justify-between">
+
+                                            {/* Optional CTA at the bottom (flows after scrollable content) */}
+                                            <div className="mt-10 pt-8 pb-4 border-t border-gray-200 px-6">
+                                                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                                                     <div>
                                                         <h4 className="text-lg font-semibold text-gray-800 mb-1">Need help choosing?</h4>
                                                         <p className="text-sm text-gray-600">Talk to our experts to find the perfect solution</p>
                                                     </div>
-                                                    <button className="px-6 py-3 bg-[#ff3052] text-white rounded-lg font-semibold hover:bg-[#c43a53] transition-colors duration-300">
-                                                        Contact Us
-                                                    </button>
+                                                    <div>
+                                                        <button className="px-6 py-3 bg-[#ff3052] text-white rounded-lg font-semibold hover:bg-[#c43a53] transition-colors duration-300">
+                                                            Contact Us
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -489,14 +527,14 @@ export default function Home() {
                         </div>
                     ))}
                 </nav>
-                
+
                 {/* Desktop Actions - Hidden on Mobile */}
                 <div className="hidden md:flex gap-3 items-center">
                     <button className="relative overflow-hidden font-bold px-3 py-1 rounded text-sm shadow transition flex items-center bg-transparent border border-[#934790] text-[#934790] group">
                         <span className="absolute left-1/2 bottom-0 w-0 h-0 bg-[#934790] rounded-full opacity-0 group-hover:w-[200%] group-hover:h-[400%] group-hover:opacity-100 transition-all duration-500 ease-out -translate-x-1/2 z-0"></span>
                         <span className="relative z-10 group-hover:text-white transition-colors duration-300">Log In</span>
                     </button>
-                    <Link 
+                    <Link
                         href="/book-demo"
                         className="relative overflow-hidden font-bold px-3 py-1 rounded text-sm shadow transition flex items-center bg-[#934790] text-white group"
                     >
@@ -506,7 +544,7 @@ export default function Home() {
                     {/* Dark Mode Toggle */}
                     <div className="flex items-center gap-3 pl-4">
                         {/* <span className="text-xs font-medium font-montserrat">Dark Mode</span> */}
-                        <button
+                        {/* <button
                             onClick={toggleDarkMode}
                             className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${darkMode ? 'bg-[#934790]' : 'bg-gray-300'}`}
                         >
@@ -524,10 +562,10 @@ export default function Home() {
                                     </svg>
                                 )}
                             </span>
-                        </button>
+                        </button> */}
                     </div>
                 </div>
-                
+
                 {/* Mobile Menu Button - Visible only on Mobile */}
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -537,7 +575,7 @@ export default function Home() {
                     {isMobileMenuOpen ? <FaTimes className="w-5 h-5" /> : <FaBars className="w-5 h-5" />}
                 </button>
             </header>
-            
+
             {/* Mobile Menu Dropdown */}
             {isMobileMenuOpen && (
                 <div className="md:hidden fixed top-[72px] left-0 right-0 bg-white shadow-lg z-40 max-h-[calc(100vh-72px)] overflow-y-auto">
@@ -567,10 +605,10 @@ export default function Home() {
                                 )}
                             </div>
                         ))}
-                        
+
                         {/* Mobile Actions */}
                         <div className="pt-4 space-y-3">
-                            <button 
+                            <button
                                 className="w-full px-4 py-2 border border-[#934790] text-[#934790] rounded font-semibold hover:bg-[#934790] hover:text-white transition-colors duration-300"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -587,30 +625,39 @@ export default function Home() {
                     </div>
                 </div>
             )}
-            
+
             {/* Hero Section */}
             <main className="min-h-screen flex flex-col items-center justify-center  md:w-full z-10 mt-5 relative">
                 {/* Background image */}
+                {/* <div className="absolute inset-0 z-0 opacity-70 pointer-events-none">
+                    <Lottie
+                        animationData={animationData}
+                        loop
+                        autoplay
+                        style={{ width: "100%", height: "100%" }}
+                    />
+                </div> */}
                 <div className="absolute inset-0 z-0 opacity-70">
-                    <img 
-                        src="/assets/images/wavy lines-01.png" 
-                        alt="Background" 
+                    <img
+                        src="/assets/images/wavy lines-01.png"
+                        alt="Background"
                         className="w-full h-full object-cover"
                     />
                 </div>
-                
+
                 {/* Content */}
                 <div className="relative z-10 flex flex-col items-center px-4 md:px-0">
                     <h1 className={`font-dmserif text-3xl md:text-6xl font-normal text-center leading-tight mb-6  ${darkMode ? ' text-white' : ' text-gray-800'}`}>
-                        ZoomConnect Is The New<br className="hidden md:block" />
-                        Standard of Employee<br className="hidden md:block" />
-                        Health Benefits
+                        Redefining Employee <br className="hidden md:block" />
+                        Healthcare & Insurance   Experience
+                        {/* <br className="hidden md:block" /> */}
+
                     </h1>
-                    <hr className="w-64 border-t-2 border-[#934790] my-4" />
+                    {/* <hr className="w-64 border-t-2 border-[#934790] my-4" /> */}
                     <p className="text-base md:text-lg text-center mb-8 ">
-                        World class insurance and healthcare, designed to protect your teams and their families.
+                        From policy access to claims support and wellness services —<br /> ZoomConnect puts everything your employees need in one smart platform.
                     </p>
-                    <Link 
+                    <Link
                         href="/book-demo"
                         className="relative overflow-hidden font-bold px-4 md:px-8 py-2 rounded-lg text-sm md:text-lg shadow-lg transition flex items-center gap-2 bg-[#934790] text-white group"
                     >
@@ -623,39 +670,41 @@ export default function Home() {
             </main>
             {/* Trusted Companies Section */}
             <section className="w-full mb-4 py-16 flex flex-col items-center justify-center ">
-                <h2 className="font-montserrat text-2xl md:text-xl text-gray-800 font-semibold text-center  mb-8 max-w-4xl">
-                    1000+ top companies in India trust ZoomConnect for their Employee Insurance & Benefits
-
+                <h2 className="font-montserrat text-2xl md:text-xl text-gray-800 font-semibold text-center  mb-4 max-w-4xl">
+                    Empowering Workforces of 1100+ Companies
                 </h2>
-                {/* Marquee effect for trusted companies */}
-                <div className="overflow-hidden w-full max-w-full mx-auto mt-10">
-                    <div className="flex items-center gap-16 animate-marquee whitespace-nowrap">
-                        {trustedCompanies.map((company, index) => (
-                            <img 
+                <p className="text-sm md:text-base text-center mb-8 md:mb-0 max-w-4xl">Our platform is trusted by industry leaders across manufacturing, IT, FMCG, automotive, healthcare, and more making employee health and insurance simpler and smarter.</p>
+                {/* Infinite Marquee for Trusted Companies */}
+                <div className="infinite-marquee-wrapper mt-10">
+                    <div className="infinite-marquee flex items-center gap-16 whitespace-nowrap">
+                        {/* Duplicate twice for smooth looping */}
+                        {[...trustedCompanies, ...trustedCompanies, ...trustedCompanies].map((company, index) => (
+                            <img
                                 key={index}
-                                src={company.logo} 
-                                alt={company.name} 
-                                className={`${company.height} w-auto`}
+                                src={company.logo}
+                                alt={company.name}
+                                className={`${company.height} w-auto object-contain`}
                             />
                         ))}
                     </div>
                 </div>
+
             </section>
 
             {/* Health Benefits Section */}
-            <section className="w-full py-16 flex flex-col items-center justify-center">
-                <div className="w-[95%] px-4 bg-[#E8D4B7]/80 rounded-3xl h-[600px] backdrop-blur-lg">
+            <section className="w-full py-8 flex flex-col items-center justify-center">
+                <div className="w-[95%] px-4 bg-[#f2d7b3]/80 rounded-3xl h-[600px] backdrop-blur-lg">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start overflow-hidden h-full relative">
                         {/* Benefits Grid - Left Side */}
-                        <div className="z-[1] bg-gradient-to-b from-[#E8D4B7]/70 to-transparent h-[70px] absolute top-0 left-0 right-0 rounded-tl-md rounded-tr-md"></div>
-                        <div className="z-[1] bg-gradient-to-t from-[#E8D4B7]/70 to-transparent h-[70px] absolute bottom-0 left-0 right-0 rounded-bl-md rounded-br-md"></div>
+                        <div className="z-[1] bg-gradient-to-b from-[#f2d7b3]/70 to-transparent h-[70px] absolute top-0 left-0 right-0 rounded-tl-md rounded-tr-md"></div>
+                        <div className="z-[1] bg-gradient-to-t from-[#f2d7b3]/70 to-transparent h-[70px] absolute bottom-0 left-0 right-0 rounded-bl-md rounded-br-md"></div>
 
                         <div className="grid grid-cols-3 gap-6  ">
                             {/* Column 1: Up */}
                             <div className=" h-96 flex flex-col items-center">
                                 <div className="vertical-marquee-up flex flex-col gap-6">
                                     {/* Repeat cards for seamless loop */}
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -663,7 +712,7 @@ export default function Home() {
                                         </div>
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Full body<br />health checkups</h3>
                                     </div>
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -688,7 +737,7 @@ export default function Home() {
                                         </div>
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Full body<br className="hidden md:block" />health checkups</h3>
                                     </div>
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -710,7 +759,7 @@ export default function Home() {
                             {/* Column 2: Down */}
                             <div className=" h-96 flex flex-col items-center">
                                 <div className="vertical-marquee-down flex flex-col gap-6">
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -736,7 +785,7 @@ export default function Home() {
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Medicine</h3>
                                     </div>
                                     {/* Duplicate for seamless loop */}
-                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                    <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -767,7 +816,7 @@ export default function Home() {
                             {/* Column 3: Up */}
                             <div className=" h-96 flex flex-col items-center">
                                 <div className="vertical-marquee-up flex flex-col gap-6">
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -776,7 +825,7 @@ export default function Home() {
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Group Medical Cover</h3>
                                     </div>
                                     {/* Duplicate for seamless loop */}
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -784,7 +833,7 @@ export default function Home() {
                                         </div>
                                         <h3 className="text-gray-800 text-sm font-medium font-montserrat">Lab Tests</h3>
                                     </div>
-                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                    <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
                                         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                                             <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -876,7 +925,7 @@ export default function Home() {
 
             {/* Beyond Group Mediclaim Section - Card Grid */}
             <section className="w-full flex flex-col items-center justify-center ">
-                <div className="w-full pt-20 pb-48 flex flex-col items-center justify-center bg-gradient-to-b from-[#E8D4B7]/70 via-[#E8D4B7]/50 to-[#E8D4B7]/20 beyond-group-section relative">
+                <div className="w-full pt-20 pb-48 flex flex-col items-center justify-center bg-gradient-to-b from-[#f2d7b3]/70 via-[#f2d7b3]/50 to-[#f2d7b3]/20 beyond-group-section relative">
                     <div className="container mx-auto px-8">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start relative">
                             {/* Left column pinned via GSAP */}
@@ -962,7 +1011,7 @@ export default function Home() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
                                         <div className="flex flex-col items-center text-center">
-                                            <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                            <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
                                                 <img src="/assets/icons/handshake-regular-full.svg" alt="Reinsurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
                                             </div>
                                             <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
@@ -976,7 +1025,7 @@ export default function Home() {
 
                                     <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
                                         <div className="flex flex-col items-center text-center">
-                                            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
                                                 <img src="/assets/icons/leaf-solid-full.svg" alt="Agriculture Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
                                             </div>
                                             <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
@@ -1222,10 +1271,10 @@ export default function Home() {
                     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-start">
                         <div className="w-[100%] md:w-[80%] max-w-2xl lg:max-w-none  flex flex-col items-center lg:items-start text-center lg:text-left">
                             <h2 className="mt-6 font-dmserif text-3xl md:text-3xl">
-                                Subscribe to People First <br className="hidden md:block" /> Dispatch
+                                Simplifying Employee <br className="hidden md:block" />Benefits, Every Day
                             </h2>
                             <p className="mt-4 max-w-xl text-sm text-white/70">
-                                A weekly digest of fresh perspectives, product updates, and resources crafted for people-first teams.
+                                From health cards and claims to wellness and insurance services - ZoomConnect brings everything together in one seamless platform. Stay informed.
                             </p>
 
                             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -1234,13 +1283,18 @@ export default function Home() {
                                     href="https://play.google.com/store/apps/details?id=com.zoomconnect"
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="flex items-center gap-3  px-5 py-3 text-left text-white transition "
+                                    className="flex items-center gap-3 pl-0 pr-5 py-3 text-left text-white transition "
                                 >
-                                    <img src="/assets/logo/logos for web/google play-01 1.png" alt="Get it on Google Play" className="h-8 w-auto object-contain" />
+                                    <img src="/assets/logo/google play-01 1.png" alt="Get it on Google Play" className="h-8 w-auto object-contain" />
 
-                                    <img src="/assets/logo/logos for web/app store-01 1.png" alt="Download on the App Store" className="h-8 w-auto object-contain " />
+                                    <img src="/assets/logo/app store-01 1.png" alt="Download on the App Store" className="h-8 w-auto object-contain " />
                                 </motion.a>
                             </div>
+                            {/* Inserted image below the app store buttons */}
+                            <div className="flex justify-center max-w-[100px] ">
+                                <img src="/assets/logo/QR zoom connect-01.png" alt="Descriptive Alt Text" className="max-w-full h-auto" />
+                            </div>
+                            
                         </div>
                         <div className="hidden self-stretch lg:flex lg:justify-center lg:px-10" aria-hidden="true">
                             <div
@@ -1405,12 +1459,13 @@ export default function Home() {
                                 <span className="font-semibold text-white/70">IRDAI Licence No.: 389.</span> Licence Category: Composite. Licence Expiry: 1st January 2027.
                             </p>
                             <p>
-                                Insurance is a subject matter of solicitation.Kindly read all policy related documents and take expert advice before taking any insurance or investment decisions.
+                                Insurance is a subject matter of solicitation.
+                                {/* Kindly read all policy related documents and take expert advice before taking any insurance or investment decisions. */}
                             </p>
                         </div>
                         <div className="md:text-center mb-4">
                             <p className="text-[10px]"> Developed by Novel Healthtech Solutions Pvt. Ltd. </p>
-                           <p> © {currentYear} ZoomConnect Private Limited. All rights reserved. </p>
+                            <p> © {currentYear} Zoom Insurance Brokers Pvt. Ltd. All rights reserved. </p>
                         </div>
                     </div>
                 </div>
