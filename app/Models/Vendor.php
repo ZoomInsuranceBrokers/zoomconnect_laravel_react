@@ -49,4 +49,12 @@ class Vendor extends Model
         }
         return $value;
     }
+
+    /**
+     * Relationship with wellness services
+     */
+    public function wellnessServices()
+    {
+        return $this->hasMany(WellnessService::class, 'vendor_id');
+    }
 }

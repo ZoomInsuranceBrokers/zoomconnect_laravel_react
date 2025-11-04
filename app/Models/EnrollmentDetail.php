@@ -69,6 +69,18 @@ class EnrollmentDetail extends Model
         return $this->belongsTo(CompanyMaster::class, 'cmp_id');
     }
 
+    // Relationship with enrollment periods
+    public function enrollmentPeriods()
+    {
+        return $this->hasMany(EnrollmentPeriod::class, 'enrolment_id');
+    }
+
+    // Relationship with enrollment data
+    public function enrollmentData()
+    {
+        return $this->hasMany(EnrollmentData::class, 'enrolment_id');
+    }
+
     // Scope for active enrollments
     public function scopeActive($query)
     {

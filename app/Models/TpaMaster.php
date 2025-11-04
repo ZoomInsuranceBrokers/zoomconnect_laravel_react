@@ -28,4 +28,9 @@ class TpaMaster extends Model
         'created_at',
         'updated_at',
     ];
+
+    public function policies()
+    {
+        return $this->hasMany(PolicyMaster::class, 'tpa_id', 'id');
+    }
 }

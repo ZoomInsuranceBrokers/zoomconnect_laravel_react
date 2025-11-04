@@ -125,4 +125,19 @@ class CompanyMaster extends Model
             ->with('insurance:id,insurance_company_name'); // fetch only company name
     }
 
+    public function enrollmentDetails()
+    {
+        return $this->hasMany(EnrollmentDetail::class, 'cmp_id');
+    }
+
+    public function enrollmentData()
+    {
+        return $this->hasMany(EnrollmentData::class, 'cmp_id', 'comp_id');
+    }
+
+    public function wellnessServices()
+    {
+        return $this->hasMany(WellnessService::class, 'company_id', 'comp_id');
+    }
+
 }

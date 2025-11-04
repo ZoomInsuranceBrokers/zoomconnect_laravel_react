@@ -125,6 +125,7 @@ export default function FillEnrollment({
                 return (
                     <Step3ExtraCoverage
                         extraCoveragePlans={extraCoveragePlans}
+                        availablePlans={availablePlans}
                         formData={formData}
                         updateFormData={updateFormData}
                         onNext={handleNextStep}
@@ -136,6 +137,7 @@ export default function FillEnrollment({
                     <Step4Summary
                         employee={employee}
                         enrollmentDetail={enrollmentDetail}
+                        availablePlans={availablePlans}
                         formData={formData}
                         onSubmit={handleSubmit}
                         onPrevious={handlePreviousStep}
@@ -183,17 +185,17 @@ export default function FillEnrollment({
                                         <li key={step.id} className="relative flex-1 flex flex-col items-center">
                                             {/* Progress line connecting steps */}
                                             {stepIdx !== steps.length - 1 && (
-                                                <div className="absolute top-5 left-1/2 w-full h-1 flex items-center">
+                                                <div className="absolute top-5 left-full w-full h-1 flex items-center" style={{ left: '50%' }}>
                                                     <div className="h-full w-full bg-gray-200 rounded-full relative">
-                                                        <div className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-out ${
-                                                            currentStep > step.id + 1
-                                                                ? 'w-full bg-gradient-to-r from-[#934790] to-[#b967b5]'
-                                                                : currentStep === step.id + 1
-                                                                ? 'w-1/2 bg-gradient-to-r from-[#934790] to-[#b967b5]'
-                                                                : currentStep > step.id
-                                                                ? 'w-full bg-gradient-to-r from-[#934790] to-[#b967b5]'
-                                                                : 'w-0 bg-gray-200'
-                                                        }`}></div>
+                                                        <div
+                                                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-out ${
+                                                                currentStep > step.id
+                                                                    ? 'w-full bg-gradient-to-r from-[#934790] to-[#b967b5]'
+                                                                    : currentStep === step.id + 1
+                                                                        ? 'w-1/2 bg-gradient-to-r from-[#934790] to-[#b967b5]'
+                                                                        : 'w-0 bg-gray-200'
+                                                            }`}
+                                                        ></div>
                                                     </div>
                                                 </div>
                                             )}

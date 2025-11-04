@@ -29,4 +29,12 @@ class WellnessCategory extends Model
     {
         return $query->where('status', 1);
     }
+
+    /**
+     * Relationship with wellness services
+     */
+    public function wellnessServices()
+    {
+        return $this->hasMany(WellnessService::class, 'category_id');
+    }
 }

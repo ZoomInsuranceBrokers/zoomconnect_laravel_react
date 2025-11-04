@@ -626,6 +626,56 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Enrollment Lists</span>
                                         </Link>
                                     </li>
+                                    <li>
+                                        <Link
+                                            href="/superadmin/policy/policy-users"
+                                            className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                                currentRoute ===
+                                                "/superadmin/policy/policy-users"
+                                                    ? "text-[#934790]"
+                                                    : `hover:text-[#934790] ${
+                                                          darkMode
+                                                              ? "text-gray-300"
+                                                              : "text-gray-600"
+                                                      }`
+                                            }`}
+                                        >
+                                            <span
+                                                className={`w-2 h-2 rounded-full ${
+                                                    currentRoute ===
+                                                    "/superadmin/policy/policy-users"
+                                                        ? "bg-[#934790]"
+                                                        : "bg-gray-400"
+                                                }`}
+                                            ></span>
+                                            <span>Policy Users</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/superadmin/policy/policies"
+                                            className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                                currentRoute ===
+                                                "/superadmin/policy/policies"
+                                                    ? "text-[#934790]"
+                                                    : `hover:text-[#934790] ${
+                                                          darkMode
+                                                              ? "text-gray-300"
+                                                              : "text-gray-600"
+                                                      }`
+                                            }`}
+                                        >
+                                            <span
+                                                className={`w-2 h-2 rounded-full ${
+                                                    currentRoute ===
+                                                    "/superadmin/policy/policies"
+                                                        ? "bg-[#934790]"
+                                                        : "bg-gray-400"
+                                                }`}
+                                            ></span>
+                                            <span>Policies</span>
+                                        </Link>
+                                    </li>
                                 </ul>
                             )}
                         </li>

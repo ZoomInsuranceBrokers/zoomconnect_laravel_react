@@ -27,11 +27,11 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
 ///////////////////////////////////////////////////////////////////////////////
 
 // Route::middleware(['auth.session'])->group(function () {
-// Logout route without prefix
-Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');
+    // Logout route without prefix
+    Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');
 
-// SuperAdmin routes with prefix
-Route::prefix('superadmin')->group(function () {
+    // SuperAdmin routes with prefix
+    Route::prefix('superadmin')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
 
     // Corporate Labels Routes
@@ -111,8 +111,21 @@ Route::prefix('superadmin')->group(function () {
     Route::get('/policy/edit-enrollment-period/{enrollmentPeriod}', [SuperAdminController::class, 'editEnrollmentPeriod'])->name('superadmin.edit-enrollment-period');
     Route::put('/update-enrollment-period/{enrollmentPeriod}', [SuperAdminController::class, 'updateEnrollmentPeriod'])->name('superadmin.update-enrollment-period');
 
+    // Policy Users Routes
+    Route::get('/policy/policy-users', [SuperAdminController::class, 'policyUsers'])->name('superadmin.policy.policy-users.index');
+
+    // Policies Routes
+    Route::get('/policy/policies', [SuperAdminController::class, 'policies'])->name('superadmin.policy.policies.index');
+    Route::get('/policy/policies/create', [SuperAdminController::class, 'createPolicy'])->name('superadmin.policy.policies.create');
+    Route::post('/policy/policies', [SuperAdminController::class, 'storePolicy'])->name('superadmin.policy.policies.store');
+    Route::get('/policy/policies/{policy}', [SuperAdminController::class, 'showPolicy'])->name('superadmin.policy.policies.show');
+    Route::get('/policy/policies/{policy}/edit', [SuperAdminController::class, 'editPolicy'])->name('superadmin.policy.policies.edit');
+    Route::put('/policy/policies/{policy}', [SuperAdminController::class, 'updatePolicy'])->name('superadmin.policy.policies.update');
+    Route::delete('/policy/policies/{policy}', [SuperAdminController::class, 'destroyPolicy'])->name('superadmin.policy.policies.destroy');
+
     // Fill Enrollment Routes
     Route::get('/fill-enrollment/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'fillEnrollment'])->name('superadmin.fill-enrollment');
     Route::post('/fill-enrollment/submit', [SuperAdminController::class, 'submitEnrollment'])->name('superadmin.submit-enrollment');
-});
+    });
+// });
 // });

@@ -47,7 +47,8 @@ class RatingConfigurationRequest extends FormRequest
 
         switch ($planType) {
             case 'simple':
-                $rules['rating_config.plans'] = 'required|array|min:1';
+                // Only validate plan details if plans exist, allow empty array
+                $rules['rating_config.plans'] = 'array';
                 $rules['rating_config.plans.*.plan_name'] = 'required|string|max:100';
                 $rules['rating_config.plans.*.sum_insured'] = 'required|numeric|min:1000|max:10000000';
                 $rules['rating_config.plans.*.premium_amount'] = 'required|numeric|min:1|max:1000000';
@@ -56,7 +57,7 @@ class RatingConfigurationRequest extends FormRequest
             case 'age_based':
             case 'per_life':
             case 'floater_highest_age':
-                $rules['rating_config.plans'] = 'required|array|min:1';
+                $rules['rating_config.plans'] = 'array';
                 $rules['rating_config.plans.*.plan_name'] = 'required|string|max:100';
                 $rules['rating_config.plans.*.sum_insured'] = 'required|numeric|min:1000|max:10000000';
                 $rules['rating_config.plans.*.age_brackets'] = 'required|array|min:1';

@@ -12,6 +12,9 @@ use App\Models\WellnessCategory;
 use App\Models\Vendor;
 use App\Models\EnrollmentDetail;
 use App\Models\EnrollmentConfig;
+use App\Models\PolicyMaster;
+use App\Models\InsuranceMaster;
+use App\Models\EscalationUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -2474,11 +2477,11 @@ class SuperAdminController extends Controller
                     'gender' => $familyDefinitionJson['spouse_gender'] ?? 'both'
                 ],
                 'kid' => [
-                    'enabled' => ($familyDefinitionJson['kid'] ?? '0') === '1',
-                    'no' => $familyDefinitionJson['kid_no'] ?? 2,
-                    'min_age' => $familyDefinitionJson['kid_min_age'] ?? 0,
-                    'max_age' => $familyDefinitionJson['kid_max_age'] ?? 25,
-                    'gender' => $familyDefinitionJson['kid_gender'] ?? 'both'
+                    'enabled' => ($familyDefinitionJson['kids'] ?? '0') === '1',
+                    'no' => $familyDefinitionJson['kids_no'] ?? 2,
+                    'min_age' => $familyDefinitionJson['kids_min_age'] ?? 0,
+                    'max_age' => $familyDefinitionJson['kids_max_age'] ?? 25,
+                    'gender' => $familyDefinitionJson['kids_gender'] ?? 'both'
                 ],
                 'parent' => [
                     'enabled' => ($familyDefinitionJson['parent'] ?? '0') === '1',
@@ -2514,7 +2517,10 @@ class SuperAdminController extends Controller
                     'min_age' => $familyDefinitionJson['others_min_age'] ?? 18,
                     'max_age' => $familyDefinitionJson['others_max_age'] ?? 65,
                     'gender' => $familyDefinitionJson['others_gender'] ?? 'both'
-                ]
+                ],
+                // Add parent/in-law combination rule for frontend logic
+                'add_both_parent_n_parent_in_law' => $familyDefinitionJson['add_both_parent_n_parent_in_law'] ?? 'both',
+                'spouse_with_same_gender' => $familyDefinitionJson['spouse_with_same_gender'] ?? null,
             ];
 
             // Parse rating config to get available plans
@@ -2524,7 +2530,8 @@ class SuperAdminController extends Controller
 
             $availablePlans = [
                 'basePlans' => [],
-                'topupPlans' => []
+                'topupPlans' => [],
+                'ratingConfig' => $ratingConfigJson ?? []
             ];
 
             if (isset($ratingConfigJson['plans']) && is_array($ratingConfigJson['plans'])) {
@@ -2616,6 +2623,7 @@ class SuperAdminController extends Controller
      */
     public function submitEnrollment(Request $request)
     {
+        dd($request->all());
         try {
             // Validate the request
             $validated = $request->validate([
@@ -2623,10 +2631,15 @@ class SuperAdminController extends Controller
                 'enrollment_period_id' => 'required|integer',
                 'enrollment_detail_id' => 'required|integer',
                 'enrollment_config_id' => 'nullable|integer',
-                'dependents' => 'array',
+                'dependents' => 'nullable|array',
                 'selectedPlans' => 'required|array',
-                'extraCoverage' => 'nullable|array',
+                'extraCoverage' => 'nullable',
                 'premiumCalculations' => 'required|array'
+            ]);
+
+            \Log::info('🎯 Starting enrollment submission', [
+                'employee_id' => $validated['employee_id'],
+                'form_data' => $validated
             ]);
 
             DB::beginTransaction();
@@ -2634,39 +2647,61 @@ class SuperAdminController extends Controller
             // Get employee and enrollment data
             $employee = \App\Models\CompanyEmployee::findOrFail($validated['employee_id']);
             $enrollmentPeriod = \App\Models\EnrollmentPeriod::findOrFail($validated['enrollment_period_id']);
+            $enrollmentDetail = \App\Models\EnrollmentDetail::findOrFail($validated['enrollment_detail_id']);
 
-            // Save enrollment data for employee
-            $this->saveEnrollmentData(
+            // Save enrollment data for employee (SELF)
+            $employeeEnrollment = $this->saveEnrollmentData(
                 $employee,
                 $validated,
                 'SELF',
-                $validated['selectedPlans']['employee'] ?? null
+                $validated['selectedPlans']['employee'] ?? $validated['selectedPlans']
             );
+
+            \Log::info('✅ Employee enrollment saved', ['id' => $employeeEnrollment->id]);
 
             // Save enrollment data for dependents
             if (!empty($validated['dependents'])) {
                 foreach ($validated['dependents'] as $dependent) {
-                    $this->saveEnrollmentData(
+                    $dependentEnrollment = $this->saveEnrollmentData(
                         $employee,
                         $validated,
                         $dependent['relation'],
-                        $validated['selectedPlans'][$dependent['id']] ?? null,
+                        $validated['selectedPlans'][$dependent['id']] ?? $validated['selectedPlans'],
                         $dependent
                     );
+
+                    \Log::info('✅ Dependent enrollment saved', [
+                        'id' => $dependentEnrollment->id,
+                        'name' => $dependent['insured_name'],
+                        'relation' => $dependent['relation']
+                    ]);
                 }
             }
 
+            // Update enrollment status or create summary record if needed
+            // This can be used to track overall enrollment completion
+            $this->updateEnrollmentStatus($employee, $enrollmentDetail, $validated);
+
             DB::commit();
+
+            \Log::info('🎉 Enrollment submission completed successfully');
 
             return redirect()->route('superadmin.view-live-portal', $validated['enrollment_period_id'])
                 ->with('message', 'Enrollment submitted successfully!')
                 ->with('messageType', 'success');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
+            \Log::error('❌ Validation failed for enrollment submission', [
+                'errors' => $e->errors(),
+                'input' => $request->all()
+            ]);
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Submit enrollment failed: ' . $e->getMessage());
+            \Log::error('❌ Submit enrollment failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all()
+            ]);
             return back()
                 ->with('message', 'Failed to submit enrollment. Please try again.')
                 ->with('messageType', 'error')
@@ -2679,6 +2714,12 @@ class SuperAdminController extends Controller
      */
     private function saveEnrollmentData($employee, $formData, $relation, $selectedPlans = null, $dependent = null)
     {
+        Log::info("💾 Saving enrollment data for {$relation}", [
+            'employee_id' => $employee->id,
+            'dependent_name' => $dependent['insured_name'] ?? 'N/A',
+            'selected_plans' => $selectedPlans
+        ]);
+
         // Create enrollment data record
         $enrollmentData = new \App\Models\EnrollmentData();
 
@@ -2703,58 +2744,237 @@ class SuperAdminController extends Controller
         $enrollmentData->relation = $relation;
         $enrollmentData->detailed_relation = $dependent['detailed_relation'] ?? $relation;
 
-        // Premium calculations
-        $premiumCalc = $formData['premiumCalculations'];
+        // Premium calculations from formData
+        $premiumCalc = $formData['premiumCalculations'] ?? [];
 
+        // Save base premium data
         if ($selectedPlans && isset($selectedPlans['basePlan'])) {
-            // Calculate base premium for this member (simplified calculation)
-            $basePremium = $this->calculatePlanPremium($selectedPlans['basePlan'], 'base');
-            $enrollmentData->base_premium_on_employee = $basePremium['employee'];
-            $enrollmentData->base_premium_on_company = $basePremium['company'];
-            $enrollmentData->base_sum_insured = $basePremium['sum_insured'];
+            $enrollmentData->base_plan_id = $selectedPlans['basePlan'];
+            $enrollmentData->base_premium_on_employee = $premiumCalc['basePremium'] ?? 0;
+            $enrollmentData->base_premium_on_company = 0; // Can be calculated based on company contribution
+            $enrollmentData->base_sum_insured = $this->getPlanSumInsured($selectedPlans['basePlan'], 'base');
         }
 
+        // Save topup premium data
         if ($selectedPlans && isset($selectedPlans['topupPlan'])) {
-            // Calculate topup premium for this member
-            $topupPremium = $this->calculatePlanPremium($selectedPlans['topupPlan'], 'topup');
-            $enrollmentData->topup_premium_on_employee = $topupPremium['employee'];
-            $enrollmentData->topup_premium_on_company = $topupPremium['company'];
-            $enrollmentData->topup_sum_insured = $topupPremium['sum_insured'];
+            $enrollmentData->topup_plan_id = $selectedPlans['topupPlan'];
+            $enrollmentData->topup_premium_on_employee = $premiumCalc['topupPremium'] ?? 0;
+            $enrollmentData->topup_premium_on_company = 0; // Can be calculated based on company contribution
+            $enrollmentData->topup_sum_insured = $this->getPlanSumInsured($selectedPlans['topupPlan'], 'topup');
         }
 
-        // Extra coverage (only for employee)
-        if ($relation === 'SELF' && !empty($formData['extraCoverage'])) {
-            $enrollmentData->extra_coverage_plan = $formData['extraCoverage']['plan_name'];
-            $enrollmentData->extra_coverage_premium = $formData['extraCoverage']['premium'] ?? 0;
+        // Extra coverage (typically only for employee)
+        if ($relation === 'SELF' && isset($formData['selectedPlans']['extraCoverageSelected'])) {
+            $extraCoverage = $formData['selectedPlans']['extraCoverageSelected'];
+            if (!empty($extraCoverage)) {
+                $enrollmentData->extra_coverage_plan = json_encode($extraCoverage);
+                $enrollmentData->extra_coverage_premium = $premiumCalc['extraCoveragePremium'] ?? 0;
+            }
         }
+
+        // Total premium calculations
+        $enrollmentData->gross_premium = $premiumCalc['grossPremium'] ?? 0;
+        $enrollmentData->gst_amount = $premiumCalc['gst'] ?? 0;
+        $enrollmentData->gross_plus_gst = $premiumCalc['grossPlusGst'] ?? 0;
+        $enrollmentData->company_contribution_amount = $premiumCalc['companyContributionAmount'] ?? 0;
+        $enrollmentData->employee_payable = $premiumCalc['employeePayable'] ?? 0;
 
         // System fields
         $enrollmentData->created_by = 'SuperAdmin';
         $enrollmentData->updated_by = 'SuperAdmin';
+        $enrollmentData->created_at = now();
+        $enrollmentData->updated_at = now();
 
         $enrollmentData->save();
+
+        Log::info("✅ Enrollment data saved successfully", [
+            'id' => $enrollmentData->id,
+            'insured_name' => $enrollmentData->insured_name,
+            'relation' => $enrollmentData->relation
+        ]);
 
         return $enrollmentData;
     }
 
     /**
-     * Calculate premium for a specific plan
+     * Update enrollment status after successful submission
      */
-    private function calculatePlanPremium($planId, $planType)
+    private function updateEnrollmentStatus($employee, $enrollmentDetail, $formData)
     {
-        // This is a simplified calculation - in real implementation,
-        // you would fetch actual plan details from database
-        $planDetails = [
-            'base' => [
-                1 => ['employee' => 12000, 'company' => 8000, 'sum_insured' => 300000],
-                2 => ['employee' => 18000, 'company' => 12000, 'sum_insured' => 500000],
-            ],
-            'topup' => [
-                1 => ['employee' => 6000, 'company' => 0, 'sum_insured' => 200000],
-                2 => ['employee' => 12000, 'company' => 0, 'sum_insured' => 500000],
-            ]
-        ];
+        try {
+            // You can add logic here to update overall enrollment status
+            // For example, marking the employee as "enrolled" in a status table
 
-        return $planDetails[$planType][$planId] ?? ['employee' => 0, 'company' => 0, 'sum_insured' => 0];
+            Log::info("📊 Updating enrollment status", [
+                'employee_id' => $employee->id,
+                'enrollment_detail_id' => $enrollmentDetail->id,
+                'total_dependents' => count($formData['dependents'] ?? [])
+            ]);
+
+            // Example: Update employee's enrollment status
+            // $employee->update(['enrollment_status' => 'completed']);
+
+            // Example: Create or update enrollment summary record
+            // This is optional and depends on your specific requirements
+
+        } catch (\Exception $e) {
+            Log::warning("⚠️ Failed to update enrollment status", [
+                'error' => $e->getMessage(),
+                'employee_id' => $employee->id
+            ]);
+            // Don't throw exception as this is not critical
+        }
+    }
+
+    /**
+     * Policy Users Index
+     */
+    public function policyUsers(Request $request)
+    {
+        try {
+            // Get policy users data - you can customize this based on your requirements
+            $policyUsers = \App\Models\CompanyEmployee::with(['company'])
+                ->where('is_active', 1)
+                ->paginate(15);
+
+            return Inertia::render('superadmin/policy/PolicyUsers/Index', [
+                'policyUsers' => $policyUsers,
+                'filters' => $request->only(['search', 'company_id', 'status']),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Policy Users index failed: ' . $e->getMessage());
+            return back()->with('message', 'Failed to load policy users.')->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Policies Index
+     */
+    public function policies(Request $request)
+    {
+        try {
+            // Get policies data from policy_master table
+            $query = PolicyMaster::with(['insurance', 'dataEscalationUser', 'claimLevel1User', 'claimLevel2User']);
+            dd($query);
+
+            // Apply search filter
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('policy_name', 'like', "%{$search}%")
+                      ->orWhere('corporate_policy_name', 'like', "%{$search}%")
+                      ->orWhere('policy_number', 'like', "%{$search}%");
+                });
+            }
+
+            // Apply status filter
+            if ($request->filled('status')) {
+                $status = $request->status;
+                if ($status === 'active') {
+                    $query->where('is_active', 1);
+                } elseif ($status === 'inactive') {
+                    $query->where('is_active', 0);
+                }
+            }
+
+            $policies = $query->orderBy('created_at', 'desc')->paginate(15);
+
+            return Inertia::render('superadmin/policy/Policies/Index', [
+                'policies' => $policies,
+                'filters' => $request->only(['search', 'status']),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Policies index failed: ' . $e->getMessage());
+            return back()->with('message', 'Failed to load policies.')->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Create Policy Form
+     */
+    public function createPolicy()
+    {
+        try {
+            // Get data for dropdowns
+            $insuranceProviders = InsuranceMaster::where('is_active', 1)->get();
+            $escalationUsers = EscalationUser::where('is_active', 1)->get();
+
+            return Inertia::render('superadmin/policy/Policies/Create', [
+                'insuranceProviders' => $insuranceProviders,
+                'escalationUsers' => $escalationUsers,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Create policy form failed: ' . $e->getMessage());
+            return back()->with('message', 'Failed to load create policy form.')->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Store New Policy
+     */
+    public function storePolicy(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'policy_name' => 'required|string|max:255',
+                'corporate_policy_name' => 'nullable|string|max:255',
+                'policy_number' => 'nullable|string|max:255',
+                'family_defination' => 'nullable|string|max:255',
+                'policy_type' => 'nullable|string|max:255',
+                'policy_type_definition' => 'nullable|string|max:255',
+                'policy_start_date' => 'nullable|date',
+                'policy_end_date' => 'nullable|date|after:policy_start_date',
+                'policy_document' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+                'policy_directory_name' => 'nullable|string|max:255',
+                'ins_id' => 'required|exists:insurance_masters,id',
+                'tpa_id' => 'nullable|string|max:255',
+                'cd_ac_id' => 'nullable|string|max:255',
+                'data_escalation_id' => 'nullable|exists:escalation_users,id',
+                'claim_level_1_id' => 'nullable|exists:escalation_users,id',
+                'claim_level_2_id' => 'nullable|exists:escalation_users,id',
+                'is_active' => 'boolean',
+            ]);
+
+            // Handle file upload
+            if ($request->hasFile('policy_document')) {
+                $file = $request->file('policy_document');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $filePath = $file->storeAs('policy_documents', $fileName, 'public');
+                $validated['policy_document'] = $filePath;
+            }
+
+            // Set default values
+            $validated['is_ready'] = 0;
+            $validated['is_old'] = 0;
+            $validated['created_on'] = now();
+
+            PolicyMaster::create($validated);
+
+            return redirect()->route('superadmin.policy.policies.index')->with('message', 'Policy created successfully.')->with('messageType', 'success');
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Store policy failed: ' . $e->getMessage());
+            return back()->with('message', 'Failed to create policy.')->with('messageType', 'error')->withInput();
+        }
+    }
+
+    /**
+     * Get plan sum insured amount
+     */
+    private function getPlanSumInsured($planId, $planType)
+    {
+        try {
+            // This would typically fetch from your plans database
+            // For now, return a default value
+            return 500000; // 5 Lakhs default
+        } catch (\Exception $e) {
+            Log::warning("Failed to get plan sum insured", [
+                'plan_id' => $planId,
+                'plan_type' => $planType,
+                'error' => $e->getMessage()
+            ]);
+            return 0;
+        }
     }
 }

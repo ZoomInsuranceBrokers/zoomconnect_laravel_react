@@ -66,7 +66,7 @@ class EnrollmentData extends Model
      */
     public function company()
     {
-        return $this->belongsTo(CompanyMaster::class, 'cmp_id', 'id');
+        return $this->belongsTo(CompanyMaster::class, 'cmp_id', 'comp_id');
     }
 
     /**
