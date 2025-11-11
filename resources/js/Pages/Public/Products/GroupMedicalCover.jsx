@@ -8,6 +8,7 @@ import { GMCFAQDemo } from "@/Pages/Public/components/ui/GMCFAQ";
 
 export default function GroupMedicalCover() {
     const { darkMode } = useTheme();
+    const [hoveredIndex, setHoveredIndex] = React.useState(null);
 
     const features = [
         {
@@ -25,6 +26,8 @@ export default function GroupMedicalCover() {
             ),
             title: 'Wide Hospital Network',
             desc: 'Access to thousands of cashless hospitals across the country for seamless treatment.',
+            iconBg: '#fff0f6',
+            iconColor: '#FF0066'
         },
         {
             icon: (
@@ -37,6 +40,8 @@ export default function GroupMedicalCover() {
             ),
             title: 'Comprehensive Coverage',
             desc: 'Coverage includes pre and post-hospitalization, maternity, and daycare procedures.',
+            iconBg: '#f6f3ff',
+            iconColor: '#6A0066'
         },
         {
             icon: (
@@ -52,6 +57,8 @@ export default function GroupMedicalCover() {
             ),
             title: 'Digital Claims',
             desc: 'Experience paperless claim processing with live tracking and instant support.',
+            iconBg: '#f6f0f8',
+            iconColor: '#934790'
         },
     ];
 
@@ -114,17 +121,16 @@ export default function GroupMedicalCover() {
                             {features.map((feature, i) => (
                                 <div
                                     key={i}
+                                    onMouseEnter={() => setHoveredIndex(i)}
+                                    onMouseLeave={() => setHoveredIndex(null)}
                                     className="group relative bg-white rounded-3xl p-8 flex flex-col items-center text-center border border-gray-100 shadow-sm 
                      hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
+                                    style={{ background: hoveredIndex === i ? feature.iconBg : '#f9f6fb', transition: 'background-color 200ms ease' }}
                                 >
-                                    {/* Gradient Accent Background - fills from top to bottom */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-[#6A0066]/60 via-[#FF0066]/20 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out group-hover:delay-0 delay-200"></div>
-
-
-                                    {/* Icon */}
-                                    <div className="relative z-10 mb-6 w-20 h-20 mx-auto bg-[#fef6fc] rounded-2xl flex items-center justify-center shadow-md 
-                          group-hover:shadow-[#934790]/40 transition-all duration-500 group-hover:scale-110">
-                                        <div className="text-[#934790] transform group-hover:rotate-6 transition-transform duration-500">
+                                    {/* Icon wrapper uses per-feature subtle bg; card uses same bg on hover */}
+                                    <div className="relative z-10 mb-6 w-20 h-20 mx-auto rounded-full flex items-center justify-center shadow-lg transition-all duration-500 group-hover:scale-110"
+                                        style={{ background: feature.iconBg }}>
+                                        <div className="transform group-hover:rotate-6 transition-transform duration-500" style={{ color: feature.iconColor }}>
                                             {feature.icon}
                                         </div>
                                     </div>

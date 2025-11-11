@@ -100,7 +100,7 @@ const Header = () => {
             {/* Full Screen Dropdown Menu */}
             {dropdownItems && (
               <div
-                className={`fixed left-0 right-0 top-[72px] min-h-[70vh] bg-[#f2d7b3] transition-all duration-300 shadow-md ${hoveredNav === label
+                className={`fixed left-0 right-0 top-[72px] min-h-[70vh] bg-[#f6dcc7] transition-all duration-300 shadow-md ${hoveredNav === label
                   ? 'opacity-100 visible translate-y-0'
                   : 'opacity-0 invisible -translate-y-4'
                   }`}

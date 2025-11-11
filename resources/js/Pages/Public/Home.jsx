@@ -598,7 +598,7 @@ export default function Home() {
                 </section>
 
                 {/* Testimonials Section */}
-                <section className="w-full pb-16 flex flex-col items-center justify-center ">
+                <section className="w-full pt-8 pb-16 flex flex-col items-center justify-center ">
                     <h2 className="font-dmserif text-2xl md:text-5xl font-medium text-center mb-8 max-w-3xl text-gray-800">What Our Clients Say</h2>
                     <div className="w-[90%] max-w-6xl mx-auto rounded-3xl bg-white-300 flex flex-col md:flex-row items-stretch overflow-hidden" style={{ boxShadow: '0 10px 32px 0 rgba(0,0,0,0.15), 0 1.5px 6px 0 rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)' }}>
                         {/* Left: Semicircle Testimonial List */}
