@@ -7,58 +7,78 @@
 
 /* Custom Scrollbar Styles */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #934790;
-    border-radius: 3px;
+  background: #934790;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #7d3c7a;
+  background: #7d3c7a;
 }
 
 
 /* Firefox */
 * {
-        scrollbar-width: thin;
-        scrollbar-color: #934790 transparent;
+  scrollbar-width: thin;
+  scrollbar-color: #934790 transparent;
 }
 
-/* Marquee animation for trusted companies */
-@keyframes marquee {
+@keyframes infinite-marquee {
   0% {
-    transform: translateX(0%);
+    transform: translateX(0);
   }
+
   100% {
     transform: translateX(-50%);
   }
 }
 
-.animate-marquee {
-  animation: marquee 25s linear infinite;
+.infinite-marquee-wrapper {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
 }
+
+.infinite-marquee {
+  display: flex;
+  width: max-content;
+  animation: infinite-marquee 60s linear infinite;
+}
+
+.infinite-marquee:hover {
+  animation-play-state: paused;
+  /* optional */
+}
+
 
 /* Float animations for benefits cards */
 @keyframes float-up {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-20px);
   }
 }
 
 @keyframes float-down {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(20px);
   }
@@ -73,18 +93,24 @@
 }
 
 @keyframes float-alternate1 {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-15px);
   }
 }
 
 @keyframes float-alternate2 {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(15px);
   }
@@ -103,6 +129,7 @@
   0% {
     transform: translateY(0%);
   }
+
   100% {
     transform: translateY(-50%);
   }
@@ -112,6 +139,7 @@
   0% {
     transform: translateY(-50%);
   }
+
   100% {
     transform: translateY(0%);
   }
@@ -120,6 +148,7 @@
 .vertical-marquee-up {
   animation: vertical-marquee-up 10s linear infinite;
 }
+
 .vertical-marquee-down {
   animation: vertical-marquee-down 10s linear infinite;
 }
@@ -134,9 +163,17 @@
 }
 
 .fade-in-up {
-  animation: fadeInUp 0.7s cubic-bezier(.4,2,.6,1);
+  animation: fadeInUp 0.7s cubic-bezier(.4, 2, .6, 1);
 }
+
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(32px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Foundation\Application;
@@ -5,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\ProductController;
 
 Route::get('/', function () {
     return Inertia::render('Public/Home');
@@ -13,6 +15,37 @@ Route::get('/', function () {
 Route::get('/book-demo', function () {
     return Inertia::render('Public/BookDemo');
 })->name('book.demo');
+
+// Product Routes
+Route::prefix('products')->name('products.')->group(function () {
+    Route::get('/group-medical-cover', [ProductController::class, 'groupMedicalCover'])->name('group-medical-cover');
+    Route::get('/group-accident-cover', [ProductController::class, 'groupAccidentCover'])->name('group-accident-cover');
+    Route::get('/group-term-life', [ProductController::class, 'groupTermLife'])->name('group-term-life');
+    Route::get('/wellness-programs', [ProductController::class, 'wellnessPrograms'])->name('wellness-programs');
+    Route::get('/telehealth-services', [ProductController::class, 'telehealthServices'])->name('telehealth-services');
+});
+
+Route::get('/employee', [App\Http\Controllers\ProductController::class, 'employee'])->name('employee');
+Route::get('/employer', [App\Http\Controllers\ProductController::class, 'employer'])->name('employer');
+Route::get('/mobile', [App\Http\Controllers\ProductController::class, 'mobile'])->name('mobile');
+
+// Solutions
+Route::get('/small-teams', [App\Http\Controllers\ProductController::class, 'smallTeams'])->name('smallTeams');
+Route::get('/large-teams', [App\Http\Controllers\ProductController::class, 'largeTeams'])->name('largeTeams');
+Route::get('/hybrid', [App\Http\Controllers\ProductController::class, 'hybrid'])->name('hybrid');
+
+// Explore
+Route::get('/resources', [App\Http\Controllers\ProductController::class, 'resources'])->name('resources');
+Route::get('/blog', [App\Http\Controllers\ProductController::class, 'blog'])->name('blog');
+Route::get('/cases', [App\Http\Controllers\ProductController::class, 'cases'])->name('cases');
+Route::get('/faq', [App\Http\Controllers\ProductController::class, 'faq'])->name('faq');
+
+// Company
+Route::get('/about', [App\Http\Controllers\ProductController::class, 'about'])->name('about');
+Route::get('/careers', [App\Http\Controllers\ProductController::class, 'careers'])->name('careers');
+Route::get('/contact', [App\Http\Controllers\ProductController::class, 'contact'])->name('contact');
+// Contact Us Route
+Route::get('/contact-us', [ProductController::class, 'contactUs'])->name('contact-us');
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////// --- SuperAdmin Login --- ////////////////////////////
@@ -156,3 +189,8 @@ Route::prefix('superadmin')->group(function () {
 });
 // });
 // });
+
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////// --- Product Pages Routes --- ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
