@@ -10,11 +10,14 @@ use App\Models\UserMaster;
 use App\Models\WellnessService;
 use App\Models\WellnessCategory;
 use App\Models\Vendor;
+use App\Models\FaqMaster;
 use App\Models\EnrollmentDetail;
 use App\Models\EnrollmentConfig;
 use App\Models\PolicyMaster;
 use App\Models\InsuranceMaster;
 use App\Models\EscalationUser;
+use App\Models\BlogMaster;
+use App\Models\Resource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -25,6 +28,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\ReplaceEscalationUserJob;
 
 class SuperAdminController extends Controller
 {
@@ -2829,17 +2833,35 @@ class SuperAdminController extends Controller
     /**
      * Policy Users Index
      */
-    public function policyUsers(Request $request)
+   public function policyUsers(Request $request)
     {
         try {
-            // Get policy users data - you can customize this based on your requirements
-            $policyUsers = \App\Models\CompanyEmployee::with(['company'])
-                ->where('is_active', 1)
-                ->paginate(15);
+            $query = EscalationUser::query();
+
+            // Search
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+                });
+            }
+
+            // Status filter
+            if ($request->filled('status')) {
+                $query->where('is_active', $request->status === 'active' ? 1 : 0);
+            }
+
+            $policyUsers = $query->orderBy('id', 'desc')->paginate(10);
+
+            // also send list of active escalation users for replacement dropdown
+            $escalationUsers = EscalationUser::where('is_active', 1)->get(['id', 'name']);
 
             return Inertia::render('superadmin/policy/PolicyUsers/Index', [
                 'policyUsers' => $policyUsers,
-                'filters' => $request->only(['search', 'company_id', 'status']),
+                'filters' => $request->only(['search', 'status']),
+                'escalationUsers' => $escalationUsers,
             ]);
         } catch (\Exception $e) {
             Log::error('Policy Users index failed: ' . $e->getMessage());
@@ -2848,55 +2870,410 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Deactivate a user and assign another escalation user across policy_master
+     */
+    public function deactivateAssignPolicyUser(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'replacement_user_id' => 'required|integer|exists:escalation_users,id',
+        ]);
+
+        try {
+            $oldUser = EscalationUser::findOrFail($id);
+
+            // mark old user inactive
+            $oldUser->is_active = 0;
+            $oldUser->save();
+
+            // dispatch job to replace occurrences in policy_master
+            ReplaceEscalationUserJob::dispatch($oldUser->id, $validated['replacement_user_id']);
+
+            return response()->json(['success' => true, 'message' => 'User deactivated and replacement job done.']);
+        } catch (\Exception $e) {
+            Log::error('Deactivate assign failed: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to deactivate and assign'], 500);
+        }
+    }
+
+    public function storePolicyUser(Request $request)
+    {
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'nullable|email',
+            'mobile' => 'nullable|string|max:15',
+        ]);
+
+        try {
+            EscalationUser::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'] ?? null,
+                'mobile' => $validated['mobile'] ?? null,
+                'is_active' => 1,
+            ]);
+
+            return redirect()->back()->with('message', 'Policy User added successfully.');
+        } catch (\Exception $e) {
+            Log::error('Policy User store failed: ' . $e->getMessage());
+            return back()->with('message', 'Failed to add Policy User.')->with('messageType', 'error');
+        }
+    }
+
+    public function updatePolicyUser(Request $request, $id)
+    {
+        // Accept either 'mobile' or 'phone' (some frontend forms use different names)
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'nullable|email',
+            'mobile' => 'nullable|string|max:15',
+            'phone' => 'nullable|string|max:15',
+        ]);
+
+        try {
+            $user = EscalationUser::findOrFail($id);
+
+            // Normalize mobile value (prefer 'mobile', fallback to 'phone')
+            $mobileValue = $validated['mobile'] ?? $validated['phone'] ?? null;
+
+            $updateData = [
+                'name' => $validated['name'],
+                'email' => $validated['email'] ?? null,
+                'mobile' => $mobileValue,
+            ];
+
+            $user->update($updateData);
+
+            // If this was an AJAX / fetch request, return JSON so frontend can handle it
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => true, 'user' => $user]);
+            }
+
+            return redirect()->back()->with('message', 'Policy User updated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Policy User update failed: ' . $e->getMessage());
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Failed to update Policy User.'], 500);
+            }
+
+            return back()->with('message', 'Failed to update Policy User.')->with('messageType', 'error');
+        }
+    }
+
+    public function togglePolicyUser($id)
+    {
+        try {
+            $user = EscalationUser::findOrFail($id);
+            $user->is_active = !$user->is_active;
+            $user->save();
+
+            return response()->json(['success' => true, 'is_active' => $user->is_active]);
+        } catch (\Exception $e) {
+            Log::error('Toggle active failed: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error toggling status']);
+        }
+    }
+
+    /**
      * Policies Index
      */
     public function policies(Request $request)
     {
-        try {
-            // Get policies data from policy_master table
-            $query = PolicyMaster::with(['insurance', 'dataEscalationUser', 'claimLevel1User', 'claimLevel2User']);
-            dd($query);
+        // Get policies data from policy_master table
+        $query = PolicyMaster::with(['company', 'tpa', 'insurance']);
 
-            // Apply search filter
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('policy_name', 'like', "%{$search}%")
-                      ->orWhere('corporate_policy_name', 'like', "%{$search}%")
-                      ->orWhere('policy_number', 'like', "%{$search}%");
-                });
-            }
-
-            // Apply status filter
-            if ($request->filled('status')) {
-                $status = $request->status;
-                if ($status === 'active') {
-                    $query->where('is_active', 1);
-                } elseif ($status === 'inactive') {
-                    $query->where('is_active', 0);
-                }
-            }
-
-            $policies = $query->orderBy('created_at', 'desc')->paginate(15);
-
-            return Inertia::render('superadmin/policy/Policies/Index', [
-                'policies' => $policies,
-                'filters' => $request->only(['search', 'status']),
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Policies index failed: ' . $e->getMessage());
-            return back()->with('message', 'Failed to load policies.')->with('messageType', 'error');
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('policy_name', 'like', "%{$search}%")
+                  ->orWhere('corporate_policy_name', 'like', "%{$search}%")
+                  ->orWhere('policy_number', 'like', "%{$search}%");
+            });
         }
+
+        // Apply status filter
+        if ($request->filled('status')) {
+            $status = $request->status;
+            if ($status === 'active') {
+                $query->where('is_active', 1);
+            } elseif ($status === 'inactive') {
+                $query->where('is_active', 0);
+            }
+        }
+
+        $policies = $query->orderBy('created_on', 'desc')->paginate(10);
+
+        return Inertia::render('superadmin/policy/Policies/Index', [
+            'policies' => $policies,
+            'filters' => $request->only(['search', 'status']),
+        ]);
     }
 
     /**
      * Create Policy Form
      */
+    /**
+     * Admin FAQs Index
+     */
+    public function adminFaqsIndex()
+    {
+        try {
+            $faqs = FaqMaster::orderBy('id', 'desc')->get();
+
+            return Inertia::render('superadmin/admin/faqs/Index', [
+                'faqs' => $faqs,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to load FAQs: ' . $e->getMessage());
+            return back()->with('message', 'Failed to load FAQs.')->with('messageType', 'error');
+        }
+    }
+
+    public function adminFaqsCreate()
+    {
+        return Inertia::render('superadmin/admin/faqs/Create');
+    }
+
+    public function adminFaqsStore(Request $request)
+    {
+        $request->validate([
+            'faq_title' => 'required|string|max:255',
+            'faq_description' => 'nullable|string',
+            'is_active' => 'boolean',
+        ]);
+
+        FaqMaster::create([
+            'faq_title' => $request->faq_title,
+            'faq_description' => $request->faq_description,
+            'is_active' => $request->has('is_active') ? (bool) $request->is_active : true,
+        ]);
+
+        return redirect()->route('superadmin.admin.faqs.index')->with('message', 'FAQ created successfully.')->with('messageType', 'success');
+    }
+
+    public function adminFaqsEdit(FaqMaster $faq)
+    {
+        return Inertia::render('superadmin/admin/faqs/Edit', [
+            'faq' => $faq,
+        ]);
+    }
+
+    public function adminFaqsUpdate(Request $request, FaqMaster $faq)
+    {
+        $request->validate([
+            'faq_title' => 'required|string|max:255',
+            'faq_description' => 'nullable|string',
+            'is_active' => 'boolean',
+        ]);
+
+        $faq->update([
+            'faq_title' => $request->faq_title,
+            'faq_description' => $request->faq_description,
+            'is_active' => $request->has('is_active') ? (bool) $request->is_active : true,
+        ]);
+
+        return redirect()->route('superadmin.admin.faqs.index')->with('message', 'FAQ updated successfully.')->with('messageType', 'success');
+    }
+
+    public function adminFaqsDestroy(FaqMaster $faq)
+    {
+        $faq->delete();
+        return redirect()->route('superadmin.admin.faqs.index')->with('message', 'FAQ deleted successfully.')->with('messageType', 'success');
+    }
+
+    /**
+     * Admin Blogs Index
+     */
+    public function adminBlogsIndex()
+    {
+        try {
+            $blogs = BlogMaster::orderBy('blog_date', 'desc')->get();
+            return Inertia::render('superadmin/admin/blogs/Index', [
+                'blogs' => $blogs,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to load blogs: ' . $e->getMessage());
+            return back()->with('message', 'Failed to load blogs.')->with('messageType', 'error');
+        }
+    }
+
+    public function adminBlogsCreate()
+    {
+        return Inertia::render('superadmin/admin/blogs/Create');
+    }
+
+    public function adminBlogsStore(Request $request)
+    {
+        $request->validate([
+            'blog_title' => 'required|string|max:255',
+            'blog_slug' => 'required|string|max:255',
+            'blog_author' => 'nullable|string|max:255',
+            'blog_thumbnail' => 'nullable|file',
+            'blog_banner' => 'nullable|file',
+            'blog_content' => 'nullable|string',
+            'blog_date' => 'nullable|date',
+            'is_active' => 'boolean',
+        ]);
+
+        $data = $request->only([
+            'blog_title', 'blog_slug', 'blog_author', 'blog_content', 'blog_thumbnail_alt', 'blog_banner_alt', 'focus_keyword', 'meta_title', 'meta_description', 'meta_keywords', 'og_title', 'og_description', 'twitter_title', 'twitter_description', 'blog_tags', 'blog_categories'
+        ]);
+
+        if ($request->hasFile('blog_thumbnail')) {
+            $data['blog_thumbnail'] = $request->file('blog_thumbnail')->store('blogs', 'public');
+        }
+        if ($request->hasFile('blog_banner')) {
+            $data['blog_banner'] = $request->file('blog_banner')->store('blogs', 'public');
+        }
+
+        $data['blog_date'] = $request->blog_date ?? now();
+        $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : true;
+
+        BlogMaster::create($data);
+
+        return redirect()->route('superadmin.admin.blogs.index')->with('message', 'Blog created successfully.')->with('messageType', 'success');
+    }
+
+    public function adminBlogsEdit(BlogMaster $blog)
+    {
+        return Inertia::render('superadmin/admin/blogs/Edit', [
+            'blog' => $blog,
+        ]);
+    }
+
+    public function adminBlogsUpdate(Request $request, BlogMaster $blog)
+    {
+        $request->validate([
+            'blog_title' => 'required|string|max:255',
+            'blog_slug' => 'required|string|max:255',
+            'blog_author' => 'nullable|string|max:255',
+            'blog_thumbnail' => 'nullable|file',
+            'blog_banner' => 'nullable|file',
+            'blog_content' => 'nullable|string',
+            'blog_date' => 'nullable|date',
+            'is_active' => 'boolean',
+        ]);
+
+        $data = $request->only([
+            'blog_title', 'blog_slug', 'blog_author', 'blog_content', 'blog_thumbnail_alt', 'blog_banner_alt', 'focus_keyword', 'meta_title', 'meta_description', 'meta_keywords', 'og_title', 'og_description', 'twitter_title', 'twitter_description', 'blog_tags', 'blog_categories'
+        ]);
+
+        if ($request->hasFile('blog_thumbnail')) {
+            $data['blog_thumbnail'] = $request->file('blog_thumbnail')->store('blogs', 'public');
+        }
+        if ($request->hasFile('blog_banner')) {
+            $data['blog_banner'] = $request->file('blog_banner')->store('blogs', 'public');
+        }
+
+        $data['blog_date'] = $request->blog_date ?? $blog->blog_date;
+        $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : $blog->is_active;
+
+        $blog->update($data);
+
+        return redirect()->route('superadmin.admin.blogs.index')->with('message', 'Blog updated successfully.')->with('messageType', 'success');
+    }
+
+    public function adminBlogsDestroy(BlogMaster $blog)
+    {
+        $blog->delete();
+        return redirect()->route('superadmin.admin.blogs.index')->with('message', 'Blog deleted successfully.')->with('messageType', 'success');
+    }
+    /**
+     * Admin Resources
+     */
+    public function adminResourcesIndex()
+    {
+        try {
+            $resources = Resource::orderBy('published_at', 'desc')->get();
+            return Inertia::render('superadmin/admin/resources/Index', [
+                'resources' => $resources,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to load resources: ' . $e->getMessage());
+            return back()->with('message', 'Failed to load resources.')->with('messageType', 'error');
+        }
+    }
+
+    public function adminResourcesCreate()
+    {
+        return Inertia::render('superadmin/admin/resources/Create');
+    }
+
+    public function adminResourcesStore(Request $request)
+    {
+        $request->validate([
+            'heading' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:resources,slug',
+            'tags' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'content' => 'nullable|string',
+            'file_url' => 'nullable|file',
+            'cover_image' => 'nullable|image',
+            'author' => 'nullable|string|max:255',
+            'status' => 'in:draft,published,archived',
+            'published_at' => 'nullable|date',
+        ]);
+
+        $data = $request->only(['heading','slug','tags','category','content','author','status','published_at']);
+
+        if ($request->hasFile('file_url')) {
+            $data['file_url'] = $request->file('file_url')->store('resources', 'public');
+        }
+        if ($request->hasFile('cover_image')) {
+            $data['cover_image'] = $request->file('cover_image')->store('resources', 'public');
+        }
+
+        Resource::create($data);
+
+        return redirect()->route('superadmin.admin.resources.index')->with('message', 'Resource created successfully.')->with('messageType', 'success');
+    }
+
+    public function adminResourcesEdit(Resource $resource)
+    {
+        return Inertia::render('superadmin/admin/resources/Edit', [
+            'resource' => $resource,
+        ]);
+    }
+
+    public function adminResourcesUpdate(Request $request, Resource $resource)
+    {
+        $request->validate([
+            'heading' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:resources,slug,' . $resource->id,
+            'tags' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'content' => 'nullable|string',
+            'file_url' => 'nullable|file',
+            'cover_image' => 'nullable|image',
+            'author' => 'nullable|string|max:255',
+            'status' => 'in:draft,published,archived',
+            'published_at' => 'nullable|date',
+        ]);
+
+        $data = $request->only(['heading','slug','tags','category','content','author','status','published_at']);
+
+        if ($request->hasFile('file_url')) {
+            $data['file_url'] = $request->file('file_url')->store('resources', 'public');
+        }
+        if ($request->hasFile('cover_image')) {
+            $data['cover_image'] = $request->file('cover_image')->store('resources', 'public');
+        }
+
+        $resource->update($data);
+
+        return redirect()->route('superadmin.admin.resources.index')->with('message', 'Resource updated successfully.')->with('messageType', 'success');
+    }
+
+    public function adminResourcesDestroy(Resource $resource)
+    {
+        $resource->delete();
+        return redirect()->route('superadmin.admin.resources.index')->with('message', 'Resource deleted successfully.')->with('messageType', 'success');
+    }
     public function createPolicy()
     {
         try {
             // Get data for dropdowns
-            $insuranceProviders = InsuranceMaster::where('is_active', 1)->get();
+            $insuranceProviders = InsuranceMaster::where('status', 1)->get();
             $escalationUsers = EscalationUser::where('is_active', 1)->get();
 
             return Inertia::render('superadmin/policy/Policies/Create', [

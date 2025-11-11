@@ -52,7 +52,7 @@ class PolicyMaster extends Model
 
     public function company()
     {
-        return $this->belongsTo(CompanyMaster::class, 'cmp_id', 'comp_id');
+        return $this->belongsTo(CompanyMaster::class, 'comp_id', 'comp_id');
     }
 
     public function dataEscalationUser()

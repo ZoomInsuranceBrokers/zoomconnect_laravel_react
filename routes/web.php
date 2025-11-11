@@ -27,11 +27,11 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
 ///////////////////////////////////////////////////////////////////////////////
 
 // Route::middleware(['auth.session'])->group(function () {
-    // Logout route without prefix
-    Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');
+// Logout route without prefix
+Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');
 
-    // SuperAdmin routes with prefix
-    Route::prefix('superadmin')->group(function () {
+// SuperAdmin routes with prefix
+Route::prefix('superadmin')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
 
     // Corporate Labels Routes
@@ -89,7 +89,30 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
     Route::put('/marketing/push-notifications/{notification}', [SuperAdminController::class, 'marketingPushNotificationsUpdate'])->name('superadmin.marketing.push-notifications.update');
     Route::delete('/marketing/push-notifications/{notification}', [SuperAdminController::class, 'marketingPushNotificationsDestroy'])->name('superadmin.marketing.push-notifications.destroy');
 
-    // Policy Module Routes
+    // Admin -> FAQs Routes
+    Route::get('/admin/faqs', [SuperAdminController::class, 'adminFaqsIndex'])->name('superadmin.admin.faqs.index');
+    Route::post('/admin/faqs', [SuperAdminController::class, 'adminFaqsStore'])->name('superadmin.admin.faqs.store');
+    Route::put('/admin/faqs/{faq}', [SuperAdminController::class, 'adminFaqsUpdate'])->name('superadmin.admin.faqs.update');
+    Route::delete('/admin/faqs/{faq}', [SuperAdminController::class, 'adminFaqsDestroy'])->name('superadmin.admin.faqs.destroy');
+
+    // Admin -> Blogs Routes
+    Route::get('/admin/blogs', [SuperAdminController::class, 'adminBlogsIndex'])->name('superadmin.admin.blogs.index');
+    Route::get('/admin/blogs/create', [SuperAdminController::class, 'adminBlogsCreate'])->name('superadmin.admin.blogs.create');
+    Route::post('/admin/blogs', [SuperAdminController::class, 'adminBlogsStore'])->name('superadmin.admin.blogs.store');
+    Route::get('/admin/blogs/{blog}/edit', [SuperAdminController::class, 'adminBlogsEdit'])->name('superadmin.admin.blogs.edit');
+    Route::put('/admin/blogs/{blog}', [SuperAdminController::class, 'adminBlogsUpdate'])->name('superadmin.admin.blogs.update');
+    Route::delete('/admin/blogs/{blog}', [SuperAdminController::class, 'adminBlogsDestroy'])->name('superadmin.admin.blogs.destroy');
+
+    // Admin -> Resources Routes
+    Route::get('/admin/resources', [SuperAdminController::class, 'adminResourcesIndex'])->name('superadmin.admin.resources.index');
+    Route::get('/admin/resources/create', [SuperAdminController::class, 'adminResourcesCreate'])->name('superadmin.admin.resources.create');
+    Route::post('/admin/resources', [SuperAdminController::class, 'adminResourcesStore'])->name('superadmin.admin.resources.store');
+    Route::get('/admin/resources/{resource}/edit', [SuperAdminController::class, 'adminResourcesEdit'])->name('superadmin.admin.resources.edit');
+    Route::put('/admin/resources/{resource}', [SuperAdminController::class, 'adminResourcesUpdate'])->name('superadmin.admin.resources.update');
+    Route::delete('/admin/resources/{resource}', [SuperAdminController::class, 'adminResourcesDestroy'])->name('superadmin.admin.resources.destroy');
+
+
+    // Enrollment Lists
     Route::get('/policy/enrollment-lists', [SuperAdminController::class, 'policyEnrollmentLists'])->name('superadmin.policy.enrollment-lists.index');
     Route::get('/policy/enrollment-lists/create', [SuperAdminController::class, 'policyEnrollmentListsCreate'])->name('superadmin.policy.enrollment-lists.create');
     Route::post('/policy/enrollment-lists', [SuperAdminController::class, 'policyEnrollmentListsStore'])->name('superadmin.policy.enrollment-lists.store');
@@ -113,6 +136,10 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
 
     // Policy Users Routes
     Route::get('/policy/policy-users', [SuperAdminController::class, 'policyUsers'])->name('superadmin.policy.policy-users.index');
+    Route::post('/policy/policy-users/store', [SuperAdminController::class, 'storePolicyUser'])->name('superadmin.policy-users.store');
+    Route::post('/policy/policy-users/{id}/update', [SuperAdminController::class, 'updatePolicyUser'])->name('superadmin.policy-users.update');
+    Route::post('/policy/policy-users/{id}/toggle', [SuperAdminController::class, 'togglePolicyUser'])->name('superadmin.policy-users.toggle');
+    Route::post('/policy/policy-users/{id}/deactivate-assign', [SuperAdminController::class, 'deactivateAssignPolicyUser'])->name('superadmin.policy-users.deactivate-assign');
 
     // Policies Routes
     Route::get('/policy/policies', [SuperAdminController::class, 'policies'])->name('superadmin.policy.policies.index');
@@ -126,6 +153,6 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
     // Fill Enrollment Routes
     Route::get('/fill-enrollment/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'fillEnrollment'])->name('superadmin.fill-enrollment');
     Route::post('/fill-enrollment/submit', [SuperAdminController::class, 'submitEnrollment'])->name('superadmin.submit-enrollment');
-    });
+});
 // });
 // });

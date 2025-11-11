@@ -14,9 +14,7 @@ class EscalationUser extends Model
     protected $fillable = [
         'name',
         'email',
-        'phone',
-        'designation',
-        'department',
+        'mobile',
         'is_active',
         'created_at',
         'updated_at',

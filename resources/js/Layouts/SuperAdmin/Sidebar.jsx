@@ -22,6 +22,9 @@ export default function Sidebar({ open = true, onToggle }) {
         if (currentRoute.startsWith("/superadmin/policy")) {
             menusToOpen.policy = true;
         }
+        if (currentRoute.startsWith("/superadmin/admin")) {
+            menusToOpen.admin = true;
+        }
         setOpenMenus(menusToOpen);
     }, [currentRoute]);
 
@@ -674,6 +677,63 @@ export default function Sidebar({ open = true, onToggle }) {
                                                 }`}
                                             ></span>
                                             <span>Policies</span>
+                                        </Link>
+                                    </li>
+                                </ul>
+                            )}
+                        </li>
+
+                        {/* Admin Menu with Submenu */}
+                        <li>
+                            <button
+                                onClick={() => toggleMenu("admin")}
+                                className={`w-full flex items-center justify-between gap-3 px-7 py-2 font-montserrat font-medium text-[13px] transition-colors duration-200 ${
+                                    openMenus.admin || currentRoute.startsWith("/superadmin/admin")
+                                        ? "bg-[#E6E8F5] text-[#934790] rounded-lg"
+                                        : `hover:bg-[#E6E8F5] hover:text-[#934790] ${
+                                              darkMode ? "text-white" : "text-black"
+                                          } rounded-lg`
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="w-5 h-5 flex items-center justify-center">
+                                        <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path d="M4 6h16M4 12h16M4 18h16" />
+                                        </svg>
+                                    </span>
+                                    <span>Admin</span>
+                                </div>
+
+                                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className={`transition-transform duration-200 ${openMenus.admin ? "rotate-180" : ""}`}>
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                            </button>
+
+                            {/* Submenu */}
+                            {openMenus.admin && (
+                                <ul className="ml-4 mt-1 space-y-1">
+                                    <li>
+                                        <Link href="/superadmin/admin/resources" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                            currentRoute === "/superadmin/admin/resources" ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
+                                        }`}>
+                                            <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/resources" ? "bg-[#934790]" : "bg-gray-400"}`}></span>
+                                            <span>Resources</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/superadmin/admin/blogs" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                            currentRoute === "/superadmin/admin/blogs" ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
+                                        }`}>
+                                            <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/blogs" ? "bg-[#934790]" : "bg-gray-400"}`}></span>
+                                            <span>Blogs</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/superadmin/admin/faqs" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                            currentRoute === "/superadmin/admin/faqs" ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
+                                        }`}>
+                                            <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/faqs" ? "bg-[#934790]" : "bg-gray-400"}`}></span>
+                                            <span>Faqs</span>
                                         </Link>
                                     </li>
                                 </ul>

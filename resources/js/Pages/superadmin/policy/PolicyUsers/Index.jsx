@@ -1,201 +1,328 @@
-import React, { useState } from 'react';
-import { Link, router } from '@inertiajs/react';
-import SuperAdminLayout from '../../../Layouts/SuperAdmin/Layout';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { router, Link, useForm } from '@inertiajs/react';
+import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
 
-export default function Index({ policyUsers, filters }) {
-    const [searchTerm, setSearchTerm] = useState(filters.search || '');
-    const [selectedCompany, setSelectedCompany] = useState(filters.company_id || '');
-    const [selectedStatus, setSelectedStatus] = useState(filters.status || '');
+export default function PolicyUsers({ policyUsers, filters, escalationUsers = [] }) {
+    const [search, setSearch] = useState(filters.search || '');
+    const [status, setStatus] = useState(filters.status || '');
+    const [showModal, setShowModal] = useState(false);
+    const [editingUser, setEditingUser] = useState(null);
+
+    const { data, setData, post, reset, processing, errors } = useForm({
+        name: '',
+        email: '',
+        mobile: '',
+    });
+
+    const [message, setMessage] = useState(null);
+    const [showMessage, setShowMessage] = useState(false);
+    const [togglingId, setTogglingId] = useState(null);
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [pendingDeactivateUser, setPendingDeactivateUser] = useState(null);
+    const [selectedReplacement, setSelectedReplacement] = useState('');
+
+    const toggleStatus = async (user) => {
+        // prevent double toggles per row
+        if (togglingId === user.id) return;
+        setTogglingId(user.id);
+        try {
+            // if user is currently active and we're turning them inactive, open assign modal
+            if (user.is_active) {
+                setPendingDeactivateUser(user);
+                setShowAssignModal(true);
+                setTogglingId(null);
+                return;
+            }
+
+            const url = route('superadmin.policy-users.toggle', user.id);
+            if (!url) return console.error('route superadmin.policy-users.toggle not found');
+            // call toggle endpoint using fetch so Inertia doesn't expect an Inertia response
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ is_active: !user.is_active }),
+            });
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                throw new Error(data?.message || 'Toggle failed');
+            }
+            setMessage({ type: 'success', text: `User ${user.is_active ? 'deactivated' : 'activated'} successfully` });
+            setShowMessage(true);
+            // auto-close message then refresh list
+            setTimeout(() => {
+                setShowMessage(false);
+                router.reload();
+            }, 1200);
+        } catch (error) {
+            setMessage({ type: 'error', text: 'An error occurred while updating the user status' });
+            setShowMessage(true);
+            // auto-hide error after a short delay (no reload)
+            setTimeout(() => setShowMessage(false), 2000);
+            console.error(error);
+        } finally {
+            setTogglingId(null);
+        }
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get('/superadmin/policy/policy-users', {
-            search: searchTerm,
-            company_id: selectedCompany,
-            status: selectedStatus,
-        }, {
-            preserveState: true,
-            replace: true,
-        });
+        try {
+            const url = route('superadmin.policy.policy-users.index');
+            if (!url) return console.error('route superadmin.policy.policy-users.index not found');
+            router.get(url, { search, status }, { preserveState: true });
+        } catch (err) {
+            console.error('Error calling route for search', err);
+        }
     };
 
-    const handleFilterChange = () => {
-        router.get('/superadmin/policy/policy-users', {
-            search: searchTerm,
-            company_id: selectedCompany,
-            status: selectedStatus,
-        }, {
-            preserveState: true,
-            replace: true,
-        });
+    const applyFilters = () => {
+        try {
+            const url = route('superadmin.policy.policy-users.index');
+            if (!url) return console.error('route superadmin.policy.policy-users.index not found');
+            router.get(url, { search, status }, { preserveState: true });
+        } catch (err) {
+            console.error('Error applying filters', err);
+        }
     };
+
+    const handlePage = (linkUrl) => {
+        if (!linkUrl) return;
+        try {
+            // Use Inertia visit so Inertia handles the request but preserve state
+            router.visit(linkUrl, { preserveState: true });
+        } catch (err) {
+            // Fallback: navigate directly
+            window.location.href = linkUrl;
+        }
+    };
+
+    const confirmDeactivateAssign = async () => {
+        if (!pendingDeactivateUser || !selectedReplacement) return;
+        setTogglingId(pendingDeactivateUser.id);
+        try {
+            const url = route('superadmin.policy-users.deactivate-assign', pendingDeactivateUser.id);
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ replacement_user_id: selectedReplacement }),
+            });
+            const json = await res.json().catch(() => null);
+            if (res.ok && json?.success) {
+                setMessage({ type: 'success', text: json.message || 'Replacement job queued' });
+                setShowMessage(true);
+                setShowAssignModal(false);
+                setPendingDeactivateUser(null);
+                setSelectedReplacement('');
+                setTimeout(() => {
+                    setShowMessage(false);
+                    router.reload();
+                }, 1200);
+            } else {
+                setMessage({ type: 'error', text: json?.message || 'Failed to queue replacement job' });
+                setShowMessage(true);
+                setTimeout(() => setShowMessage(false), 2000);
+            }
+        } catch (err) {
+            console.error(err);
+            setMessage({ type: 'error', text: 'Server error while queuing job' });
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 2000);
+        } finally {
+            setTogglingId(null);
+        }
+    };
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (editingUser) {
+                // Use fetch for update so we can handle plain JSON responses and avoid Inertia's plain-JSON error modal
+                const url = route('superadmin.policy-users.update', editingUser.id);
+                if (!url) return console.error('route superadmin.policy-users.update not found');
+                setIsSubmitting(true);
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token || '',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ name: data.name, email: data.email, mobile: data.mobile }),
+                });
+                const json = await res.json().catch(() => null);
+                if (res.ok) {
+                    setMessage({ type: 'success', text: 'Policy User updated successfully.' });
+                    setShowMessage(true);
+                    closeModal();
+                    setTimeout(() => {
+                        setShowMessage(false);
+                        router.reload();
+                    }, 1200);
+                } else {
+                    setMessage({ type: 'error', text: json?.message || 'Failed to update Policy User.' });
+                    setShowMessage(true);
+                    setTimeout(() => setShowMessage(false), 2000);
+                }
+                setIsSubmitting(false);
+            } else {
+                const url = route('superadmin.policy-users.store');
+                if (!url) return console.error('route superadmin.policy-users.store not found');
+                // use Inertia post for create (server will redirect/back)
+                post(url, { onSuccess: () => { closeModal(); router.reload(); } });
+            }
+        } catch (err) {
+            console.error('Error submitting policy user form', err);
+            setIsSubmitting(false);
+            setMessage({ type: 'error', text: 'An unexpected error occurred.' });
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 2000);
+        }
+    };
+
+    const openModal = (user = null) => {
+        if (user) {
+            setEditingUser(user);
+            setData({ name: user.name, email: user.email, mobile: user.mobile });
+        } else {
+            reset();
+            setEditingUser(null);
+        }
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setEditingUser(null);
+        reset();
+    };
+
+    // Status toggle removed per request — status is now display-only
 
     return (
         <SuperAdminLayout>
-            <div className="space-y-6">
-                {/* Header */}
-                <div className="border-b border-gray-200 pb-4">
+            <div className="p-6 space-y-6">
+                <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-900">Policy Users</h1>
-                    <p className="mt-1 text-sm text-gray-600">
-                        Manage users who have access to policy enrollment portals.
-                    </p>
+                    <button
+                        onClick={() => openModal()}
+                        className="bg-[#934790] text-white px-4 py-2 rounded-md hover:bg-[#7a3d7a]"
+                    >
+                        + Add User
+                    </button>
                 </div>
 
-                {/* Filters */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <form onSubmit={handleSearch} className="flex flex-wrap gap-4">
-                        <div className="flex-1 min-w-[200px]">
-                            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-                                Search
-                            </label>
-                            <input
-                                type="text"
-                                id="search"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search by name, email, or employee code..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-transparent"
-                            />
-                        </div>
-                        <div className="min-w-[150px]">
-                            <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
-                                Company
-                            </label>
-                            <select
-                                id="company"
-                                value={selectedCompany}
-                                onChange={(e) => {
-                                    setSelectedCompany(e.target.value);
-                                    handleFilterChange();
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-transparent"
-                            >
-                                <option value="">All Companies</option>
-                                {/* Add company options here */}
-                            </select>
-                        </div>
-                        <div className="min-w-[150px]">
-                            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                                Status
-                            </label>
-                            <select
-                                id="status"
-                                value={selectedStatus}
-                                onChange={(e) => {
-                                    setSelectedStatus(e.target.value);
-                                    handleFilterChange();
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-transparent"
-                            >
-                                <option value="">All Status</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                            </select>
-                        </div>
-                        <div className="flex items-end">
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-[#934790] text-white rounded-md hover:bg-[#7a3d7a] focus:outline-none focus:ring-2 focus:ring-[#934790] focus:ring-offset-2"
-                            >
-                                Search
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                <form onSubmit={handleSearch} className="flex flex-wrap gap-4 bg-white p-4 border rounded-lg">
+                    <input
+                        type="text"
+                        placeholder="Search by name, email, or mobile"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="border px-3 py-2 rounded-md w-64"
+                    />
+                    <select
+                        value={status}
+                        onChange={(e) => {
+                            setStatus(e.target.value);
+                            // apply filters immediately when status changes
+                            setTimeout(() => applyFilters(), 0);
+                        }}
+                        className="border px-3 py-2 rounded-md"
+                    >
+                        <option value="">All</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                    <button type="submit" className="bg-[#934790] text-white px-4 py-2 rounded-md hover:bg-[#7a3d7a]">
+                        Search
+                    </button>
+                </form>
 
-                {/* Users Table */}
-                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                    <div className="px-4 py-3 border-b border-gray-200">
-                        <h3 className="text-lg font-medium text-gray-900">Policy Users ({policyUsers.total})</h3>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Employee
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Company
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Contact
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {policyUsers.data.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {user.full_name}
-                                                    </div>
-                                                    <div className="text-sm text-gray-500">
-                                                        {user.employees_code}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
-                                                {user.company?.company_name || 'N/A'}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
-                                                {user.email}
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                                {user.mobile_number}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                user.status === 'active'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-red-100 text-red-800'
-                                            }`}>
-                                                {user.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <Link
-                                                href={`/superadmin/policy/policy-users/${user.id}`}
-                                                className="text-[#934790] hover:text-[#7a3d7a]"
+                <div className="bg-white border rounded-lg overflow-hidden">
+                    <table className="min-w-full text-sm">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="px-4 py-2 text-left">Name</th>
+                                <th className="px-4 py-2 text-left">Email</th>
+                                <th className="px-4 py-2 text-left">Phone</th>
+                                <th className="px-4 py-2 text-left">Status</th>
+                                <th className="px-4 py-2 text-left">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {useMemo(() => {
+                                const q = (search || '').toLowerCase().trim();
+                                if (!q) return policyUsers.data;
+                                return policyUsers.data.filter((user) => {
+                                    return (
+                                        (user.name || '').toLowerCase().includes(q) ||
+                                        (user.email || '').toLowerCase().includes(q) ||
+                                        (user.mobile || user.phone || '').toLowerCase().includes(q)
+                                    );
+                                });
+                            }, [search, policyUsers.data]).map((user) => (
+                                <tr key={user.id} className="border-t hover:bg-gray-50">
+                                    <td className="px-4 py-2">{user.name}</td>
+                                    <td className="px-4 py-2">{user.email || '-'}</td>
+                                    <td className="px-4 py-2">{user.mobile || '-'}</td>
+                                    <td className="px-4 py-2">
+                                        <label className="inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={user.is_active}
+                                                onChange={() => toggleStatus(user)}
+                                                className="sr-only"
+                                                disabled={togglingId === user.id}
+                                            />
+                                            <div
+                                                className={`w-7 h-4 rounded-full transition-colors duration-200 ${user.is_active ? 'bg-[#934790]' : 'bg-gray-300'} flex items-center ${togglingId === user.id ? 'opacity-60' : ''}`}
                                             >
-                                                View Details
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                                <div
+                                                    className={`w-3 h-3 rounded-full bg-white shadow-md transform transition-transform duration-200 ${user.is_active ? 'translate-x-4' : 'translate-x-0'}`}
+                                                ></div>
+                                            </div>
+                                        </label>
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <button
+                                            onClick={() => openModal(user)}
+                                            className="text-[#934790] hover:text-[#7a3d7a]"
+                                        >
+                                            Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
 
-                    {/* Pagination */}
                     {policyUsers.last_page > 1 && (
-                        <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                            <div className="text-sm text-gray-700">
+                        <div className="flex justify-between items-center p-4 border-t text-sm">
+                            <span>
                                 Showing {policyUsers.from} to {policyUsers.to} of {policyUsers.total} results
-                            </div>
-                            <div className="flex space-x-1">
-                                {policyUsers.links.map((link, index) => (
-                                    <Link
-                                        key={index}
-                                        href={link.url}
-                                        className={`px-3 py-1 text-sm border rounded ${
+                            </span>
+                            <div className="flex gap-1">
+                                {policyUsers.links.map((link, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => handlePage(link.url)}
+                                        className={`px-3 py-1 rounded border text-sm ${
                                             link.active
                                                 ? 'bg-[#934790] text-white border-[#934790]'
-                                                : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                : 'border-gray-300 hover:bg-gray-50'
                                         }`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
@@ -204,6 +331,118 @@ export default function Index({ policyUsers, filters }) {
                         </div>
                     )}
                 </div>
+
+                {/* Modal */}
+                {showModal && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                        <div className="bg-white rounded-lg p-6 w-96">
+                            <h2 className="text-lg font-semibold mb-4">
+                                {editingUser ? 'Edit Policy User' : 'Add Policy User'}
+                            </h2>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <input
+                                    type="text"
+                                    placeholder="Name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                    className="border px-3 py-2 rounded-md w-full"
+                                />
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={data.email}
+                                    onChange={(e) => setData('email', e.target.value)}
+                                    className="border px-3 py-2 rounded-md w-full"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Phone"
+                                    value={data.mobile}
+                                    onChange={(e) => setData('mobile', e.target.value)}
+                                    className="border px-3 py-2 rounded-md w-full"
+                                />
+                                <div className="flex justify-end gap-2">
+                                    <button type="button" onClick={closeModal} className="px-3 py-2 border rounded-md">
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="px-4 py-2 bg-[#934790] text-white rounded-md hover:bg-[#7a3d7a]"
+                                    >
+                                        {editingUser ? 'Update' : 'Save'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Assign replacement modal when deactivating a user */}
+                {showAssignModal && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                        <div className="bg-white rounded-lg p-6 w-96">
+                            <h2 className="text-lg font-semibold mb-4">Replace Escalation User</h2>
+                            <p className="text-sm text-gray-600 mb-4">You're deactivating <strong>{pendingDeactivateUser?.name}</strong>. Choose another escalation user to reassign any policy responsibilities to.</p>
+                            <div>
+                                <select
+                                    value={selectedReplacement}
+                                    onChange={(e) => setSelectedReplacement(e.target.value)}
+                                    className="border px-3 py-2 rounded-md w-full mb-4"
+                                >
+                                    <option value="">-- Select replacement user --</option>
+                                    {escalationUsers.map((u) => (
+                                        <option key={u.id} value={u.id}>{u.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button type="button" onClick={() => { setShowAssignModal(false); setPendingDeactivateUser(null); setSelectedReplacement(''); }} className="px-3 py-2 border rounded-md">Cancel</button>
+                                <button type="button" onClick={confirmDeactivateAssign} disabled={!selectedReplacement} className="px-4 py-2 bg-[#934790] text-white rounded-md hover:bg-[#7a3d7a]">Proceed</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Success / Error message modal */}
+                {showMessage && message && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+                        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4 transform transition-all duration-200">
+                            <div className="flex items-center gap-4">
+                                <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${message.type === 'success' ? 'bg-green-100' : 'bg-red-100'}`}>
+                                    {message.type === 'success' ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-sm font-medium text-gray-900">{message.type === 'success' ? 'Success' : 'Error'}</div>
+                                    <div className="text-sm text-gray-600">{message.text}</div>
+                                </div>
+                                <div>
+                                    <button
+                                        onClick={() => {
+                                            setShowMessage(false);
+                                            // If it was a success, also reload to reflect change immediately
+                                            if (message.type === 'success') router.reload();
+                                        }}
+                                        className="text-gray-400 hover:text-gray-600"
+                                        aria-label="Close"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 011.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </SuperAdminLayout>
     );
