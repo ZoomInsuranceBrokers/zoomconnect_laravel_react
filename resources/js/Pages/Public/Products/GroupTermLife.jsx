@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { FaHeart, FaFamily, FaUmbrella, FaHandHoldingHeart, FaCheckCircle, FaShieldAlt, FaClock, FaFileAlt } from 'react-icons/fa';
+import { FaHeart, FaUsers, FaUmbrella, FaHandHoldingHeart, FaCheckCircle, FaShieldAlt, FaClock, FaFileAlt } from 'react-icons/fa';
 import { useTheme } from '../../../Context/ThemeContext';
 
 export default function GroupTermLife() {
@@ -13,7 +13,7 @@ export default function GroupTermLife() {
             description: 'Comprehensive life insurance coverage for your entire team'
         },
         {
-            icon: FaFamily,
+            icon: FaUsers,
             title: 'Family Security',
             description: "Financial protection for employees' families and dependents"
         },

@@ -25,7 +25,7 @@ const currentYear = new Date().getFullYear();
 const officeCities = ['Gurgaon', 'Bangalore', 'Pune', 'Mumbai', 'Chennai'];
 
 const Footer = () => (
-  <footer className='relative w-full mt-24 text-white bg-[#571754]'>
+  <footer className='relative w-full text-white bg-[#571754]'>
     <div className="absolute inset-0 overflow-hidden">
       <span className="absolute -top-24 -left-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"></span>
       <span className="absolute top-1/3 right-[-5rem] h-72 w-72 rounded-full bg-[#FF6F91]/20 blur-[120px]"></span>

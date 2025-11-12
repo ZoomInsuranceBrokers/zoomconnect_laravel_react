@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
-import SuperAdminLayout from '../../../Layouts/SuperAdmin/Layout';
+import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
 
 export default function Create({ insuranceProviders, escalationUsers }) {
     const [formData, setFormData] = useState({
