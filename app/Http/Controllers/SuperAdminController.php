@@ -362,6 +362,136 @@ class SuperAdminController extends Controller
             return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
+
+    public function corporateEdit($id)
+    {
+        $company = \App\Models\CompanyMaster::with([
+            'rmUser',
+            'salesRmUser',
+            'salesVerticalUser',
+            'corporateLabel',
+            'corporateGroup',
+            'createdByUser',
+            'updatedByUser'
+        ])->findOrFail($id);
+
+        // Get company members (company_users)
+        $members = \App\Models\CompanyUser::where('company_id', $company->comp_id)
+            ->where('is_active', 1)
+            ->get()
+            ->map(function($member) {
+                return [
+                    'full_name' => $member->full_name,
+                    'email' => $member->email,
+                    'phone' => $member->phone ?? '',
+                ];
+            });
+
+        // Format company data for frontend
+        $companyData = [
+            'id' => $company->comp_id,
+            'display_name' => $company->comp_name,
+            'phone' => $company->phone,
+            'email' => $company->email,
+            'slug' => $company->comp_slug,
+            'referred_by' => $company->sales_vertical_id,
+            'source' => $company->source,
+            'group_id' => $company->group_id,
+            'sales_rm_id' => $company->sales_rm_id,
+            'service_rm_id' => $company->rm_id,
+            'label_id' => $company->label_id,
+            'address_line1' => explode(', ', $company->comp_addr)[0] ?? $company->comp_addr,
+            'address_line2' => explode(', ', $company->comp_addr)[1] ?? '',
+            'pincode' => $company->comp_pincode,
+            'city' => $company->comp_city,
+            'state' => $company->comp_state,
+            'logo_url' => $company->comp_icon_url ? asset($company->comp_icon_url) : null,
+            'members' => $members->isEmpty() ? [['full_name' => '', 'phone' => '', 'email' => '']] : $members->toArray(),
+        ];
+
+        $users = \App\Models\UserMaster::where('is_active', 1)->get();
+        $labels = \App\Models\CorporateLabel::where('is_active', 0)->get();
+        $groups = \App\Models\CorporateGroup::where('is_active', 0)->get();
+
+        return Inertia::render('superadmin/corporate/Edit', [
+            'company' => $companyData,
+            'users' => $users,
+            'labels' => $labels,
+            'groups' => $groups
+        ]);
+    }
+
+    public function corporateUpdate(Request $request, $id)
+    {
+        try {
+            $company = \App\Models\CompanyMaster::findOrFail($id);
+
+            $validated = $request->validate([
+                'display_name' => 'required|string|max:255',
+                'email' => 'nullable|email',
+                'phone' => 'nullable|string|max:20',
+                'service_rm_id' => 'required',
+                'sales_rm_id' => 'required',
+                'label_id' => 'required',
+                'address_line1' => 'required|string|max:255',
+                'city' => 'required|string|max:100',
+                'state' => 'required|string|max:100',
+                'pincode' => 'required|string|max:20',
+            ]);
+
+            // Handle logo upload if present
+            $logoPath = $company->comp_icon_url;
+            if ($request->hasFile('logo')) {
+                $logoFile = $request->file('logo');
+                $logoName = 'company_logo_' . time() . '.' . $logoFile->getClientOriginalExtension();
+                $logoFile->move(public_path($company->file_dir), $logoName);
+                $logoPath = $company->file_dir . $logoName;
+            }
+
+            // Update company
+            $company->update([
+                'comp_name' => strtoupper($request->display_name),
+                'rm_id' => $request->service_rm_id,
+                'sales_rm_id' => $request->sales_rm_id,
+                'sales_vertical_id' => $request->referred_by ?? $company->sales_vertical_id,
+                'label_id' => $request->label_id,
+                'group_id' => $request->group_id,
+                'email' => $request->email ?? null,
+                'phone' => $request->phone ?? null,
+                'comp_addr' => $request->address_line1 . ($request->address_line2 ? ', ' . $request->address_line2 : ''),
+                'comp_city' => $request->city,
+                'comp_state' => $request->state,
+                'comp_pincode' => $request->pincode,
+                'comp_icon_url' => $logoPath,
+                'updated_by' => auth()->id() ?? 1,
+                'updated_date' => now(),
+            ]);
+
+            return redirect()->route('corporate.list.index')->with('success', 'Customer updated successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Corporate Update Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
+
+    public function corporateToggleStatus($id)
+    {
+        try {
+            $company = \App\Models\CompanyMaster::findOrFail($id);
+
+            $company->update([
+                'status' => $company->status === 1 ? 0 : 1,
+                'updated_by' => auth()->id() ?? 1,
+                'updated_date' => now(),
+            ]);
+
+            $statusText = $company->status === 1 ? 'activated' : 'deactivated';
+            return redirect()->back()->with('success', "Corporate {$statusText} successfully!");
+        } catch (\Exception $e) {
+            \Log::error('Corporate Toggle Status Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
     /////////////////////////////////////////////////////////////////////////
     ///////////////////////// Corporate List ///////////////////////////////
     /////////////////////////////////////////////////////////////////////////
@@ -3104,34 +3234,59 @@ class SuperAdminController extends Controller
 
     public function adminBlogsStore(Request $request)
     {
-        $request->validate([
-            'blog_title' => 'required|string|max:255',
-            'blog_slug' => 'required|string|max:255',
-            'blog_author' => 'nullable|string|max:255',
-            'blog_thumbnail' => 'nullable|file',
-            'blog_banner' => 'nullable|file',
-            'blog_content' => 'nullable|string',
-            'blog_date' => 'nullable|date',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            $request->validate([
+                'blog_title' => 'required|string|max:255',
+                'blog_slug' => 'required|string|max:255|unique:blog_master,blog_slug',
+                'blog_author' => 'nullable|string|max:255',
+                'blog_thumbnail' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp|max:5120',
+                'blog_banner' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp|max:5120',
+                'blog_content' => 'nullable|string',
+                'blog_tags' => 'nullable|string',
+                'blog_categories' => 'nullable|string',
+                'focus_keyword' => 'nullable|string|max:255',
+                'meta_title' => 'nullable|string|max:255',
+                'meta_description' => 'nullable|string|max:500',
+                'meta_keywords' => 'nullable|string',
+                'blog_thumbnail_alt' => 'nullable|string|max:255',
+                'blog_banner_alt' => 'nullable|string|max:255',
+                'og_title' => 'nullable|string|max:255',
+                'og_description' => 'nullable|string|max:500',
+                'twitter_title' => 'nullable|string|max:255',
+                'twitter_description' => 'nullable|string|max:500',
+                'is_active' => 'nullable',
+            ]);
 
-        $data = $request->only([
-            'blog_title', 'blog_slug', 'blog_author', 'blog_content', 'blog_thumbnail_alt', 'blog_banner_alt', 'focus_keyword', 'meta_title', 'meta_description', 'meta_keywords', 'og_title', 'og_description', 'twitter_title', 'twitter_description', 'blog_tags', 'blog_categories'
-        ]);
+            $data = $request->only([
+                'blog_title', 'blog_slug', 'blog_author', 'blog_content', 'blog_thumbnail_alt',
+                'blog_banner_alt', 'focus_keyword', 'meta_title', 'meta_description', 'meta_keywords',
+                'og_title', 'og_description', 'twitter_title', 'twitter_description', 'blog_tags', 'blog_categories'
+            ]);
 
-        if ($request->hasFile('blog_thumbnail')) {
-            $data['blog_thumbnail'] = $request->file('blog_thumbnail')->store('blogs', 'public');
+            if ($request->hasFile('blog_thumbnail')) {
+                $data['blog_thumbnail'] = $request->file('blog_thumbnail')->store('blogs', 'public');
+            }
+            if ($request->hasFile('blog_banner')) {
+                $data['blog_banner'] = $request->file('blog_banner')->store('blogs', 'public');
+            }
+
+            $data['blog_date'] = now();
+            $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : true;
+
+            BlogMaster::create($data);
+
+            return redirect()->route('superadmin.admin.blogs.index')
+                ->with('message', 'Blog created successfully.')
+                ->with('messageType', 'success');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            \Log::error('Blog creation failed: ' . $e->getMessage());
+            return back()
+                ->with('message', 'Failed to create blog. Please try again.')
+                ->with('messageType', 'error')
+                ->withInput();
         }
-        if ($request->hasFile('blog_banner')) {
-            $data['blog_banner'] = $request->file('blog_banner')->store('blogs', 'public');
-        }
-
-        $data['blog_date'] = $request->blog_date ?? now();
-        $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : true;
-
-        BlogMaster::create($data);
-
-        return redirect()->route('superadmin.admin.blogs.index')->with('message', 'Blog created successfully.')->with('messageType', 'success');
     }
 
     public function adminBlogsEdit(BlogMaster $blog)
@@ -3143,40 +3298,91 @@ class SuperAdminController extends Controller
 
     public function adminBlogsUpdate(Request $request, BlogMaster $blog)
     {
-        $request->validate([
-            'blog_title' => 'required|string|max:255',
-            'blog_slug' => 'required|string|max:255',
-            'blog_author' => 'nullable|string|max:255',
-            'blog_thumbnail' => 'nullable|file',
-            'blog_banner' => 'nullable|file',
-            'blog_content' => 'nullable|string',
-            'blog_date' => 'nullable|date',
-            'is_active' => 'boolean',
-        ]);
+        try {
+            $request->validate([
+                'blog_title' => 'required|string|max:255',
+                'blog_slug' => 'required|string|max:255|unique:blog_master,blog_slug,' . $blog->id,
+                'blog_author' => 'nullable|string|max:255',
+                'blog_thumbnail' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp|max:5120',
+                'blog_banner' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp|max:5120',
+                'blog_content' => 'nullable|string',
+                'blog_tags' => 'nullable|string',
+                'blog_categories' => 'nullable|string',
+                'focus_keyword' => 'nullable|string|max:255',
+                'meta_title' => 'nullable|string|max:255',
+                'meta_description' => 'nullable|string|max:500',
+                'meta_keywords' => 'nullable|string',
+                'blog_thumbnail_alt' => 'nullable|string|max:255',
+                'blog_banner_alt' => 'nullable|string|max:255',
+                'og_title' => 'nullable|string|max:255',
+                'og_description' => 'nullable|string|max:500',
+                'twitter_title' => 'nullable|string|max:255',
+                'twitter_description' => 'nullable|string|max:500',
+                'is_active' => 'nullable',
+            ]);
 
-        $data = $request->only([
-            'blog_title', 'blog_slug', 'blog_author', 'blog_content', 'blog_thumbnail_alt', 'blog_banner_alt', 'focus_keyword', 'meta_title', 'meta_description', 'meta_keywords', 'og_title', 'og_description', 'twitter_title', 'twitter_description', 'blog_tags', 'blog_categories'
-        ]);
+            $data = $request->only([
+                'blog_title', 'blog_slug', 'blog_author', 'blog_content', 'blog_thumbnail_alt',
+                'blog_banner_alt', 'focus_keyword', 'meta_title', 'meta_description', 'meta_keywords',
+                'og_title', 'og_description', 'twitter_title', 'twitter_description', 'blog_tags', 'blog_categories'
+            ]);
 
-        if ($request->hasFile('blog_thumbnail')) {
-            $data['blog_thumbnail'] = $request->file('blog_thumbnail')->store('blogs', 'public');
+            if ($request->hasFile('blog_thumbnail')) {
+                // Delete old thumbnail if exists
+                if ($blog->blog_thumbnail && \Storage::disk('public')->exists($blog->blog_thumbnail)) {
+                    \Storage::disk('public')->delete($blog->blog_thumbnail);
+                }
+                $data['blog_thumbnail'] = $request->file('blog_thumbnail')->store('blogs', 'public');
+            }
+
+            if ($request->hasFile('blog_banner')) {
+                // Delete old banner if exists
+                if ($blog->blog_banner && \Storage::disk('public')->exists($blog->blog_banner)) {
+                    \Storage::disk('public')->delete($blog->blog_banner);
+                }
+                $data['blog_banner'] = $request->file('blog_banner')->store('blogs', 'public');
+            }
+
+            $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : $blog->is_active;
+
+            $blog->update($data);
+
+            return redirect()->route('superadmin.admin.blogs.index')
+                ->with('message', 'Blog updated successfully.')
+                ->with('messageType', 'success');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            \Log::error('Blog update failed: ' . $e->getMessage());
+            return back()
+                ->with('message', 'Failed to update blog. Please try again.')
+                ->with('messageType', 'error')
+                ->withInput();
         }
-        if ($request->hasFile('blog_banner')) {
-            $data['blog_banner'] = $request->file('blog_banner')->store('blogs', 'public');
-        }
-
-        $data['blog_date'] = $request->blog_date ?? $blog->blog_date;
-        $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : $blog->is_active;
-
-        $blog->update($data);
-
-        return redirect()->route('superadmin.admin.blogs.index')->with('message', 'Blog updated successfully.')->with('messageType', 'success');
     }
 
     public function adminBlogsDestroy(BlogMaster $blog)
     {
-        $blog->delete();
-        return redirect()->route('superadmin.admin.blogs.index')->with('message', 'Blog deleted successfully.')->with('messageType', 'success');
+        try {
+            // Delete associated files if they exist
+            if ($blog->blog_thumbnail && \Storage::disk('public')->exists($blog->blog_thumbnail)) {
+                \Storage::disk('public')->delete($blog->blog_thumbnail);
+            }
+            if ($blog->blog_banner && \Storage::disk('public')->exists($blog->blog_banner)) {
+                \Storage::disk('public')->delete($blog->blog_banner);
+            }
+
+            $blog->delete();
+
+            return redirect()->route('superadmin.admin.blogs.index')
+                ->with('message', 'Blog deleted successfully.')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            \Log::error('Blog deletion failed: ' . $e->getMessage());
+            return back()
+                ->with('message', 'Failed to delete blog. Please try again.')
+                ->with('messageType', 'error');
+        }
     }
     /**
      * Admin Resources

@@ -83,6 +83,9 @@ Route::prefix('superadmin')->group(function () {
     Route::get('/corporate/list', [SuperAdminController::class, 'corporateList'])->name('corporate.list.index');
     Route::get('/corporate/create', [SuperAdminController::class, 'corporateCreate'])->name('corporate.create');
     Route::post('/corporate/store', [SuperAdminController::class, 'corporateStore'])->name('corporate.store');
+    Route::get('/corporate/{company}/edit', [SuperAdminController::class, 'corporateEdit'])->name('corporate.edit');
+    Route::put('/corporate/{company}', [SuperAdminController::class, 'corporateUpdate'])->name('corporate.update');
+    Route::put('/corporate/{company}/toggle-status', [SuperAdminController::class, 'corporateToggleStatus'])->name('corporate.toggle-status');
 
     // Wellness Module Routes
     Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');

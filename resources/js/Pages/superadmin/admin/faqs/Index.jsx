@@ -168,98 +168,85 @@ export default function Index({ faqs = [] }) {
                     </div>
                 </div>
 
-                <div className="hidden sm:block overflow-x-auto">
-                    <table className="w-full min-w-[600px] border-collapse">
-                        <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                <div className={`bg-white rounded-lg shadow overflow-x-auto ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                    <table className="w-full min-w-max">
+                        <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border-b`}>
                             <tr>
-                                <th className={`px-6 py-3 text-left text-[11px] md:text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300 border-b border-gray-600' : 'text-gray-500 border-b border-gray-200'}`}>Actions</th>
-                                <th className={`px-6 py-3 text-left text-[11px] md:text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300 border-b border-gray-600' : 'text-gray-500 border-b border-gray-200'}`}>Active</th>
-                                <th className={`px-6 py-3 text-left text-[11px] md:text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300 border-b border-gray-600' : 'text-gray-500 border-b border-gray-200'}`}>Question</th>
-                                <th className={`px-6 py-3 text-left text-[11px] md:text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300 border-b border-gray-600' : 'text-gray-500 border-b border-gray-200'}`}>Answer</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Actions</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Status</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">Question</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[250px]">Answer</th>
                             </tr>
                         </thead>
                         <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                             {currentItems.map((faq) => (
-                                <tr key={faq.id} className={darkMode ? 'hover:bg-gray-700 even:bg-gray-800/50' : 'hover:bg-gray-50 even:bg-gray-50/50'}>
-                                    <td className="px-6 py-3 whitespace-nowrap text-xs font-medium">
-                                        <div className="flex items-center gap-2">
-                                            <button onClick={() => openEditModal(faq)} className="text-[#934790] hover:text-[#6A0066] p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2 2 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                <tr key={faq.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} cursor-pointer`}>
+                                    <td className="px-3 py-2 whitespace-nowrap text-[10px]">
+                                        <div className="flex items-center gap-1">
+                                            <button onClick={() => openEditModal(faq)} className="text-gray-400 hover:text-gray-600">
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
                                             </button>
-                                            <button onClick={() => handleDelete(faq)} className="text-red-600 p-1 rounded-md hover:bg-red-50">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
+                                            <button onClick={() => handleDelete(faq)} className="text-gray-400 hover:text-red-600">
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
                                             </button>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-3 whitespace-nowrap">
-                                        <label className="inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" checked={faq.is_active} onChange={() => toggleStatus(faq)} className="sr-only" />
-                                            <div className={`w-10 h-5 rounded-full transition-colors duration-200 ${faq.is_active ? 'bg-[#934790]' : 'bg-gray-300'} flex items-center`}>
-                                                <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ${faq.is_active ? 'translate-x-5' : 'translate-x-0'}`}></div>
-                                            </div>
-                                        </label>
+                                    <td className="px-3 py-2 whitespace-nowrap">
+                                        {faq.is_active ? (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-green-100 text-green-800">Active</span>
+                                        ) : (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-red-100 text-red-800">Inactive</span>
+                                        )}
                                     </td>
-                                    <td className={`px-6 py-3 whitespace-nowrap text-[11px] md:text-xs font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{faq.faq_title}</td>
-                                    <td className={`px-6 py-3 text-[11px] md:text-xs ${darkMode ? 'text-gray-300' : 'text-gray-500'} max-w-[250px] truncate`}>{faq.faq_description || '-'}</td>
+                                    <td className="px-3 py-2 whitespace-nowrap">
+                                        <div className="text-[10px] font-medium text-gray-900">{faq.faq_title}</div>
+                                    </td>
+                                    <td className="px-3 py-2 text-[10px] text-gray-500 max-w-[250px] truncate">{faq.faq_description || '-'}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                     {filteredFaqs.length === 0 && (
-                        <div className={`text-center py-6 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No FAQs found.</div>
-                    )}
-                </div>
-
-                {/* Mobile cards */}
-                <div className="sm:hidden">
-                    {currentItems.length === 0 ? (
-                        <div className={`text-center py-6 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No FAQs found.</div>
-                    ) : (
-                        <div className="flex flex-col gap-3">
-                            {currentItems.map((faq) => (
-                                <div key={faq.id} className={`rounded-xl shadow border px-4 py-3 flex flex-row items-center gap-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-                                    <div className="flex items-center gap-2">
-                                        <label className="inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" checked={faq.is_active} onChange={() => toggleStatus(faq)} className="sr-only" />
-                                            <div className={`w-7 h-4 rounded-full transition-colors duration-200 ${faq.is_active ? 'bg-[#934790]' : 'bg-gray-300'} flex items-center`}>
-                                                <div className={`w-3 h-3 rounded-full bg-white shadow-md transform transition-transform duration-200 ${faq.is_active ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                                            </div>
-                                        </label>
-                                    </div>
-                                    <div className="flex-1 flex items-center gap-2">
-                                        <span className={`text-[12px] font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{faq.faq_title}</span>
-                                    </div>
-                                    <div className="flex items-center justify-end ml-auto">
-                                        <button onClick={() => openEditModal(faq)} className="text-[#934790] hover:text-[#6A0066] p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Edit FAQ">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2 2 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="text-center py-8">
+                            <p className="text-gray-500 text-[11px]">No FAQs found.</p>
                         </div>
                     )}
                 </div>
 
                 {/* Pagination controls */}
                 {filteredFaqs.length > 0 && (
-                    <div className={`px-6 py-3 flex items-center justify-between border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <div className="flex-1 flex justify-between sm:hidden">
-                            <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={`relative inline-flex items-center px-4 py-2 text-[11px] md:text-xs font-medium rounded-md ${currentPage === 1 ? `${darkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-100 text-gray-400'} cursor-not-allowed` : `${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white text-gray-700 hover:bg-gray-50'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#934790]`}`}>Previous</button>
-                            <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className={`ml-3 relative inline-flex items-center px-4 py-2 text-[11px] md:text-xs font-medium rounded-md ${currentPage === totalPages ? `${darkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-100 text-gray-400'} cursor-not-allowed` : `${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white text-gray-700 hover:bg-gray-50'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#934790]`}`}>Next</button>
+                    <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 bg-white rounded-b-lg">
+                        <div className="flex items-center text-[10px] text-gray-500">
+                            Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredFaqs.length)} to {Math.min(currentPage * itemsPerPage, filteredFaqs.length)} of {filteredFaqs.length} results
                         </div>
-                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
-                                <p className="text-[11px] md:text-xs text-gray-500 dark:text-gray-400">Showing <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, filteredFaqs.length)}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredFaqs.length)}</span> of <span className="font-medium">{filteredFaqs.length}</span> results</p>
-                            </div>
-                            <div>
-                                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                    <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={`relative inline-flex items-center px-2 py-2 rounded-l-md border ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'} text-[11px] md:text-xs font-medium ${currentPage === 1 ? `${darkMode ? 'text-gray-500' : 'text-gray-400'} cursor-not-allowed` : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-50'}`}`}><span className="sr-only">Previous</span><svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"/></svg></button>
-                                    {Array.from({ length: totalPages }, (_, i) => (
-                                        <button key={i + 1} onClick={() => setCurrentPage(i + 1)} className={`relative inline-flex items-center px-4 py-2 border ${darkMode ? 'border-gray-700' : 'border-gray-300'} text-[11px] md:text-xs font-medium ${currentPage === i + 1 ? `${darkMode ? 'bg-gray-700 text-white' : 'bg-[#934790] text-white'} z-10` : `${darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-500 hover:bg-gray-50'}`}`}>{i + 1}</button>
-                                    ))}
-                                    <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className={`relative inline-flex items-center px-2 py-2 rounded-r-md border ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'} text-[11px] md:text-xs font-medium ${currentPage === totalPages ? `${darkMode ? 'text-gray-500' : 'text-gray-400'} cursor-not-allowed` : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-50'}`}`}><span className="sr-only">Next</span><svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/></svg></button>
-                                </nav>
-                            </div>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-2 py-1 text-[10px] border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Previous
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => (
+                                <button
+                                    key={i + 1}
+                                    onClick={() => setCurrentPage(i + 1)}
+                                    className={`px-2 py-1 text-[10px] border rounded ${currentPage === i + 1 ? 'bg-[#934790] text-white' : 'hover:bg-gray-50'}`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="px-2 py-1 text-[10px] border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Next
+                            </button>
                         </div>
                     </div>
                 )}

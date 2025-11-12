@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useTheme } from '../../../../Context/ThemeContext';
 
 export default function Index({ blogs = [] }) {
@@ -8,6 +8,7 @@ export default function Index({ blogs = [] }) {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [deleteModal, setDeleteModal] = useState({ show: false, blog: null });
     const dropdownRef = useRef(null);
 
     const activeCount = blogs.filter(b => b.is_active).length;
@@ -18,6 +19,20 @@ export default function Index({ blogs = [] }) {
         const matchesFilter = filter === 'all' || (filter === 'active' && b.is_active) || (filter === 'inactive' && !b.is_active);
         return matchesSearch && matchesFilter;
     });
+
+    const handleDelete = (blog) => {
+        setDeleteModal({ show: true, blog });
+    };
+
+    const confirmDelete = () => {
+        if (deleteModal.blog) {
+            router.delete(route('superadmin.admin.blogs.destroy', deleteModal.blog.id), {
+                onSuccess: () => {
+                    setDeleteModal({ show: false, blog: null });
+                }
+            });
+        }
+    };
 
     return (
         <SuperAdminLayout>
@@ -68,39 +83,85 @@ export default function Index({ blogs = [] }) {
                     </div>
                 </div>
 
-                <div className="hidden sm:block overflow-x-auto">
-                    <table className="w-full min-w-[700px] border-collapse">
-                        <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                <div className={`bg-white rounded-lg shadow overflow-x-auto ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                    <table className="w-full min-w-max">
+                        <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border-b`}>
                             <tr>
-                                <th className={`px-6 py-3 text-left text-[11px] md:text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300 border-b border-gray-600' : 'text-gray-500 border-b border-gray-200'}`}>Title</th>
-                                <th className={`px-6 py-3 text-left text-[11px] md:text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300 border-b border-gray-600' : 'text-gray-500 border-b border-gray-200'}`}>Author</th>
-                                <th className={`px-6 py-3 text-left text-[11px] md:text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300 border-b border-gray-600' : 'text-gray-500 border-b border-gray-200'}`}>Date</th>
-                                <th className={`px-6 py-3 text-left text-[11px] md:text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300 border-b border-gray-600' : 'text-gray-500 border-b border-gray-200'}`}>Active</th>
-                                <th className={`px-6 py-3 text-left text-[11px] md:text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300 border-b border-gray-600' : 'text-gray-500 border-b border-gray-200'}`}>Actions</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Actions</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">Title</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Author</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Date</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Status</th>
                             </tr>
                         </thead>
                         <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                             {filtered.map((b) => (
-                                <tr key={b.id} className={darkMode ? 'hover:bg-gray-700 even:bg-gray-800/50' : 'hover:bg-gray-50 even:bg-gray-50/50'}>
-                                    <td className={`px-6 py-3 whitespace-nowrap text-[11px] md:text-xs font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{b.blog_title}</td>
-                                    <td className={`px-6 py-3 whitespace-nowrap text-[11px] md:text-xs ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>{b.blog_author || '-'}</td>
-                                    <td className={`px-6 py-3 whitespace-nowrap text-[11px] md:text-xs ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>{b.blog_date ? new Date(b.blog_date).toLocaleString() : '-'}</td>
-                                    <td className="px-6 py-3 whitespace-nowrap">
-                                        <span className={`px-2 py-1 rounded-full text-[11px] ${b.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{b.is_active ? 'Active' : 'Inactive'}</span>
+                                <tr key={b.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} cursor-pointer`}>
+                                    <td className="px-3 py-2 whitespace-nowrap text-[10px]">
+                                        <div className="flex items-center gap-1">
+                                            <Link href={route('superadmin.admin.blogs.edit', b.id)} className="text-gray-400 hover:text-gray-600">
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(b)}
+                                                className="text-red-400 hover:text-red-600"
+                                            >
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-3 whitespace-nowrap text-xs font-medium">
-                                        <Link href={route('superadmin.admin.blogs.edit', b.id)} className="text-[#934790] hover:text-[#6A0066] p-1 rounded-md">
-                                            <svg className="w-4 h-4 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2 2 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                        </Link>
+                                    <td className="px-3 py-2 whitespace-nowrap">
+                                        <div className="text-[10px] font-medium text-gray-900">{b.blog_title}</div>
+                                    </td>
+                                    <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-500">{b.blog_author || '-'}</td>
+                                    <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-500">{b.blog_date ? new Date(b.blog_date).toLocaleDateString() : '-'}</td>
+                                    <td className="px-3 py-2 whitespace-nowrap">
+                                        {b.is_active ? (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-green-100 text-green-800">Active</span>
+                                        ) : (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-red-100 text-red-800">Inactive</span>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                     {filtered.length === 0 && (
-                        <div className={`text-center py-6 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No blogs found.</div>
+                        <div className="text-center py-8">
+                            <p className="text-gray-500 text-[11px]">No blogs found.</p>
+                        </div>
                     )}
                 </div>
+
+                {/* Delete Confirmation Modal */}
+                {deleteModal.show && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className={`rounded-lg p-6 max-w-md w-full mx-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
+                            <h3 className="text-lg font-semibold mb-4">Delete Blog</h3>
+                            <p className="text-sm mb-6">
+                                Are you sure you want to delete "<strong>{deleteModal.blog?.blog_title}</strong>"? This action cannot be undone.
+                            </p>
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => setDeleteModal({ show: false, blog: null })}
+                                    className="px-4 py-2 rounded-lg border text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </SuperAdminLayout>
     );

@@ -113,78 +113,79 @@ export default function Index({ resources = [] }) {
                         </div>
                     </div>
                 ) : (
-                        <div className="rounded-lg overflow-hidden bg-white shadow-sm border">
-                            <div className="px-4 py-3 flex items-center justify-between">
-                                    <div className="text-sm text-gray-600">Showing {total} resource(s)</div>
-                                    <div className="flex items-center gap-3">
-                                        <label className="text-xs text-gray-500">Per page</label>
-                                        <select value={perPage} onChange={e => { setPerPage(Number(e.target.value)); setCurrentPage(1); }} className="border rounded px-2 py-1 text-sm">
-                                            <option value={5}>5</option>
-                                            <option value={10}>10</option>
-                                            <option value={25}>25</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="overflow-auto">
-                                <table className="min-w-full">
-                                    <thead className="text-xs text-gray-500 bg-white">
-                                        <tr>
-                                            <th className="p-3 text-left">
-                                                <button type="button" onClick={() => { if (sortKey === 'heading') setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); else { setSortKey('heading'); setSortOrder('asc'); } }} className="flex items-center gap-2">
-                                                    Heading
-                                                    {sortKey === 'heading' && <span className="text-xs">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                                                </button>
-                                            </th>
-                                            <th className="p-3 text-left">
-                                                <button type="button" onClick={() => { if (sortKey === 'category') setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); else { setSortKey('category'); setSortOrder('asc'); } }} className="flex items-center gap-2">
-                                                    Category
-                                                    {sortKey === 'category' && <span className="text-xs">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                                                </button>
-                                            </th>
-                                            <th className="p-3 text-left">Tags</th>
-                                            <th className="p-3 text-left">Author</th>
-                                            <th className="p-3 text-left">Status</th>
-                                            <th className="p-3 text-left">Actions</th>
+                        <div className={`bg-white rounded-lg shadow overflow-x-auto ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                            <table className="w-full min-w-max">
+                                <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border-b`}>
+                                    <tr>
+                                        <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Actions</th>
+                                        <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">Heading</th>
+                                        <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Category</th>
+                                        <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Tags</th>
+                                        <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Author</th>
+                                        <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                                    {paged.map(r => (
+                                        <tr key={r.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} cursor-pointer`}>
+                                            <td className="px-3 py-2 whitespace-nowrap text-[10px]">
+                                                <div className="flex items-center gap-1">
+                                                    <Link href={route('superadmin.admin.resources.edit', r.id)} className="text-gray-400 hover:text-gray-600">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap">
+                                                <div className="text-[10px] font-medium text-gray-900">{r.heading}</div>
+                                                <div className="text-[9px] text-gray-400">/{r.slug}</div>
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-500">{r.category || '-'}</td>
+                                            <td className="px-3 py-2 text-[10px] text-gray-500">
+                                                {r.tags ? r.tags.split(',').slice(0,2).map((t, i) => (
+                                                    <span key={i} className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-gray-100 text-gray-800 mr-1">{t.trim()}</span>
+                                                )) : '-'}
+                                            </td>
+                                            <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-500">{r.author || '-'}</td>
+                                            <td className="px-3 py-2 whitespace-nowrap">
+                                                <StatusPill status={r.status} />
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {paged.map(r => (
-                                            <tr key={r.id} className="border-t hover:bg-gray-50">
-                                                <td className="p-3 align-top">
-                                                    <div className="font-medium text-sm">{r.heading}</div>
-                                                    <div className="text-xs text-gray-500">/{r.slug}</div>
-                                                </td>
-                                                <td className="p-3 align-top">{r.category || '-'}</td>
-                                                <td className="p-3 align-top">
-                                                    {r.tags ? r.tags.split(',').slice(0,3).map((t, i) => (
-                                                        <span key={i} className="inline-block bg-gray-100 text-xs text-gray-700 px-2 py-0.5 rounded mr-1">{t.trim()}</span>
-                                                    )) : '-'}
-                                                </td>
-                                                <td className="p-3 align-top">{r.author || '-'}</td>
-                                                <td className="p-3 align-top">
-                                                    <StatusPill status={r.status} />
-                                                </td>
-                                                <td className="p-3 align-top">
-                                                    <div className="flex items-center gap-2">
-                                                        <Link href={route('superadmin.admin.resources.edit', r.id)} className="text-sm text-[#934790]">Edit</Link>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {total === 0 && (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500 text-[11px]">No resources found.</p>
+                                </div>
+                            )}
 
                             {/* Pagination controls */}
-                            <div className="px-4 py-3 flex items-center justify-between">
-                                <div className="text-sm text-gray-600">Showing {Math.min(startIndex+1, total)}-{Math.min(startIndex + perPage, total)} of {total}</div>
-                                <div className="flex items-center gap-2">
-                                    <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1} className="px-2 py-1 border rounded disabled:opacity-50">Prev</button>
-                                    <PageButtons current={currentPage} total={totalPages} onPage={p => setCurrentPage(p)} />
-                                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage === totalPages} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
+                            {total > 0 && (
+                                <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 bg-white rounded-b-lg">
+                                    <div className="flex items-center text-[10px] text-gray-500">
+                                        Showing {Math.min(startIndex+1, total)} to {Math.min(startIndex + perPage, total)} of {total} results
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.max(1, p-1))}
+                                            disabled={currentPage === 1}
+                                            className="px-2 py-1 text-[10px] border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Previous
+                                        </button>
+                                        <PageButtons current={currentPage} total={totalPages} onPage={p => setCurrentPage(p)} />
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))}
+                                            disabled={currentPage === totalPages}
+                                            className="px-2 py-1 text-[10px] border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                 )}
             </div>
@@ -193,35 +194,32 @@ export default function Index({ resources = [] }) {
 }
 
 function StatusPill({ status }) {
-    const map = {
-        draft: 'bg-gray-100 text-gray-700',
-        published: 'bg-green-100 text-green-800',
-        archived: 'bg-yellow-100 text-yellow-800'
+    const statusMap = {
+        draft: { bg: 'bg-gray-100', text: 'text-gray-800' },
+        published: { bg: 'bg-green-100', text: 'text-green-800' },
+        archived: { bg: 'bg-yellow-100', text: 'text-yellow-800' }
     };
-    const cls = map[status] || 'bg-gray-100 text-gray-700';
-    return <span className={`text-xs px-2 py-0.5 rounded ${cls}`}>{status}</span>;
+    const style = statusMap[status] || statusMap.draft;
+    return <span className={`inline-flex px-2 py-1 text-[9px] font-semibold rounded ${style.bg} ${style.text}`}>{status}</span>;
 }
 
 function PageButtons({ current, total, onPage }) {
-    // show up to 5 buttons centered around current
     const buttons = [];
     const start = Math.max(1, current - 2);
     const end = Math.min(total, start + 4);
     for (let i = start; i <= end; i++) buttons.push(i);
 
     return (
-        <div className="flex items-center gap-1">
-            {start > 1 && (
-                <button onClick={() => onPage(1)} className="px-2 py-1 border rounded text-sm">1</button>
-            )}
-            {start > 2 && <span className="px-2 text-sm">...</span>}
+        <>
             {buttons.map(p => (
-                <button key={p} onClick={() => onPage(p)} className={`px-2 py-1 border rounded text-sm ${p === current ? 'bg-[#934790] text-white' : ''}`}>{p}</button>
+                <button
+                    key={p}
+                    onClick={() => onPage(p)}
+                    className={`px-2 py-1 text-[10px] border rounded ${p === current ? 'bg-[#934790] text-white' : 'hover:bg-gray-50'}`}
+                >
+                    {p}
+                </button>
             ))}
-            {end < total-1 && <span className="px-2 text-sm">...</span>}
-            {end < total && (
-                <button onClick={() => onPage(total)} className="px-2 py-1 border rounded text-sm">{total}</button>
-            )}
-        </div>
+        </>
     );
 }
