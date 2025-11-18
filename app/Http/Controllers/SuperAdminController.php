@@ -4672,24 +4672,24 @@ class SuperAdminController extends Controller
                 'is_active' => 'nullable',
             ]);
 
-            $data = $request->only([
-                'blog_title',
-                'blog_slug',
-                'blog_author',
-                'blog_content',
-                'blog_thumbnail_alt',
-                'blog_banner_alt',
-                'focus_keyword',
-                'meta_title',
-                'meta_description',
-                'meta_keywords',
-                'og_title',
-                'og_description',
-                'twitter_title',
-                'twitter_description',
-                'blog_tags',
-                'blog_categories'
-            ]);
+        $data = $request->only([
+            'blog_title',
+            'blog_slug',
+            'blog_author',
+            'blog_content',
+            'blog_thumbnail_alt',
+            'blog_banner_alt',
+            'focus_keyword',
+            'meta_title',
+            'meta_description',
+            'meta_keywords',
+            'og_title',
+            'og_description',
+            'twitter_title',
+            'twitter_description',
+            'blog_tags',
+            'blog_categories'
+        ]);
 
             if ($request->hasFile('blog_thumbnail')) {
                 $data['blog_thumbnail'] = $request->file('blog_thumbnail')->store('blogs', 'public');
@@ -4749,24 +4749,24 @@ class SuperAdminController extends Controller
                 'is_active' => 'nullable',
             ]);
 
-            $data = $request->only([
-                'blog_title',
-                'blog_slug',
-                'blog_author',
-                'blog_content',
-                'blog_thumbnail_alt',
-                'blog_banner_alt',
-                'focus_keyword',
-                'meta_title',
-                'meta_description',
-                'meta_keywords',
-                'og_title',
-                'og_description',
-                'twitter_title',
-                'twitter_description',
-                'blog_tags',
-                'blog_categories'
-            ]);
+        $data = $request->only([
+            'blog_title',
+            'blog_slug',
+            'blog_author',
+            'blog_content',
+            'blog_thumbnail_alt',
+            'blog_banner_alt',
+            'focus_keyword',
+            'meta_title',
+            'meta_description',
+            'meta_keywords',
+            'og_title',
+            'og_description',
+            'twitter_title',
+            'twitter_description',
+            'blog_tags',
+            'blog_categories'
+        ]);
 
             if ($request->hasFile('blog_thumbnail')) {
                 // Delete old thumbnail if exists
@@ -4916,6 +4916,7 @@ class SuperAdminController extends Controller
         $resource->delete();
         return redirect()->route('superadmin.admin.resources.index')->with('message', 'Resource deleted successfully.')->with('messageType', 'success');
     }
+
     public function createPolicy()
     {
         try {
@@ -5002,7 +5003,110 @@ class SuperAdminController extends Controller
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////
-    ///////////////////////// Admin Surveys /////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////
+
+
+    /**
+     * CD Accounts Index
+     */
+    public function cdAccountsIndex()
+    {
+        $cdAccounts = \App\Models\CdMaster::query()
+            ->leftJoin('company_master', 'cd_master.comp_id', '=', 'company_master.comp_id')
+            ->leftJoin('insurance_master', 'cd_master.ins_id', '=', 'insurance_master.id')
+            ->select([
+                'cd_master.*',
+                'company_master.comp_name as company_name',
+                'insurance_master.insurance_company_name as insurance_name',
+            ])
+            ->orderBy('cd_master.id', 'desc')
+            ->get();
+        return Inertia::render('superadmin/policy/CdAccounts/Index', [
+            'cdAccounts' => $cdAccounts
+        ]);
+    }
+
+    /**
+     * Show create CD Account form
+     */
+    public function cdAccountsCreate()
+    {
+        $companies = \App\Models\CompanyMaster::where('status', 1)->orderBy('comp_name')->get(['comp_id as id', 'comp_name as company_name']);
+        $insurers = \App\Models\InsuranceMaster::where('status', 1)->orderBy('insurance_company_name')->get(['id', 'insurance_company_name as insurance_name']);
+        return Inertia::render('superadmin/policy/CdAccounts/Create', [
+            'companies' => $companies,
+            'insurers' => $insurers
+        ]);
+    }
+
+    /**
+     * Store new CD Account
+     */
+    public function cdAccountsStore(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'company_id' => 'required|integer',
+            'insurance_id' => 'required|integer',
+            'cd_ac_name' => 'required|string|max:255',
+            'cd_ac_no' => 'required|string|max:255',
+            'min_balance' => 'nullable|numeric',
+        ]);
+        $cdAccount = new \App\Models\CdMaster();
+        $cdAccount->comp_id = $validated['company_id'];
+        $cdAccount->ins_id = $validated['insurance_id'];
+        $cdAccount->cd_ac_name = $validated['cd_ac_name'];
+        $cdAccount->cd_ac_no = $validated['cd_ac_no'];
+        $cdAccount->minimum_balance = $validated['min_balance'] ?? null;
+        $cdAccount->status = 1;
+        $cdAccount->created_at = now();
+        $cdAccount->updated_at = now();
+        $cdAccount->save();
+        return redirect()->route('superadmin.policy.cd-accounts.index')->with('message', 'CD Account created successfully.');
+    }
+
+    /**
+     * Show edit CD Account form
+     */
+    public function cdAccountsEdit($id)
+    {
+        $cdAccount = \App\Models\CdMaster::findOrFail($id);
+        $companies = \App\Models\CompanyMaster::where('status', 1)->orderBy('comp_name')->get(['comp_id as id', 'comp_name as company_name']);
+        $insurers = \App\Models\InsuranceMaster::where('status', 1)->orderBy('insurance_company_name')->get(['id', 'insurance_company_name as insurance_name']);
+        return Inertia::render('superadmin/policy/CdAccounts/Edit', [
+            'cdAccount' => $cdAccount,
+            'companies' => $companies,
+            'insurers' => $insurers
+        ]);
+    }
+
+    /**
+     * Update CD Account
+     */
+    public function cdAccountsUpdate(\Illuminate\Http\Request $request, $id)
+    {
+        $validated = $request->validate([
+            'comp_id' => 'required|integer',
+            'ins_id' => 'required|integer',
+            'cd_ac_name' => 'nullable|string|max:255',
+            'cd_ac_no' => 'nullable|string|max:255',
+            'minimum_balance' => 'nullable|numeric',
+            'cd_folder' => 'nullable|string|max:255',
+            'statement_file' => 'nullable|string|max:255',
+
+        ]);
+        $validated['updated_at'] = now();
+        $cdAccount = \App\Models\CdMaster::findOrFail($id);
+        $cdAccount->update($validated);
+        return redirect()->route('superadmin.policy.cd-accounts.index')->with('message', 'CD Account updated successfully.');
+    }
+
+    /**
+     * Toggle active/inactive status
+     */
+    public function cdAccountsToggleActive($id)
+    {
+        $cdAccount = \App\Models\CdMaster::findOrFail($id);
+        $cdAccount->status = $cdAccount->status ? 0 : 1;
+        $cdAccount->save();
+        return response()->json(['success' => true, 'status' => $cdAccount->status]);
+    }
 }

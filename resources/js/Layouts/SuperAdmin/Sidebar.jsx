@@ -679,6 +679,31 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Policies</span>
                                         </Link>
                                     </li>
+                                    <li>
+                                        <Link
+                                            href="/superadmin/policy/cd-accounts"
+                                            className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                                currentRoute ===
+                                                "/superadmin/policy/cd-accounts"
+                                                    ? "text-[#934790]"
+                                                    : `hover:text-[#934790] ${
+                                                          darkMode
+                                                              ? "text-gray-300"
+                                                              : "text-gray-600"
+                                                      }`
+                                            }`}
+                                        >
+                                            <span
+                                                className={`w-2 h-2 rounded-full ${
+                                                    currentRoute ===
+                                                    "/superadmin/policy/cd-accounts"
+                                                        ? "bg-[#934790]"
+                                                        : "bg-gray-400"
+                                                }`}
+                                            ></span>
+                                            <span>CD Accounts</span>
+                                        </Link>
+                                    </li>
                                 </ul>
                             )}
                         </li>
