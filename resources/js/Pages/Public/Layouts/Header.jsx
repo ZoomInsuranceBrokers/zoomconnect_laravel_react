@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { Link } from '@inertiajs/react';
+import ScrollProgressBar from '../../../Components/ScrollProgressBar';
 
 const navLinks = [
    {
@@ -10,8 +11,9 @@ const navLinks = [
       { label: 'Group Medical Cover', href: '/products/group-medical-cover', description: 'Comprehensive health insurance for your entire team' },
       { label: 'Group Accident Cover', href: '/products/group-accident-cover', description: 'Protection against unforeseen accidents and injuries' },
       { label: 'Group Term Life', href: '/products/group-term-life', description: 'Life insurance coverage to protect your employees and their families' },
-      { label: 'Wellness Programs', href: '/products/wellness-programs', description: 'Holistic wellness solutions for employee well-being' },
+      { label: 'Wellness Programs/Services', href: '/products/wellness-programs', description: 'Holistic wellness solutions for employee well-being' },
       { label: 'Telehealth Services', href: '/products/telehealth-services', description: 'Virtual healthcare consultations anytime, anywhere' },
+      {label: 'Customisable Surveys', href: '/products/surveys', description: 'Gather insights and feedback from your team' },
     ]
   },
   {
@@ -48,8 +50,7 @@ const navLinks = [
     dropdownItems: [
       { label: 'About Us', href: '/about', description: 'Learn about our mission and values' },
       { label: 'Careers', href: '/careers', description: 'Join our growing team of professionals' },
-      { label: 'Contact', href: '/contact', description: 'Get in touch with our team' },
-      { label: 'Contact Us', href: '/contact-us', description: 'Contact Us page' },
+      { label: 'Contact Us', href: '/contact', description: 'Get in touch with our team' },
     ]
   },
 ];
@@ -75,8 +76,21 @@ const Header = () => {
   };
 
   return (
+    <>
+      <ScrollProgressBar />
+     <style>{`html,body{overflow-x:hidden !important;}`}</style>
+            {/*
+                gmc-card pseudo-element fills the card with the feature's pastel color (set via --accent).
+                Uses transform scale for a smooth fill animation and keeps content above the color using z-index.
+            */}
+            <style>{`.
+                .gmc-card{position:relative;--accent:transparent}
+                .gmc-card::before{content:'';position:absolute;inset:0;border-radius:inherit;background:var(--accent);transform:scale(0.01);opacity:0;transition:transform 700ms cubic-bezier(.2,.9,.2,1),opacity 700ms ease;z-index:0;pointer-events:none}
+                .gmc-card :where(.z-10){position:relative;z-index:10}
+                .gmc-card:hover::before,.gmc-card.group:hover::before{transform:scale(1);opacity:1}
+            `}</style>
     <header className={`fixed top-0 left-0 w-full flex justify-between items-center py-3 px-6 md:py-6 z-30 backdrop-blur-lg dark:border-gray-800/60 transition-all duration-500 ${hoveredNav
-      ? 'bg-[#fff5e5] shadow-lg'
+      ? 'bg-[#f6dcc7] shadow-lg'
       : 'dark:bg-gray-900/40 bg-transparent'
       }`}>
       <Link href="/" className="flex items-center">
@@ -232,8 +246,10 @@ const Header = () => {
             </div>
           </div>
         </div>
+       
       )}
     </header>
+     </>
   );
 };
 

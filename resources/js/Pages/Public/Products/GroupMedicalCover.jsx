@@ -5,6 +5,7 @@ import { Link } from '@inertiajs/react';
 import { FaCheckCircle, FaBuilding, FaUserMd, FaMobileAlt } from 'react-icons/fa';
 import { useTheme } from '../../../Context/ThemeContext';
 import { GMCFAQDemo } from "@/Pages/Public/components/ui/GMCFAQ";
+import ScrollProgressBar from '../../../Components/ScrollProgressBar';
 
 export default function GroupMedicalCover() {
     const { darkMode } = useTheme();
@@ -64,6 +65,7 @@ export default function GroupMedicalCover() {
 
     return (
         <>
+            <ScrollProgressBar />
             <Header />
             {/* Prevent any page-level horizontal overflow (safety fallback) */}
             <style>{`html,body{overflow-x:hidden !important;}`}</style>

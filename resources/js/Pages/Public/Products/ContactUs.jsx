@@ -100,7 +100,7 @@ export default function ContactUs() {
 
     return (
         <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
-            {/* ...rest of the code... */}
+            <h1 className="text-3xl font-bold text-center mt-10">Contact Us</h1>
         </div>
     );
 }
