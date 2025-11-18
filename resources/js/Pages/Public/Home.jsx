@@ -32,10 +32,10 @@ const StackedScrollImages = () => {
     return (
         <section
             ref={containerRef}
-            className="relative w-full min-h-[300vh] overflow-hidden flex justify-center"
+            className="relative w-full min-h-[300vh] bg-white overflow-hidden flex justify-center"
         >
             <div className="sticky top-0 h-screen w-full flex justify-center items-center">
-                <div className="relative w-[900px] max-w-full perspective-1000">
+                <div className="relative w-[600px] max-w-full perspective-1000">
                     {images.map((src, index) => {
                         const totalImages = images.length;
                         const peek = 50; // how much each back image peeks
@@ -349,25 +349,12 @@ export default function Home() {
                         style={{ width: "100%", height: "100%" }}
                     />
                 </div> */}
-                    <div className="absolute inset-0 z-0 opacity-70">
+                    {/* <div className="absolute inset-0 z-0 opacity-70">
                         <img
                             src="/assets/images/wavy lines-01.png"
                             alt="Background"
                             className="w-full h-full object-cover"
                         />
-                    </div>
-
-                    {/* <div className="absolute inset-0 z-0 opacity-70 pointer-events-none">
-                        <video
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="w-full h-full object-cover"
-                        >
-                            <source src="/assets/videos/Comp1.webm" type="video/webm" />
-                            Your browser does not support the video tag.
-                        </video>
                     </div> */}
 
                     {/* Content */}
@@ -598,7 +585,7 @@ export default function Home() {
                 </section>
 
                 {/* Testimonials Section */}
-                <section className="w-full pt-8 pb-16 flex flex-col items-center justify-center ">
+                <section className="w-full pb-16 flex flex-col items-center justify-center ">
                     <h2 className="font-dmserif text-2xl md:text-5xl font-medium text-center mb-8 max-w-3xl text-gray-800">What Our Clients Say</h2>
                     <div className="w-[90%] max-w-6xl mx-auto rounded-3xl bg-white-300 flex flex-col md:flex-row items-stretch overflow-hidden" style={{ boxShadow: '0 10px 32px 0 rgba(0,0,0,0.15), 0 1.5px 6px 0 rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)' }}>
                         {/* Left: Semicircle Testimonial List */}
