@@ -644,6 +644,36 @@ export default function Index({ companies, labels, groups, users }) {
                                                                 </svg>
                                                                 {company.status === 1 ? 'Deactivate' : 'Activate'}
                                                             </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        // Navigate to manage employees
+                                                                        router.get(route('corporate.manage-employees', company.comp_id));
+                                                                        setOpenActionsDropdown(null);
+                                                                    }}
+                                                                    className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                                                                >
+                                                                    <svg className="w-3 h-3 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a4 4 0 00-4-4h-1" />
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20H4v-2a4 4 0 014-4h1" />
+                                                                        <circle cx="12" cy="7" r="4" strokeWidth="2" stroke="currentColor" fill="none" />
+                                                                    </svg>
+                                                                    Manage Employees
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        // Navigate to manage entity
+                                                                        router.get(route('corporate.manage-entity', company.comp_id));
+                                                                        setOpenActionsDropdown(null);
+                                                                    }}
+                                                                    className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                                                                >
+                                                                    <svg className="w-3 h-3 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18M3 17h18" />
+                                                                    </svg>
+                                                                    Manage Entity
+                                                                </button>
                                                         </div>
                                                     </div>
                                                 )}

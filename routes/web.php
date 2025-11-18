@@ -86,6 +86,36 @@ Route::prefix('superadmin')->group(function () {
     Route::get('/corporate/{company}/edit', [SuperAdminController::class, 'corporateEdit'])->name('corporate.edit');
     Route::put('/corporate/{company}', [SuperAdminController::class, 'corporateUpdate'])->name('corporate.update');
     Route::put('/corporate/{company}/toggle-status', [SuperAdminController::class, 'corporateToggleStatus'])->name('corporate.toggle-status');
+    // Manage employees/entity for a company
+    Route::get('/corporate/{company}/manage-employees', [SuperAdminController::class, 'manageCompanyEmployees'])->name('corporate.manage-employees');
+    Route::get('/corporate/{company}/manage-entity', [SuperAdminController::class, 'manageCompanyEntity'])->name('corporate.manage-entity');
+    // Get employee policies
+    Route::get('/employee/{employee}/policies', [SuperAdminController::class, 'getEmployeePolicies'])->name('employee.policies');
+    // Add Single Employee form (single entry) and store
+    Route::get('/corporate/{company}/employee/create', [SuperAdminController::class, 'addSingleEmployee'])->name('corporate.employee.create');
+    Route::post('/corporate/{company}/employee', [SuperAdminController::class, 'storeEmployee'])->name('corporate.employee.store');
+    // Edit and Update Employee
+    Route::get('/corporate/{company}/employee/{employee}/edit', [SuperAdminController::class, 'editEmployee'])->name('corporate.employee.edit');
+    Route::put('/corporate/{company}/employee/{employee}', [SuperAdminController::class, 'updateEmployeeFull'])->name('corporate.employee.update');
+    // Employee update / toggle status (modal inline edit)
+    Route::put('/employee/{employee}', [SuperAdminController::class, 'updateEmployee'])->name('employee.update');
+    Route::put('/employee/{employee}/toggle-status', [SuperAdminController::class, 'employeeToggleStatus'])->name('employee.toggle-status');
+
+    // Entity (Location) Management Routes
+    Route::get('/corporate/{company}/entity/create', [SuperAdminController::class, 'createEntity'])->name('corporate.entity.create');
+    Route::post('/corporate/{company}/entity', [SuperAdminController::class, 'storeEntity'])->name('corporate.entity.store');
+    Route::get('/corporate/{company}/entity/{entity}/edit', [SuperAdminController::class, 'editEntity'])->name('corporate.entity.edit');
+    Route::put('/corporate/{company}/entity/{entity}', [SuperAdminController::class, 'updateEntity'])->name('corporate.entity.update');
+    Route::put('/entity/{entity}/toggle-status', [SuperAdminController::class, 'entityToggleStatus'])->name('entity.toggle-status');
+
+    // Bulk Employee Actions Routes
+    Route::get('/corporate/{company}/bulk-employee-actions', [SuperAdminController::class, 'bulkEmployeeActions'])->name('corporate.bulk-employee-actions');
+    Route::get('/corporate/{company}/bulk-upload-employee', [SuperAdminController::class, 'bulkUploadEmployee'])->name('corporate.bulk-upload-employee');
+    Route::get('/corporate/{company}/bulk-remove-employee', [SuperAdminController::class, 'bulkRemoveEmployee'])->name('corporate.bulk-remove-employee');
+    Route::get('/download-sample-csv/{type}', [SuperAdminController::class, 'downloadSampleCsv'])->name('download-sample-csv');
+    Route::post('/corporate/{company}/upload-bulk-csv', [SuperAdminController::class, 'uploadBulkCsv'])->name('corporate.upload-bulk-csv');
+    Route::post('/corporate/{company}/process-bulk-action', [SuperAdminController::class, 'processBulkAction'])->name('corporate.process-bulk-action');
+    Route::get('/bulk-action/{action}/download/{type}', [SuperAdminController::class, 'downloadBulkActionFile'])->name('bulk-action.download-file');
 
     // Wellness Module Routes
     Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
@@ -121,6 +151,7 @@ Route::prefix('superadmin')->group(function () {
     Route::delete('/marketing/message-template/{template}', [SuperAdminController::class, 'marketingMessageTemplateDestroy'])->name('superadmin.marketing.message-template.destroy');
 
     Route::get('/marketing/push-notifications', [SuperAdminController::class, 'marketingPushNotifications'])->name('superadmin.marketing.push-notifications.index');
+    Route::get('/marketing/push-notifications/create', [SuperAdminController::class, 'marketingPushNotificationsCreate'])->name('superadmin.marketing.push-notifications.create');
     Route::post('/marketing/push-notifications', [SuperAdminController::class, 'marketingPushNotificationsStore'])->name('superadmin.marketing.push-notifications.store');
     Route::put('/marketing/push-notifications/{notification}', [SuperAdminController::class, 'marketingPushNotificationsUpdate'])->name('superadmin.marketing.push-notifications.update');
     Route::delete('/marketing/push-notifications/{notification}', [SuperAdminController::class, 'marketingPushNotificationsDestroy'])->name('superadmin.marketing.push-notifications.destroy');
@@ -138,6 +169,21 @@ Route::prefix('superadmin')->group(function () {
     Route::get('/admin/blogs/{blog}/edit', [SuperAdminController::class, 'adminBlogsEdit'])->name('superadmin.admin.blogs.edit');
     Route::put('/admin/blogs/{blog}', [SuperAdminController::class, 'adminBlogsUpdate'])->name('superadmin.admin.blogs.update');
     Route::delete('/admin/blogs/{blog}', [SuperAdminController::class, 'adminBlogsDestroy'])->name('superadmin.admin.blogs.destroy');
+
+    // Admin -> Surveys Routes
+    Route::get('/admin/surveys', [SuperAdminController::class, 'adminSurveysIndex'])->name('superadmin.admin.surveys.index');
+    Route::get('/admin/surveys/create', [SuperAdminController::class, 'adminSurveysCreate'])->name('superadmin.admin.surveys.create');
+    Route::post('/admin/surveys', [SuperAdminController::class, 'adminSurveysStore'])->name('superadmin.admin.surveys.store');
+    Route::get('/admin/surveys/{survey}/edit', [SuperAdminController::class, 'adminSurveysEdit'])->name('superadmin.admin.surveys.edit');
+    Route::put('/admin/surveys/{survey}', [SuperAdminController::class, 'adminSurveysUpdate'])->name('superadmin.admin.surveys.update');
+    Route::delete('/admin/surveys/{survey}', [SuperAdminController::class, 'adminSurveysDestroy'])->name('superadmin.admin.surveys.destroy');
+    Route::get('/admin/surveys/{survey}/questions', [SuperAdminController::class, 'adminSurveyQuestions'])->name('superadmin.admin.surveys.questions');
+    Route::post('/admin/surveys/{survey}/questions', [SuperAdminController::class, 'adminSurveyQuestionsStore'])->name('superadmin.admin.surveys.questions.store');
+    Route::get('/admin/surveys/{survey}/assign', [SuperAdminController::class, 'adminSurveyAssign'])->name('superadmin.admin.surveys.assign');
+    Route::post('/admin/surveys/{survey}/assign', [SuperAdminController::class, 'adminSurveyAssignStore'])->name('superadmin.admin.surveys.assign.store');
+    Route::put('/admin/surveys/assignment/{assignment}', [SuperAdminController::class, 'adminSurveyAssignmentUpdate'])->name('superadmin.admin.surveys.assignment.update');
+    Route::delete('/admin/surveys/assignment/{assignment}', [SuperAdminController::class, 'adminSurveyAssignmentDelete'])->name('superadmin.admin.surveys.assignment.delete');
+    Route::get('/admin/surveys/reports', [SuperAdminController::class, 'adminSurveysReports'])->name('superadmin.admin.surveys.reports');
 
     // Admin -> Resources Routes
     Route::get('/admin/resources', [SuperAdminController::class, 'adminResourcesIndex'])->name('superadmin.admin.resources.index');

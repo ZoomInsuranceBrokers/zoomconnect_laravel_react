@@ -697,8 +697,9 @@ export default function Sidebar({ open = true, onToggle }) {
                             >
                                 <div className="flex items-center gap-3">
                                     <span className="w-5 h-5 flex items-center justify-center">
-                                        <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                            <path d="M4 6h16M4 12h16M4 18h16" />
+                                        {/* Gear / Cog icon */}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M11.983 1.5a1 1 0 01.99.858l.21 1.7a8.001 8.001 0 012.121.744l1.528-.493a1 1 0 01.93 1.773l-1.203.78a8.02 8.02 0 010 2.388l1.203.78a1 1 0 01-.93 1.773l-1.528-.493a8.001 8.001 0 01-2.121.744l-.21 1.7a1 1 0 01-.99.858h-1.98a1 1 0 01-.99-.858l-.21-1.7a8.001 8.001 0 01-2.121-.744l-1.528.493a1 1 0 01-.93-1.773l1.203-.78a8.02 8.02 0 010-2.388l-1.203-.78a1 1 0 01.93-1.773l1.528.493a8.001 8.001 0 012.121-.744l.21-1.7A1 1 0 019.992 1.5h1.98zM12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" />
                                         </svg>
                                     </span>
                                     <span>Admin</span>
@@ -734,6 +735,14 @@ export default function Sidebar({ open = true, onToggle }) {
                                         }`}>
                                             <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/faqs" ? "bg-[#934790]" : "bg-gray-400"}`}></span>
                                             <span>Faqs</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/superadmin/admin/surveys" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                            currentRoute === "/superadmin/admin/surveys" ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
+                                        }`}>
+                                            <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/surveys" ? "bg-[#934790]" : "bg-gray-400"}`}></span>
+                                            <span>Surveys</span>
                                         </Link>
                                     </li>
                                 </ul>

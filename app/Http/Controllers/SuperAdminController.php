@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CorporateLabel;
 use App\Models\CorporateGroup;
+use App\Models\CompanyEmployee;
 use App\Models\CompanyMaster;
 use App\Models\MessageTemplate;
 use App\Models\UserMaster;
@@ -18,6 +19,7 @@ use App\Models\InsuranceMaster;
 use App\Models\EscalationUser;
 use App\Models\BlogMaster;
 use App\Models\Resource;
+use App\Models\PushNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -29,6 +31,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Jobs\ReplaceEscalationUserJob;
+use App\Jobs\SendPushNotificationJob;
 
 class SuperAdminController extends Controller
 {
@@ -379,7 +382,7 @@ class SuperAdminController extends Controller
         $members = \App\Models\CompanyUser::where('company_id', $company->comp_id)
             ->where('is_active', 1)
             ->get()
-            ->map(function($member) {
+            ->map(function ($member) {
                 return [
                     'full_name' => $member->full_name,
                     'email' => $member->email,
@@ -421,6 +424,791 @@ class SuperAdminController extends Controller
         ]);
     }
 
+    /**
+     * Manage company employees
+     */
+    public function manageCompanyEmployees($companyId)
+    {
+        // Fetch company basic info
+        $company = CompanyMaster::findOrFail($companyId);
+
+        // Fetch employees via Eloquent and eager-load location to include branch_name
+        $employees = \App\Models\CompanyEmployee::with('location')
+            ->where('company_id', $companyId)
+            ->orderBy('created_on', 'desc')
+            ->get()
+            ->map(function ($e) {
+                return [
+                    'id' => $e->id,
+                    'full_name' => $e->full_name,
+                    'first_name' => $e->first_name,
+                    'last_name' => $e->last_name,
+                    'email' => $e->email,
+                    'mobile' => $e->mobile,
+                    'designation' => $e->designation ?? $e->designation ?? null,
+                    'grade' => $e->grade,
+                    'is_active' => $e->is_active,
+                    'is_delete' => $e->is_delete ?? $e->is_delete ?? null,
+                    'created_on' => $e->created_on,
+                    'updated_on' => $e->updated_on,
+                    'location_id' => $e->location_id,
+                    'branch_name' => $e->location->branch_name ?? null,
+                ];
+            });
+
+        return Inertia::render('superadmin/corporate/ManageEmployees', [
+            'company' => $company,
+            'employees' => $employees,
+        ]);
+    }
+
+    /**
+     * Show Add Single Employee form
+     */
+    public function addSingleEmployee($companyId)
+    {
+        try {
+            $company = CompanyMaster::findOrFail($companyId);
+            // fetch locations for this company
+            $locations = DB::table('company_location_master')->where('comp_id', $companyId)->select('id', 'branch_name')->get();
+
+            return Inertia::render('superadmin/corporate/AddSingleEmployee', [
+                'company' => $company,
+                'locations' => $locations,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Add single employee page failed: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Failed to load add employee form')->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Show Edit Employee form
+     */
+    public function editEmployee($companyId, $employeeId)
+    {
+        try {
+            $company = CompanyMaster::findOrFail($companyId);
+            $employee = \App\Models\CompanyEmployee::findOrFail($employeeId);
+            $locations = DB::table('company_location_master')->where('comp_id', $companyId)->select('id', 'branch_name')->get();
+
+            return Inertia::render('superadmin/corporate/EditEmployee', [
+                'company' => $company,
+                'employee' => $employee,
+                'locations' => $locations,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Edit employee page failed: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Failed to load edit employee form')->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Store single employee (from Add Single Employee form)
+     */
+
+    public function storeEmployee(Request $request, $companyId)
+    {
+        $validated = $request->validate([
+            'first_name' => 'required|max:100',
+            'last_name' => 'required|max:100',
+            'employee_code' => 'required|min:3|max:100|unique:company_employees,employees_code,NULL,id,company_id,' . $companyId,
+            'email' => 'required|email|max:100|unique:company_employees,email,NULL,id,company_id,' . $companyId,
+            'gender' => 'required|max:100',
+            'designation' => 'required|max:100',
+            'doj' => 'required|date',
+            'dob' => 'required|date|before:today',
+            'location_id' => 'required|exists:company_location_master,id',
+            'grade' => 'required|max:100',
+        ], [
+            'first_name.required' => 'Employee First Name is required.',
+            'last_name.required' => 'Employee Last Name is required.',
+            'employee_code.required' => 'Employee Code is required.',
+            'employee_code.min' => 'Employee Code must be at least 3 characters.',
+            'employee_code.unique' => 'This Employee Code already exists for this company.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.unique' => 'This email already exists for this company.',
+            'gender.required' => 'Gender is required.',
+            'designation.required' => 'Designation is required.',
+            'doj.required' => 'Date of Joining is required.',
+            'dob.required' => 'Date of Birth is required.',
+            'dob.before' => 'Date of Birth must be a past date.',
+            'location_id.required' => 'Employee Location is required.',
+            'grade.required' => 'Employee Grade is required.',
+        ]);
+
+        try {
+            $token = bin2hex(random_bytes(16));
+            $firstName = strtoupper($validated['first_name']);
+            $lastName = strtoupper($validated['last_name']);
+            $fullName = $firstName . ' ' . $lastName;
+
+            $photo = $validated['gender'] === 'female'
+                ? 'assets/img/profilef.png'
+                : 'assets/img/profileimg.jpg';
+
+            $dobFormatted = date('d/m/Y', strtotime($validated['dob']));
+            $password = bcrypt($dobFormatted);
+
+            $employee = new CompanyEmployee();
+            $employee->fill([
+                'company_id' => $companyId,
+                'token' => $token,
+                'full_name' => $fullName,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'employees_code' => strtoupper($validated['employee_code']),
+                'email' => strtolower($validated['email']),
+                'gender' => $validated['gender'],
+                'designation' => $validated['designation'],
+                'grade' => $validated['grade'],
+                'location_id' => $validated['location_id'],
+                'dob' => date('Y-m-d H:i:s', strtotime($validated['dob'])),
+                'date_of_joining' => date('Y-m-d H:i:s', strtotime($validated['doj'])),
+                'pwd' => $password,
+                'photo' => $photo,
+                'is_active' => 1,
+                'is_delete' => 0,
+                'first_login' => 1,
+                'set_profile' => 1,
+                'created_on' => now(),
+                'created_by' => auth()->id() ?? 1,
+                'updated_on' => now(),
+            ]);
+
+            $employee->save();
+
+            return redirect()
+                ->route('corporate.manage-employees', $companyId)
+                ->with('message', 'Employee added successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Store employee failed: ' . $e->getMessage());
+
+            return back()
+                ->with('message', 'Failed to add employee: ' . $e->getMessage())
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Update employee (full form from edit page)
+     */
+    public function updateEmployeeFull(Request $request, $companyId, $employeeId)
+    {
+        // Validate with same rules as add
+        $validated = $request->validate([
+            'first_name' => 'required|max:100',
+            'last_name' => 'required|max:100',
+            'employee_code' => 'required|min:3|max:100|unique:company_employees,employees_code,' . $employeeId . ',id,company_id,' . $companyId,
+            'email' => 'required|email|max:100|unique:company_employees,email,' . $employeeId . ',id,company_id,' . $companyId,
+            'gender' => 'required|max:100',
+            'designation' => 'required|max:100',
+            'doj' => 'required|date',
+            'dob' => 'required|date|before:today',
+            'location_id' => 'required|exists:company_location_master,id',
+            'grade' => 'required|max:100',
+        ], [
+            'first_name.required' => 'Employee First Name is required.',
+            'last_name.required' => 'Employee Last Name is required.',
+            'employee_code.required' => 'Employee Code is required.',
+            'employee_code.min' => 'Employee Code must be at least 3 characters.',
+            'employee_code.unique' => 'This Employee Code already exists for this company.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.unique' => 'This email already exists for this company.',
+            'gender.required' => 'Gender is required.',
+            'designation.required' => 'Designation is required.',
+            'doj.required' => 'Date of Joining is required.',
+            'dob.required' => 'Date of Birth is required.',
+            'dob.before' => 'Date of Birth must be a past date.',
+            'location_id.required' => 'Employee Location is required.',
+            'grade.required' => 'Employee Grade is required.',
+        ]);
+
+        try {
+            $employee = \App\Models\CompanyEmployee::findOrFail($employeeId);
+
+            // Convert names to uppercase
+            $firstName = strtoupper($validated['first_name']);
+            $lastName = strtoupper($validated['last_name']);
+            $fullName = $firstName . ' ' . $lastName;
+
+            // Update photo if gender changed
+            if ($employee->gender !== $validated['gender']) {
+                $photo = 'assets/img/profileimg.jpg'; // default male/other
+                if ($validated['gender'] === 'female') {
+                    $photo = 'assets/img/profilef.png';
+                }
+                $employee->photo = $photo;
+            }
+
+            $employee->full_name = $fullName;
+            $employee->first_name = $firstName;
+            $employee->last_name = $lastName;
+            $employee->employees_code = strtoupper($validated['employee_code']);
+            $employee->email = strtolower($validated['email']);
+            $employee->gender = $validated['gender'];
+            $employee->designation = $validated['designation'];
+            $employee->grade = $validated['grade'];
+            $employee->location_id = $validated['location_id'];
+            $employee->dob = date('Y-m-d H:i:s', strtotime($validated['dob']));
+            $employee->date_of_joining = date('Y-m-d H:i:s', strtotime($validated['doj']));
+            $employee->updated_on = now();
+            $employee->save();
+
+            return redirect()->route('corporate.manage-employees', $companyId)
+                ->with('message', 'Employee updated successfully!')
+                ->with('messageType', 'success');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Update employee failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to update employee: ' . $e->getMessage())
+                ->with('messageType', 'error')
+                ->withInput();
+        }
+    }
+
+    /**
+     * Manage company entity
+     */
+    public function manageCompanyEntity($companyId)
+    {
+        $company = CompanyMaster::findOrFail($companyId);
+        $entities = \App\Models\CompanyLocationMaster::where('comp_id', $companyId)
+            ->orderBy('created_on', 'desc')
+            ->get();
+
+        return Inertia::render('superadmin/corporate/ManageEntity', [
+            'company' => $company,
+            'entities' => $entities,
+        ]);
+    }
+
+    public function createEntity($companyId)
+    {
+        $company = CompanyMaster::findOrFail($companyId);
+
+        return Inertia::render('superadmin/corporate/AddEntity', [
+            'company' => $company,
+        ]);
+    }
+
+    public function storeEntity(Request $request, $companyId)
+    {
+        $company = CompanyMaster::findOrFail($companyId);
+
+        $validated = $request->validate([
+            'branch_name' => 'required|string|max:255',
+            'address' => 'required|string|max:500',
+            'state_name' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'pincode' => 'required|string|max:10',
+        ], [
+            'branch_name.required' => 'Entity name is required.',
+            'address.required' => 'Entity address is required.',
+            'state_name.required' => 'State is required.',
+            'city.required' => 'City is required.',
+            'pincode.required' => 'Pincode is required.',
+        ]);
+
+        // Generate unique 4-digit location_id
+        do {
+            $locationId = rand(1000, 9999);
+            $exists = \App\Models\CompanyLocationMaster::where('location_id', $locationId)->exists();
+        } while ($exists);
+
+        \App\Models\CompanyLocationMaster::create([
+            'location_id' => $locationId,
+            'branch_name' => $validated['branch_name'],
+            'address' => $validated['address'],
+            'comp_id' => $companyId,
+            'state_name' => $validated['state_name'],
+            'city' => $validated['city'],
+            'pincode' => $validated['pincode'],
+            'status' => 1,
+            'created_on' => now(),
+        ]);
+
+        return redirect()->route('corporate.manage-entity', $companyId)
+            ->with('message', 'Entity created successfully!')
+            ->with('messageType', 'success');
+    }
+
+    public function editEntity($companyId, $entityId)
+    {
+        $company = CompanyMaster::findOrFail($companyId);
+        $entity = \App\Models\CompanyLocationMaster::findOrFail($entityId);
+
+        return Inertia::render('superadmin/corporate/EditEntity', [
+            'company' => $company,
+            'entity' => $entity,
+        ]);
+    }
+
+    public function updateEntity(Request $request, $companyId, $entityId)
+    {
+        $company = CompanyMaster::findOrFail($companyId);
+        $entity = \App\Models\CompanyLocationMaster::findOrFail($entityId);
+
+        $validated = $request->validate([
+            'branch_name' => 'required|string|max:255',
+            'address' => 'required|string|max:500',
+            'state_name' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'pincode' => 'required|string|max:10',
+        ], [
+            'branch_name.required' => 'Entity name is required.',
+            'address.required' => 'Entity address is required.',
+            'state_name.required' => 'State is required.',
+            'city.required' => 'City is required.',
+            'pincode.required' => 'Pincode is required.',
+        ]);
+
+        $entity->update([
+            'branch_name' => $validated['branch_name'],
+            'address' => $validated['address'],
+            'state_name' => $validated['state_name'],
+            'city' => $validated['city'],
+            'pincode' => $validated['pincode'],
+        ]);
+
+        return redirect()->route('corporate.manage-entity', $companyId)
+            ->with('message', 'Entity updated successfully!')
+            ->with('messageType', 'success');
+    }
+
+    public function entityToggleStatus($entityId)
+    {
+        $entity = \App\Models\CompanyLocationMaster::findOrFail($entityId);
+        $entity->status = $entity->status == 1 ? 0 : 1;
+        $entity->save();
+
+        return redirect()->back()
+            ->with('message', $entity->status == 1 ? 'Entity activated successfully!' : 'Entity deactivated successfully!')
+            ->with('messageType', 'success');
+    }
+
+    /**
+     * =====================================================
+     * BULK EMPLOYEE ACTIONS
+     * =====================================================
+     */
+
+    public function bulkEmployeeActions($companyId)
+    {
+        $company = CompanyMaster::findOrFail($companyId);
+        $actions = \App\Models\BulkEmployeeAction::where('comp_id', $companyId)
+            ->with(['creator'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('superadmin/corporate/BulkEmployeeActions', [
+            'company' => $company,
+            'actions' => $actions,
+        ]);
+    }
+
+    public function bulkUploadEmployee($companyId)
+    {
+        $company = CompanyMaster::findOrFail($companyId);
+        $entities = \App\Models\CompanyLocationMaster::where('comp_id', $companyId)
+            ->where('status', 1)
+            ->get();
+
+        return Inertia::render('superadmin/corporate/BulkUploadEmployee', [
+            'company' => $company,
+            'entities' => $entities,
+            'action_type' => 'bulk_add',
+        ]);
+    }
+
+    public function bulkRemoveEmployee($companyId)
+    {
+        $company = CompanyMaster::findOrFail($companyId);
+
+        return Inertia::render('superadmin/corporate/BulkUploadEmployee', [
+            'company' => $company,
+            'action_type' => 'bulk_remove',
+        ]);
+    }
+
+    public function downloadSampleCsv($type)
+    {
+        $filename = $type === 'add' ? 'Sample_Employee_Bulk_Upload.csv' : 'Sample_Employee_Bulk_Remove.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        if ($type === 'add') {
+            $columns = [
+                'S.No',
+                'Entity Code',
+                'Employee Code',
+                'First Name',
+                'Last Name',
+                'Gender',
+                'Date of Joining(dd-mm-yyyy)',
+                'D.O.B(dd-mm-yyyy)',
+                'Designation',
+                'Email',
+                'New Email',
+                'Grade',
+                'Contact Number'
+            ];
+
+            $sample = [
+                ['1', 'Copy It From HR Portal', 'EMP01', 'ASHISH', 'KUMAR', 'MALE', '13/11/2025', '13/11/1955', 'Manager', 'test1@democompany.com', '', 'A', '9876543210'],
+                ['2', 'Copy It From HR Portal', 'EMP02', 'REKHA', 'SINGH', 'FEMALE', '13/11/2025', '13/11/1955', 'Executive', 'test2@democompany.com', '', 'A', '9222277770'],
+                ['3', 'Copy It From HR Portal', 'EMP03', 'RASHMI', 'SINGH', 'FEMALE', '13/11/2025', '13/11/1955', 'Sr Executive', 'test3@democompany.com', '', 'A', '9090909090'],
+            ];
+        } else {
+            $columns = [
+                'S.No',
+                'Employee Code',
+                'Email',
+                'Date Of Leaving(dd-mm-yyyy)'
+            ];
+
+            $sample = [
+                ['1', 'EMP01', 'test1@testcompany.com', '2025-11-13'],
+                ['2', 'EMP02', 'test2@testcompany.com', '2025-11-13'],
+                ['3', 'EMP03', 'test3@testcompany.com', '2025-11-13'],
+            ];
+        }
+
+        $callback = function() use ($columns, $sample) {
+            // Open output stream without extra newline
+            $file = fopen('php://output', 'w');
+            if ($file === false) return;
+
+            // Write header row (no blank line before)
+            $trimmedColumns = array_map('trim', $columns);
+            fputcsv($file, $trimmedColumns);
+
+            // Write sample rows
+            foreach ($sample as $row) {
+                $trimmedRow = array_map(function($v) { return is_string($v) ? trim($v) : $v; }, $row);
+                fputcsv($file, $trimmedRow);
+            }
+
+            fflush($file);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function uploadBulkCsv(Request $request, $companyId)
+    {
+        $company = CompanyMaster::findOrFail($companyId);
+
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240',
+            'action_type' => 'required|in:bulk_add,bulk_remove'
+        ]);
+
+        $file = $request->file('csv_file');
+        $actionType = $request->input('action_type');
+
+        // Read and validate CSV
+        $csv = array_map('str_getcsv', file($file->getRealPath()));
+        $headers = array_shift($csv);
+
+        // Validate headers based on action type
+        $requiredHeaders = $actionType === 'bulk_add'
+            ? ['Entity Code', 'Employee Code', 'First Name', 'Last Name', 'Gender', 'Date of Joining(dd-mm-yyyy)', 'D.O.B(dd-mm-yyyy)', 'Designation', 'Email', 'Grade']
+            : ['Employee Code', 'Email', 'Date Of Leaving(dd-mm-yyyy)'];
+
+        foreach ($requiredHeaders as $requiredHeader) {
+            if (!in_array($requiredHeader, $headers)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Missing required column: {$requiredHeader}"
+                ], 422);
+            }
+        }
+
+        // Process and validate each row
+        $validRows = [];
+        $invalidRows = [];
+        $rowNumber = 2; // Start from 2 (1 is header)
+
+        foreach ($csv as $row) {
+            if (count($row) !== count($headers)) {
+                continue; // Skip empty or malformed rows
+            }
+
+            $employee = array_combine($headers, $row);
+
+            if ($actionType === 'bulk_add') {
+                $validation = $this->validateBulkAddEmployee($employee, $companyId, $rowNumber);
+            } else {
+                $validation = $this->validateBulkRemoveEmployee($employee, $companyId, $rowNumber);
+            }
+
+            if ($validation['valid']) {
+                $validRows[] = $employee;
+            } else {
+                $employee['_error'] = $validation['message'];
+                $invalidRows[] = $employee;
+            }
+
+            $rowNumber++;
+        }
+
+        // Store uploaded file
+        $uploadedFilePath = $file->store('bulk_uploads', 'public');
+
+        return response()->json([
+            'success' => true,
+            'preview' => [
+                'total' => count($csv),
+                'valid' => count($validRows),
+                'invalid' => count($invalidRows),
+                'valid_rows' => array_slice($validRows, 0, 10), // Preview first 10
+                'invalid_rows' => $invalidRows,
+                'uploaded_file_path' => $uploadedFilePath,
+                'headers' => $headers,
+            ]
+        ]);
+    }
+
+    private function validateBulkAddEmployee($employee, $companyId, $rowNumber)
+    {
+        $employeeCode = $employee['Employee Code'] ?? '';
+
+        // Check required fields
+        if (empty($employee['First Name'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: First Name is missing"];
+        }
+        if (empty($employee['Gender'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Gender is missing"];
+        }
+        if (empty($employee['Date of Joining(dd-mm-yyyy)'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Date of Joining is missing"];
+        }
+        if (empty($employee['D.O.B(dd-mm-yyyy)'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: D.O.B is missing"];
+        }
+        if (empty($employee['Designation'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Designation is missing"];
+        }
+        if (empty($employee['Email'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Email is missing"];
+        }
+        if (empty($employee['Grade'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Grade is missing"];
+        }
+
+        // Validate email
+        if (!filter_var(trim($employee['Email']), FILTER_VALIDATE_EMAIL)) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Email is not valid"];
+        }
+
+        // Validate gender
+        $gender = strtoupper($employee['Gender']);
+        if (!in_array($gender, ['MALE', 'FEMALE', 'OTHER'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Gender must be MALE, FEMALE, or OTHER"];
+        }
+
+        // Validate contact number if provided
+        if (!empty($employee['Contact Number'])) {
+            $contact = preg_replace('/[^0-9]/', '', $employee['Contact Number']);
+            if (strlen($contact) != 10) {
+                return ['valid' => false, 'message' => "Row {$rowNumber}: Contact Number must be 10 digits"];
+            }
+        }
+
+        // Check if entity exists
+        $entity = \App\Models\CompanyLocationMaster::where('location_id', $employee['Entity Code'])
+            ->where('comp_id', $companyId)
+            ->first();
+
+        if (!$entity) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Entity Code not found"];
+        }
+
+        // Check if employee code already exists
+        $existingEmployee = CompanyEmployee::where('employees_code', $employeeCode)
+            ->where('company_id', $companyId)
+            ->where('is_delete', 0)
+            ->first();
+
+        if ($existingEmployee && strtolower($existingEmployee->email) !== strtolower(trim($employee['Email']))) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Employee Code already exists with different email"];
+        }
+
+        // Check if email already exists
+        $existingEmail = CompanyEmployee::where('email', trim($employee['Email']))
+            ->where('company_id', $companyId)
+            ->where('is_delete', 0)
+            ->first();
+
+        if ($existingEmail && $existingEmail->employees_code !== $employeeCode) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Email already in use"];
+        }
+
+        // Validate new email if provided
+        if (!empty($employee['New Email'])) {
+            if (!filter_var(trim($employee['New Email']), FILTER_VALIDATE_EMAIL)) {
+                return ['valid' => false, 'message' => "Row {$rowNumber}: New Email is not valid"];
+            }
+
+            $existingNewEmail = CompanyEmployee::where('email', trim($employee['New Email']))
+                ->where('company_id', $companyId)
+                ->where('is_delete', 0)
+                ->first();
+
+            if ($existingNewEmail) {
+                return ['valid' => false, 'message' => "Row {$rowNumber}: New Email already in use"];
+            }
+        }
+
+        return ['valid' => true];
+    }
+
+    private function validateBulkRemoveEmployee($employee, $companyId, $rowNumber)
+    {
+        if (empty($employee['Employee Code'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Employee Code is missing"];
+        }
+        if (empty($employee['Email'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Email is missing"];
+        }
+        if (empty($employee['Date Of Leaving(dd-mm-yyyy)'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Date Of Leaving is missing"];
+        }
+
+        // Check if employee exists
+        $existingEmployee = CompanyEmployee::where('employees_code', $employee['Employee Code'])
+            ->where('email', trim($employee['Email']))
+            ->where('company_id', $companyId)
+            ->where('is_delete', 0)
+            ->first();
+
+        if (!$existingEmployee) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Employee not found"];
+        }
+
+        return ['valid' => true];
+    }
+
+    public function processBulkAction(Request $request, $companyId)
+    {
+        $request->validate([
+            'uploaded_file_path' => 'required|string',
+            'action_type' => 'required|in:bulk_add,bulk_remove',
+        ]);
+
+        $company = CompanyMaster::findOrFail($companyId);
+        $userId = auth()->user()->user_id ?? 1; // Get logged-in user ID
+
+        // Create bulk action record
+        $bulkAction = \App\Models\BulkEmployeeAction::create([
+            'comp_id' => $companyId,
+            'action_type' => $request->input('action_type'),
+            'uploaded_file' => $request->input('uploaded_file_path'),
+            'status' => 'pending',
+            'created_by' => $userId,
+        ]);
+
+        // Dispatch job to process in background
+        \App\Jobs\ProcessBulkEmployeeJob::dispatch($bulkAction);
+
+        return redirect()->route('corporate.bulk-employee-actions', $companyId)
+            ->with('message', 'Bulk action submitted successfully! Processing in background.')
+            ->with('messageType', 'success');
+    }
+
+    public function downloadBulkActionFile($actionId, $type)
+    {
+        $action = \App\Models\BulkEmployeeAction::findOrFail($actionId);
+
+        $filePath = match($type) {
+            'uploaded' => $action->uploaded_file,
+            'inserted' => $action->inserted_data_file,
+            'failed' => $action->not_inserted_data_file,
+            default => null
+        };
+
+        if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+            abort(404, 'File not found');
+        }
+
+        return Storage::disk('public')->download($filePath);
+    }
+
+    public function getEmployeePolicies($employeeId)
+    {
+        // Get all TPA tables for this employee
+        $tpa_tables = DB::select("SELECT DISTINCT tpa_master.tpa_table_name FROM policy_mapping_master INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id WHERE policy_mapping_master.status = 1 AND policy_endorsements.status = 1 AND policy_master.is_old = 0 AND policy_master.policy_end_date >= CURRENT_TIMESTAMP AND policy_mapping_master.emp_id = ?", [$employeeId]);
+
+        $policies_data = [];
+        foreach ($tpa_tables as $tpa_table) {
+            $table_name = $tpa_table->tpa_table_name;
+            $policy = DB::select("SELECT DISTINCT policy_master.*, policy_mapping_master.emp_id, policy_mapping_master.id AS mapping_id, policy_mapping_master.addition_endorsement_id, insurance_master.insurance_company_name, insurance_master.insurance_comp_icon_url, tpa_master.tpa_company_name, tpa_master.tpa_table_name FROM policy_mapping_master INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id JOIN $table_name ON $table_name.mapping_id = policy_mapping_master.id WHERE policy_mapping_master.status = 1 AND policy_endorsements.status = 1 AND policy_master.is_old = 0 AND policy_master.policy_end_date >= CURRENT_TIMESTAMP AND policy_mapping_master.emp_id = ? AND $table_name.addition_endorsement_id IS NOT NULL AND $table_name.deletion_endorsement_id IS NULL AND $table_name.updation_endorsement_id IS NULL AND $table_name.addition_endorsement_id != 0", [$employeeId]);
+            $policies_data = array_merge($policies_data, $policy);
+        }
+
+        return response()->json(['policies' => $policies_data]);
+    }
+    /**
+     * Toggle employee active/inactive status (AJAX)
+     */
+    public function employeeToggleStatus($id)
+    {
+        try {
+            $employee = \App\Models\CompanyEmployee::findOrFail($id);
+            $employee->is_active = $employee->is_active == 1 ? 0 : 1;
+            $employee->updated_on = now();
+            $employee->save();
+
+            return response()->json(['success' => true, 'is_active' => (int) $employee->is_active]);
+        } catch (\Exception $e) {
+            Log::error('Employee toggle status failed: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error toggling employee status'], 500);
+        }
+    }
+
+    /**
+     * Update employee details (AJAX)
+     */
+    public function updateEmployee(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'mobile' => 'nullable|string|max:20',
+            'designation' => 'nullable|string|max:255',
+            'location_id' => 'nullable|integer|exists:company_location_master,id',
+        ]);
+
+        try {
+            $employee = \App\Models\CompanyEmployee::findOrFail($id);
+
+            $employee->update([
+                'full_name' => $validated['full_name'],
+                'email' => $validated['email'] ?? null,
+                'mobile' => $validated['mobile'] ?? null,
+                'designation' => $validated['designation'] ?? null,
+                'location_id' => $validated['location_id'] ?? $employee->location_id,
+                'updated_on' => now(),
+            ]);
+
+            return response()->json(['success' => true, 'employee' => $employee]);
+        } catch (\Exception $e) {
+            Log::error('Update employee failed: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to update employee'], 500);
+        }
+    }
     public function corporateUpdate(Request $request, $id)
     {
         try {
@@ -1330,9 +2118,33 @@ class SuperAdminController extends Controller
             'email' => 'admin@zoomconnect.com'
         ]);
 
+        $notifications = PushNotification::with(['creator', 'updater'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return Inertia::render('superadmin/Marketing/PushNotifications', [
             'user' => $user,
-            'notifications' => []
+            'notifications' => $notifications
+        ]);
+    }
+
+    /**
+     * Show create push notification form
+     */
+    public function marketingPushNotificationsCreate()
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        $companies = CompanyMaster::where('status', 1)
+            ->orderBy('comp_name')
+            ->get(['comp_id', 'comp_name']);
+
+        return Inertia::render('superadmin/Marketing/SendPushNotification', [
+            'user' => $user,
+            'companies' => $companies
         ]);
     }
 
@@ -1341,8 +2153,68 @@ class SuperAdminController extends Controller
      */
     public function marketingPushNotificationsStore(Request $request)
     {
-        return redirect()->route('superadmin.marketing.push-notifications.index')
-            ->with('success', 'Push notification created successfully.');
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|string|max:1000',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'notification_type' => 'nullable|string|max:100',
+            'target_type' => 'required|in:all,specific',
+            'company_ids' => 'required_if:target_type,specific|array',
+            'company_ids.*' => 'exists:company_master,comp_id',
+            'is_active' => 'nullable|boolean'
+        ], [
+            'title.required' => 'Notification title is required.',
+            'body.required' => 'Notification message is required.',
+            'body.max' => 'Notification message cannot exceed 1000 characters.',
+            'target_type.required' => 'Please select target audience.',
+            'company_ids.required_if' => 'Please select at least one company.',
+            'company_ids.*.exists' => 'One or more selected companies are invalid.'
+        ]);
+
+        try {
+            // Handle uploaded image file (if provided)
+            $imageUrl = null;
+            if ($request->hasFile('image_file')) {
+                $file = $request->file('image_file');
+                $filename = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $file->getClientOriginalExtension();
+                $uploadPath = public_path('uploads/push-notifications');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                if ($file->move($uploadPath, $filename)) {
+                    $imageUrl = '/uploads/push-notifications/' . $filename;
+                }
+            }
+
+            $pushNotification = PushNotification::create([
+                'title' => $validated['title'],
+                'body' => $validated['body'],
+                'image_url' => $imageUrl,
+                'notification_type' => $validated['notification_type'] ?? 'general',
+                'target_type' => $validated['target_type'],
+                'company_ids' => $validated['target_type'] === 'specific' ? $validated['company_ids'] : null,
+                'is_active' => $validated['is_active'] ?? true,
+                'status' => 'pending',
+                'created_by' => Session::get('superadmin_user.id', 1),
+                'updated_by' => Session::get('superadmin_user.id', 1)
+            ]);
+
+            // Dispatch job instance explicitly to avoid issues with static dispatch and constructor signature
+            \Log::info('Dispatching SendPushNotificationJob for push id: ' . ($pushNotification->id ?? 'unknown'));
+            dispatch(new \App\Jobs\SendPushNotificationJob($pushNotification));
+
+            return redirect()->route('superadmin.marketing.push-notifications.index')
+                ->with('success', 'Push notification is being sent in the background.');
+        } catch (\Exception $e) {
+            // If an image was uploaded but something failed, delete the uploaded file to avoid orphaned files
+            if (!empty($imageUrl) && file_exists(public_path($imageUrl))) {
+                @unlink(public_path($imageUrl));
+            }
+            Log::error('Failed to create push notification: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Failed to create push notification. Please try again.')
+                ->withInput();
+        }
     }
 
     /**
@@ -2313,6 +3185,549 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Admin -> Surveys index
+     */
+    public function adminSurveysIndex()
+    {
+        $surveys = \App\Models\Survey::with('questions')
+            ->withCount('questions')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('superadmin/admin/surveys/Index', [
+            'surveys' => $surveys
+        ]);
+    }
+
+    /**
+     * Admin -> Surveys Reports
+     * Accepts optional query param `ids` (comma separated) to limit which surveys to report on.
+     */
+    public function adminSurveysReports(Request $request)
+    {
+        // Check if this is an assignment-level report
+        $assignmentId = $request->query('assignment');
+
+        if ($assignmentId) {
+            $assignment = \App\Models\CompanyAssignSurvey::with(['survey.questions', 'company'])
+                ->findOrFail($assignmentId);
+
+            // Get all responses for this assignment
+            $responses = \DB::table('survey_responses')
+                ->where('assigned_survey_id', $assignmentId)
+                ->get();
+
+            // Get questions for the survey
+            $questions = \App\Models\SurveyQuestion::where('survey_id', $assignment->survey_id)->get();
+
+            // Aggregate data by question type
+            $ratingData = [];
+            $multipleChoiceData = [];
+            $textResponses = [];
+            $checkboxData = [];
+            $overviewStats = [
+                'total_responses' => $responses->whereNotNull('emp_id')->unique('emp_id')->count(),
+                'total_questions' => $questions->count(),
+                'response_rate' => 0, // Calculate based on total employees if needed
+            ];
+
+            foreach ($questions as $question) {
+                $questionResponses = $responses->where('question_id', $question->id);
+
+                if ($question->type === 'rating') {
+                    $ratings = $questionResponses->whereNotNull('rating');
+                    $avgRating = $ratings->avg('rating');
+                    $ratingData[] = [
+                        'question_id' => $question->id,
+                        'question' => $question->question,
+                        'focus_area' => $question->focus_area,
+                        'avg_rating' => $avgRating ? round($avgRating, 2) : 0,
+                        'response_count' => $ratings->count(),
+                        'ratings_distribution' => $this->getRatingDistribution($ratings),
+                    ];
+                } elseif ($question->type === 'multiple_choice') {
+                    $choices = $questionResponses->whereNotNull('response_choice');
+                    $choiceDistribution = [];
+                    foreach ($choices as $choice) {
+                        $responseChoice = json_decode($choice->response_choice, true);
+                        if (is_array($responseChoice)) {
+                            foreach ($responseChoice as $c) {
+                                $choiceDistribution[$c] = ($choiceDistribution[$c] ?? 0) + 1;
+                            }
+                        }
+                    }
+                    $multipleChoiceData[] = [
+                        'question_id' => $question->id,
+                        'question' => $question->question,
+                        'focus_area' => $question->focus_area,
+                        'response_count' => $choices->count(),
+                        'distribution' => $choiceDistribution,
+                    ];
+                } elseif ($question->type === 'text') {
+                    $texts = $questionResponses->whereNotNull('response_text');
+                    $textResponses[] = [
+                        'question_id' => $question->id,
+                        'question' => $question->question,
+                        'focus_area' => $question->focus_area,
+                        'response_count' => $texts->count(),
+                        'responses' => $texts->pluck('response_text')->take(50)->values(), // Limit to 50 for display
+                    ];
+                } elseif ($question->type === 'checkbox') {
+                    $checkboxes = $questionResponses->whereNotNull('response_checkboxes');
+                    $checkboxDistribution = [];
+                    foreach ($checkboxes as $checkbox) {
+                        $responseCheckboxes = json_decode($checkbox->response_checkboxes, true);
+                        if (is_array($responseCheckboxes)) {
+                            foreach ($responseCheckboxes as $cb) {
+                                $checkboxDistribution[$cb] = ($checkboxDistribution[$cb] ?? 0) + 1;
+                            }
+                        }
+                    }
+                    $checkboxData[] = [
+                        'question_id' => $question->id,
+                        'question' => $question->question,
+                        'focus_area' => $question->focus_area,
+                        'response_count' => $checkboxes->count(),
+                        'distribution' => $checkboxDistribution,
+                    ];
+                }
+            }
+
+            // Focus area aggregation for overview
+            $focusAreaStats = [];
+            foreach ($ratingData as $rating) {
+                $fa = $rating['focus_area'] ?? 'General';
+                if (!isset($focusAreaStats[$fa])) {
+                    $focusAreaStats[$fa] = ['total' => 0, 'count' => 0];
+                }
+                $focusAreaStats[$fa]['total'] += $rating['avg_rating'] * $rating['response_count'];
+                $focusAreaStats[$fa]['count'] += $rating['response_count'];
+            }
+
+            $focusAreaAverages = [];
+            foreach ($focusAreaStats as $fa => $data) {
+                $focusAreaAverages[] = [
+                    'focus_area' => $fa,
+                    'avg_rating' => $data['count'] > 0 ? round($data['total'] / $data['count'], 2) : 0,
+                    'response_count' => $data['count'],
+                ];
+            }
+
+            // Transform data to analytics format
+            $ratingQuestions = [];
+            foreach ($ratingData as $rating) {
+                $ratingQuestions[] = [
+                    'question_text' => $rating['question'],
+                    'focus_area' => $rating['focus_area'],
+                    'avg_rating' => $rating['avg_rating'],
+                    'response_count' => $rating['response_count'],
+                ];
+            }
+
+            $multipleChoiceQuestions = [];
+            foreach ($multipleChoiceData as $mc) {
+                $choices = [];
+                foreach ($mc['distribution'] as $choice => $count) {
+                    $choices[] = ['choice' => $choice, 'count' => $count];
+                }
+                $multipleChoiceQuestions[] = [
+                    'question_text' => $mc['question'],
+                    'response_count' => $mc['response_count'],
+                    'choices' => $choices,
+                ];
+            }
+
+            $textQuestions = [];
+            foreach ($textResponses as $text) {
+                $textQuestions[] = [
+                    'question_text' => $text['question'],
+                    'response_count' => $text['response_count'],
+                    'responses' => collect($text['responses'])->map(function($resp) {
+                        return [
+                            'response_text' => $resp,
+                            'created_at' => now(),
+                        ];
+                    })->all(),
+                ];
+            }
+
+            $checkboxQuestions = [];
+            foreach ($checkboxData as $cb) {
+                $options = [];
+                foreach ($cb['distribution'] as $option => $count) {
+                    $options[] = ['option' => $option, 'count' => $count];
+                }
+                $checkboxQuestions[] = [
+                    'question_text' => $cb['question'],
+                    'response_count' => $cb['response_count'],
+                    'options' => $options,
+                ];
+            }
+
+            $overallAvgRating = 0;
+            if (count($ratingQuestions) > 0) {
+                $overallAvgRating = collect($ratingQuestions)->avg('avg_rating');
+            }
+
+            $analytics = [
+                'total_responses' => $overviewStats['total_responses'],
+                'total_questions' => $overviewStats['total_questions'],
+                'overall_avg_rating' => round($overallAvgRating, 2),
+                'rating_questions' => $ratingQuestions,
+                'multiple_choice_questions' => $multipleChoiceQuestions,
+                'text_questions' => $textQuestions,
+                'checkbox_questions' => $checkboxQuestions,
+                'focus_area_averages' => $focusAreaAverages,
+            ];
+
+            return Inertia::render('superadmin/admin/surveys/AssignedReports', [
+                'assignment' => $assignment,
+                'analytics' => $analytics,
+            ]);
+        }
+
+        // Regular surveys-level reports
+        $ids = $request->query('ids');
+        if ($ids) {
+            $idArray = array_filter(array_map('trim', explode(',', $ids)));
+            $surveys = \App\Models\Survey::with('questions')
+                ->whereIn('id', $idArray)
+                ->get();
+        } else {
+            $surveys = \App\Models\Survey::with('questions')->get();
+            $idArray = [];
+        }
+
+        return Inertia::render('superadmin/admin/surveys/Reports', [
+            'surveys' => $surveys,
+            'selectedIds' => $idArray,
+        ]);
+    }
+
+    private function getRatingDistribution($ratings)
+    {
+        $distribution = [];
+        foreach ($ratings as $r) {
+            $rating = (int)$r->rating;
+            $distribution[$rating] = ($distribution[$rating] ?? 0) + 1;
+        }
+        ksort($distribution);
+        return $distribution;
+    }
+
+    /**
+     * Admin -> Surveys create page
+     */
+    public function adminSurveysCreate()
+    {
+        return Inertia::render('superadmin/admin/surveys/Create');
+    }
+
+    /**
+     * Store new survey
+     */
+    public function adminSurveysStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
+        ]);
+
+        try {
+            $logoPath = null;
+            if ($request->hasFile('logo')) {
+                $logo = $request->file('logo');
+                $logoName = time() . '_' . Str::random(10) . '.' . $logo->getClientOriginalExtension();
+                $uploadPath = public_path('uploads/surveys');
+
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+
+                if ($logo->move($uploadPath, $logoName)) {
+                    $logoPath = 'uploads/surveys/' . $logoName;
+                }
+            }
+
+            $survey = \App\Models\Survey::create([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'logo' => $logoPath,
+            ]);
+
+            return redirect()->route('superadmin.admin.surveys.questions', $survey->id)
+                ->with('message', 'Survey created! Now add questions.')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Survey creation failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to create survey')
+                ->with('messageType', 'error')
+                ->withInput();
+        }
+    }
+
+    /**
+     * Show edit survey form
+     */
+    public function adminSurveysEdit($id)
+    {
+        $survey = \App\Models\Survey::findOrFail($id);
+
+        return Inertia::render('superadmin/admin/surveys/Edit', [
+            'survey' => $survey
+        ]);
+    }
+
+    /**
+     * Update survey
+     */
+    public function adminSurveysUpdate(Request $request, $id)
+    {
+        $survey = \App\Models\Survey::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
+        ]);
+
+        try {
+            $logoPath = $survey->logo;
+
+            if ($request->hasFile('logo')) {
+                // Delete old logo
+                if ($logoPath && file_exists(public_path($logoPath))) {
+                    unlink(public_path($logoPath));
+                }
+
+                $logo = $request->file('logo');
+                $logoName = time() . '_' . Str::random(10) . '.' . $logo->getClientOriginalExtension();
+                $uploadPath = public_path('uploads/surveys');
+
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+
+                if ($logo->move($uploadPath, $logoName)) {
+                    $logoPath = 'uploads/surveys/' . $logoName;
+                }
+            }
+
+            $survey->update([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'logo' => $logoPath,
+            ]);
+
+            return redirect()->route('superadmin.admin.surveys.index')
+                ->with('message', 'Survey updated successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Survey update failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to update survey')
+                ->with('messageType', 'error')
+                ->withInput();
+        }
+    }
+
+    /**
+     * Delete survey
+     */
+    public function adminSurveysDestroy($id)
+    {
+        try {
+            $survey = \App\Models\Survey::findOrFail($id);
+
+            // Delete logo
+            if ($survey->logo && file_exists(public_path($survey->logo))) {
+                unlink(public_path($survey->logo));
+            }
+
+            // Delete related questions and assignments
+            $survey->questions()->delete();
+            $survey->assignments()->delete();
+            $survey->delete();
+
+            return redirect()->route('superadmin.admin.surveys.index')
+                ->with('message', 'Survey deleted successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Survey deletion failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to delete survey')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Manage survey questions
+     */
+    public function adminSurveyQuestions($id)
+    {
+        $survey = \App\Models\Survey::with('questions')->findOrFail($id);
+
+        return Inertia::render('superadmin/admin/surveys/Questions', [
+            'survey' => $survey
+        ]);
+    }
+
+    /**
+     * Store survey questions
+     */
+    public function adminSurveyQuestionsStore(Request $request, $id)
+    {
+        $survey = \App\Models\Survey::findOrFail($id);
+
+        $validated = $request->validate([
+            'questions' => 'required|array|min:1',
+            'questions.*.question' => 'required|string',
+            'questions.*.type' => 'required|in:text,multiplechoice,checkbox,rating',
+            'questions.*.options' => 'nullable|array',
+            'questions.*.focus_area' => 'required|string',
+        ]);
+
+        try {
+            // Delete existing questions
+            $survey->questions()->delete();
+
+            // Create new questions
+            foreach ($validated['questions'] as $questionData) {
+                \App\Models\SurveyQuestion::create([
+                    'survey_id' => $survey->id,
+                    'question' => $questionData['question'],
+                    'type' => $questionData['type'],
+                    'options' => $questionData['options'] ?? null,
+                    'focus_area' => $questionData['focus_area'],
+                ]);
+            }
+
+            return redirect()->route('superadmin.admin.surveys.index')
+                ->with('message', 'Survey questions saved successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Survey questions save failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to save questions')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Show assign survey to companies page
+     */
+    public function adminSurveyAssign($id)
+    {
+        $survey = \App\Models\Survey::findOrFail($id);
+        $companies = CompanyMaster::where('status', 1)
+            ->orderBy('comp_name')
+            ->get(['comp_id', 'comp_name']);
+
+        $assignments = \App\Models\CompanyAssignSurvey::where('survey_id', $id)
+            ->with('company')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('superadmin/admin/surveys/Assign', [
+            'survey' => $survey,
+            'companies' => $companies,
+            'assignments' => $assignments,
+        ]);
+    }
+
+    /**
+     * Store survey assignment to company
+     */
+    public function adminSurveyAssignStore(Request $request, $id)
+    {
+        $survey = \App\Models\Survey::findOrFail($id);
+
+        $validated = $request->validate([
+            'comp_id' => 'required|exists:company_master,comp_id',
+            'name' => 'required|string|max:255',
+            'survey_start_date' => 'required|date',
+            'survey_end_date' => 'required|date|after:survey_start_date',
+            'is_active' => 'boolean',
+        ]);
+
+        try {
+            \App\Models\CompanyAssignSurvey::create([
+                'survey_id' => $survey->id,
+                'comp_id' => $validated['comp_id'],
+                'name' => $validated['name'],
+                'survey_start_date' => $validated['survey_start_date'],
+                'survey_end_date' => $validated['survey_end_date'],
+                'is_active' => $validated['is_active'] ?? 1,
+            ]);
+
+            return redirect()->back()
+                ->with('message', 'Survey assigned to company successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Survey assignment failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to assign survey')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Update survey assignment
+     */
+    public function adminSurveyAssignmentUpdate(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'comp_id' => 'required|exists:company_master,comp_id',
+            'name' => 'required|string|max:255',
+            'survey_start_date' => 'required|date',
+            'survey_end_date' => 'required|date|after:survey_start_date',
+            'is_active' => 'boolean',
+        ]);
+
+        try {
+            $assignment = \App\Models\CompanyAssignSurvey::findOrFail($id);
+            $assignment->update([
+                'comp_id' => $validated['comp_id'],
+                'name' => $validated['name'],
+                'survey_start_date' => $validated['survey_start_date'],
+                'survey_end_date' => $validated['survey_end_date'],
+                'is_active' => $validated['is_active'] ?? 1,
+            ]);
+
+            return redirect()->back()
+                ->with('message', 'Assignment updated successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Survey assignment update failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to update assignment')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Delete survey assignment
+     */
+    public function adminSurveyAssignmentDelete($id)
+    {
+        try {
+            $assignment = \App\Models\CompanyAssignSurvey::findOrFail($id);
+            $assignment->delete();
+
+            return redirect()->back()
+                ->with('message', 'Assignment deleted successfully!')
+                ->with('messageType', 'success');
+        } catch (\Exception $e) {
+            Log::error('Survey assignment deletion failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('message', 'Failed to delete assignment')
+                ->with('messageType', 'error');
+        }
+    }
+
+    /**
      * Handle employee mapping to enrollment portal (matches CodeIgniter logic)
      */
     public function employeeMapping(Request $request)
@@ -2963,7 +4378,7 @@ class SuperAdminController extends Controller
     /**
      * Policy Users Index
      */
-   public function policyUsers(Request $request)
+    public function policyUsers(Request $request)
     {
         try {
             $query = EscalationUser::query();
@@ -2973,8 +4388,8 @@ class SuperAdminController extends Controller
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
                 });
             }
 
@@ -3116,8 +4531,8 @@ class SuperAdminController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('policy_name', 'like', "%{$search}%")
-                  ->orWhere('corporate_policy_name', 'like', "%{$search}%")
-                  ->orWhere('policy_number', 'like', "%{$search}%");
+                    ->orWhere('corporate_policy_name', 'like', "%{$search}%")
+                    ->orWhere('policy_number', 'like', "%{$search}%");
             });
         }
 
@@ -3258,9 +4673,22 @@ class SuperAdminController extends Controller
             ]);
 
             $data = $request->only([
-                'blog_title', 'blog_slug', 'blog_author', 'blog_content', 'blog_thumbnail_alt',
-                'blog_banner_alt', 'focus_keyword', 'meta_title', 'meta_description', 'meta_keywords',
-                'og_title', 'og_description', 'twitter_title', 'twitter_description', 'blog_tags', 'blog_categories'
+                'blog_title',
+                'blog_slug',
+                'blog_author',
+                'blog_content',
+                'blog_thumbnail_alt',
+                'blog_banner_alt',
+                'focus_keyword',
+                'meta_title',
+                'meta_description',
+                'meta_keywords',
+                'og_title',
+                'og_description',
+                'twitter_title',
+                'twitter_description',
+                'blog_tags',
+                'blog_categories'
             ]);
 
             if ($request->hasFile('blog_thumbnail')) {
@@ -3322,9 +4750,22 @@ class SuperAdminController extends Controller
             ]);
 
             $data = $request->only([
-                'blog_title', 'blog_slug', 'blog_author', 'blog_content', 'blog_thumbnail_alt',
-                'blog_banner_alt', 'focus_keyword', 'meta_title', 'meta_description', 'meta_keywords',
-                'og_title', 'og_description', 'twitter_title', 'twitter_description', 'blog_tags', 'blog_categories'
+                'blog_title',
+                'blog_slug',
+                'blog_author',
+                'blog_content',
+                'blog_thumbnail_alt',
+                'blog_banner_alt',
+                'focus_keyword',
+                'meta_title',
+                'meta_description',
+                'meta_keywords',
+                'og_title',
+                'og_description',
+                'twitter_title',
+                'twitter_description',
+                'blog_tags',
+                'blog_categories'
             ]);
 
             if ($request->hasFile('blog_thumbnail')) {
@@ -3420,7 +4861,7 @@ class SuperAdminController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
-        $data = $request->only(['heading','slug','tags','category','content','author','status','published_at']);
+        $data = $request->only(['heading', 'slug', 'tags', 'category', 'content', 'author', 'status', 'published_at']);
 
         if ($request->hasFile('file_url')) {
             $data['file_url'] = $request->file('file_url')->store('resources', 'public');
@@ -3456,7 +4897,7 @@ class SuperAdminController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
-        $data = $request->only(['heading','slug','tags','category','content','author','status','published_at']);
+        $data = $request->only(['heading', 'slug', 'tags', 'category', 'content', 'author', 'status', 'published_at']);
 
         if ($request->hasFile('file_url')) {
             $data['file_url'] = $request->file('file_url')->store('resources', 'public');
@@ -3560,4 +5001,8 @@ class SuperAdminController extends Controller
             return 0;
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////// Admin Surveys /////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
 }

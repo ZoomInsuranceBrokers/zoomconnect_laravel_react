@@ -67,4 +67,12 @@ class CompanyEmployee extends Model
     {
         return $this->hasMany(EnrollmentData::class, 'emp_id');
     }
+
+    /**
+     * Get the location (branch) for this employee.
+     */
+    public function location()
+    {
+        return $this->belongsTo(CompanyLocationMaster::class, 'location_id', 'id');
+    }
 }
