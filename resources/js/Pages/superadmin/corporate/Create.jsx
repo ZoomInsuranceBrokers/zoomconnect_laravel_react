@@ -1,8 +1,10 @@
 import React, { useRef, useState } from "react";
 import { Head, useForm, usePage } from "@inertiajs/react";
 import SuperAdminLayout from "../../../Layouts/SuperAdmin/Layout";
+import { useTheme } from "../../../Context/ThemeContext";
 
 export default function Create({ labels, groups, users }) {
+    const { darkMode } = useTheme();
     const salesRms = users;
     const serviceRms = users;
 
@@ -69,8 +71,11 @@ export default function Create({ labels, groups, users }) {
     };
 
     // Custom select style for RM dropdowns
-    const selectMenuClass =
-        "w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#934790] transition text-sm bg-white";
+    const selectMenuClass = `w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#934790] transition text-sm ${
+        darkMode
+            ? "border-gray-600 bg-gray-700 text-gray-200"
+            : "border-gray-300 bg-white text-gray-900"
+    }`;
 
     // Client-side validation
     const validate = () => {
@@ -103,12 +108,12 @@ export default function Create({ labels, groups, users }) {
         return Object.keys(errors).map((key) =>
             Array.isArray(errors[key])
                 ? errors[key].map((msg, i) => (
-                      <div key={key + i} className="text-red-600 text-sm mb-1 text-center">
+                      <div key={key + i} className="text-red-600 text-[9px] md:text-xs mb-1 text-center">
                           {msg}
                       </div>
                   ))
                 : (
-                    <div key={key} className="text-red-600 text-sm mb-1 text-center">
+                    <div key={key} className="text-red-600 text-[9px] md:text-xs mb-1 text-center">
                         {errors[key]}
                     </div>
                 )
@@ -118,14 +123,24 @@ export default function Create({ labels, groups, users }) {
     return (
         <SuperAdminLayout>
             <Head title="Add Customer" />
-            <div className="max-w-6xl mx-auto py-8">
+            <div className={`max-w-6xl mx-auto py-4 md:py-8 px-3 md:px-0 ${
+                darkMode ? "text-gray-200" : "text-gray-900"
+            }`}>
                 {/* Info Alert */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <div className={`rounded-lg p-2 md:p-3 mb-4 md:mb-6 flex items-start gap-2 ${
+                    darkMode
+                        ? "bg-blue-900/20 border border-blue-800"
+                        : "bg-blue-50 border border-blue-200"
+                }`}>
+                    <svg className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5 ${
+                        darkMode ? "text-blue-400" : "text-blue-400"
+                    }`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="10" />
                         <path d="M12 16v-4M12 8h.01" />
                     </svg>
-                    <span className="text-xs text-blue-900">
+                    <span className={`text-[10px] md:text-xs ${
+                        darkMode ? "text-blue-300" : "text-blue-900"
+                    }`}>
                         Please add accurate information so that you can give access to your customers and run campaigns effectively.
                     </span>
                 </div>
@@ -134,76 +149,100 @@ export default function Create({ labels, groups, users }) {
                 {renderAllBackendErrors()}
 
                 {/* Step 1 */}
-                <h2 className="text-xl font-bold mb-2">1. Add customer details</h2>
+                <h2 className={`text-base md:text-lg font-bold mb-2 md:mb-4 ${
+                    darkMode ? "text-gray-200" : "text-gray-900"
+                }`}>1. Add customer details</h2>
                 <form
                     onSubmit={e => {
                         e.preventDefault();
                         if (!validate()) return;
                         post(route("corporate.store"));
                     }}
-                    className="bg-white rounded-2xl shadow-lg p-8 mb-8"
+                    className={`rounded-xl md:rounded-2xl shadow-lg p-4 md:p-8 mb-6 md:mb-8 ${
+                        darkMode ? "bg-gray-800 text-gray-200" : "bg-white text-gray-900"
+                    }`}
                 >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 text-[10px] md:text-sm">
                         <div>
-                            <label className="block mb-1">
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">
                                 Display Name <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                        : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                }`}
                                 value={data.display_name}
                                 onChange={e => setData("display_name", e.target.value)}
                             />
                             {getError("display_name") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("display_name")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("display_name")}</div>
                             )}
                         </div>
                         <div>
-                            <label className="block mb-1">Phone</label>
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">Phone</label>
                             <input
                                 type="text"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                        : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                }`}
                                 value={data.phone}
                                 onChange={e => setData("phone", e.target.value)}
                             />
                             {getError("phone") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("phone")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("phone")}</div>
                             )}
                         </div>
                         <div>
-                            <label className="block mb-1">
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">
                                 Email <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="email"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                        : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                }`}
                                 value={data.email}
                                 onChange={e => setData("email", e.target.value)}
                             />
                             {getError("email") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("email")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("email")}</div>
                             )}
                         </div>
                         <div>
-                            <label className="block mb-1">
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">
                                 Slug <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                        : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                }`}
                                 value={data.slug}
                                 onChange={e => setData("slug", e.target.value)}
                             />
                             {getError("slug") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("slug")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("slug")}</div>
                             )}
                         </div>
                         <div>
-                            <label className="block mb-1">
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">
                                 POSP/Referred By <span className="text-red-500">*</span>
                             </label>
                             <select
-                                className={selectMenuClass}
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200"
+                                        : "border-gray-300 bg-white text-gray-900"
+                                }`}
                                 value={data.referred_by}
                                 onChange={e => setData("referred_by", e.target.value)}
                             >
@@ -215,27 +254,35 @@ export default function Create({ labels, groups, users }) {
                                 ))}
                             </select>
                             {getError("referred_by") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("referred_by")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("referred_by")}</div>
                             )}
                         </div>
                         <div>
-                            <label className="block mb-1">Source</label>
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">Source</label>
                             <input
                                 type="text"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                        : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                }`}
                                 value={data.source}
                                 onChange={e => setData("source", e.target.value)}
                             />
                             {getError("source") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("source")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("source")}</div>
                             )}
                         </div>
                         <div>
-                            <label className="block mb-1">
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">
                                 Sales RM <span className="text-red-500">*</span>
                             </label>
                             <select
-                                className={selectMenuClass}
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200"
+                                        : "border-gray-300 bg-white text-gray-900"
+                                }`}
                                 value={data.sales_rm_id}
                                 onChange={e => setData("sales_rm_id", e.target.value)}
                             >
@@ -247,15 +294,19 @@ export default function Create({ labels, groups, users }) {
                                 ))}
                             </select>
                             {getError("sales_rm_id") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("sales_rm_id")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("sales_rm_id")}</div>
                             )}
                         </div>
                         <div>
-                            <label className="block mb-1">
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">
                                 Service RM <span className="text-red-500">*</span>
                             </label>
                             <select
-                                className={selectMenuClass}
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200"
+                                        : "border-gray-300 bg-white text-gray-900"
+                                }`}
                                 value={data.service_rm_id}
                                 onChange={e => setData("service_rm_id", e.target.value)}
                             >
@@ -267,15 +318,19 @@ export default function Create({ labels, groups, users }) {
                                 ))}
                             </select>
                             {getError("service_rm_id") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("service_rm_id")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("service_rm_id")}</div>
                             )}
                         </div>
                         <div>
-                            <label className="block mb-1">
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">
                                 Label <span className="text-red-500">*</span>
                             </label>
                             <select
-                                className={selectMenuClass}
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200"
+                                        : "border-gray-300 bg-white text-gray-900"
+                                }`}
                                 value={data.label_id}
                                 onChange={e => setData("label_id", e.target.value)}
                             >
@@ -287,13 +342,17 @@ export default function Create({ labels, groups, users }) {
                                 ))}
                             </select>
                             {getError("label_id") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("label_id")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("label_id")}</div>
                             )}
                         </div>
                         <div>
-                            <label className="block mb-1">Customer group</label>
+                            <label className="block mb-1 md:mb-2 font-medium text-[9px] md:text-sm">Customer group</label>
                             <select
-                                className={selectMenuClass}
+                                className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                    darkMode
+                                        ? "border-gray-600 bg-gray-700 text-gray-200"
+                                        : "border-gray-300 bg-white text-gray-900"
+                                }`}
                                 value={data.group_id}
                                 onChange={e => setData("group_id", e.target.value)}
                             >
@@ -305,69 +364,99 @@ export default function Create({ labels, groups, users }) {
                                 ))}
                             </select>
                             {getError("group_id") && (
-                                <div className="text-red-500 text-xs mt-1">{getError("group_id")}</div>
+                                <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("group_id")}</div>
                             )}
                         </div>
                     </div>
 
                     {/* Step 2 */}
-                    <h2 className="text-xl font-bold mt-10 mb-2">2. Add customer members</h2>
-                    <div className="bg-white rounded-xl shadow p-6 mb-8">
-                        <h3 className="font-semibold text-base mb-4">Member details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <h2 className={`text-base md:text-lg font-bold mt-6 md:mt-10 mb-2 md:mb-4 ${
+                        darkMode ? "text-gray-200" : "text-gray-900"
+                    }`}>2. Add customer members</h2>
+                    <div className={`rounded-lg md:rounded-xl shadow p-3 md:p-6 mb-6 md:mb-8 ${
+                        darkMode ? "bg-gray-800 text-gray-200" : "bg-white text-gray-900"
+                    }`}>
+                        <h3 className={`font-semibold text-sm md:text-base mb-3 md:mb-4 ${
+                            darkMode ? "text-gray-200" : "text-gray-900"
+                        }`}>Member details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 text-[10px] md:text-sm">
                             <div>
                                 <input
                                     type="text"
-                                    className="border border-gray-300 rounded-lg px-3 py-2"
+                                    className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                        darkMode
+                                            ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                            : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                    }`}
                                     placeholder="Full name*"
                                     value={data.members[0].full_name}
                                     onChange={e => handleMemberChange(0, "full_name", e.target.value)}
                                 />
                                 {getError("members.0.full_name") && (
-                                    <div className="text-red-500 text-xs mt-1">{getError("members.0.full_name")}</div>
+                                    <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("members.0.full_name")}</div>
                                 )}
                             </div>
                             <div>
                                 <input
                                     type="text"
-                                    className="border border-gray-300 rounded-lg px-3 py-2"
+                                    className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                        darkMode
+                                            ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                            : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                    }`}
                                     placeholder="Phone"
                                     value={data.members[0].phone}
                                     onChange={e => handleMemberChange(0, "phone", e.target.value)}
                                 />
                                 {getError("members.0.phone") && (
-                                    <div className="text-red-500 text-xs mt-1">{getError("members.0.phone")}</div>
+                                    <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("members.0.phone")}</div>
                                 )}
                             </div>
                             <div>
                                 <input
                                     type="email"
-                                    className="border border-gray-300 rounded-lg px-3 py-2"
+                                    className={`w-full border rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                        darkMode
+                                            ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                            : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                    }`}
                                     placeholder="Email*"
                                     value={data.members[0].email}
                                     onChange={e => handleMemberChange(0, "email", e.target.value)}
                                 />
                                 {getError("members.0.email") && (
-                                    <div className="text-red-500 text-xs mt-1">{getError("members.0.email")}</div>
+                                    <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("members.0.email")}</div>
                                 )}
                             </div>
                         </div>
                     </div>
 
                     {/* Step 3 */}
-                    <h2 className="text-xl font-bold mt-10 mb-2">3. Upload customer documents</h2>
-                    <div className="bg-white rounded-xl shadow p-6 mb-8">
-                        <div className="flex items-center gap-4">
-                            <div className="flex flex-col items-center justify-center w-32 h-32 border border-dashed border-gray-300 rounded-lg bg-gray-50">
-                                <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                                    <rect width="56" height="56" rx="12" fill="#F3F4F6" />
-                                    <path d="M28 38V18M28 18L22 24M28 18L34 24" stroke="#A0AEC0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <h2 className={`text-lg md:text-xl font-bold mt-6 md:mt-10 mb-2 md:mb-4 ${
+                        darkMode ? "text-gray-200" : "text-gray-900"
+                    }`}>3. Upload customer documents</h2>
+                    <div className={`rounded-lg md:rounded-xl shadow p-3 md:p-6 mb-6 md:mb-8 ${
+                        darkMode ? "bg-gray-800 text-gray-200" : "bg-white text-gray-900"
+                    }`}>
+                        <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
+                            <div className={`flex flex-col items-center justify-center w-24 h-24 md:w-32 md:h-32 border border-dashed rounded-lg flex-shrink-0 ${
+                                darkMode ? "border-gray-600 bg-gray-700" : "border-gray-300 bg-gray-50"
+                            }`}>
+                                <svg width="40" height="40" viewBox="0 0 56 56" fill="none" className="md:w-14 md:h-14">
+                                    <rect width="56" height="56" rx="12" fill={darkMode ? "#1f2937" : "#F3F4F6"} />
+                                    <path d="M28 38V18M28 18L22 24M28 18L34 24" stroke={darkMode ? "#6b7280" : "#A0AEC0"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
-                                <span className="text-gray-400 text-sm mt-2 text-center">Upload documents</span>
+                                <span className={`text-[8px] md:text-sm mt-1 md:mt-2 text-center ${
+                                    darkMode ? "text-gray-400" : "text-gray-400"
+                                }`}>Upload docs</span>
                             </div>
-                            <div className="flex-1">
-                                <div className="font-semibold text-base mb-1">Upload documents</div>
-                                <div className="text-sm text-gray-500 mb-2">
+                            <div className="flex-1 w-full">
+                                <div className={`font-semibold text-xs md:text-base mb-1 ${
+                                    darkMode ? "text-gray-200" : "text-gray-900"
+                                }`}>Upload documents</div>
+                                <div className={`text-[9px] md:text-sm mb-2 ${
+                                    darkMode ? "text-gray-400" : "text-gray-500"
+                                }`}>
                                     Drop files here or click{" "}
                                     <label className="text-[#934790] underline cursor-pointer">
                                         browse
@@ -381,18 +470,24 @@ export default function Create({ labels, groups, users }) {
                                     </label>{" "}
                                     through your machine
                                 </div>
-                                <div className="border border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                                <div className={`border border-dashed rounded-lg p-2 md:p-4 ${
+                                    darkMode ? "border-gray-600 bg-gray-700" : "border-gray-300 bg-gray-50"
+                                }`}>
                                     {data.documents.length === 0 && (
-                                        <span className="text-gray-400 text-sm">No files selected</span>
+                                        <span className={`text-[9px] md:text-sm ${
+                                            darkMode ? "text-gray-400" : "text-gray-400"
+                                        }`}>No files selected</span>
                                     )}
                                     {data.documents.length > 0 && (
                                         <ul>
                                             {data.documents.map((file, idx) => (
                                                 <li key={idx} className="flex items-center justify-between py-1">
-                                                    <span className="text-gray-700 text-sm">{file.name}</span>
+                                                    <span className={`text-[9px] md:text-sm truncate ${
+                                                        darkMode ? "text-gray-200" : "text-gray-700"
+                                                    }`}>{file.name}</span>
                                                     <button
                                                         type="button"
-                                                        className="ml-2 text-red-500 hover:text-red-700"
+                                                        className="ml-2 text-red-500 hover:text-red-700 text-[9px] md:text-sm whitespace-nowrap"
                                                         onClick={() => removeDocument(idx)}
                                                     >
                                                         Remove
@@ -407,16 +502,26 @@ export default function Create({ labels, groups, users }) {
                     </div>
 
                     {/* Step 4 */}
-                    <h2 className="text-xl font-bold mt-10 mb-2">4. Company logo</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-sm">
-                        <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center justify-center">
+                    <h2 className={`text-lg md:text-xl font-bold mt-6 md:mt-10 mb-2 md:mb-4 ${
+                        darkMode ? "text-gray-200" : "text-gray-900"
+                    }`}>4. Company logo</h2>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 mb-6 md:mb-8 text-[10px] md:text-sm ${
+                        darkMode ? "text-gray-200" : "text-gray-900"
+                    }`}>
+                        <div className={`rounded-lg md:rounded-xl shadow p-3 md:p-6 flex flex-col items-center justify-center ${
+                            darkMode ? "bg-gray-800 text-gray-200" : "bg-white text-gray-900"
+                        }`}>
                             {!data.logo_url ? (
-                                <label className="flex flex-col items-center justify-center w-48 h-48 border border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer">
-                                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                                        <rect width="56" height="56" rx="12" fill="#F3F4F6" />
-                                        <path d="M28 38V18M28 18L22 24M28 18L34 24" stroke="#A0AEC0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <label className={`flex flex-col items-center justify-center w-32 h-24 md:w-48 md:h-48 border border-dashed rounded-lg cursor-pointer ${
+                                    darkMode ? "border-gray-600 bg-gray-700" : "border-gray-300 bg-gray-50"
+                                }`}>
+                                    <svg width="40" height="40" viewBox="0 0 56 56" fill="none" className="md:w-14 md:h-14">
+                                        <rect width="56" height="56" rx="12" fill={darkMode ? "#1f2937" : "#F3F4F6"} />
+                                        <path d="M28 38V18M28 18L22 24M28 18L34 24" stroke={darkMode ? "#6b7280" : "#A0AEC0"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                    <span className="text-gray-400 text-sm mt-2">Upload Logo</span>
+                                    <span className={`text-[8px] md:text-sm mt-1 md:mt-2 ${
+                                        darkMode ? "text-gray-400" : "text-gray-400"
+                                    }`}>Upload Logo</span>
                                     <input
                                         type="file"
                                         accept="image/png,image/jpeg,image/jpg"
@@ -430,57 +535,75 @@ export default function Create({ labels, groups, users }) {
                                     <img
                                         src={data.logo_url}
                                         alt="Logo Preview"
-                                        className="w-32 h-16 object-contain rounded mb-2 border"
+                                        className="w-20 h-12 md:w-32 md:h-16 object-contain rounded mb-2 border"
                                     />
                                     <button
                                         type="button"
-                                        className="text-red-500 hover:text-red-700 text-xs"
+                                        className="text-red-500 hover:text-red-700 text-[8px] md:text-xs"
                                         onClick={removeLogo}
                                     >
                                         Remove Logo
                                     </button>
                                 </div>
                             )}
-                            <div className="text-xs text-gray-500 text-center mt-2">
+                            <div className={`text-[8px] md:text-xs text-center mt-1 md:mt-2 ${
+                                darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}>
                                 Allowed *.jpeg, *.jpg, *.png.
                                 <br />
                                 Max resolution : 145px X 50px
                             </div>
                         </div>
-                        <div className="bg-white rounded-xl shadow p-6">
-                            <h3 className="font-semibold text-base mb-4">Address 1</h3>
-                            <div className="flex flex-col gap-3">
-                                <div className="grid grid-cols-2 gap-3">
+                        <div className={`rounded-lg md:rounded-xl shadow p-3 md:p-6 ${
+                            darkMode ? "bg-gray-800 text-gray-200" : "bg-white text-gray-900"
+                        }`}>
+                            <h3 className={`font-semibold text-xs md:text-base mb-2 md:mb-4 ${
+                                darkMode ? "text-gray-200" : "text-gray-900"
+                            }`}>Address 1</h3>
+                            <div className="flex flex-col gap-2 md:gap-3">
+                                <div className="grid grid-cols-2 gap-2 md:gap-3">
                                     <div>
                                         <input
                                             type="text"
-                                            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                                            className={`border rounded-lg px-2 md:px-3 py-1.5 md:py-2 w-full text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                                darkMode
+                                                    ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                                    : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                            }`}
                                             placeholder="Line 1*"
                                             value={data.address_line1 || ""}
                                             onChange={e => setData("address_line1", e.target.value)}
                                         />
                                         {getError("address_line1") && (
-                                            <div className="text-red-500 text-xs mt-1">{getError("address_line1")}</div>
+                                            <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("address_line1")}</div>
                                         )}
                                     </div>
                                     <div>
                                         <input
                                             type="text"
-                                            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                                            className={`border rounded-lg px-2 md:px-3 py-1.5 md:py-2 w-full text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                                darkMode
+                                                    ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                                    : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                            }`}
                                             placeholder="Line 2"
                                             value={data.address_line2 || ""}
                                             onChange={e => setData("address_line2", e.target.value)}
                                         />
                                         {getError("address_line2") && (
-                                            <div className="text-red-500 text-xs mt-1">{getError("address_line2")}</div>
+                                            <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("address_line2")}</div>
                                         )}
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-3 gap-2 md:gap-3">
                                     <div>
                                         <input
                                             type="text"
-                                            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                                            className={`border rounded-lg px-2 md:px-3 py-1.5 md:py-2 w-full text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                                darkMode
+                                                    ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                                    : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                            }`}
                                             placeholder="Pincode*"
                                             value={data.pincode || ""}
                                             onChange={async (e) => {
@@ -507,41 +630,49 @@ export default function Create({ labels, groups, users }) {
                                             maxLength={6}
                                         />
                                         {getError("pincode") && (
-                                            <div className="text-red-500 text-xs mt-1">{getError("pincode")}</div>
+                                            <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("pincode")}</div>
                                         )}
                                     </div>
                                     <div>
                                         <input
                                             type="text"
-                                            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                                            className={`border rounded-lg px-2 md:px-3 py-1.5 md:py-2 w-full text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                                darkMode
+                                                    ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                                    : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                            }`}
                                             placeholder="City*"
                                             value={data.city || ""}
                                             onChange={e => setData("city", e.target.value)}
                                         />
                                         {getError("city") && (
-                                            <div className="text-red-500 text-xs mt-1">{getError("city")}</div>
+                                            <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("city")}</div>
                                         )}
                                     </div>
                                     <div>
                                         <input
                                             type="text"
-                                            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                                            className={`border rounded-lg px-2 md:px-3 py-1.5 md:py-2 w-full text-[10px] md:text-sm focus:outline-none focus:ring-2 focus:ring-[#934790] ${
+                                                darkMode
+                                                    ? "border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400"
+                                                    : "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                                            }`}
                                             placeholder="State*"
                                             value={data.state || ""}
                                             onChange={e => setData("state", e.target.value)}
                                         />
                                         {getError("state") && (
-                                            <div className="text-red-500 text-xs mt-1">{getError("state")}</div>
+                                            <div className="text-red-500 text-[9px] md:text-xs mt-1">{getError("state")}</div>
                                         )}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="mt-8 flex justify-end">
+                    <div className="mt-6 md:mt-8 flex justify-end px-0 md:px-0">
                         <button
                             type="submit"
-                            className="bg-[#934790] text-white px-8 py-2 rounded-lg font-semibold hover:bg-[#6A0066] transition"
+                            className="bg-[#934790] text-white px-4 md:px-8 py-1.5 md:py-2 rounded-lg font-semibold hover:bg-[#6A0066] transition text-xs md:text-sm"
                             disabled={processing}
                         >
                             Save Customer

@@ -21,15 +21,15 @@ class ProductController extends Controller
     }
     public function smallTeams()
     {
-        return Inertia::render('Public/SmallTeams');
+        return Inertia::render('Public/Solutions/SmallTeams');
     }
     public function largeTeams()
     {
-        return Inertia::render('Public/LargeTeams');
+        return Inertia::render('Public/Solutions/LargeTeams');
     }
     public function hybrid()
     {
-        return Inertia::render('Public/Hybrid');
+        return Inertia::render('Public/Solutions/Hybrid');
     }
     public function resources()
     {

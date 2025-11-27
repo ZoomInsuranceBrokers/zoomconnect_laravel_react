@@ -1,14 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
 @import './common.css';
+@import './animations.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Scrollbar Styles */
+/* Hide the native visible scrollbar while preserving scroll behaviour
+   - Chrome, Edge, Safari (WebKit/Blink): set scrollbar width/height to 0
+   - Firefox: scrollbar-width none
+   - IE/older Edge: -ms-overflow-style none
+   This preserves scrolling but keeps the UI cleaner. If you prefer
+   a thin custom thumb instead, revert to the earlier rules. */
+
+html, body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* WebKit browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-track {
@@ -16,19 +30,8 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #934790;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #7d3c7a;
-}
-
-
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #934790 transparent;
+  background: transparent;
+  border-radius: 0;
 }
 
 @keyframes infinite-marquee {

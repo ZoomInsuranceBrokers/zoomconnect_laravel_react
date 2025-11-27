@@ -21,6 +21,9 @@ Route::prefix('products')->name('products.')->group(function () {
     Route::get('/group-accident-cover', [ProductController::class, 'groupAccidentCover'])->name('group-accident-cover');
     Route::get('/group-term-life', [ProductController::class, 'groupTermLife'])->name('group-term-life');
     Route::get('/wellness-programs', [ProductController::class, 'wellnessPrograms'])->name('wellness-programs');
+    Route::get('/surveys', function () {
+        return Inertia::render('Public/Products/Surveys');
+    })->name('surveys');
     Route::get('/telehealth-services', [ProductController::class, 'telehealthServices'])->name('telehealth-services');
 });
 
@@ -28,10 +31,12 @@ Route::get('/employee', [App\Http\Controllers\ProductController::class, 'employe
 Route::get('/employer', [App\Http\Controllers\ProductController::class, 'employer'])->name('employer');
 Route::get('/mobile', [App\Http\Controllers\ProductController::class, 'mobile'])->name('mobile');
 
-// Solutions
-Route::get('/small-teams', [App\Http\Controllers\ProductController::class, 'smallTeams'])->name('smallTeams');
-Route::get('/large-teams', [App\Http\Controllers\ProductController::class, 'largeTeams'])->name('largeTeams');
-Route::get('/hybrid', [App\Http\Controllers\ProductController::class, 'hybrid'])->name('hybrid');
+// Solutions (grouped under /solutions)
+Route::prefix('solutions')->name('solutions.')->group(function () {
+    Route::get('/small-teams', [App\Http\Controllers\ProductController::class, 'smallTeams'])->name('smallTeams');
+    Route::get('/large-teams', [App\Http\Controllers\ProductController::class, 'largeTeams'])->name('largeTeams');
+    Route::get('/hybrid', [App\Http\Controllers\ProductController::class, 'hybrid'])->name('hybrid');
+});
 
 // Explore
 Route::get('/resources', [App\Http\Controllers\ProductController::class, 'resources'])->name('resources');

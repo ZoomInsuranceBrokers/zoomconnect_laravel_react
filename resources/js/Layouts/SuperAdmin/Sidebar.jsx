@@ -78,8 +78,8 @@ export default function Sidebar({ open = true, onToggle }) {
                     darkMode
                         ? "bg-gray-900 text-white"
                         : "bg-[#F5F6FF] text-black"
-                }`}
-                style={{ minHeight: "100vh" }}
+                } overflow-y-auto`} 
+                style={{ minHeight: "100vh", maxHeight: "100vh" }}
             >
                 {/* Logo */}
 

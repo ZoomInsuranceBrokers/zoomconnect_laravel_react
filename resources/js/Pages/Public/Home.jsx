@@ -3,7 +3,6 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import CountUp from 'react-countup';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useTheme } from '../../Context/ThemeContext';
 import { FaLinkedinIn, FaInstagram, FaFacebookF } from 'react-icons/fa';
 import { Link } from '@inertiajs/react';
 import Lottie from "lottie-react";
@@ -181,7 +180,6 @@ const CertificationCarousel = () => {
 export default function Home() {
     // FAQ accordion state
     const [openFaqIdx, setOpenFaqIdx] = useState(null);
-    const { darkMode, toggleDarkMode } = useTheme();
 
     // Trusted Companies Logos
     const trustedCompanies = [
@@ -325,7 +323,7 @@ export default function Home() {
     return (
         <>
             <Header />
-            <div className={`min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-hidden ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#ffceea78] text-gray-900'}`}>
+            <div className="min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-hidden bg-[#ffceea78] text-gray-900">
                 {/* Starry background effect (simple SVG or CSS) */}
                 <div className="absolute inset-0 pointer-events-none z-0">
                     {/* You can use a star SVG, animated canvas, or just a gradient for demo */}
@@ -349,17 +347,17 @@ export default function Home() {
                         style={{ width: "100%", height: "100%" }}
                     />
                 </div> */}
-                    {/* <div className="absolute inset-0 z-0 opacity-70">
+                    <div className="absolute inset-0 z-0 opacity-70">
                         <img
                             src="/assets/images/wavy lines-01.png"
                             alt="Background"
                             className="w-full h-full object-cover"
                         />
-                    </div> */}
+                    </div>
 
                     {/* Content */}
                     <div className="relative z-10 flex flex-col items-center px-4 md:px-0">
-                        <h1 className={`font-dmserif text-3xl md:text-6xl font-normal text-center leading-tight mb-6  ${darkMode ? ' text-white' : ' text-gray-800'}`}>
+                        <h1 className="font-dmserif text-3xl md:text-6xl font-normal text-center leading-tight mb-6 text-gray-800">
                             Redefining Employee <br className="hidden md:block" />
                             Healthcare & Insurance   Experience
                             {/* <br className="hidden md:block" /> */}
