@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-// ...existing code...
+import React, { useState, useEffect } from 'react';
+import { Link, router } from '@inertiajs/react';
+import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
 
 const FamilyIcons = {
     self: <div className="flex flex-col items-center"><img src="/assets/images/enrolment/self.png" alt="Self" className="w-16 h-16 object-contain" /><span className="text-xs font-medium text-[#934790] mt-1">Self</span></div>,
@@ -15,8 +16,6 @@ const FamilyIcons = {
 function FeatureModal({ open, onClose, onSave, initial, type }) {
     const [title, setTitle] = useState(initial?.title || '');
     const [description, setDescription] = useState(initial?.description || '');
-    const [icon, setIcon] = useState(initial?.icon || null);
-    const [iconPreview, setIconPreview] = useState(initial?.icon || null);
 
     if (!open) return null;
 
@@ -68,10 +67,9 @@ function FeatureModal({ open, onClose, onSave, initial, type }) {
                     <button
                         type="button"
                         onClick={() => {
-                            onSave({ title, description, icon });
+                            onSave({ title, description, icon: null });
                             setTitle('');
                             setDescription('');
-                            setIcon(null);
                             onClose();
                         }}
                         className="px-4 py-2 bg-[#934790] text-white rounded-lg hover:bg-[#6A0066]"
@@ -84,12 +82,27 @@ function FeatureModal({ open, onClose, onSave, initial, type }) {
     );
 }
 
-function SelectWithSearch({ options = [], value, onChange, placeholder = '', required = false, className = '' }) {
+function SelectWithSearch({ options = [], value, onChange, placeholder = '', required = false }) {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const normalized = (str) => (str || '').toString().toLowerCase();
     const displayLabel = (opt) => opt?.name || opt?.title || opt?.label || opt?.cd_ac_name || opt?.company_name || '';
     const filtered = options.filter(opt => normalized(displayLabel(opt)).includes(normalized(query)));
+
+    // Set initial query based on value when component mounts or value/options change
+    useEffect(() => {
+        if (typeof value === 'undefined' || value === null) return;
+        if (options.length === 0) return;
+        const selectedOption = options.find(opt => {
+            // compare ids robustly as strings (covers number/string mismatches)
+            try {
+                return String(opt.id) === String(value);
+            } catch (e) {
+                return opt.id == value; // fallback
+            }
+        });
+        if (selectedOption) setQuery(displayLabel(selectedOption));
+    }, [value, options]);
 
     return (
         <div className="relative">
@@ -130,108 +143,66 @@ function SelectWithSearch({ options = [], value, onChange, placeholder = '', req
     );
 }
 
-import { Link, router } from '@inertiajs/react';
-import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
-import { useEffect } from 'react';
-
-export default function Create({ corporates, insuranceProviders, tpaCompanies, cdAccounts: initialCdAccounts, escalationUsers, userMasterUsers }) {
-    // Validation function for each step
-    const validateStep = (stepNumber) => {
-        const newErrors = {};
-        
-        if (stepNumber === 1) {
-            // Required fields validation for Step 1
-            if (!formData.corporate_id) newErrors.corporate_id = 'Corporate is required';
-            if (!formData.policy_name) newErrors.policy_name = 'Policy Name is required';
-            if (!formData.corporate_policy_name) newErrors.corporate_policy_name = 'Corporate Policy Name is required';
-                if (!formData.policy_type) newErrors.policy_type = 'Policy Type is required';
-            if (!formData.policy_number) newErrors.policy_number = 'Policy Number is required';
-            if (!formData.policy_start_date) newErrors.policy_start_date = 'Policy Start Date is required';
-            if (!formData.policy_end_date) newErrors.policy_end_date = 'Policy End Date is required';
-            if (!formData.ins_id) newErrors.ins_id = 'Insurance Provider is required';
-            if (!formData.tpa_id) newErrors.tpa_id = 'TPA Company is required';
-            if (!formData.policy_document) newErrors.policy_document = 'Policy document is required';
-            // CD account + users
-            if (!formData.cd_ac_id) newErrors.cd_ac_id = 'CD Account is required';
-            if (!formData.data_escalation_id) newErrors.data_escalation_id = 'Data Escalation user is required';
-            if (!formData.claim_level_1_id) newErrors.claim_level_1_id = 'Claim Level 1 user is required';
-            if (!formData.claim_level_2_id) newErrors.claim_level_2_id = 'Claim Level 2 user is required';
-        }
-        
-        if (stepNumber === 3) {
-            // At least one inclusion or exclusion required
-            const hasInclusions = formData.inclusions && formData.inclusions.length > 0;
-            const hasExclusions = formData.exclusions && formData.exclusions.length > 0;
-            
-            if (!hasInclusions && !hasExclusions) {
-                newErrors.policy_features = 'At least one inclusion or exclusion is required';
-            }
-        }
-        
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    // Add missing handleSubmit function
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        setErrors({});
-
-        // Validate step 3 before submitting
-        if (!validateStep(3)) {
-            setIsSubmitting(false);
-            return;
-        }
-
-        try {
-            const formDataToSend = new FormData();
-
-            // Add all basic policy fields
-            Object.keys(formData).forEach(key => {
-                if (key === 'inclusions' || key === 'exclusions') {
-                    // Convert features to JSON
-                    const features = [
-                        ...(formData.inclusions || []).map(f => ({ ...f, feature_type: 'inc' })),
-                        ...(formData.exclusions || []).map(f => ({ ...f, feature_type: 'exc' }))
-                    ];
-                    formDataToSend.append('policy_features', JSON.stringify(features));
-                } else if (key === 'family_defination') {
-                    formDataToSend.append(key, JSON.stringify(formData[key]));
-                } else if (formData[key] !== null && formData[key] !== '') {
-                    if (typeof formData[key] === 'object' && formData[key] !== null && !(formData[key] instanceof File)) {
-                        formDataToSend.append(key, JSON.stringify(formData[key]));
-                    } else {
-                        formDataToSend.append(key, formData[key]);
-                    }
-                }
-            });
-
-            await router.post('/superadmin/policy/policies', formDataToSend, {
-                onError: (errors) => {
-                    setErrors(errors);
-                    setIsSubmitting(false);
-                },
-                onSuccess: () => {
-                    router.visit('/superadmin/policy/policies');
-                }
-            });
-        } catch (error) {
-            console.error('Form submission error:', error);
-            setIsSubmitting(false);
-        }
-    };
+export default function Edit({ policy, inclusions, exclusions, corporates, insuranceProviders, tpaCompanies, cdAccounts: initialCdAccounts, escalationUsers, userMasterUsers }) {
     const [step, setStep] = useState(1);
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [cdAccounts, setCdAccounts] = useState(initialCdAccounts || []);
+
+    const defaultFamily = {
+        self: "1",
+        self_no: "1",
+        self_min_age: "18",
+        self_max_age: "80",
+        self_gender: "both",
+        spouse: "0",
+        spouse_no: "0",
+        spouse_min_age: "18",
+        spouse_max_age: "99",
+        spouse_gender: "both",
+        kid: "0",
+        kid_no: "0",
+        kid_min_age: "0",
+        kid_max_age: "25",
+        kid_gender: "both",
+        parent: "0",
+        parent_no: "0",
+        parent_min_age: "30",
+        parent_max_age: "99",
+        parent_gender: "both",
+        parent_in_law: "0",
+        parent_in_law_no: "0",
+        parent_in_law_min_age: "30",
+        parent_in_law_max_age: "99",
+        parent_in_law_gender: "both",
+        sibling: "0",
+        sibling_no: "0",
+        sibling_min_age: "18",
+        sibling_max_age: "99",
+        sibling_gender: "both",
+        partners: "0",
+        partners_no: "0",
+        partners_min_age: "18",
+        partners_max_age: "99",
+        partners_gender: "both",
+        others: "0",
+        others_no: "0",
+        others_min_age: "18",
+        others_max_age: "99",
+        others_gender: "both",
+        spouse_with_same_gender: "null",
+        add_both_parent_n_parent_in_law: "either"
+    };
+
     const [formData, setFormData] = useState({
         corporate_id: '',
         policy_name: '',
         corporate_policy_name: '',
-        // corporate_policy_type removed; use `policy_type` instead
         policy_type: '',
         policy_number: '',
         policy_start_date: '',
         policy_end_date: '',
-        policy_document: null,
+        policy_document: null, // new file if uploaded
         ins_id: '',
         tpa_id: '',
         cd_ac_id: '',
@@ -243,70 +214,88 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
         claim_level_2_id: '',
         is_twin_allowed: false,
         natural_addition_allowed: true,
-        // Step 2: Family Definition
-        family_defination: {
-            self: "1",
-            self_no: "1",
-            self_min_age: "18",
-            self_max_age: "80",
-            self_gender: "both",
-            spouse: "0",
-            spouse_no: "0",
-            spouse_min_age: "18",
-            spouse_max_age: "99",
-            spouse_gender: "both",
-            kid: "0",
-            kid_no: "0",
-            kid_min_age: "0",
-            kid_max_age: "25",
-            kid_gender: "both",
-            parent: "0",
-            parent_no: "0",
-            parent_min_age: "30",
-            parent_max_age: "99",
-            parent_gender: "both",
-            parent_in_law: "0",
-            parent_in_law_no: "0",
-            parent_in_law_min_age: "30",
-            parent_in_law_max_age: "99",
-            parent_in_law_gender: "both",
-            sibling: "0",
-            sibling_no: "0",
-            sibling_min_age: "18",
-            sibling_max_age: "99",
-            sibling_gender: "both",
-            partners: "0",
-            partners_no: "0",
-            partners_min_age: "18",
-            partners_max_age: "99",
-            partners_gender: "both",
-            others: "0",
-            others_no: "0",
-            others_min_age: "18",
-            others_max_age: "99",
-            others_gender: "both",
-            spouse_with_same_gender: "null",
-            add_both_parent_n_parent_in_law: "either"
-        },
-        // Step 3: Policy Features
-        policy_features: '',
+        family_defination: defaultFamily,
+        inclusions: [],
+        exclusions: [],
     });
 
-    const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [cdAccounts, setCdAccounts] = useState(initialCdAccounts || []);
+    const [modalOpen, setModalOpen] = useState(null);
+    const [editIndex, setEditIndex] = useState(null);
+    const [csvError, setCsvError] = useState('');
+    const [existingDocumentName, setExistingDocumentName] = useState('');
 
-    // Helper to normalize error messages coming from client validation or server (Inertia) responses
+    // Helper to normalize error messages coming from server (Inertia) responses
     const getError = (key) => {
         const val = errors?.[key];
         if (!val) return null;
         return Array.isArray(val) ? val[0] : val;
     };
 
-    // Fetch CD accounts when corporate_id changes
+    // Prefill form when policy prop is available
+    useEffect(() => {
+        if (!policy) return;
+
+        let family = defaultFamily;
+        try {
+            if (policy.family_defination) {
+                const parsed = typeof policy.family_defination === 'string' ? JSON.parse(policy.family_defination) : policy.family_defination;
+                family = { ...defaultFamily, ...parsed };
+            }
+        } catch (e) {
+            family = defaultFamily;
+        }
+
+        // ensure cd accounts are set first so SelectWithSearch can resolve the selected label
+        setCdAccounts(initialCdAccounts || []);
+
+        // debug info
+        try {
+            console.log('Edit prefill:', { comp_id: policy.comp_id, cd_ac_id: policy.cd_ac_id, initialCdAccounts });
+        } catch (e) {
+            // ignore
+        }
+
+        // Set formData in next tick so child components see cdAccounts first
+        setTimeout(() => {
+            setFormData({
+            corporate_id: policy.comp_id || '',
+            policy_name: policy.policy_name || '',
+            corporate_policy_name: policy.corporate_policy_name || '',
+            policy_type: policy.policy_type || '',
+            policy_number: policy.policy_number || '',
+            policy_start_date: policy.policy_start_date ? policy.policy_start_date.split(' ')[0] : '',
+            policy_end_date: policy.policy_end_date ? policy.policy_end_date.split(' ')[0] : '',
+            policy_document: null,
+            ins_id: policy.ins_id || '',
+            tpa_id: policy.tpa_id || '',
+            cd_ac_id: policy.cd_ac_id || '',
+            is_paperless: typeof policy.is_paperless !== 'undefined' ? Number(policy.is_paperless) : 1,
+            doc_courier_name: policy.doc_courier_name || '',
+            doc_courier_address: policy.doc_courier_address || '',
+            data_escalation_id: policy.data_escalation_id || '',
+            claim_level_1_id: policy.claim_level_1_id || '',
+            claim_level_2_id: policy.claim_level_2_id || '',
+            is_twin_allowed: !!policy.is_twin_allowed,
+            natural_addition_allowed: typeof policy.natural_addition_allowed === 'undefined' ? true : !!policy.natural_addition_allowed,
+            family_defination: family,
+            inclusions: Array.isArray(inclusions) ? inclusions : [],
+            exclusions: Array.isArray(exclusions) ? exclusions : [],
+        });
+
+        if (policy.policy_document) {
+            const parts = policy.policy_document.split('/');
+            setExistingDocumentName(parts[parts.length - 1]);
+        } else {
+            setExistingDocumentName('');
+        }
+
+        // cd accounts were set above before form data
+        }, 0);
+    }, [policy, inclusions, exclusions, initialCdAccounts]);
+
+    // Fetch CD accounts when corporate changes
     useEffect(() => {
         if (formData.corporate_id) {
-            console.log('Fetching CD accounts for corporate_id:', formData.corporate_id);
             fetch(`/superadmin/policy/policies/cd-accounts/${encodeURIComponent(formData.corporate_id)}`, {
                 credentials: 'same-origin',
                 headers: { 'Accept': 'application/json' }
@@ -315,20 +304,16 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                     const ct = res.headers.get('content-type') || '';
                     if (!res.ok) {
                         const text = await res.text();
-                        console.error('CD accounts fetch returned non-OK status', res.status, text);
-                        throw new Error(`HTTP ${res.status}`);
+                        throw new Error(`HTTP ${res.status}: ${text}`);
                     }
                     if (!ct.includes('application/json')) {
                         const text = await res.text();
-                        console.error('CD accounts fetch returned non-JSON response:', text);
                         throw new Error('Non-JSON response');
                     }
                     return res.json();
                 })
                 .then(data => {
-                    console.log('CD accounts response:', data);
                     setCdAccounts(data);
-                    // Reset CD account selection if not in new list
                     if (formData.cd_ac_id && !data.find(cd => cd.id === formData.cd_ac_id)) {
                         setFormData(prev => ({ ...prev, cd_ac_id: '' }));
                     }
@@ -343,12 +328,33 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
         }
     }, [formData.corporate_id]);
 
-    // Modal state for add/edit feature dialogs
-    // ...existing code...
-    const [modalOpen, setModalOpen] = useState(null); // 'add-inclusion', 'edit-inclusion', 'add-exclusion', 'edit-exclusion'
-    const [editIndex, setEditIndex] = useState(null);
+    const validateStep = (stepNumber) => {
+        const newErrors = {};
+        if (stepNumber === 1) {
+            if (!formData.corporate_id) newErrors.corporate_id = 'Corporate is required';
+            if (!formData.policy_name) newErrors.policy_name = 'Policy Name is required';
+            if (!formData.corporate_policy_name) newErrors.corporate_policy_name = 'Corporate Policy Name is required';
+            if (!formData.policy_type) newErrors.policy_type = 'Policy Type is required';
+            if (!formData.policy_start_date) newErrors.policy_start_date = 'Policy Start Date is required';
+            if (!formData.policy_end_date) newErrors.policy_end_date = 'Policy End Date is required';
+            if (!formData.ins_id) newErrors.ins_id = 'Insurance Provider is required';
+            if (!formData.tpa_id) newErrors.tpa_id = 'TPA Company is required';
+            if (!formData.cd_ac_id) newErrors.cd_ac_id = 'CD Account is required';
+            if (!formData.data_escalation_id) newErrors.data_escalation_id = 'Data Escalation user is required';
+            if (!formData.claim_level_1_id) newErrors.claim_level_1_id = 'Claim Level 1 user is required';
+            if (!formData.claim_level_2_id) newErrors.claim_level_2_id = 'Claim Level 2 user is required';
+        }
+        if (stepNumber === 3) {
+            const hasInclusions = formData.inclusions && formData.inclusions.length > 0;
+            const hasExclusions = formData.exclusions && formData.exclusions.length > 0;
+            if (!hasInclusions && !hasExclusions) {
+                newErrors.policy_features = 'At least one inclusion or exclusion is required';
+            }
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-    // Sample CSV download logic
     const handleSampleDownload = () => {
         const csvContent =
             'S.No,Feature Name,Feature Desc,Feature Type\n' +
@@ -368,8 +374,6 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
         URL.revokeObjectURL(url);
     };
 
-    // CSV upload logic with validation and error messages
-    const [csvError, setCsvError] = useState('');
     const handleCsvUpload = (file) => {
         setCsvError('');
         if (!file) return;
@@ -431,17 +435,70 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
         reader.onerror = () => setCsvError('Failed to read CSV file.');
         reader.readAsText(file);
     };
-    <button type="button" className="px-4 py-2 bg-[#934790] text-white rounded-lg shadow" onClick={handleSampleDownload}>Download Sample CSV</button>
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setErrors({});
+
+        if (!validateStep(3)) {
+            setIsSubmitting(false);
+            return;
+        }
+
+        try {
+            const formDataToSend = new FormData();
+            
+            // Method spoofing for PUT with file upload
+            formDataToSend.append('_method', 'PUT');
+
+            Object.keys(formData).forEach(key => {
+                if (key === 'inclusions' || key === 'exclusions') {
+                    const features = [
+                        ...(formData.inclusions || []).map(f => ({ ...f, feature_type: 'inc' })),
+                        ...(formData.exclusions || []).map(f => ({ ...f, feature_type: 'exc' }))
+                    ];
+                    formDataToSend.append('policy_features', JSON.stringify(features));
+                } else if (key === 'family_defination') {
+                    formDataToSend.append(key, JSON.stringify(formData[key]));
+                } else if (formData[key] !== null && formData[key] !== '') {
+                    if (typeof formData[key] === 'object' && formData[key] !== null && !(formData[key] instanceof File)) {
+                        formDataToSend.append(key, JSON.stringify(formData[key]));
+                    } else {
+                        formDataToSend.append(key, formData[key]);
+                    }
+                }
+            });
+
+            // If user selected a new file, it will be in formData.policy_document
+            if (formData.policy_document instanceof File) {
+                formDataToSend.append('policy_document', formData.policy_document);
+            }
+
+            // Use POST with _method=PUT for file uploads (method spoofing)
+            await router.post(`/superadmin/policy/policies/${policy.id}`, formDataToSend, {
+                onError: (errorsResp) => {
+                    setErrors(errorsResp);
+                    setIsSubmitting(false);
+                },
+                onSuccess: () => {
+                    router.visit('/superadmin/policy/policies');
+                }
+            });
+        } catch (error) {
+            console.error('Form submission error:', error);
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <SuperAdminLayout>
             <div className="space-y-6">
-                {/* Header */}
                 <div className="border-b border-gray-200 pb-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Create New Policy</h1>
-                            <p className="mt-1 text-sm text-gray-600">Add a new insurance policy to the system.</p>
+                            <h1 className="text-2xl font-bold text-gray-900">Edit Policy</h1>
+                            <p className="mt-1 text-sm text-gray-600">Update the insurance policy details.</p>
                         </div>
                         <Link
                             href="/superadmin/policy/policies"
@@ -450,7 +507,6 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                     </div>
                 </div>
 
-                {/* Step Indicator */}
                 <div className="flex items-center justify-center mb-8">
                     {[1, 2, 3].map((stepNum) => (
                         <React.Fragment key={stepNum}>
@@ -462,10 +518,8 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
 
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Step 1: Basic Information */}
                         {step === 1 && (
                             <div className="space-y-8">
-                                {/* POLICY DETAILS SECTION */}
                                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="w-10 h-10 bg-[#934790] rounded-lg flex items-center justify-center">
@@ -479,7 +533,6 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Policy Name */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Name <span className="text-red-500">*</span></label>
                                             <input
@@ -492,7 +545,6 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('policy_name') && <div className="text-red-500 text-sm mt-1">{getError('policy_name')}</div>}
                                         </div>
-                                        {/* Corporate Policy Name */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Corporate Policy Name <span className="text-red-500">*</span></label>
                                             <input
@@ -505,8 +557,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('corporate_policy_name') && <div className="text-red-500 text-sm mt-1">{getError('corporate_policy_name')}</div>}
                                         </div>
-                                        {/* corporate_policy_type removed — use 'Policy Type' select instead */}
-                                        {/* Policy Type (GMI / GPA / GTL) */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Type <span className="text-red-500">*</span></label>
                                             <select
@@ -521,7 +572,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             </select>
                                             {getError('policy_type') && <div className="text-red-500 text-sm mt-1">{getError('policy_type')}</div>}
                                         </div>
-                                        {/* Policy Number */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Number</label>
                                             <input
@@ -533,7 +584,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('policy_number') && <div className="text-red-500 text-sm mt-1">{getError('policy_number')}</div>}
                                         </div>
-                                        {/* Policy Start Date */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Start Date <span className="text-red-500">*</span></label>
                                             <input
@@ -556,7 +607,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('policy_start_date') && <div className="text-red-500 text-sm mt-1">{getError('policy_start_date')}</div>}
                                         </div>
-                                        {/* Policy End Date */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Policy End Date <span className="text-red-500">*</span></label>
                                             <input
@@ -568,7 +619,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('policy_end_date') && <div className="text-red-500 text-sm mt-1">{getError('policy_end_date')}</div>}
                                         </div>
-                                        {/* Policy Document */}
+
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Document</label>
                                             <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50 hover:bg-purple-100 transition-colors">
@@ -587,7 +638,28 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                         />
                                                     </label>
                                                 </div>
-                                                    {getError('policy_document') && <div className="text-red-500 text-sm mt-2">{getError('policy_document')}</div>}
+                                                {getError('policy_document') && <div className="text-red-500 text-sm mt-2">{getError('policy_document')}</div>}
+
+                                                {existingDocumentName && !formData.policy_document && (
+                                                    <div className="mt-4 flex items-center justify-between bg-white px-4 py-2 rounded border border-purple-200">
+                                                        <div className="flex items-center gap-2">
+                                                            <svg className="w-5 h-5 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                            <span className="text-sm font-medium text-gray-700">{existingDocumentName}</span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { setFormData(prev => ({ ...prev, policy_document: null })); setExistingDocumentName(''); }}
+                                                            className="text-red-500 hover:text-red-700"
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                )}
+
                                                 {formData.policy_document && (
                                                     <div className="mt-4 flex items-center justify-between bg-white px-4 py-2 rounded border border-purple-200">
                                                         <div className="flex items-center gap-2">
@@ -609,7 +681,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                 )}
                                             </div>
                                         </div>
-                                        {/* Twin Allowed & Natural Addition */}
+
                                         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="flex items-center">
                                                 <label className="flex items-center space-x-3 cursor-pointer bg-white px-4 py-3 rounded-lg border border-purple-300 hover:bg-purple-50 transition-colors w-full">
@@ -637,8 +709,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                     </div>
                                 </div>
 
-                                {/* USER DETAILS SECTION */}
-                                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200 mt-6">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -651,7 +722,6 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Corporate */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Corporate <span className="text-red-500">*</span></label>
                                             <SelectWithSearch
@@ -663,7 +733,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('corporate_id') && <div className="text-red-500 text-sm mt-1">{getError('corporate_id')}</div>}
                                         </div>
-                                        {/* Data Escalation User */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Data Escalation User</label>
                                             <SelectWithSearch
@@ -674,7 +744,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('data_escalation_id') && <div className="text-red-500 text-sm mt-1">{getError('data_escalation_id')}</div>}
                                         </div>
-                                        {/* Claim Level 1 User */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Claim Level 1 User</label>
                                             <SelectWithSearch
@@ -685,7 +755,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('claim_level_1_id') && <div className="text-red-500 text-sm mt-1">{getError('claim_level_1_id')}</div>}
                                         </div>
-                                        {/* Claim Level 2 User */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Claim Level 2 User</label>
                                             <SelectWithSearch
@@ -696,12 +766,10 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('claim_level_2_id') && <div className="text-red-500 text-sm mt-1">{getError('claim_level_2_id')}</div>}
                                         </div>
-                                        {/* Sales RM / Service RM / Sales Vertical removed per request */}
                                     </div>
                                 </div>
 
-                                {/* INSURANCE DETAILS SECTION */}
-                                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200 mt-6">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
                                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -714,7 +782,6 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Insurance Provider */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Insurance Provider <span className="text-red-500">*</span></label>
                                             <SelectWithSearch
@@ -726,7 +793,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('ins_id') && <div className="text-red-500 text-sm mt-1">{getError('ins_id')}</div>}
                                         </div>
-                                        {/* TPA Company */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">TPA Company</label>
                                             <SelectWithSearch
@@ -737,7 +804,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             />
                                             {getError('tpa_id') && <div className="text-red-500 text-sm mt-1">{getError('tpa_id')}</div>}
                                         </div>
-                                        {/* CD Account */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">CD Account</label>
                                             <SelectWithSearch
@@ -749,7 +816,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             {getError('cd_ac_id') && <div className="text-red-500 text-sm mt-1">{getError('cd_ac_id')}</div>}
                                             <p className="text-xs text-gray-500 mt-1">{cdAccounts.length} CD account(s) loaded</p>
                                         </div>
-                                        {/* Is Paperless */}
+
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Paperless Option</label>
                                             <select
@@ -761,7 +828,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                 <option value={0}>Paper-based</option>
                                             </select>
                                         </div>
-                                        {/* Courier Person - Conditional */}
+
                                         {formData.is_paperless === 0 && (
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Courier Person</label>
@@ -774,7 +841,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                 />
                                             </div>
                                         )}
-                                        {/* Courier Address - Conditional */}
+
                                         {formData.is_paperless === 0 && (
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Courier Address</label>
@@ -787,31 +854,25 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                 />
                                             </div>
                                         )}
-                                    </div>
-                                </div>
 
-                                {/* Navigation */}
-                                <div className="flex justify-end pt-4">
-                                   
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (validateStep(1)) {
-                                                setStep(2);
-                                            }
-                                        }}
-                                        className="px-8 py-3 bg-gradient-to-r from-[#934790] to-[#6A0066] text-white rounded-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 font-semibold flex items-center gap-2"
-                                    >
-                                        Next: Family Definition
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                            <path d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                        </svg>
-                                    </button>
+                                    </div>
+
+                                    <div className="flex justify-end pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => { if (validateStep(1)) setStep(2); }}
+                                            className="px-8 py-3 bg-gradient-to-r from-[#934790] to-[#6A0066] text-white rounded-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 font-semibold flex items-center gap-2"
+                                        >
+                                            Next: Family Definition
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <path d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Step 2: Family Definition */}
                         {step === 2 && (
                             <div>
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Family Definition</h2>
@@ -925,7 +986,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         );
                                     })}
                                 </div>
-                                {/* Additional Family Options */}
+
                                 <div className="mt-8 p-4 bg-gray-50 rounded-lg">
                                     <h4 className="text-sm font-medium text-gray-900 mb-4">Additional Options</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -966,6 +1027,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                     </div>
                                 </div>
+
                                 <div className="flex justify-between mt-8">
                                     <button type="button" className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md" onClick={() => setStep(1)}>Back</button>
                                     <button type="button" className="px-4 py-2 bg-[#934790] text-white rounded-md" onClick={() => setStep(3)}>Next</button>
@@ -973,7 +1035,6 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                             </div>
                         )}
 
-                        {/* Step 3: Policy Features */}
                         {step === 3 && (
                             <>
                                 <FeatureModal
@@ -981,34 +1042,22 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                     onClose={() => setModalOpen(null)}
                                     onSave={feature => {
                                         if (modalOpen === 'add-inclusion') {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                inclusions: [...(prev.inclusions || []), { ...feature, feature_type: 'inc' }]
-                                            }));
+                                            setFormData(prev => ({ ...prev, inclusions: [...(prev.inclusions || []), { ...feature, feature_type: 'inc' }] }));
                                         } else if (modalOpen === 'edit-inclusion') {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                inclusions: prev.inclusions.map((f, i) => i === editIndex ? { ...feature, feature_type: 'inc' } : f)
-                                            }));
+                                            setFormData(prev => ({ ...prev, inclusions: prev.inclusions.map((f, i) => i === editIndex ? { ...feature, feature_type: 'inc' } : f) }));
                                         } else if (modalOpen === 'add-exclusion') {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                exclusions: [...(prev.exclusions || []), { ...feature, feature_type: 'exc' }]
-                                            }));
+                                            setFormData(prev => ({ ...prev, exclusions: [...(prev.exclusions || []), { ...feature, feature_type: 'exc' }] }));
                                         } else if (modalOpen === 'edit-exclusion') {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                exclusions: prev.exclusions.map((f, i) => i === editIndex ? { ...feature, feature_type: 'exc' } : f)
-                                            }));
+                                            setFormData(prev => ({ ...prev, exclusions: prev.exclusions.map((f, i) => i === editIndex ? { ...feature, feature_type: 'exc' } : f) }));
                                         }
                                     }}
                                     initial={modalOpen?.startsWith('edit-') ? (modalOpen === 'edit-inclusion' ? formData.inclusions?.[editIndex] : formData.exclusions?.[editIndex]) : null}
                                     type={modalOpen?.includes('inclusion') ? 'Inclusion' : 'Exclusion'}
                                 />
+
                                 <div className="space-y-6">
                                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Policy Features</h2>
 
-                                    {/* CSV Upload Section */}
                                     <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl shadow-sm p-6 border border-purple-200">
                                         <div className="flex items-center gap-3 mb-4">
                                             <svg className="w-6 h-6 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1022,34 +1071,17 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                 <input
                                                     type="file"
                                                     accept=".csv"
-                                                    onChange={e => {
-                                                        const file = e.target.files[0];
-                                                        if (file) handleCsvUpload(file);
-                                                    }}
+                                                    onChange={e => { const file = e.target.files[0]; if (file) handleCsvUpload(file); }}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent bg-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#934790] file:text-white hover:file:bg-[#6A0066]"
                                                 />
-                                                {csvError && (
-                                                    <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                        </svg>
-                                                        {csvError}
-                                                    </div>
-                                                )}
+                                                {csvError && (<div className="mt-2 text-sm text-red-600">{csvError}</div>)}
                                             </div>
                                             <div className="flex items-end">
-                                                <button
-                                                    type="button"
-                                                    className="w-full px-4 py-2 bg-white border-2 border-[#934790] text-[#934790] rounded-lg shadow hover:bg-[#934790] hover:text-white transition-colors font-semibold"
-                                                    onClick={handleSampleDownload}
-                                                >
-                                                    Download Sample CSV
-                                                </button>
+                                                <button type="button" className="w-full px-4 py-2 bg-white border-2 border-[#934790] text-[#934790] rounded-lg shadow hover:bg-[#934790] hover:text-white transition-colors font-semibold" onClick={handleSampleDownload}>Download Sample CSV</button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Stats */}
                                     <div className="flex gap-4">
                                         <div className="flex-1 bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg shadow px-6 py-4 border-l-4 border-green-500">
                                             <div className="text-sm font-medium text-gray-600">Total Inclusions</div>
@@ -1060,8 +1092,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             <div className="text-3xl font-bold text-red-600 mt-1">{formData.exclusions?.length || 0}</div>
                                         </div>
                                     </div>
-                                    
-                                    {/* Validation Error for policy features */}
+
                                     {getError('policy_features') && (
                                         <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
                                             <div className="flex items-center">
@@ -1073,9 +1104,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                     )}
 
-                                    {/* Two Column Layout - Exclusions Left, Inclusions Right */}
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        {/* LEFT SIDE - Policy Exclusions */}
                                         <div className="bg-white rounded-xl shadow-lg border-2 border-red-200">
                                             <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 rounded-t-xl">
                                                 <div className="flex items-center justify-between">
@@ -1085,13 +1114,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                         </svg>
                                                         <h3 className="text-lg font-bold">Policy Exclusions</h3>
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        className="px-4 py-2 bg-white text-red-600 rounded-lg shadow-md hover:bg-red-50 font-semibold text-sm"
-                                                        onClick={() => { setModalOpen('add-exclusion'); setEditIndex(null); }}
-                                                    >
-                                                        + Add Exclusion
-                                                    </button>
+                                                    <button type="button" className="px-4 py-2 bg-white text-red-600 rounded-lg shadow-md hover:bg-red-50 font-semibold text-sm" onClick={() => { setModalOpen('add-exclusion'); setEditIndex(null); }}>+ Add Exclusion</button>
                                                 </div>
                                             </div>
                                             <div className="p-4 max-h-[600px] overflow-y-auto">
@@ -1105,26 +1128,12 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                                         <h4 className="font-semibold text-gray-800">{exc.title}</h4>
                                                                     </div>
                                                                     <div className="flex gap-2">
-                                                                        <button
-                                                                            type="button"
-                                                                            className="text-blue-600 hover:text-blue-800 text-xs font-medium"
-                                                                            onClick={() => { setModalOpen('edit-exclusion'); setEditIndex(idx); }}
-                                                                        >
-                                                                            Edit
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            className="text-red-600 hover:text-red-800 text-xs font-medium"
-                                                                            onClick={() => setFormData(prev => ({ ...prev, exclusions: prev.exclusions.filter((_, i) => i !== idx) }))}
-                                                                        >
-                                                                            Remove
-                                                                        </button>
+                                                                        <button type="button" className="text-blue-600 hover:text-blue-800 text-xs font-medium" onClick={() => { setModalOpen('edit-exclusion'); setEditIndex(idx); }}>Edit</button>
+                                                                        <button type="button" className="text-red-600 hover:text-red-800 text-xs font-medium" onClick={() => setFormData(prev => ({ ...prev, exclusions: prev.exclusions.filter((_, i) => i !== idx) }))}>Remove</button>
                                                                     </div>
                                                                 </div>
                                                                 <p className="text-sm text-gray-600">{exc.description}</p>
-                                                                <div className="mt-2 text-xs text-gray-500">
-                                                                    <span className="bg-red-100 px-2 py-1 rounded">Type: exc</span>
-                                                                </div>
+                                                                <div className="mt-2 text-xs text-gray-500"><span className="bg-red-100 px-2 py-1 rounded">Type: exc</span></div>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -1140,7 +1149,6 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             </div>
                                         </div>
 
-                                        {/* RIGHT SIDE - Policy Inclusions */}
                                         <div className="bg-white rounded-xl shadow-lg border-2 border-green-200">
                                             <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-t-xl">
                                                 <div className="flex items-center justify-between">
@@ -1150,13 +1158,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                         </svg>
                                                         <h3 className="text-lg font-bold">Policy Inclusions</h3>
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        className="px-4 py-2 bg-white text-green-600 rounded-lg shadow-md hover:bg-green-50 font-semibold text-sm"
-                                                        onClick={() => { setModalOpen('add-inclusion'); setEditIndex(null); }}
-                                                    >
-                                                        + Add Inclusion
-                                                    </button>
+                                                    <button type="button" className="px-4 py-2 bg-white text-green-600 rounded-lg shadow-md hover:bg-green-50 font-semibold text-sm" onClick={() => { setModalOpen('add-inclusion'); setEditIndex(null); }}>+ Add Inclusion</button>
                                                 </div>
                                             </div>
                                             <div className="p-4 max-h-[600px] overflow-y-auto">
@@ -1170,26 +1172,12 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                                         <h4 className="font-semibold text-gray-800">{inc.title}</h4>
                                                                     </div>
                                                                     <div className="flex gap-2">
-                                                                        <button
-                                                                            type="button"
-                                                                            className="text-blue-600 hover:text-blue-800 text-xs font-medium"
-                                                                            onClick={() => { setModalOpen('edit-inclusion'); setEditIndex(idx); }}
-                                                                        >
-                                                                            Edit
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            className="text-red-600 hover:text-red-800 text-xs font-medium"
-                                                                            onClick={() => setFormData(prev => ({ ...prev, inclusions: prev.inclusions.filter((_, i) => i !== idx) }))}
-                                                                        >
-                                                                            Remove
-                                                                        </button>
+                                                                        <button type="button" className="text-blue-600 hover:text-blue-800 text-xs font-medium" onClick={() => { setModalOpen('edit-inclusion'); setEditIndex(idx); }}>Edit</button>
+                                                                        <button type="button" className="text-red-600 hover:text-red-800 text-xs font-medium" onClick={() => setFormData(prev => ({ ...prev, inclusions: prev.inclusions.filter((_, i) => i !== idx) }))}>Remove</button>
                                                                     </div>
                                                                 </div>
                                                                 <p className="text-sm text-gray-600">{inc.description}</p>
-                                                                <div className="mt-2 text-xs text-gray-500">
-                                                                    <span className="bg-green-100 px-2 py-1 rounded">Type: inc</span>
-                                                                </div>
+                                                                <div className="mt-2 text-xs text-gray-500"><span className="bg-green-100 px-2 py-1 rounded">Type: inc</span></div>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -1207,32 +1195,24 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                     </div>
 
                                     <div className="flex justify-between mt-8 pt-6 border-t-2 border-gray-200">
-                                        <button
-                                            type="button"
-                                            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 font-semibold flex items-center gap-2"
-                                            onClick={() => setStep(2)}
-                                        >
+                                        <button type="button" className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 font-semibold flex items-center gap-2" onClick={() => setStep(2)}>
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                                             </svg>
                                             Back
                                         </button>
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className="px-8 py-3 bg-gradient-to-r from-[#934790] to-[#6A0066] text-white rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center gap-2"
-                                        >
+                                        <button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-gradient-to-r from-[#934790] to-[#6A0066] text-white rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center gap-2">
                                             {isSubmitting ? (
                                                 <>
                                                     <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                     </svg>
-                                                    Creating Policy...
+                                                    Updating Policy...
                                                 </>
                                             ) : (
                                                 <>
-                                                    Create Policy
+                                                    Update Policy
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                                     </svg>

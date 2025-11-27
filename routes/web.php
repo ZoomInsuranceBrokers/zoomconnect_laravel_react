@@ -193,6 +193,24 @@ Route::prefix('superadmin')->group(function () {
     Route::delete('/admin/resources/{resource}', [SuperAdminController::class, 'adminResourcesDestroy'])->name('superadmin.admin.resources.destroy');
 
 
+    // Insurance Routes
+    Route::get('/policy/insurance', [SuperAdminController::class, 'insuranceIndex'])->name('superadmin.policy.insurance.index');
+    Route::get('/policy/insurance/create', [SuperAdminController::class, 'insuranceCreate'])->name('superadmin.policy.insurance.create');
+    Route::post('/policy/insurance', [SuperAdminController::class, 'insuranceStore'])->name('superadmin.policy.insurance.store');
+    Route::get('/policy/insurance/{insurance}/edit', [SuperAdminController::class, 'insuranceEdit'])->name('superadmin.policy.insurance.edit');
+    Route::put('/policy/insurance/{insurance}', [SuperAdminController::class, 'insuranceUpdate'])->name('superadmin.policy.insurance.update');
+    Route::put('/policy/insurance/{insurance}/toggle-status', [SuperAdminController::class, 'insuranceToggleStatus'])->name('superadmin.policy.insurance.toggle-status');
+    Route::delete('/policy/insurance/{insurance}', [SuperAdminController::class, 'insuranceDestroy'])->name('superadmin.policy.insurance.destroy');
+
+    // TPA Routes
+    Route::get('/policy/tpa', [SuperAdminController::class, 'tpaIndex'])->name('superadmin.policy.tpa.index');
+    Route::get('/policy/tpa/create', [SuperAdminController::class, 'tpaCreate'])->name('superadmin.policy.tpa.create');
+    Route::post('/policy/tpa', [SuperAdminController::class, 'tpaStore'])->name('superadmin.policy.tpa.store');
+    Route::get('/policy/tpa/{tpa}/edit', [SuperAdminController::class, 'tpaEdit'])->name('superadmin.policy.tpa.edit');
+    Route::put('/policy/tpa/{tpa}', [SuperAdminController::class, 'tpaUpdate'])->name('superadmin.policy.tpa.update');
+    Route::put('/policy/tpa/{tpa}/toggle-status', [SuperAdminController::class, 'tpaToggleStatus'])->name('superadmin.policy.tpa.toggle-status');
+    Route::delete('/policy/tpa/{tpa}', [SuperAdminController::class, 'tpaDestroy'])->name('superadmin.policy.tpa.destroy');
+
     // Enrollment Lists
     Route::get('/policy/enrollment-lists', [SuperAdminController::class, 'policyEnrollmentLists'])->name('superadmin.policy.enrollment-lists.index');
     Route::get('/policy/enrollment-lists/create', [SuperAdminController::class, 'policyEnrollmentListsCreate'])->name('superadmin.policy.enrollment-lists.create');
@@ -225,8 +243,18 @@ Route::prefix('superadmin')->group(function () {
     // Policies Routes
     Route::get('/policy/policies', [SuperAdminController::class, 'policies'])->name('superadmin.policy.policies.index');
     Route::get('/policy/policies/create', [SuperAdminController::class, 'createPolicy'])->name('superadmin.policy.policies.create');
+    // Endorsements list
+    Route::get('/policy/endorsements', [SuperAdminController::class, 'endorsements'])->name('superadmin.policy.endorsements.index');
+    // Show single endorsement
+    Route::get('/policy/endorsements/{endorsement}', [SuperAdminController::class, 'showPolicyEndorsement'])->name('superadmin.policy.endorsements.show');
+    // Update endorsement
+    Route::put('/policy/endorsements/{endorsement}', [SuperAdminController::class, 'updatePolicyEndorsement'])->name('superadmin.policy.endorsements.update');
+    Route::get('/policy/policies/cd-accounts/{companyId}', [SuperAdminController::class, 'getCdAccountsByCompany'])->name('superadmin.policy.policies.cd-accounts');
     Route::post('/policy/policies', [SuperAdminController::class, 'storePolicy'])->name('superadmin.policy.policies.store');
     Route::get('/policy/policies/{policy}', [SuperAdminController::class, 'showPolicy'])->name('superadmin.policy.policies.show');
+    // List endorsements for a policy and create new endorsement
+    Route::get('/policy/policies/{policy}/endorsements', [SuperAdminController::class, 'policyEndorsements'])->name('superadmin.policy.policies.endorsements');
+    Route::post('/policy/policies/{policy}/endorsements', [SuperAdminController::class, 'storePolicyEndorsement'])->name('superadmin.policy.policies.endorsements.store');
     Route::get('/policy/policies/{policy}/edit', [SuperAdminController::class, 'editPolicy'])->name('superadmin.policy.policies.edit');
     Route::put('/policy/policies/{policy}', [SuperAdminController::class, 'updatePolicy'])->name('superadmin.policy.policies.update');
     Route::delete('/policy/policies/{policy}', [SuperAdminController::class, 'destroyPolicy'])->name('superadmin.policy.policies.destroy');

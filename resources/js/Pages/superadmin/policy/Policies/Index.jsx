@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Link, router } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import SuperAdminLayout from "../../../../Layouts/SuperAdmin/Layout";
 
 export default function Index({ policies, filters }) {
+    const { flash } = usePage().props;
     const [searchTerm, setSearchTerm] = useState(filters.search || "");
     const [selectedStatus, setSelectedStatus] = useState(filters.status || "");
 
@@ -75,6 +76,17 @@ export default function Index({ policies, filters }) {
     return (
         <SuperAdminLayout>
             <div className="space-y-5">
+                {/* Flash Message */}
+                {flash?.success && (
+                    <div className="mb-2 p-3 rounded text-sm text-center bg-green-100 text-green-800 border border-green-200">
+                        ✓ {flash.success}
+                    </div>
+                )}
+                {flash?.error && (
+                    <div className="mb-2 p-3 rounded text-sm text-center bg-red-100 text-red-800 border border-red-200">
+                        ✗ {flash.error}
+                    </div>
+                )}
                 {/* Header */}
                 <div className="flex items-center justify-start border-b pb-3 border-gray-200 mt-3">
                     <Link
@@ -201,7 +213,7 @@ export default function Index({ policies, filters }) {
                                                 </button>
                                                 <Link
                                                     href={`/superadmin/policy/policies/${policy.id}/edit`}
-                                                    className="text-blue-600 hover:text-blue-800"
+                                                    className="text-[#934790] hover:text-[#7a3d7a]"
                                                     title="Edit"
                                                 >
                                                     {/* Pencil SVG */}
@@ -210,7 +222,7 @@ export default function Index({ policies, filters }) {
                                                         height="16"
                                                         viewBox="0 0 24 24"
                                                         fill="none"
-                                                        stroke="#2563eb"
+                                                        stroke="#934790"
                                                         strokeWidth="2"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"

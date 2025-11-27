@@ -681,6 +681,27 @@ export default function Sidebar({ open = true, onToggle }) {
                                     </li>
                                     <li>
                                         <Link
+                                            href="/superadmin/policy/endorsements"
+                                            className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                                currentRoute === "/superadmin/policy/endorsements"
+                                                    ? "text-[#934790]"
+                                                    : `hover:text-[#934790] ${
+                                                          darkMode ? "text-gray-300" : "text-gray-600"
+                                                      }`
+                                            }`}
+                                        >
+                                            <span
+                                                className={`w-2 h-2 rounded-full ${
+                                                    currentRoute === "/superadmin/policy/endorsements"
+                                                        ? "bg-[#934790]"
+                                                        : "bg-gray-400"
+                                                }`}
+                                            ></span>
+                                            <span>Endorsements</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
                                             href="/superadmin/policy/cd-accounts"
                                             className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
                                                 currentRoute ===
@@ -702,6 +723,56 @@ export default function Sidebar({ open = true, onToggle }) {
                                                 }`}
                                             ></span>
                                             <span>CD Accounts</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/superadmin/policy/insurance"
+                                            className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                                currentRoute ===
+                                                "/superadmin/policy/insurance"
+                                                    ? "text-[#934790]"
+                                                    : `hover:text-[#934790] ${
+                                                          darkMode
+                                                              ? "text-gray-300"
+                                                              : "text-gray-600"
+                                                      }`
+                                            }`}
+                                        >
+                                            <span
+                                                className={`w-2 h-2 rounded-full ${
+                                                    currentRoute ===
+                                                    "/superadmin/policy/insurance"
+                                                        ? "bg-[#934790]"
+                                                        : "bg-gray-400"
+                                                }`}
+                                            ></span>
+                                            <span>Insurance</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/superadmin/policy/tpa"
+                                            className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                                currentRoute ===
+                                                "/superadmin/policy/tpa"
+                                                    ? "text-[#934790]"
+                                                    : `hover:text-[#934790] ${
+                                                          darkMode
+                                                              ? "text-gray-300"
+                                                              : "text-gray-600"
+                                                      }`
+                                            }`}
+                                        >
+                                            <span
+                                                className={`w-2 h-2 rounded-full ${
+                                                    currentRoute ===
+                                                    "/superadmin/policy/tpa"
+                                                        ? "bg-[#934790]"
+                                                        : "bg-gray-400"
+                                                }`}
+                                            ></span>
+                                            <span>TPA</span>
                                         </Link>
                                     </li>
                                 </ul>
