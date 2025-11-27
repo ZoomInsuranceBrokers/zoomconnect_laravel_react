@@ -112,9 +112,9 @@ export default function CategoryList({ categories = [] }) {
                             <span>+</span>
                             Add Category
                         </button>
-                        <button className="flex items-center gap-1.5 text-gray-600 hover:text-gray-800 text-[11px]">
+                        <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-[12px] md:text-[13px] font-medium">
                             <svg
-                                className="w-3 h-3"
+                                className="w-4 h-4 md:w-5 md:h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -139,14 +139,14 @@ export default function CategoryList({ categories = [] }) {
                             placeholder="Search Categories"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className={`w-48 pl-8 pr-3 py-1.5 border rounded-lg text-[10px] focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                            className={`w-48 pl-9 pr-3 py-1.5 border rounded-lg text-[10px] focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
                                 darkMode
                                     ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                                     : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                             }`}
                         />
                         <svg
-                            className="absolute left-2.5 top-2 w-3 h-3 text-gray-400"
+                            className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -181,7 +181,7 @@ export default function CategoryList({ categories = [] }) {
                     <table className="w-full min-w-max">
                         <thead
                             className={`${
-                                darkMode ? "bg-gray-700" : "bg-gray-50"
+                                darkMode ? "bg-gray-800" : "bg-gray-200"
                             } border-b`}
                         >
                             <tr>
@@ -224,8 +224,8 @@ export default function CategoryList({ categories = [] }) {
                                         key={category.id}
                                         className={`${
                                             darkMode
-                                                ? "hover:bg-gray-700"
-                                                : "hover:bg-gray-50"
+                                                ? "bg-gray-800 hover:bg-gray-700"
+                                                : "bg-gray-100 hover:bg-gray-200"
                                         }`}
                                     >
                                         <td className="px-3 py-2 whitespace-nowrap">
@@ -281,10 +281,14 @@ export default function CategoryList({ categories = [] }) {
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-900">
+                                        <td className={`px-3 py-2 whitespace-nowrap text-[10px] ${
+                                            darkMode ? "text-gray-200" : "text-gray-900"
+                                        }`}>
                                             {category.category_name || "-"}
                                         </td>
-                                        <td className="px-3 py-2 text-[10px] text-gray-500 max-w-xs">
+                                        <td className={`px-3 py-2 text-[10px] max-w-xs ${
+                                            darkMode ? "text-gray-400" : "text-gray-500"
+                                        }`}>
                                             <div className="truncate" title={category.description}>
                                                 {category.description || "-"}
                                             </div>
@@ -308,14 +312,18 @@ export default function CategoryList({ categories = [] }) {
                                                 />
                                             </button>
                                         </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-500">
+                                        <td className={`px-3 py-2 whitespace-nowrap text-[10px] ${
+                                            darkMode ? "text-gray-400" : "text-gray-500"
+                                        }`}>
                                             {formatDate(category.created_at)}
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="7" className="px-3 py-8 text-center text-gray-500">
+                                    <td colSpan="7" className={`px-3 py-8 text-center ${
+                                        darkMode ? "text-gray-400 bg-gray-800" : "text-gray-500"
+                                    }`}>
                                         {categories.length === 0
                                             ? "No categories found"
                                             : "No categories match your current filters"
@@ -328,9 +336,13 @@ export default function CategoryList({ categories = [] }) {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between px-4 py-3 bg-white border-t">
+                <div className={`flex items-center justify-between px-4 py-3 border-t ${
+                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                }`}>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-700">
+                        <span className={`text-[10px] ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}>
                             Showing {indexOfFirstItem + 1} to{" "}
                             {Math.min(indexOfLastItem, filteredCategories.length)} of{" "}
                             {filteredCategories.length} results
@@ -340,11 +352,17 @@ export default function CategoryList({ categories = [] }) {
                         <button
                             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                             disabled={currentPage === 1}
-                            className="px-2 py-1 text-[10px] bg-gray-100 text-gray-600 rounded disabled:opacity-50"
+                            className={`px-2 py-1 text-[10px] rounded disabled:opacity-50 ${
+                                darkMode
+                                    ? "bg-gray-700 text-gray-300 border border-gray-600"
+                                    : "bg-gray-100 text-gray-600"
+                            }`}
                         >
                             Previous
                         </button>
-                        <span className="text-[10px] text-gray-700">
+                        <span className={`text-[10px] ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}>
                             Page {currentPage} of {totalPages}
                         </span>
                         <button
@@ -352,7 +370,11 @@ export default function CategoryList({ categories = [] }) {
                                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                             }
                             disabled={currentPage === totalPages}
-                            className="px-2 py-1 text-[10px] bg-gray-100 text-gray-600 rounded disabled:opacity-50"
+                            className={`px-2 py-1 text-[10px] rounded disabled:opacity-50 ${
+                                darkMode
+                                    ? "bg-gray-700 text-gray-300 border border-gray-600"
+                                    : "bg-gray-100 text-gray-600"
+                            }`}
                         >
                             Next
                         </button>
@@ -461,18 +483,18 @@ function CategoryModal({ category, modalType, onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-lg">
+                <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-lg font-semibold text-gray-900">
                         {modalType === "create" ? "Add Category" : "Edit Category"}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-gray-400 hover:text-gray-600 transition"
                     >
                         <svg
-                            className="w-6 h-6"
+                            className="w-5 h-5"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -489,7 +511,7 @@ function CategoryModal({ category, modalType, onClose }) {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
                             Category Name *
                         </label>
                         <input
@@ -502,7 +524,7 @@ function CategoryModal({ category, modalType, onClose }) {
                                 });
                                 setErrors({ ...errors, category_name: "" });
                             }}
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                            className={`w-full px-3 py-2 border rounded-lg text-[13px] focus:ring-2 focus:ring-[#934790] focus:border-transparent transition ${
                                 errors.category_name
                                     ? "border-red-500"
                                     : "border-gray-300"
@@ -517,15 +539,15 @@ function CategoryModal({ category, modalType, onClose }) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
                             Icon
                         </label>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-start gap-3">
                             {iconPreview && (
                                 <img
                                     src={iconPreview}
                                     alt="Icon preview"
-                                    className="w-16 h-16 rounded-lg object-cover border"
+                                    className="w-12 h-12 rounded-lg object-cover border flex-shrink-0"
                                 />
                             )}
                             <div className="flex-1">
@@ -533,14 +555,14 @@ function CategoryModal({ category, modalType, onClose }) {
                                     type="file"
                                     accept="image/jpeg,image/jpg,image/png,.jpeg,.jpg,.png"
                                     onChange={handleIconChange}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-sm ${
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-[12px] transition ${
                                         errors.icon
                                             ? "border-red-500"
                                             : "border-gray-300"
                                     }`}
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
-                                    Upload JPEG, PNG, or JPG files only. Max file size: 2MB
+                                    JPEG, PNG or JPG. Max 2MB
                                 </p>
                                 {errors.icon && (
                                     <p className="text-red-500 text-xs mt-1">
@@ -552,7 +574,7 @@ function CategoryModal({ category, modalType, onClose }) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
                             Description
                         </label>
                         <textarea
@@ -564,17 +586,17 @@ function CategoryModal({ category, modalType, onClose }) {
                                 });
                                 setErrors({ ...errors, description: "" });
                             }}
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                            className={`w-full px-3 py-2 border rounded-lg text-[13px] focus:ring-2 focus:ring-[#934790] focus:border-transparent transition ${
                                 errors.description
                                     ? "border-red-500"
                                     : "border-gray-300"
                             }`}
-                            rows="3"
+                            rows="2"
                             maxLength="1000"
-                            placeholder="Optional description for the category..."
+                            placeholder="Optional description..."
                         />
                         <p className="text-xs text-gray-500 mt-1">
-                            {formData.description.length}/1000 characters
+                            {formData.description.length}/1000
                         </p>
                         {errors.description && (
                             <p className="text-red-500 text-xs mt-1">
@@ -583,17 +605,17 @@ function CategoryModal({ category, modalType, onClose }) {
                         )}
                     </div>
 
-                    <div className="flex gap-2 pt-4">
+                    <div className="flex gap-2 pt-4 border-t">
                         <button
                             type="submit"
-                            className="flex-1 bg-[#934790] hover:bg-[#6A0066] text-white py-2 px-4 rounded-lg font-medium"
+                            className="flex-1 bg-[#934790] hover:bg-[#6A0066] text-white py-2 px-4 rounded-lg font-medium text-sm transition duration-200"
                         >
-                            {modalType === "create" ? "Create Category" : "Update Category"}
+                            {modalType === "create" ? "Create" : "Update"}
                         </button>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg font-medium"
+                            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium text-sm transition duration-200"
                         >
                             Cancel
                         </button>

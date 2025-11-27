@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaLinkedin, FaTwitter, FaFacebook, FaInstagram, FaPaperPlane, FaUser, FaBuilding, FaUsers } from 'react-icons/fa';
-import { useTheme } from '../../../Context/ThemeContext';
 
 export default function ContactUs() {
-    const { darkMode } = useTheme();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -99,7 +97,7 @@ export default function ContactUs() {
     ];
 
     return (
-        <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+        <div className="min-h-screen bg-white text-gray-900">
             <h1 className="text-3xl font-bold text-center mt-10">Contact Us</h1>
         </div>
     );

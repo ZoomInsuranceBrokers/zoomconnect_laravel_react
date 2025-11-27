@@ -29,152 +29,161 @@ const BookDemo = () => {
     return (
         <>
             <Header />
-            <div className="min-h-screen bg-[#ffceea78] text-gray-900 py-20">
-                <div className="max-w-6xl mx-auto px-6">
-                    <div className=" overflow-hidden grid grid-cols-1 md:grid-cols-5 items-center relative min-h-[80vh]">
-                        {/* Left: Intro / copy - themed */}
-                        <div className="p-8 md:p-12 relative overflow-hidden z-0 flex flex-col justify-center md:col-span-3">
-                            {/* Decorative SVG blob behind hero (non-interactive) */}
-                            <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center overflow-hidden">
-                                <svg
-                                    className="w-[140%] md:w-[120%] max-w-none opacity-60 md:opacity-80 -translate-x-6 md:-translate-x-0"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 1305 885"
-                                    preserveAspectRatio="xMidYMid meet"
-                                >
-                                    <g className="blob-big-green-2">
-                                        <path
-                                            fill="#934790"
-                                            d="M1194.91 807.728c-59.58 43.615-154.57 74.447-251.604 70.433-110.208-4.561-200.22-50.779-306.606-67.321-80.387-12.502-165.735-7.46-249.244-8.498-83.509-1.038-173.013-10.041-231.118-43.637-75.744-43.792-73.345-113.804-52.689-174.13 20.656-60.326 33.272-89.498 12.32-131.722-17.03-34.318-54.2-64.134-79.667-96.724C-15.64 289.674-3.416 160.931 47.212 93.75 79.462 50.957 142.63 9.596 224.868 7.421c93.534-2.472 165.88 45.138 255.614 59.815 124.891 20.43 230.038-12.669 360.327-13.684 142.17-1.11 271.461 53.674 341.191 123.21 69.73 69.537 102.74 231.726 102.74 231.726s74.84 286.016-89.83 399.24Z"
-                                        />
-                                    </g>
-                                </svg>
-                            </div>
+            {/* Beautiful Request a Demo Section */}
+            <div className="min-h-screen bg-gradient-to-br from-[#f2d7b3] via-[#feebff8c] to-[#fff4e6] relative overflow-hidden py-12 md:py-20">
+                {/* Left Wave Illustration */}
+                <div className="absolute left-0 top-0 w-1/3 h-full opacity-60 pointer-events-none hidden md:block">
+                    <svg viewBox="0 0 300 800" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="leftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style={{stopColor: '#FF0066', stopOpacity: 0.15}} />
+                                <stop offset="50%" style={{stopColor: '#934790', stopOpacity: 0.1}} />
+                                <stop offset="100%" style={{stopColor: '#FF0066', stopOpacity: 0.08}} />
+                            </linearGradient>
+                        </defs>
+                        <path d="M0,200 Q50,150 100,200 T200,200 T300,200 L300,800 L0,800 Z" fill="url(#leftGrad)" opacity="0.6"/>
+                        <path d="M0,300 Q50,250 100,300 T200,300 T300,300 L300,800 L0,800 Z" fill="#934790" opacity="0.1"/>
+                        <path d="M0,400 Q75,350 150,400 T300,400 L300,800 L0,800 Z" fill="#FF0066" opacity="0.06"/>
+                    </svg>
+                </div>
 
-                            <div className="relative z-10">                               
-                                 <div className="relative z-10 w-full md:w-[80%]">
-                                    <h1 className="text-3xl md:text-5xl font-dmserif font-semibold text-gray-800 leading-tight mb-4">Request a personalized demo of ZoomConnect</h1>
-                                    <p className="text-gray-700 mb-4">Seeing is believing — schedule a live walk-through with our product specialists. We'll learn about your goals and show how ZoomConnect helps you engage audiences, measure impact, and grow.</p>
-                                    <ul className="space-y-3 text-gray-700">
-                                    <li className="flex items-start gap-3">
-                                        <span className="inline-flex items-center justify-center w-8 h-8 bg-white rounded-md text-[#FF0066]">✓</span>
-                                        <span>A short conversation to align goals</span>
-                                    </li>
-                                    <li className="flex items-start gap-3">
-                                        <span className="inline-flex items-center justify-center w-8 h-8 bg-white rounded-md text-[#934790]">✓</span>
-                                        <span>Live demo tailored to your use case</span>
-                                    </li>
-                                    <li className="flex items-start gap-3">
-                                        <span className="inline-flex items-center justify-center w-8 h-8 bg-white rounded-md text-[#0066ff]">✓</span>
-                                        <span>No obligation — just useful insights</span>
-                                    </li>
-                                </ul>
-                                   
+                {/* Right Wave Illustration */}
+                <div className="absolute right-0 top-0 w-1/3 h-full opacity-60 pointer-events-none hidden md:block">
+                    <svg viewBox="0 0 300 800" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="rightGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style={{stopColor: '#934790', stopOpacity: 0.15}} />
+                                <stop offset="50%" style={{stopColor: '#FF0066', stopOpacity: 0.1}} />
+                                <stop offset="100%" style={{stopColor: '#70306eff', stopOpacity: 0.08}} />
+                            </linearGradient>
+                        </defs>
+                        <path d="M300,200 Q250,150 200,200 T100,200 T0,200 L0,800 L300,800 Z" fill="url(#rightGrad)" opacity="0.6"/>
+                        <path d="M300,300 Q250,250 200,300 T100,300 T0,300 L0,800 L300,800 Z" fill="#FF0066" opacity="0.08"/>
+                        <path d="M300,400 Q225,350 150,400 T0,400 L0,800 L300,800 Z" fill="#7c347aff" opacity="0.06"/>
+                    </svg>
+                </div>
+
+                {/* Centered Illustration between waves */}
+                <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 hidden md:flex justify-center items-center pointer-events-none">
+                    <svg width="180" height="140" viewBox="0 0 180 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="90" cy="120" rx="80" ry="16" fill="#e9d6f7" />
+                        <rect x="50" y="40" width="80" height="55" rx="14" fill="#934790" />
+                        <rect x="65" y="60" width="50" height="22" rx="7" fill="#fff" />
+                        <circle cx="70" cy="70" r="4" fill="#FF0066" />
+                        <circle cx="82" cy="70" r="4" fill="#FF0066" />
+                        <rect x="105" y="67" width="20" height="7" rx="2" fill="#e9d6f7" />
+                        <rect x="105" y="80" width="15" height="5" rx="2" fill="#e9d6f7" />
+                    </svg>
+                </div>
+                {/* Main Content */}
+                <div className="max-w-5xl mx-auto px-6 relative z-20">
+                    <div className="text-center mb-12">
+                        <h2 className="text-4xl md:text-5xl font-dmserif font-bold text-gray-800 mb-4">Book a Demo</h2>
+                        <p className="text-gray-700 text-sm md:text-base max-w-2xl mx-auto">
+                            Just answer a few simple questions so we can personalize the right experience for you.
+                        </p>
+                    </div>
+
+                    {/* Form Container */}
+                    <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-12 max-w-2xl mx-auto border border-white/50">
+                        
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* First Row - Name Fields */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">First name</label>
+                                    <input
+                                        type="text"
+                                        name="firstName"
+                                        value={form.firstName}
+                                        onChange={handleChange}
+                                        placeholder="Enter your first name"
+                                        className="w-full px-3 py-1.5 border border-[#934790] rounded-lg bg-[#e9d6f7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0066] focus:border-[#FF0066] transition placeholder:text-gray-700"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Last name</label>
+                                    <input
+                                        type="text"
+                                        name="lastName"
+                                        value={form.lastName}
+                                        onChange={handleChange}
+                                        placeholder="Enter your last name"
+                                        className="w-full px-3 py-1.5 border border-[#934790] rounded-lg bg-[#e9d6f7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0066] focus:border-[#FF0066] transition placeholder:text-gray-700"
+                                    />
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Right: Form */}
-                        <div className="p-6 md:p-10 md:col-span-2 flex items-center rounded-lg shadow-xl ">
-                            <div className="w-full max-w-md mx-auto">
-                                {/* <h2 className="text-2xl font-semibold text-gray-800 mb-4">Request a demo</h2> */}
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <input
-                                            type="text"
-                                            name="firstName"
-                                            value={form.firstName}
-                                            onChange={handleChange}
-                                            placeholder="First Name"
-                                            className="w-full border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-[#FF0066]"
-                                        />
-                                        <input
-                                            type="text"
-                                            name="lastName"
-                                            value={form.lastName}
-                                            onChange={handleChange}
-                                            placeholder="Last Name"
-                                            className="w-full border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-[#FF0066]"
-                                        />
-                                    </div>
+                            {/* Second Row - Email & Phone */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Business email</label>
                                     <input
                                         type="email"
                                         name="email"
                                         value={form.email}
                                         onChange={handleChange}
-                                        placeholder="Business Email"
-                                        className="w-full border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-[#FF0066]"
+                                        placeholder="Enter your business email"
+                                        className="w-full px-3 py-1.5 border border-[#934790] rounded-lg bg-[#e9d6f7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0066] focus:border-[#FF0066] transition placeholder:text-gray-700"
                                     />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone number</label>
                                     <input
                                         type="tel"
                                         name="phone"
                                         value={form.phone}
                                         onChange={handleChange}
-                                        placeholder="Phone Number"
-                                        className="w-full border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-[#FF0066]"
+                                        placeholder="Enter your phone number"
+                                        className="w-full px-3 py-1.5 border border-[#934790] rounded-lg bg-[#e9d6f7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0066] focus:border-[#FF0066] transition placeholder:text-gray-700"
                                     />
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <input
-                                            type="text"
-                                            name="companyName"
-                                            value={form.companyName}
-                                            onChange={handleChange}
-                                            placeholder="Company Name"
-                                            className="w-full border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-[#FF0066]"
-                                        />
-                                        <input
-                                            type="text"
-                                            name="employeeCount"
-                                            value={form.employeeCount}
-                                            onChange={handleChange}
-                                            placeholder="Company Size"
-                                            className="w-full border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-[#FF0066]"
-                                        />
-                                    </div>
-                                    <select
-                                        name="country"
-                                        value={form.country}
-                                        onChange={handleChange}
-                                        className="w-full border border-gray-200 rounded-md p-2 bg-white"
-                                    >
-                                        <option value="">Select Country</option>
-                                        <option value="USA">USA</option>
-                                        <option value="Canada">Canada</option>
-                                        <option value="UK">UK</option>
-                                    </select>
-                                    <div className="flex items-center gap-6">
-                                        <label className="flex items-center gap-2 text-sm">
-                                            <input type="radio" name="marketingAgency" value="Yes" onChange={handleChange} className="form-radio text-[#FF0066]" />
-                                            Yes
-                                        </label>
-                                        <label className="flex items-center gap-2 text-sm">
-                                            <input type="radio" name="marketingAgency" value="No" onChange={handleChange} className="form-radio text-[#FF0066]" />
-                                            No
-                                        </label>
-                                    </div>
-                                    <textarea
-                                        name="notes"
-                                        value={form.notes}
-                                        onChange={handleChange}
-                                        placeholder="Notes"
-                                        className="w-full border border-gray-200 rounded-md p-2 h-28"
-                                    ></textarea>
-
-                                    <button
-                                        type="submit"
-                                        className="w-full bg-[#FF0066] text-white rounded-xl p-3 hover:bg-[#001f44] transition"
-                                    >
-                                        Proceed to Book a Demo
-                                    </button>
-                                </form>
+                                </div>
                             </div>
-                        </div>
+
+                            {/* Third Row - Company */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Job title</label>
+                                <input
+                                    type="text"
+                                    name="companyName"
+                                    value={form.companyName}
+                                    onChange={handleChange}
+                                    placeholder="Enter your job title"
+                                    className="w-full px-3 py-1.5 border border-[#934790] rounded-lg bg-[#e9d6f7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0066] focus:border-[#FF0066] transition placeholder:text-gray-700"
+                                />
+                            </div>
+
+                            {/* Fourth Row - Message */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">How can we help your business?</label>
+                                <textarea
+                                    name="additionalInfo"
+                                    value={form.additionalInfo}
+                                    onChange={handleChange}
+                                    rows="4"
+                                    className="w-full px-3 py-1.5 border border-[#934790] rounded-lg bg-[#e9d6f7] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0066] focus:border-[#FF0066] transition placeholder:text-gray-700 resize-none"
+                                    placeholder="Let us know your requirements, questions, or anything else..."
+                                />
+                            </div>
+
+                            {/* CTA Button */}
+                            <button
+                                type="submit"
+                                className="w-full bg-[#FF0066]/80 text-white font-semibold py-2 px-6 rounded-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 text-base mt-8"
+                            >
+                                Submit
+                            </button>
+                        </form>
+
+                    
                     </div>
                 </div>
             </div>
+
             <Footer />
         </>
     );
 };
 
 export default BookDemo;
+

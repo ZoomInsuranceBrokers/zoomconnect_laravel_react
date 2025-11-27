@@ -1,10 +1,8 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { FaUserShield, FaMobileAlt, FaFileAlt, FaChartLine } from 'react-icons/fa';
-import { useTheme } from '../../../Context/ThemeContext';
 
 export default function EmployeePlatform() {
-    const { darkMode } = useTheme();
 
     const features = [
         {
@@ -30,7 +28,7 @@ export default function EmployeePlatform() {
     ];
 
     return (
-        <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+        <div className="min-h-screen bg-white text-gray-900">
             {/* Hero Section */}
             <div className="relative overflow-hidden">
                 <div className="bg-gradient-to-r from-primary to-primary-dark">
@@ -97,7 +95,7 @@ export default function EmployeePlatform() {
             </div>
 
             {/* App Preview Section */}
-            <div className={`py-24 ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+            <div className="py-24 bg-gray-50">
             {/* ...rest of the code... */}
             </div>
         </div>

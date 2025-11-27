@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTheme } from '../../../Context/ThemeContext';
 import { Head, Link, useForm } from "@inertiajs/react";
 import SuperAdminLayout from '../../../Layouts/SuperAdmin/Layout';
 
@@ -9,6 +10,7 @@ export default function CreateMessageTemplate({
     categories = {}
 }) {
     const isEditing = template !== null;
+    const { darkMode } = useTheme();
     const [selectedTab, setSelectedTab] = useState("Rich Text");
     const [preview, setPreview] = useState("");
 
@@ -235,8 +237,8 @@ export default function CreateMessageTemplate({
                 }
             `}</style>
 
-            <div className="py-6">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className={`py-6 ${darkMode ? 'bg-gray-900 text-gray-200' : ''}`}>
+                <div className={`max-w-7xl mx-auto sm:px-6 lg:px-8 ${darkMode ? '' : ''}`}>    
                     {/* Header */}
                     <div className="flex items-center mb-6">
                         <Link
@@ -257,10 +259,10 @@ export default function CreateMessageTemplate({
                                 />
                             </svg>
                         </Link>
-                        <h1 className="text-2xl font-bold text-gray-900">
+                        <h1 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                             {isEditing ? "Edit template message" : "Create template message"}
                         </h1>
-                        <div className="ml-auto text-sm text-gray-500">
+                        <div className={`ml-auto text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>    
                             Created on: {new Date().toLocaleDateString("en-GB", {
                                 day: "2-digit",
                                 month: "short",
@@ -274,23 +276,23 @@ export default function CreateMessageTemplate({
                         <div className="lg:col-span-2">
                             <form onSubmit={submit} className="space-y-6">
                                 {/* Channel Type */}
-                                <div className="bg-white shadow rounded-lg p-6">
+                                <div className={`shadow rounded-lg p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                                     <div className="mb-4">
-                                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                        <h3 className={`text-lg font-medium mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             Email
                                         </h3>
                                     </div>
 
                                     {/* Basic Details */}
                                     <div className="mb-6">
-                                        <h4 className="text-base font-medium text-gray-900 mb-4">
+                                        <h4 className={`text-base font-medium mb-4 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             Basic details
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label
                                                     htmlFor="name"
-                                                    className="block text-sm font-medium text-gray-700 mb-2"
+                                                    className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
                                                 >
                                                     Name
                                                 </label>
@@ -301,10 +303,10 @@ export default function CreateMessageTemplate({
                                                     onChange={(e) =>
                                                         setData("name", e.target.value)
                                                     }
-                                                    className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                    className={`block w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#934790] focus:border-[#934790] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
                                                     placeholder="Enter template name"
                                                 />
-                                                <div className="text-xs text-gray-500 mt-1">
+                                                <div className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                     {data.name.length}/30
                                                 </div>
                                                 {errors.name && (
@@ -316,7 +318,7 @@ export default function CreateMessageTemplate({
                                             <div>
                                                 <label
                                                     htmlFor="category"
-                                                    className="block text-sm font-medium text-gray-700 mb-2"
+                                                    className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
                                                 >
                                                     Category
                                                 </label>
@@ -326,7 +328,7 @@ export default function CreateMessageTemplate({
                                                     onChange={(e) =>
                                                         setData("category", e.target.value)
                                                     }
-                                                    className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                    className={`block w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#934790] focus:border-[#934790] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-900'}`}
                                                 >
                                                     <option value="">Select Category</option>
                                                     {Object.entries(categories).map(
@@ -350,7 +352,7 @@ export default function CreateMessageTemplate({
                                     <div className="mb-6">
                                         <label
                                             htmlFor="subject"
-                                            className="block text-sm font-medium text-gray-700 mb-2"
+                                            className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
                                         >
                                             Subject
                                         </label>
@@ -361,7 +363,7 @@ export default function CreateMessageTemplate({
                                             onChange={(e) =>
                                                 setData("subject", e.target.value)
                                             }
-                                            className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#934790] focus:border-[#934790]"
+                                            className={`block w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#934790] focus:border-[#934790] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
                                             placeholder="Subject line"
                                         />
                                         {errors.subject && (
@@ -373,7 +375,7 @@ export default function CreateMessageTemplate({
 
                                     {/* Logo Settings - Moved below subject */}
                                     <div className="mb-6">
-                                        <h4 className="text-base font-medium text-gray-900 mb-4">
+                                        <h4 className={`text-base font-medium mb-4 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             Logo Settings
                                         </h4>
                                         <div className="space-y-4">
@@ -385,9 +387,9 @@ export default function CreateMessageTemplate({
                                                         onChange={(e) =>
                                                             setData("is_logo_sent", e.target.checked)
                                                         }
-                                                        className="rounded border-gray-300 text-[#934790] shadow-sm focus:border-[#934790] focus:ring focus:ring-purple-200 focus:ring-opacity-50"
+                                                        className={`rounded text-[#934790] shadow-sm focus:border-[#934790] focus:ring focus:ring-purple-200 focus:ring-opacity-50 ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300'}`}
                                                     />
-                                                    <span className="ml-2 text-sm text-gray-700">
+                                                    <span className={`ml-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                         Include Logo
                                                     </span>
                                                 </label>
@@ -404,9 +406,9 @@ export default function CreateMessageTemplate({
                                                                     onChange={(e) =>
                                                                         setData("logo_position", e.target.value)
                                                                     }
-                                                                    className="text-[#934790] focus:ring-[#934790]"
+                                                                    className={`focus:ring-[#934790] ${darkMode ? 'text-[#934790] bg-gray-700 border-gray-600' : 'text-[#934790]'}`}
                                                                 />
-                                                                <span className="ml-1 text-xs">Right</span>
+                                                                <span className={`ml-1 text-xs ${darkMode ? 'text-gray-300' : ''}`}>Right</span>
                                                             </label>
                                                             <label className="flex items-center">
                                                                 <input
@@ -417,9 +419,9 @@ export default function CreateMessageTemplate({
                                                                     onChange={(e) =>
                                                                         setData("logo_position", e.target.value)
                                                                     }
-                                                                    className="text-[#934790] focus:ring-[#934790]"
+                                                                    className={`focus:ring-[#934790] ${darkMode ? 'text-[#934790] bg-gray-700 border-gray-600' : 'text-[#934790]'}`}
                                                                 />
-                                                                <span className="ml-1 text-xs">Left</span>
+                                                                <span className={`ml-1 text-xs ${darkMode ? 'text-gray-300' : ''}`}>Left</span>
                                                             </label>
                                                         </div>
                                                     </div>
@@ -433,15 +435,15 @@ export default function CreateMessageTemplate({
                                                         onChange={(e) =>
                                                             setData("is_company_logo_sent", e.target.checked)
                                                         }
-                                                        className="rounded border-gray-300 text-[#934790] shadow-sm focus:border-[#934790] focus:ring focus:ring-purple-200 focus:ring-opacity-50"
+                                                        className={`rounded text-[#934790] shadow-sm focus:border-[#934790] focus:ring focus:ring-purple-200 focus:ring-opacity-50 ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300'}`}
                                                     />
-                                                    <span className="ml-2 text-sm text-gray-700">
+                                                    <span className={`ml-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                         Include Company Logo
                                                     </span>
                                                 </label>
                                                 {data.is_company_logo_sent && (
                                                     <div className="flex items-center space-x-2">
-                                                        <span className="text-xs text-gray-500">Position:</span>
+                                                        <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Position:</span>
                                                         <div className="flex space-x-2">
                                                             <label className="flex items-center">
                                                                 <input
@@ -452,9 +454,9 @@ export default function CreateMessageTemplate({
                                                                     onChange={(e) =>
                                                                         setData("company_logo_position", e.target.value)
                                                                     }
-                                                                    className="text-[#934790] focus:ring-[#934790]"
+                                                                    className={`focus:ring-[#934790] ${darkMode ? 'text-[#934790] bg-gray-700 border-gray-600' : 'text-[#934790]'}`}
                                                                 />
-                                                                <span className="ml-1 text-xs">Right</span>
+                                                                <span className={`ml-1 text-xs ${darkMode ? 'text-gray-300' : ''}`}>Right</span>
                                                             </label>
                                                             <label className="flex items-center">
                                                                 <input
@@ -465,9 +467,9 @@ export default function CreateMessageTemplate({
                                                                     onChange={(e) =>
                                                                         setData("company_logo_position", e.target.value)
                                                                     }
-                                                                    className="text-[#934790] focus:ring-[#934790]"
+                                                                    className={`focus:ring-[#934790] ${darkMode ? 'text-[#934790] bg-gray-700 border-gray-600' : 'text-[#934790]'}`}
                                                                 />
-                                                                <span className="ml-1 text-xs">Left</span>
+                                                                <span className={`ml-1 text-xs ${darkMode ? 'text-gray-300' : ''}`}>Left</span>
                                                             </label>
                                                         </div>
                                                     </div>
@@ -478,38 +480,36 @@ export default function CreateMessageTemplate({
 
                                     {/* Banner Image */}
                                     <div className="mb-6">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                             Banner Image
                                         </label>
                                         {isEditing && template?.banner_image && !hasNewBanner && (
-                                            <div className="mb-3 p-3 bg-gray-50 rounded-md border">
-                                                <div className="text-sm text-gray-600 mb-2">Current Banner:</div>
+                                            <div className={`mb-3 p-3 rounded-md border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50'}`}>
+                                                <div className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Current Banner:</div>
                                                 <img
                                                     src={`/storage/${template.banner_image}`}
                                                     alt="Current Banner"
-                                                    className="w-full h-32 object-cover rounded border"
+                                                    className={`w-full h-32 object-cover rounded border ${darkMode ? 'border-gray-700' : ''}`}
                                                     onError={(e) => {
                                                         console.error('Banner image failed to load:', template.banner_image);
                                                         e.target.style.display = 'none';
                                                     }}
                                                 />
-                                                <div className="text-xs text-gray-400 mt-1">
-                                                    Debug: {template.banner_image}
-                                                </div>
+                                                <div className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Debug: {template.banner_image}</div>
                                             </div>
                                         )}
                                         {isEditing && !template?.banner_image && (
-                                            <div className="mb-3 p-2 bg-yellow-50 rounded-md border border-yellow-200">
-                                                <div className="text-sm text-yellow-600">No banner image found for this template</div>
+                                            <div className={`mb-3 p-2 rounded-md border ${darkMode ? 'bg-yellow-900 border-yellow-700' : 'bg-yellow-50 border-yellow-200'}`}>
+                                                <div className={`text-sm ${darkMode ? 'text-yellow-200' : 'text-yellow-600'}`}>No banner image found for this template</div>
                                             </div>
                                         )}
                                         {hasNewBanner && bannerPreview && (
-                                            <div className="mb-3 p-3 bg-blue-50 rounded-md border border-blue-200">
-                                                <div className="text-sm text-blue-600 mb-2">New Banner Preview:</div>
+                                            <div className={`mb-3 p-3 rounded-md border ${darkMode ? 'bg-blue-900 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
+                                                <div className={`text-sm mb-2 ${darkMode ? 'text-blue-200' : 'text-blue-600'}`}>New Banner Preview:</div>
                                                 <img
                                                     src={bannerPreview}
                                                     alt="New Banner Preview"
-                                                    className="w-full h-32 object-cover rounded border"
+                                                    className={`w-full h-32 object-cover rounded border ${darkMode ? 'border-blue-700' : ''}`}
                                                 />
                                             </div>
                                         )}
@@ -517,7 +517,7 @@ export default function CreateMessageTemplate({
                                             type="file"
                                             accept="image/*"
                                             onChange={handleBannerImageChange}
-                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#934790] file:text-white hover:file:bg-[#6A0066]"
+                                            className={`block w-full text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#934790] file:text-white hover:file:bg-[#6A0066] ${darkMode ? 'file:bg-[#6A0066]' : ''}`}
                                         />
                                         {errors.banner_image && (
                                             <div className="text-red-600 text-sm mt-1">
@@ -525,7 +525,7 @@ export default function CreateMessageTemplate({
                                             </div>
                                         )}
                                         {isEditing && template?.banner_image && (
-                                            <div className="text-xs text-gray-500 mt-1">
+                                            <div className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                 Leave empty to keep current banner, or select a new image to replace it.
                                             </div>
                                         )}
@@ -534,45 +534,41 @@ export default function CreateMessageTemplate({
                                     {/* Body */}
                                     <div className="mb-6">
                                         <div className="flex items-center justify-between mb-4">
-                                            <label className="block text-sm font-medium text-gray-700">
+                                            <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                 Body
                                             </label>
-                                            <div className="text-xs text-gray-500">
+                                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                 Use "# "(Hash) to add variables in your body text.
                                             </div>
                                         </div>
 
                                         {/* Tab Selector */}
-                                        <div className="flex border-b border-gray-200 mb-4">
+                                        <div className={`flex border-b mb-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                                             <button
                                                 type="button"
                                                 onClick={() => handleTabChange("HTML")}
-                                                className={`px-4 py-2 text-sm font-medium border-b-2 ${
-                                                    selectedTab === "HTML"
-                                                        ? "border-[#934790] text-[#934790]"
-                                                        : "border-transparent text-gray-500 hover:text-gray-700"
-                                                }`}
+                                                className={`px-4 py-2 text-sm font-medium border-b-2 ${selectedTab === "HTML"
+                                                    ? "border-[#934790] text-[#934790]"
+                                                    : darkMode
+                                                        ? "border-transparent text-gray-400 hover:text-gray-200"
+                                                        : "border-transparent text-gray-500 hover:text-gray-700"}`}
                                             >
                                                 <span className="flex items-center">
-                                                    <span className={`w-3 h-3 rounded-full mr-2 ${
-                                                        selectedTab === "HTML" ? "bg-[#934790]" : "border-2 border-gray-400"
-                                                    }`}></span>
+                                                    <span className={`w-3 h-3 rounded-full mr-2 ${selectedTab === "HTML" ? "bg-[#934790]" : darkMode ? "border-2 border-gray-500" : "border-2 border-gray-400"}`}></span>
                                                     HTML
                                                 </span>
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => handleTabChange("Rich Text")}
-                                                className={`px-4 py-2 text-sm font-medium border-b-2 ${
-                                                    selectedTab === "Rich Text"
-                                                        ? "border-[#934790] text-[#934790]"
-                                                        : "border-transparent text-gray-500 hover:text-gray-700"
-                                                }`}
+                                                className={`px-4 py-2 text-sm font-medium border-b-2 ${selectedTab === "Rich Text"
+                                                    ? "border-[#934790] text-[#934790]"
+                                                    : darkMode
+                                                        ? "border-transparent text-gray-400 hover:text-gray-200"
+                                                        : "border-transparent text-gray-500 hover:text-gray-700"}`}
                                             >
                                                 <span className="flex items-center">
-                                                    <span className={`w-3 h-3 rounded-full mr-2 ${
-                                                        selectedTab === "Rich Text" ? "bg-[#934790]" : "border-2 border-gray-400"
-                                                    }`}></span>
+                                                    <span className={`w-3 h-3 rounded-full mr-2 ${selectedTab === "Rich Text" ? "bg-[#934790]" : darkMode ? "border-2 border-gray-500" : "border-2 border-gray-400"}`}></span>
                                                     Rich Text
                                                 </span>
                                             </button>
@@ -580,11 +576,11 @@ export default function CreateMessageTemplate({
 
                                         {/* Rich Text Toolbar */}
                                         {selectedTab === "Rich Text" && (
-                                            <div className="border border-gray-300 rounded-t-md p-2 bg-gray-50 flex items-center space-x-2 flex-wrap gap-2">
+                                            <div className={`rounded-t-md p-2 flex items-center space-x-2 flex-wrap gap-2 border ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-gray-50'}`}> 
                                                 {/* Font Family */}
                                                 <select
                                                     onChange={(e) => formatRichText('fontName', e.target.value)}
-                                                    className="text-xs border border-gray-300 rounded px-2 py-1"
+                                                    className={`text-xs rounded px-2 py-1 ${darkMode ? 'border-gray-700 bg-gray-700 text-gray-200' : 'border border-gray-300'}`}
                                                     title="Font Family"
                                                 >
                                                     <option value="">Font Family</option>
@@ -601,7 +597,7 @@ export default function CreateMessageTemplate({
                                                 {/* Font Size */}
                                                 <select
                                                     onChange={(e) => formatRichText('fontSize', e.target.value)}
-                                                    className="text-xs border border-gray-300 rounded px-2 py-1"
+                                                    className={`text-xs rounded px-2 py-1 ${darkMode ? 'border-gray-700 bg-gray-700 text-gray-200' : 'border border-gray-300'}`}
                                                     title="Font Size"
                                                 >
                                                     <option value="">Size</option>
@@ -614,12 +610,12 @@ export default function CreateMessageTemplate({
                                                     <option value="7">36pt</option>
                                                 </select>
 
-                                                <div className="w-px h-4 bg-gray-300"></div>
+                                                <div className={`w-px h-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
 
                                                 <button
                                                     type="button"
                                                     onClick={() => formatRichText('bold')}
-                                                    className="p-1 rounded hover:bg-gray-200"
+                                                    className={`p-1 rounded ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                                                     title="Bold"
                                                 >
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -629,7 +625,7 @@ export default function CreateMessageTemplate({
                                                 <button
                                                     type="button"
                                                     onClick={() => formatRichText('italic')}
-                                                    className="p-1 rounded hover:bg-gray-200"
+                                                    className={`p-1 rounded ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                                                     title="Italic"
                                                 >
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -639,7 +635,7 @@ export default function CreateMessageTemplate({
                                                 <button
                                                     type="button"
                                                     onClick={() => formatRichText('underline')}
-                                                    className="p-1 rounded hover:bg-gray-200"
+                                                    className={`p-1 rounded ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                                                     title="Underline"
                                                 >
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -647,23 +643,23 @@ export default function CreateMessageTemplate({
                                                     </svg>
                                                 </button>
 
-                                                <div className="w-px h-4 bg-gray-300"></div>
+                                                <div className={`w-px h-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
 
                                                 {/* Text Color */}
                                                 <input
                                                     type="color"
                                                     onChange={(e) => formatRichText('foreColor', e.target.value)}
-                                                    className="w-8 h-6 rounded border border-gray-300 cursor-pointer"
+                                                    className={`w-8 h-6 rounded cursor-pointer ${darkMode ? 'border-gray-700 bg-gray-700' : 'border border-gray-300'}`}
                                                     title="Text Color"
                                                 />
 
-                                                <div className="w-px h-4 bg-gray-300"></div>
+                                                <div className={`w-px h-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
 
                                                 {/* Text Alignment */}
                                                 <button
                                                     type="button"
                                                     onClick={() => formatRichText('justifyLeft')}
-                                                    className="p-1 rounded hover:bg-gray-200"
+                                                    className={`p-1 rounded ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                                                     title="Align Left"
                                                 >
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -673,7 +669,7 @@ export default function CreateMessageTemplate({
                                                 <button
                                                     type="button"
                                                     onClick={() => formatRichText('justifyCenter')}
-                                                    className="p-1 rounded hover:bg-gray-200"
+                                                    className={`p-1 rounded ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                                                     title="Align Center"
                                                 >
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -683,7 +679,7 @@ export default function CreateMessageTemplate({
                                                 <button
                                                     type="button"
                                                     onClick={() => formatRichText('justifyRight')}
-                                                    className="p-1 rounded hover:bg-gray-200"
+                                                    className={`p-1 rounded ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                                                     title="Align Right"
                                                 >
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -691,12 +687,12 @@ export default function CreateMessageTemplate({
                                                     </svg>
                                                 </button>
 
-                                                <div className="w-px h-4 bg-gray-300"></div>
+                                                <div className={`w-px h-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
 
                                                 <button
                                                     type="button"
                                                     onClick={() => formatRichText('insertUnorderedList')}
-                                                    className="p-1 rounded hover:bg-gray-200"
+                                                    className={`p-1 rounded ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                                                     title="Bullet List"
                                                 >
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -706,7 +702,7 @@ export default function CreateMessageTemplate({
                                                 <button
                                                     type="button"
                                                     onClick={() => formatRichText('insertOrderedList')}
-                                                    className="p-1 rounded hover:bg-gray-200"
+                                                    className={`p-1 rounded ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                                                     title="Numbered List"
                                                 >
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -717,12 +713,12 @@ export default function CreateMessageTemplate({
                                         )}
 
                                         {/* Editor */}
-                                        <div className={`border border-gray-300 ${selectedTab === "Rich Text" ? "rounded-b-md" : "rounded-md"}`}>
+                                        <div className={`border ${selectedTab === "Rich Text" ? "rounded-b-md" : "rounded-md"} ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
                                             {selectedTab === "Rich Text" ? (
                                                 <div
                                                     id="richTextEditor"
                                                     contentEditable
-                                                    className="block w-full min-h-[250px] border-0 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#934790]"
+                                                    className={`block w-full min-h-[250px] border-0 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#934790] ${darkMode ? 'bg-gray-800 text-gray-200 placeholder-gray-400' : ''}`}
                                                     onInput={(e) => {
                                                         // Ensure text direction remains left-to-right
                                                         e.target.style.direction = 'ltr';
@@ -766,7 +762,7 @@ export default function CreateMessageTemplate({
                                                     rows={10}
                                                     value={htmlContent}
                                                     onChange={(e) => handleContentChange(e.target.value)}
-                                                    className="block w-full border-0 rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#934790]"
+                                                    className={`block w-full border-0 rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-[#934790] ${darkMode ? 'bg-gray-800 text-gray-200 placeholder-gray-400' : ''}`}
                                                     placeholder="Write HTML code here..."
                                                     style={{
                                                         direction: 'ltr',
@@ -784,12 +780,12 @@ export default function CreateMessageTemplate({
 
                                     {/* Attachment */}
                                     <div className="mb-6">
-                                        <h4 className="text-base font-medium text-gray-900 mb-4">
+                                        <h4 className={`text-base font-medium mb-4 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             Attachments
                                         </h4>
                                         {isEditing && template?.attachment && (
-                                            <div className="mb-3 p-3 bg-gray-50 rounded-md border">
-                                                <div className="text-sm text-gray-600 mb-2">Current Attachment:</div>
+                                            <div className={`mb-3 p-3 rounded-md border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50'}`}>
+                                                <div className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Current Attachment:</div>
                                                 <a
                                                     href={template.attachment_url || `/storage/${template.attachment}`}
                                                     target="_blank"
@@ -816,7 +812,7 @@ export default function CreateMessageTemplate({
                                             onChange={(e) =>
                                                 setData("attachment", e.target.files[0])
                                             }
-                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#934790] file:text-white hover:file:bg-[#6A0066]"
+                                            className={`block w-full text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#934790] file:text-white hover:file:bg-[#6A0066] ${darkMode ? 'file:bg-[#6A0066]' : ''}`}
                                         />
                                         {errors.attachment && (
                                             <div className="text-red-600 text-sm mt-1">
@@ -824,7 +820,7 @@ export default function CreateMessageTemplate({
                                             </div>
                                         )}
                                         {isEditing && template?.attachment && (
-                                            <div className="text-xs text-gray-500 mt-1">
+                                            <div className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                 Leave empty to keep current attachment, or select a new file to replace it.
                                             </div>
                                         )}
@@ -835,14 +831,14 @@ export default function CreateMessageTemplate({
                                     <div className="flex items-center justify-end space-x-4">
                                         <Link
                                             href={route("superadmin.marketing.message-template.index")}
-                                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#934790]"
+                                            className={`px-4 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#934790] ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                                         >
                                             Cancel
                                         </Link>
                                         <button
                                             type="submit"
                                             disabled={processing}
-                                            className="px-4 py-2 bg-[#934790] border border-transparent rounded-md text-sm font-medium text-white hover:bg-[#6A0066] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#934790] disabled:opacity-50"
+                                            className={`px-4 py-2 border rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#934790] disabled:opacity-50 bg-[#934790] hover:bg-[#6A0066] border-transparent ${darkMode ? '' : ''}`}
                                         >
                                             {processing
                                                 ? "Saving..."
@@ -857,11 +853,11 @@ export default function CreateMessageTemplate({
 
                         {/* Enhanced Preview Section */}
                         <div className="lg:col-span-1">
-                            <div className="bg-white shadow rounded-lg p-6 sticky top-6">
-                                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                            <div className={`shadow rounded-lg p-6 sticky top-6 ${darkMode ? 'bg-gray-900' : 'bg-white'}`}> 
+                                <h3 className={`text-lg font-medium mb-4 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}> 
                                     Message preview
                                 </h3>
-                                <div className="border border-gray-200 rounded-lg p-4 min-h-[400px] bg-gray-50 overflow-auto">
+                                <div className={`rounded-lg p-4 min-h-[400px] overflow-auto ${darkMode ? 'border border-gray-700 bg-gray-800' : 'border border-gray-200 bg-gray-50'}`}> 
                                     {/* Logos Preview - Show both in same row when both are enabled */}
                                     {(data.is_logo_sent || data.is_company_logo_sent) && (
                                         <div className="flex justify-between items-center mb-4">
@@ -882,10 +878,10 @@ export default function CreateMessageTemplate({
                                                             />
                                                         )}
                                                         {data.is_logo_sent && data.logo_position === 'left' && (
-                                                            <div className="hidden text-xs text-gray-500 p-2 border rounded mr-4">Logo will display here</div>
+                                                            <div className={`hidden text-xs p-2 border rounded mr-4 ${darkMode ? 'text-gray-400 border-gray-700 bg-gray-900' : 'text-gray-500'}`}>Logo will display here</div>
                                                         )}
                                                         {data.is_company_logo_sent && data.company_logo_position === 'left' && (
-                                                            <div className="text-xs text-gray-500 p-2 border rounded bg-gray-100">
+                                                            <div className={`text-xs p-2 border rounded ${darkMode ? 'text-gray-400 border-gray-700 bg-gray-900' : 'text-gray-500 bg-gray-100'}`}>
                                                                 Company logo
                                                             </div>
                                                         )}
@@ -899,7 +895,7 @@ export default function CreateMessageTemplate({
                                                   (data.is_company_logo_sent && data.company_logo_position === 'right')) && (
                                                     <div className="flex justify-end">
                                                         {data.is_company_logo_sent && data.company_logo_position === 'right' && (
-                                                            <div className="text-xs text-gray-500 p-2 border rounded bg-gray-100 mr-4">
+                                                            <div className={`text-xs p-2 border rounded mr-4 ${darkMode ? 'text-gray-400 border-gray-700 bg-gray-900' : 'text-gray-500 bg-gray-100'}`}>
                                                                 Company logo
                                                             </div>
                                                         )}
@@ -915,7 +911,7 @@ export default function CreateMessageTemplate({
                                                             />
                                                         )}
                                                         {data.is_logo_sent && data.logo_position === 'right' && (
-                                                            <div className="hidden text-xs text-gray-500 p-2 border rounded">Logo will display here</div>
+                                                            <div className={`hidden text-xs p-2 border rounded ${darkMode ? 'text-gray-400 border-gray-700 bg-gray-900' : 'text-gray-500'}`}>Logo will display here</div>
                                                         )}
                                                     </div>
                                                 )}
@@ -929,7 +925,7 @@ export default function CreateMessageTemplate({
                                             <img
                                                 src={bannerPreview || (isEditing && template?.banner_image ? `/storage/${template.banner_image}` : '')}
                                                 alt="Banner"
-                                                className="w-full h-32 object-cover rounded border"
+                                                className={`w-full h-32 object-cover rounded border ${darkMode ? 'border-gray-700' : ''}`}
                                             />
                                         </div>
                                     )}
@@ -938,7 +934,7 @@ export default function CreateMessageTemplate({
                                     <div className="mt-4">
                                         {preview ? (
                                             <div
-                                                className="prose prose-sm max-w-none text-sm"
+                                                className={`prose prose-sm max-w-none text-sm ${darkMode ? 'prose-invert' : ''}`}
                                                 dangerouslySetInnerHTML={{ __html: preview }}
                                                 style={{
                                                     maxWidth: '100%',
@@ -947,7 +943,7 @@ export default function CreateMessageTemplate({
                                                 }}
                                             />
                                         ) : (
-                                            <div className="text-center text-gray-500 py-12">
+                                            <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                 <div className="text-sm">
                                                     Your message will appear here
                                                 </div>

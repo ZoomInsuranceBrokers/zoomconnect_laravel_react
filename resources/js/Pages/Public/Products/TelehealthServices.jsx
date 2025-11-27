@@ -1,10 +1,8 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { FaVideo, FaStethoscope, FaClock, FaGlobe, FaCheckCircle, FaMobileAlt, FaUserMd, FaShieldAlt } from 'react-icons/fa';
-import { useTheme } from '../../../Context/ThemeContext';
 
 export default function TelehealthServices() {
-    const { darkMode } = useTheme();
 
     const features = [
         {
@@ -101,7 +99,7 @@ export default function TelehealthServices() {
     ];
 
     return (
-        <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+        <div className="min-h-screen bg-white text-gray-900">
             {/* ...rest of the code... */}
         </div>
     );

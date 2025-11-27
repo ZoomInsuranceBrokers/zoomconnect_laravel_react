@@ -2,10 +2,8 @@ import React from 'react';
 import Header from '../Layouts/Header';
 import Footer from '../Layouts/Footer';
 import ScrollProgressBar from '../../../Components/ScrollProgressBar';
-import { useTheme } from '../../../Context/ThemeContext';
 
 export default function GroupAccidentCover() {
-    const { darkMode } = useTheme();
     const [hoveredIndex, setHoveredIndex] = React.useState(null);
 
     const features = [
@@ -76,12 +74,18 @@ export default function GroupAccidentCover() {
                 .gmc-card :where(.z-10){position:relative;z-index:10}
                 .gmc-card:hover::before,.gmc-card.group:hover::before{transform:scale(1);opacity:1}
             `}</style>
-            <div className={`min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-x-hidden
-                ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#ffceea78] text-gray-900'}`}>
+            <div className="min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-x-hidden bg-[#ffceea78] text-gray-900">
 
                 {/* HERO SECTION */}
                 <section className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
-                    <div className="max-w-7xl px-8 pt-12 pb-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div className="absolute inset-0  opacity-70">
+                        <img
+                            src="/assets/images/wavy design-01.png"
+                            alt="Background"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div className="max-w-7xl z-10 px-8 pt-12 pb-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                         <div className="space-y-5">
                             <h1 className="text-4xl md:text-5xl font-dmserif font-semibold leading-tight text-gray-800">
                                 Comprehensive <span className="text-[#FF0066]/80">Group Accident Cover</span>
@@ -176,7 +180,7 @@ export default function GroupAccidentCover() {
 
                         </div>
 
-                        </div>
+                    </div>
                 </section>
 
 
