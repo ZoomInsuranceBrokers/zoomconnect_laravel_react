@@ -214,17 +214,24 @@ export default function Index({ cdAccounts = [], filters = {} }) {
                             {currentItems.length > 0 ? currentItems.map(cd => (
                                 <tr key={cd.id} className="hover:bg-gray-50 even:bg-gray-50/50">
                                     <td className="px-6 py-3 whitespace-nowrap text-[10px] font-medium flex justify-center items-center">
-                                        <Link
-                                            href={`/superadmin/policy/cd-accounts/${cd.id}/edit`}
+                                        <Link href={`/superadmin/policy/cd-accounts/${cd.id}/edit`}
                                             className="text-[#934790] hover:text-[#6A0066] transition-colors duration-200 p-1 rounded-md hover:bg-gray-100"
-                                            title="Edit"
-                                        >
+                                            title="Edit">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                                                 <path d="M18.5 2.5a2 2 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                                             </svg>
                                         </Link>
+                                        <Link href={`/superadmin/policy/cd-accounts/${cd.id}/cd-details`}
+                                            className="text-[#934790] hover:text-[#6A0066] transition-colors duration-200 p-1 rounded-md hover:bg-gray-100"
+                                            title="Manage CD Account">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <circle cx="12" cy="12" r="3" />
+                                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09A1.65 1.65 0 0 0 11 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                                            </svg>
+                                        </Link>
                                     </td>
+
                                     <td className="px-6 py-3 whitespace-nowrap text-[10px]">
                                         <label className="inline-flex items-center cursor-pointer">
                                             <input
