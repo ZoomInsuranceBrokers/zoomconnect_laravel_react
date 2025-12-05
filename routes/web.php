@@ -273,13 +273,16 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class])->
     Route::get('/fill-enrollment/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'fillEnrollment'])->name('superadmin.fill-enrollment');
     Route::post('/fill-enrollment/submit', [SuperAdminController::class, 'submitEnrollment'])->name('superadmin.submit-enrollment');
 
-    // CD Accounts Routes
+ // CD Accounts Routes
     Route::get('/policy/cd-accounts', [SuperAdminController::class, 'cdAccountsIndex'])->name('superadmin.policy.cd-accounts.index');
     Route::get('/policy/cd-accounts/create', [SuperAdminController::class, 'cdAccountsCreate'])->name('superadmin.policy.cd-accounts.create');
     Route::post('/policy/cd-accounts', [SuperAdminController::class, 'cdAccountsStore'])->name('superadmin.policy.cd-accounts.store');
     Route::get('/policy/cd-accounts/{id}/edit', [SuperAdminController::class, 'cdAccountsEdit'])->name('superadmin.policy.cd-accounts.edit');
+    Route::get('/policy/cd-accounts/{id}/cd-details', [SuperAdminController::class, 'cdAccountsDetails'])->name('superadmin.policy.cd-accounts.cd-details');
     Route::put('/policy/cd-accounts/{id}', [SuperAdminController::class, 'cdAccountsUpdate'])->name('superadmin.policy.cd-accounts.update');
     Route::put('/policy/cd-accounts/{id}/toggle-active', [SuperAdminController::class, 'cdAccountsToggleActive'])->name('superadmin.policy.cd-accounts.toggle-active');
+    Route::post('/policy/cd-accounts/transaction', [SuperAdminController::class, 'cdAccountsTransactionStore']);
+    Route::delete('/policy/cd-accounts/transaction/{id}', [SuperAdminController::class, 'cdAccountsTransactionDelete']);
 });
 // });
 // });
