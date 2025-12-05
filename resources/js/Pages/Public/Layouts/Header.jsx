@@ -12,7 +12,7 @@ const navLinks = [
       { label: 'Group Accident Cover', href: '/products/group-accident-cover', description: 'Protection against unforeseen accidents and injuries' },
       { label: 'Group Term Life', href: '/products/group-term-life', description: 'Life insurance coverage to protect your employees and their families' },
       { label: 'Wellness Programs/Services', href: '/products/wellness-programs', description: 'Holistic wellness solutions for employee well-being' },
-      { label: 'Telehealth Services', href: '/products/telehealth-services', description: 'Virtual healthcare consultations anytime, anywhere' },
+      // { label: 'Telehealth Services', href: '/products/telehealth-services', description: 'Virtual healthcare consultations anytime, anywhere' },
       {label: 'Customisable Surveys', href: '/products/surveys', description: 'Gather insights and feedback from your team' },
     ]
   },
@@ -27,11 +27,11 @@ const navLinks = [
   },
   {
     label: 'Solutions',
-    href: '/small-teams',
+    href: '#solutions',
     dropdownItems: [
-      { label: 'Small Teams', href: '/small-teams', description: 'Flexible plans designed for startups and SMEs' },
-      { label: 'Large Enterprises', href: '/large-teams', description: 'Scalable solutions for large organizations' },
-      { label: 'Hybrid Workforce', href: '/hybrid', description: 'Benefits that work for remote and on-site teams' },
+      { label: 'Small Teams', href: '/solutions/small-teams', description: 'Flexible plans designed for startups and SMEs' },
+      { label: 'Large Enterprises', href: '/solutions/large-teams', description: 'Scalable solutions for large organizations' },
+      { label: 'Hybrid Workforce', href: '/solutions/hybrid', description: 'Benefits that work for remote and on-site teams' },
     ]
   },
   {
@@ -41,7 +41,7 @@ const navLinks = [
       { label: 'Resources', href: '/resources', description: 'Guides, whitepapers, and helpful materials' },
       { label: 'Blog', href: '/blog', description: 'Latest insights on employee benefits and wellness' },
       { label: 'Case Studies', href: '/cases', description: 'Success stories from our clients' },
-      { label: 'FAQs', href: '/#faq', description: 'Find answers to common questions' },
+  { label: 'FAQs', href: '#faq', description: 'Find answers to common questions', isFaq: true },
     ]
   },
   {
@@ -89,9 +89,9 @@ const Header = () => {
                 .gmc-card :where(.z-10){position:relative;z-index:10}
                 .gmc-card:hover::before,.gmc-card.group:hover::before{transform:scale(1);opacity:1}
             `}</style>
-    <header className={`fixed top-0 left-0 w-full flex justify-between items-center py-3 px-6 md:py-6 z-30 backdrop-blur-lg dark:border-gray-800/60 transition-all duration-500 ${hoveredNav
+    <header className={`fixed top-0 left-0 w-full flex justify-between items-center py-3 px-6 md:py-6 z-30 backdrop-blur-lg transition-all duration-500 ${hoveredNav
       ? 'bg-[#f6dcc7] shadow-lg'
-      : 'dark:bg-gray-900/40 bg-transparent'
+      : 'bg-transparent'
       }`}>
       <Link href="/" className="flex items-center">
         <img src="/assets/logo/ZoomConnect-logo.png" alt="ZoomConnect Logo" className="h-5 w-auto md:h-8 md:w-auto" />
@@ -107,6 +107,19 @@ const Header = () => {
               href={href}
               className={`relative inline-flex items-center pb-1 text-[0.75rem] uppercase tracking-[0.12em] transition-all duration-300 before:content-['+'] before:mr-2 before:text-[#dd4b63] before:text-base before:transition-all before:duration-300 after:absolute after:left-0 after:-bottom-[0.35rem] after:h-[1px] after:w-0 after:bg-[#dd4b63] after:transition-all after:duration-300 hover:text-[#dd4b63] hover:before:content-['−'] hover:after:w-full focus-visible:outline-none`}
               onMouseEnter={() => handleMouseEnter(label)}
+              onClick={
+                label === 'Explore' && dropdownItems?.some(i => i.isFaq)
+                  ? undefined
+                  : label === 'FAQs'
+                  ? (e) => {
+                      e.preventDefault();
+                      const faq = document.getElementById('faq');
+                      if (faq) {
+                        faq.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }
+                  : undefined
+              }
             >
               {label}
             </a>

@@ -1,31 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
 @import './common.css';
+@import './animations.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Scrollbar Styles */
+/* Hide the native visible scrollbar while preserving scroll behaviour
+   - Chrome, Edge, Safari (WebKit/Blink): set scrollbar width/height to 0
+   - Firefox: scrollbar-width none
+   - IE/older Edge: -ms-overflow-style none
+   This preserves scrolling but keeps the UI cleaner. If you prefer
+   a thin custom thumb instead, revert to the earlier rules. */
+
+html, body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* WebKit browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
-<<<<<<< HEAD
-    width: 6px;
-    height: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #934790;
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #7d3c7a;
-=======
-  width: 6px;
-  height: 6px;
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-track {
@@ -33,31 +30,8 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #934790;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #7d3c7a;
->>>>>>> main
-}
-
-
-/* Firefox */
-* {
-<<<<<<< HEAD
-        scrollbar-width: thin;
-        scrollbar-color: #934790 transparent;
-}
-
-/* Marquee animation for trusted companies */
-@keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-=======
-  scrollbar-width: thin;
-  scrollbar-color: #934790 transparent;
+  background: transparent;
+  border-radius: 0;
 }
 
 @keyframes infinite-marquee {
@@ -65,23 +39,11 @@
     transform: translateX(0);
   }
 
->>>>>>> main
   100% {
     transform: translateX(-50%);
   }
 }
 
-<<<<<<< HEAD
-.animate-marquee {
-  animation: marquee 25s linear infinite;
-}
-
-/* Float animations for benefits cards */
-@keyframes float-up {
-  0%, 100% {
-    transform: translateY(0);
-  }
-=======
 .infinite-marquee-wrapper {
   overflow: hidden;
   width: 100%;
@@ -108,25 +70,18 @@
     transform: translateY(0);
   }
 
->>>>>>> main
   50% {
     transform: translateY(-20px);
   }
 }
 
 @keyframes float-down {
-<<<<<<< HEAD
-  0%, 100% {
-    transform: translateY(0);
-  }
-=======
 
   0%,
   100% {
     transform: translateY(0);
   }
 
->>>>>>> main
   50% {
     transform: translateY(20px);
   }
@@ -141,36 +96,24 @@
 }
 
 @keyframes float-alternate1 {
-<<<<<<< HEAD
-  0%, 100% {
-    transform: translateY(0);
-  }
-=======
 
   0%,
   100% {
     transform: translateY(0);
   }
 
->>>>>>> main
   50% {
     transform: translateY(-15px);
   }
 }
 
 @keyframes float-alternate2 {
-<<<<<<< HEAD
-  0%, 100% {
-    transform: translateY(0);
-  }
-=======
 
   0%,
   100% {
     transform: translateY(0);
   }
 
->>>>>>> main
   50% {
     transform: translateY(15px);
   }
@@ -189,10 +132,7 @@
   0% {
     transform: translateY(0%);
   }
-<<<<<<< HEAD
-=======
 
->>>>>>> main
   100% {
     transform: translateY(-50%);
   }
@@ -202,10 +142,7 @@
   0% {
     transform: translateY(-50%);
   }
-<<<<<<< HEAD
-=======
 
->>>>>>> main
   100% {
     transform: translateY(0%);
   }
@@ -214,10 +151,7 @@
 .vertical-marquee-up {
   animation: vertical-marquee-up 10s linear infinite;
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> main
 .vertical-marquee-down {
   animation: vertical-marquee-down 10s linear infinite;
 }
@@ -232,13 +166,6 @@
 }
 
 .fade-in-up {
-<<<<<<< HEAD
-  animation: fadeInUp 0.7s cubic-bezier(.4,2,.6,1);
-}
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(32px); }
-  to { opacity: 1; transform: translateY(0); }
-=======
   animation: fadeInUp 0.7s cubic-bezier(.4, 2, .6, 1);
 }
 
@@ -252,5 +179,4 @@
     opacity: 1;
     transform: translateY(0);
   }
->>>>>>> main
 }

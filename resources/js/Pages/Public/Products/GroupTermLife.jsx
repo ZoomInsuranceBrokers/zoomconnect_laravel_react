@@ -106,7 +106,14 @@ export default function GroupTermLife() {
 
                 {/* HERO SECTION */}
                 <section className={`min-h-screen w-full flex items-center justify-center relative overflow-hidden`}>
-                    <div className="max-w-7xl px-8 pt-12 pb-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div className="absolute inset-0  opacity-70">
+                        <img
+                            src="/assets/images/wavy design-01.png"
+                            alt="Background"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div className="max-w-7xl z-10 px-8 pt-12 pb-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                         <div className="space-y-5">
                             <h1 className="text-4xl md:text-5xl font-dmserif font-semibold leading-tight text-gray-800">
                                 Secure Your Team with <span className="text-[#FF0066]/80">Group Term Life</span>
@@ -148,10 +155,10 @@ export default function GroupTermLife() {
                         </svg>
                     </div>
                     <div className="max-w-6xl mx-auto text-center py-16 px-6 relative">
-                        <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-4">
+                        <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-white mb-4">
                             Features of Group Term Life Insurance Plans
                         </h2>
-                        <p className="text-gray-600 text-sm md:text-base mb-12 max-w-3xl mx-auto">
+                        <p className="text-white text-sm md:text-base mb-12 max-w-3xl mx-auto">
                             Discover the key benefits and features that make group term life insurance plans an essential choice for employers and employees alike.
                         </p>
 

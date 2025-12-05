@@ -26,6 +26,9 @@ Route::prefix('products')->name('products.')->group(function () {
     Route::get('/group-accident-cover', [ProductController::class, 'groupAccidentCover'])->name('group-accident-cover');
     Route::get('/group-term-life', [ProductController::class, 'groupTermLife'])->name('group-term-life');
     Route::get('/wellness-programs', [ProductController::class, 'wellnessPrograms'])->name('wellness-programs');
+    Route::get('/surveys', function () {
+        return Inertia::render('Public/Products/Surveys');
+    })->name('surveys');
     Route::get('/telehealth-services', [ProductController::class, 'telehealthServices'])->name('telehealth-services');
 });
 
@@ -33,15 +36,17 @@ Route::get('/employee', [App\Http\Controllers\ProductController::class, 'employe
 Route::get('/employer', [App\Http\Controllers\ProductController::class, 'employer'])->name('employer');
 Route::get('/mobile', [App\Http\Controllers\ProductController::class, 'mobile'])->name('mobile');
 
-// Solutions
-Route::get('/small-teams', [App\Http\Controllers\ProductController::class, 'smallTeams'])->name('smallTeams');
-Route::get('/large-teams', [App\Http\Controllers\ProductController::class, 'largeTeams'])->name('largeTeams');
-Route::get('/hybrid', [App\Http\Controllers\ProductController::class, 'hybrid'])->name('hybrid');
+// Solutions (grouped under /solutions)
+Route::prefix('solutions')->name('solutions.')->group(function () {
+    Route::get('/small-teams', [App\Http\Controllers\ProductController::class, 'smallTeams'])->name('smallTeams');
+    Route::get('/large-teams', [App\Http\Controllers\ProductController::class, 'largeTeams'])->name('largeTeams');
+    Route::get('/hybrid', [App\Http\Controllers\ProductController::class, 'hybrid'])->name('hybrid');
+});
 
 // Explore
 Route::get('/resources', [App\Http\Controllers\ProductController::class, 'resources'])->name('resources');
+Route::get('/resources/{slug}', [App\Http\Controllers\ProductController::class, 'resourceShow'])->name('resources.show');
 Route::get('/blog', [App\Http\Controllers\ProductController::class, 'blog'])->name('blog');
-Route::get('/cases', [App\Http\Controllers\ProductController::class, 'cases'])->name('cases');
 Route::get('/faq', [App\Http\Controllers\ProductController::class, 'faq'])->name('faq');
 
 // Company
@@ -56,9 +61,11 @@ Route::get('/contact-us', [ProductController::class, 'contactUs'])->name('contac
 ///////////////////////// --- SuperAdmin Login --- ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-Route::get('/login', [AuthController::class, 'superadminLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'processLogin'])->name('login.process');
-Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
+Route::middleware([\App\Http\Middleware\RedirectIfSuperadmin::class])->group(function () {
+    Route::get('/login', [AuthController::class, 'superadminLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'processLogin'])->name('login.process');
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////// --- SuperAdmin Login --- ////////////////////////////
@@ -69,7 +76,7 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
 Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');
 
 // SuperAdmin routes with prefix
-Route::prefix('superadmin')->group(function () {
+Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class])->prefix('superadmin')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
 
     // Corporate Labels Routes
@@ -147,6 +154,9 @@ Route::prefix('superadmin')->group(function () {
 
     Route::get('/marketing/welcome-mailer', [SuperAdminController::class, 'marketingWelcomeMailer'])->name('superadmin.marketing.welcome-mailer.index');
     Route::post('/marketing/welcome-mailer', [SuperAdminController::class, 'marketingWelcomeMailerStore'])->name('superadmin.marketing.welcome-mailer.store');
+    Route::get('/marketing/welcome-mailer/create', [SuperAdminController::class, 'marketingWelcomeMailerCreate'])->name('superadmin.marketing.welcome-mailer.create');
+    Route::get('/marketing/welcome-mailer/company/{companyId}/policies', [SuperAdminController::class, 'marketingWelcomeMailerCompanyPolicies'])->name('superadmin.marketing.welcome-mailer.policies');
+    Route::get('/marketing/welcome-mailer/policy/{policyId}/endorsements', [SuperAdminController::class, 'marketingWelcomeMailerPolicyEndorsements'])->name('superadmin.marketing.welcome-mailer.endorsements');
     Route::put('/marketing/welcome-mailer/{mailer}', [SuperAdminController::class, 'marketingWelcomeMailerUpdate'])->name('superadmin.marketing.welcome-mailer.update');
     Route::delete('/marketing/welcome-mailer/{mailer}', [SuperAdminController::class, 'marketingWelcomeMailerDestroy'])->name('superadmin.marketing.welcome-mailer.destroy');
 
@@ -208,6 +218,24 @@ Route::prefix('superadmin')->group(function () {
     Route::delete('/admin/resources/{resource}', [SuperAdminController::class, 'adminResourcesDestroy'])->name('superadmin.admin.resources.destroy');
 
 
+    // Insurance Routes
+    Route::get('/policy/insurance', [SuperAdminController::class, 'insuranceIndex'])->name('superadmin.policy.insurance.index');
+    Route::get('/policy/insurance/create', [SuperAdminController::class, 'insuranceCreate'])->name('superadmin.policy.insurance.create');
+    Route::post('/policy/insurance', [SuperAdminController::class, 'insuranceStore'])->name('superadmin.policy.insurance.store');
+    Route::get('/policy/insurance/{insurance}/edit', [SuperAdminController::class, 'insuranceEdit'])->name('superadmin.policy.insurance.edit');
+    Route::put('/policy/insurance/{insurance}', [SuperAdminController::class, 'insuranceUpdate'])->name('superadmin.policy.insurance.update');
+    Route::put('/policy/insurance/{insurance}/toggle-status', [SuperAdminController::class, 'insuranceToggleStatus'])->name('superadmin.policy.insurance.toggle-status');
+    Route::delete('/policy/insurance/{insurance}', [SuperAdminController::class, 'insuranceDestroy'])->name('superadmin.policy.insurance.destroy');
+
+    // TPA Routes
+    Route::get('/policy/tpa', [SuperAdminController::class, 'tpaIndex'])->name('superadmin.policy.tpa.index');
+    Route::get('/policy/tpa/create', [SuperAdminController::class, 'tpaCreate'])->name('superadmin.policy.tpa.create');
+    Route::post('/policy/tpa', [SuperAdminController::class, 'tpaStore'])->name('superadmin.policy.tpa.store');
+    Route::get('/policy/tpa/{tpa}/edit', [SuperAdminController::class, 'tpaEdit'])->name('superadmin.policy.tpa.edit');
+    Route::put('/policy/tpa/{tpa}', [SuperAdminController::class, 'tpaUpdate'])->name('superadmin.policy.tpa.update');
+    Route::put('/policy/tpa/{tpa}/toggle-status', [SuperAdminController::class, 'tpaToggleStatus'])->name('superadmin.policy.tpa.toggle-status');
+    Route::delete('/policy/tpa/{tpa}', [SuperAdminController::class, 'tpaDestroy'])->name('superadmin.policy.tpa.destroy');
+
     // Enrollment Lists
 >>>>>>> main
     Route::get('/policy/enrollment-lists', [SuperAdminController::class, 'policyEnrollmentLists'])->name('superadmin.policy.enrollment-lists.index');
@@ -248,8 +276,18 @@ Route::prefix('superadmin')->group(function () {
     // Policies Routes
     Route::get('/policy/policies', [SuperAdminController::class, 'policies'])->name('superadmin.policy.policies.index');
     Route::get('/policy/policies/create', [SuperAdminController::class, 'createPolicy'])->name('superadmin.policy.policies.create');
+    // Endorsements list
+    Route::get('/policy/endorsements', [SuperAdminController::class, 'endorsements'])->name('superadmin.policy.endorsements.index');
+    // Show single endorsement
+    Route::get('/policy/endorsements/{endorsement}', [SuperAdminController::class, 'showPolicyEndorsement'])->name('superadmin.policy.endorsements.show');
+    // Update endorsement
+    Route::put('/policy/endorsements/{endorsement}', [SuperAdminController::class, 'updatePolicyEndorsement'])->name('superadmin.policy.endorsements.update');
+    Route::get('/policy/policies/cd-accounts/{companyId}', [SuperAdminController::class, 'getCdAccountsByCompany'])->name('superadmin.policy.policies.cd-accounts');
     Route::post('/policy/policies', [SuperAdminController::class, 'storePolicy'])->name('superadmin.policy.policies.store');
     Route::get('/policy/policies/{policy}', [SuperAdminController::class, 'showPolicy'])->name('superadmin.policy.policies.show');
+    // List endorsements for a policy and create new endorsement
+    Route::get('/policy/policies/{policy}/endorsements', [SuperAdminController::class, 'policyEndorsements'])->name('superadmin.policy.policies.endorsements');
+    Route::post('/policy/policies/{policy}/endorsements', [SuperAdminController::class, 'storePolicyEndorsement'])->name('superadmin.policy.policies.endorsements.store');
     Route::get('/policy/policies/{policy}/edit', [SuperAdminController::class, 'editPolicy'])->name('superadmin.policy.policies.edit');
     Route::put('/policy/policies/{policy}', [SuperAdminController::class, 'updatePolicy'])->name('superadmin.policy.policies.update');
     Route::delete('/policy/policies/{policy}', [SuperAdminController::class, 'destroyPolicy'])->name('superadmin.policy.policies.destroy');

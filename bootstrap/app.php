@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+            // Superadmin route protection middleware (only active for their target paths)
+            \App\Http\Middleware\RedirectIfSuperadmin::class,
+            \App\Http\Middleware\EnsureSuperadminAuthenticated::class,
         ]);
 
         //

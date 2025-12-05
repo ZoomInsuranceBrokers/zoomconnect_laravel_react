@@ -7,6 +7,7 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [filterBy, setFilterBy] = useState("All");
     const { delete: destroy } = useForm();
+    const { darkMode } = useTheme();
 
     // Filter templates based on search and filter
     const filteredTemplates = templates.filter((template) => {
@@ -89,8 +90,8 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
                     </div>
 
                     {/* Search and Filter */}
-                    <div className="bg-white shadow rounded-lg">
-                        <div className="p-6 border-b border-gray-200">
+                    <div className={`rounded-2xl ${darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-gray-50 shadow-lg'} text-xs sm:text-sm overflow-x-auto`}> 
+                        <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}> 
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                                 <div className="flex-1 max-w-lg">
                                     <div className="relative">
@@ -112,7 +113,7 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
                                         <input
                                             type="text"
                                             placeholder="Search Records"
-                                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            className={`block w-full pl-10 pr-3 py-2 border rounded-md leading-5 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${darkMode ? 'border-gray-700 bg-gray-800 text-gray-200 placeholder-gray-400' : 'border-gray-300 bg-gray-100 text-gray-900 placeholder-gray-500'}`}
                                             value={searchTerm}
                                             onChange={(e) =>
                                                 setSearchTerm(e.target.value)
@@ -135,11 +136,11 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
                                                 d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                                             />
                                         </svg>
-                                        <span className="text-sm font-medium text-gray-700">
+                                        <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                             FILTER BY:
                                         </span>
                                         <select
-                                            className="border border-gray-300 rounded-md px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                            className={`rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 ${darkMode ? 'border-gray-700 bg-gray-800 text-gray-200' : 'border border-gray-300 bg-gray-100 text-gray-900'}`}
                                             value={filterBy}
                                             onChange={(e) =>
                                                 setFilterBy(e.target.value)
@@ -160,9 +161,9 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
                         </div>
 
                         {/* Table */}
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                        <div className="w-full min-w-[340px] my-3 sm:my-4">
+                            <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'} text-xs sm:text-sm`}>
+                                <thead className={`${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Actions
@@ -193,10 +194,10 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className={`${darkMode ? 'bg-gray-900 divide-gray-800' : 'bg-white divide-gray-100'}`}>
                                     {filteredTemplates.map((template) => (
-                                        <tr key={template.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <tr key={template.id} className={`${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'}`}> 
+                                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                                 <div className="flex space-x-2">
                                                     <button
                                                         onClick={() =>
@@ -278,10 +279,10 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
                                                     />
                                                 </button>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                                 {template.name}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                 {new Date(
                                                     template.created_at
                                                 ).toLocaleDateString("en-GB", {
@@ -297,13 +298,13 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
                         </div>
 
                         {filteredTemplates.length === 0 && (
-                            <div className="text-center py-12">
-                                <div className="text-gray-500">
+                            <div className={`text-center py-12 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                                <div className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                     No message templates found.
                                 </div>
                                 <Link
                                     href={route("superadmin.marketing.message-template.create")}
-                                    className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    className={`mt-4 inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${darkMode ? 'text-indigo-200 bg-gray-800 border-gray-700 hover:bg-gray-700' : 'text-indigo-700 bg-indigo-100 border-transparent hover:bg-indigo-200'}`}
                                 >
                                     Create your first template
                                 </Link>

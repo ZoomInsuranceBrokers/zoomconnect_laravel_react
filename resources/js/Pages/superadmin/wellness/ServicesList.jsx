@@ -120,9 +120,9 @@ export default function ServicesList({ services = [], vendors = [], categories =
                             <span>+</span>
                             Add Service
                         </button>
-                        <button className="flex items-center gap-1.5 text-gray-600 hover:text-gray-800 text-[11px]">
+                        <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-[12px] md:text-[13px] font-medium">
                             <svg
-                                className="w-3 h-3"
+                                className="w-4 h-4 md:w-5 md:h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -147,14 +147,14 @@ export default function ServicesList({ services = [], vendors = [], categories =
                             placeholder="Search Services"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className={`w-48 pl-8 pr-3 py-1.5 border rounded-lg text-[10px] focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                            className={`w-48 pl-9 pr-3 py-1.5 border rounded-lg text-[10px] focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
                                 darkMode
                                     ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                                     : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                             }`}
                         />
                         <svg
-                            className="absolute left-2.5 top-2 w-3 h-3 text-gray-400"
+                            className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -168,7 +168,11 @@ export default function ServicesList({ services = [], vendors = [], categories =
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-2 py-1.5 border rounded-lg text-[10px] bg-white border-gray-300"
+                        className={`w-40 px-3 py-2 border rounded-lg text-[11px] font-medium ${
+                            darkMode
+                                ? "bg-gray-800 border-gray-700 text-white"
+                                : "bg-white border-gray-300 text-gray-700"
+                        }`}
                     >
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
@@ -179,7 +183,11 @@ export default function ServicesList({ services = [], vendors = [], categories =
                     <select
                         value={vendorFilter}
                         onChange={(e) => setVendorFilter(e.target.value)}
-                        className="px-2 py-1.5 border rounded-lg text-[10px] bg-white border-gray-300"
+                        className={`w-40 px-3 py-2 border rounded-lg text-[11px] font-medium ${
+                            darkMode
+                                ? "bg-gray-800 border-gray-700 text-white"
+                                : "bg-white border-gray-300 text-gray-700"
+                        }`}
                     >
                         <option value="all">All Vendors</option>
                         {vendors.map((vendor) => (
@@ -193,7 +201,11 @@ export default function ServicesList({ services = [], vendors = [], categories =
                     <select
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="px-2 py-1.5 border rounded-lg text-[10px] bg-white border-gray-300"
+                        className={`w-40 px-3 py-2 border rounded-lg text-[11px] font-medium ${
+                            darkMode
+                                ? "bg-gray-800 border-gray-700 text-white"
+                                : "bg-white border-gray-300 text-gray-700"
+                        }`}
                     >
                         <option value="all">All Categories</option>
                         {categories.map((category) => (
@@ -213,7 +225,7 @@ export default function ServicesList({ services = [], vendors = [], categories =
                     <table className="w-full min-w-max">
                         <thead
                             className={`${
-                                darkMode ? "bg-gray-700" : "bg-gray-50"
+                                darkMode ? "bg-gray-800" : "bg-gray-200"
                             } border-b`}
                         >
                             <tr>
@@ -265,8 +277,8 @@ export default function ServicesList({ services = [], vendors = [], categories =
                                         key={service.id}
                                         className={`${
                                             darkMode
-                                                ? "hover:bg-gray-700"
-                                                : "hover:bg-gray-50"
+                                                ? "bg-gray-800 hover:bg-gray-700"
+                                                : "bg-gray-100 hover:bg-gray-200"
                                         }`}
                                     >
                                         <td className="px-3 py-2 whitespace-nowrap">
@@ -322,7 +334,9 @@ export default function ServicesList({ services = [], vendors = [], categories =
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-900">
+                                        <td className={`px-3 py-2 whitespace-nowrap text-[10px] ${
+                                            darkMode ? "text-gray-200" : "text-gray-900"
+                                        }`}>
                                             <div className="font-medium">{service.wellness_name || "-"}</div>
                                             {service.link && (
                                                 <a
@@ -335,16 +349,24 @@ export default function ServicesList({ services = [], vendors = [], categories =
                                                 </a>
                                             )}
                                         </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-500">
+                                        <td className={`px-3 py-2 whitespace-nowrap text-[10px] ${
+                                            darkMode ? "text-gray-400" : "text-gray-500"
+                                        }`}>
                                             {service.vendor?.vendor_name || "-"}
                                         </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-500">
+                                        <td className={`px-3 py-2 whitespace-nowrap text-[10px] ${
+                                            darkMode ? "text-gray-400" : "text-gray-500"
+                                        }`}>
                                             {service.category?.category_name || "-"}
                                         </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-500">
+                                        <td className={`px-3 py-2 whitespace-nowrap text-[10px] ${
+                                            darkMode ? "text-gray-400" : "text-gray-500"
+                                        }`}>
                                             {service.company_id === 0 ? "All Companies" : service.company?.comp_name || "-"}
                                         </td>
-                                        <td className="px-3 py-2 text-[10px] text-gray-500 max-w-xs">
+                                        <td className={`px-3 py-2 text-[10px] max-w-xs ${
+                                            darkMode ? "text-gray-400" : "text-gray-500"
+                                        }`}>
                                             <div className="truncate" title={service.heading}>
                                                 {service.heading || "-"}
                                             </div>
@@ -368,14 +390,18 @@ export default function ServicesList({ services = [], vendors = [], categories =
                                                 />
                                             </button>
                                         </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-[10px] text-gray-500">
+                                        <td className={`px-3 py-2 whitespace-nowrap text-[10px] ${
+                                            darkMode ? "text-gray-400" : "text-gray-500"
+                                        }`}>
                                             {formatDate(service.created_at)}
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="10" className="px-3 py-8 text-center text-gray-500">
+                                    <td colSpan="10" className={`px-3 py-8 text-center ${
+                                        darkMode ? "text-gray-400 bg-gray-700" : "text-gray-500"
+                                    }`}>
                                         {services.length === 0
                                             ? "No services found"
                                             : "No services match your current filters"
@@ -388,9 +414,13 @@ export default function ServicesList({ services = [], vendors = [], categories =
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between px-4 py-3 bg-white border-t">
+                <div className={`flex items-center justify-between px-4 py-3 border-t ${
+                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                }`}>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-700">
+                        <span className={`text-[10px] ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}>
                             Showing {indexOfFirstItem + 1} to{" "}
                             {Math.min(indexOfLastItem, filteredServices.length)} of{" "}
                             {filteredServices.length} results
@@ -400,11 +430,17 @@ export default function ServicesList({ services = [], vendors = [], categories =
                         <button
                             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                             disabled={currentPage === 1}
-                            className="px-2 py-1 text-[10px] bg-gray-100 text-gray-600 rounded disabled:opacity-50"
+                            className={`px-2 py-1 text-[10px] rounded disabled:opacity-50 ${
+                                darkMode
+                                    ? "bg-gray-700 text-gray-300 border border-gray-600"
+                                    : "bg-gray-100 text-gray-600"
+                            }`}
                         >
                             Previous
                         </button>
-                        <span className="text-[10px] text-gray-700">
+                        <span className={`text-[10px] ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}>
                             Page {currentPage} of {totalPages}
                         </span>
                         <button
@@ -412,7 +448,11 @@ export default function ServicesList({ services = [], vendors = [], categories =
                                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                             }
                             disabled={currentPage === totalPages}
-                            className="px-2 py-1 text-[10px] bg-gray-100 text-gray-600 rounded disabled:opacity-50"
+                            className={`px-2 py-1 text-[10px] rounded disabled:opacity-50 ${
+                                darkMode
+                                    ? "bg-gray-700 text-gray-300 border border-gray-600"
+                                    : "bg-gray-100 text-gray-600"
+                            }`}
                         >
                             Next
                         </button>
@@ -428,6 +468,7 @@ export default function ServicesList({ services = [], vendors = [], categories =
                     vendors={vendors}
                     categories={categories}
                     companies={companies}
+                    darkMode={darkMode}
                     onClose={() => setIsModalOpen(false)}
                 />
             )}
@@ -436,7 +477,7 @@ export default function ServicesList({ services = [], vendors = [], categories =
 }
 
 // Service Modal Component
-function ServiceModal({ service, modalType, vendors, categories, companies, onClose }) {
+function ServiceModal({ service, modalType, vendors, categories, companies, darkMode, onClose }) {
     const [formData, setFormData] = useState({
         vendor_id: service?.vendor_id || "",
         category_id: service?.category_id || "",
@@ -547,18 +588,22 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className={`rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-lg ${
+                darkMode ? "bg-gray-800" : "bg-white"
+            }`}>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold">
+                    <h2 className={`text-lg font-semibold ${
+                        darkMode ? "text-gray-200" : "text-gray-900"
+                    }`}>
                         {modalType === "create" ? "Add Service" : "Edit Service"}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-gray-400 hover:text-gray-600 transition"
                     >
                         <svg
-                            className="w-6 h-6"
+                            className="w-5 h-5"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -577,7 +622,9 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                     {/* Row 1: Vendor and Category */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className={`block text-xs md:text-sm font-medium mb-1 ${
+                                darkMode ? "text-gray-300" : "text-gray-700"
+                            }`}>
                                 Vendor *
                             </label>
                             <select
@@ -589,10 +636,14 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                     });
                                     setErrors({ ...errors, vendor_id: "" });
                                 }}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                className={`w-full px-2 py-1.5 border rounded-lg text-[12px] md:text-sm focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                    darkMode
+                                        ? "bg-gray-700 border-gray-600 text-gray-200"
+                                        : "bg-white border-gray-300 text-gray-900"
+                                } ${
                                     errors.vendor_id
                                         ? "border-red-500"
-                                        : "border-gray-300"
+                                        : ""
                                 }`}
                                 required
                             >
@@ -604,14 +655,16 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                 ))}
                             </select>
                             {errors.vendor_id && (
-                                <p className="text-red-500 text-xs mt-1">
+                                <p className="text-red-500 text-[10px] md:text-xs mt-1">
                                     {errors.vendor_id}
                                 </p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className={`block text-xs md:text-sm font-medium mb-1 ${
+                                darkMode ? "text-gray-300" : "text-gray-700"
+                            }`}>
                                 Category *
                             </label>
                             <select
@@ -623,10 +676,14 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                     });
                                     setErrors({ ...errors, category_id: "" });
                                 }}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                className={`w-full px-2 py-1.5 border rounded-lg text-[12px] md:text-sm focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                    darkMode
+                                        ? "bg-gray-700 border-gray-600 text-gray-200"
+                                        : "bg-white border-gray-300 text-gray-900"
+                                } ${
                                     errors.category_id
                                         ? "border-red-500"
-                                        : "border-gray-300"
+                                        : ""
                                 }`}
                                 required
                             >
@@ -638,7 +695,7 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                 ))}
                             </select>
                             {errors.category_id && (
-                                <p className="text-red-500 text-xs mt-1">
+                                <p className="text-red-500 text-[10px] md:text-xs mt-1">
                                     {errors.category_id}
                                 </p>
                             )}
@@ -648,7 +705,9 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                     {/* Row 2: Company and Wellness Name */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className={`block text-xs md:text-sm font-medium mb-1 ${
+                                darkMode ? "text-gray-300" : "text-gray-700"
+                            }`}>
                                 Company
                             </label>
                             <select
@@ -659,7 +718,11 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                         company_id: e.target.value,
                                     });
                                 }}
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent border-gray-300"
+                                className={`w-full px-2 py-1.5 border rounded-lg text-[12px] md:text-sm focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                    darkMode
+                                        ? "bg-gray-700 border-gray-600 text-gray-200"
+                                        : "bg-white border-gray-300 text-gray-900"
+                                }`}
                             >
                                 <option value={0}>All Companies</option>
                                 {companies.map((company) => (
@@ -671,7 +734,9 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className={`block text-xs md:text-sm font-medium mb-1 ${
+                                darkMode ? "text-gray-300" : "text-gray-700"
+                            }`}>
                                 Wellness Name *
                             </label>
                             <input
@@ -684,15 +749,19 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                     });
                                     setErrors({ ...errors, wellness_name: "" });
                                 }}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                className={`w-full px-2 py-1.5 border rounded-lg text-[12px] md:text-sm focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                    darkMode
+                                        ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400"
+                                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                                } ${
                                     errors.wellness_name
                                         ? "border-red-500"
-                                        : "border-gray-300"
+                                        : ""
                                 }`}
                                 required
                             />
                             {errors.wellness_name && (
-                                <p className="text-red-500 text-xs mt-1">
+                                <p className="text-red-500 text-[10px] md:text-xs mt-1">
                                     {errors.wellness_name}
                                 </p>
                             )}
@@ -702,7 +771,9 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                     {/* Row 3: Icon and Link */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className={`block text-xs md:text-sm font-medium mb-1 ${
+                                darkMode ? "text-gray-300" : "text-gray-700"
+                            }`}>
                                 Icon
                             </label>
                             <div className="flex items-center gap-4">
@@ -710,7 +781,7 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                     <img
                                         src={iconPreview}
                                         alt="Icon preview"
-                                        className="w-12 h-12 rounded-lg object-cover border"
+                                        className="w-10 h-10 rounded-lg object-cover border flex-shrink-0"
                                     />
                                 )}
                                 <div className="flex-1">
@@ -718,14 +789,18 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                         type="file"
                                         accept="image/jpeg,image/jpg,image/png,.jpeg,.jpg,.png"
                                         onChange={handleIconChange}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-sm ${
+                                        className={`w-full px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-[11px] md:text-sm file:mr-2 file:rounded file:border-0 file:px-3 file:py-1 file:text-sm file:font-medium ${
+                                            darkMode
+                                                ? "bg-gray-700 border-gray-600 text-gray-300 file:bg-gray-600 file:text-gray-200 hover:file:bg-gray-500"
+                                                : "bg-white border-gray-300 text-gray-900 file:bg-gray-200 file:text-gray-800 hover:file:bg-gray-300"
+                                        } ${
                                             errors.icon
                                                 ? "border-red-500"
-                                                : "border-gray-300"
+                                                : ""
                                         }`}
                                     />
                                     {errors.icon && (
-                                        <p className="text-red-500 text-xs mt-1">
+                                        <p className="text-red-500 text-[10px] md:text-xs mt-1">
                                             {errors.icon}
                                         </p>
                                     )}
@@ -734,7 +809,9 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className={`block text-xs md:text-sm font-medium mb-1 ${
+                                darkMode ? "text-gray-300" : "text-gray-700"
+                            }`}>
                                 Link
                             </label>
                             <input
@@ -747,15 +824,19 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                     });
                                     setErrors({ ...errors, link: "" });
                                 }}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                className={`w-full px-2 py-1.5 border rounded-lg text-[12px] md:text-sm placeholder-gray-400 placeholder-text-xs focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                    darkMode
+                                        ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400"
+                                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                                } ${
                                     errors.link
                                         ? "border-red-500"
-                                        : "border-gray-300"
+                                        : ""
                                 }`}
                                 placeholder="https://example.com"
                             />
                             {errors.link && (
-                                <p className="text-red-500 text-xs mt-1">
+                                <p className="text-red-500 text-[10px] md:text-xs mt-1">
                                     {errors.link}
                                 </p>
                             )}
@@ -764,7 +845,9 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
 
                     {/* Row 4: Heading */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className={`block text-xs md:text-sm font-medium mb-1 ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}>
                             Heading *
                         </label>
                         <input
@@ -777,15 +860,19 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                 });
                                 setErrors({ ...errors, heading: "" });
                             }}
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                            className={`w-full px-2 py-1.5 border rounded-lg text-[12px] md:text-sm focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                darkMode
+                                    ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400"
+                                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                            } ${
                                 errors.heading
                                     ? "border-red-500"
-                                    : "border-gray-300"
+                                    : ""
                             }`}
                             required
                         />
                         {errors.heading && (
-                            <p className="text-red-500 text-xs mt-1">
+                            <p className="text-red-500 text-[10px] md:text-xs mt-1">
                                 {errors.heading}
                             </p>
                         )}
@@ -793,7 +880,9 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
 
                     {/* Row 5: Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className={`block text-xs md:text-sm font-medium mb-1 ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}>
                             Description
                         </label>
                         <textarea
@@ -805,36 +894,48 @@ function ServiceModal({ service, modalType, vendors, categories, companies, onCl
                                 });
                                 setErrors({ ...errors, description: "" });
                             }}
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                            className={`w-full px-2 py-1.5 border rounded-lg text-[12px] md:text-sm placeholder-gray-400 placeholder-text-xs focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                                darkMode
+                                    ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400"
+                                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                            } ${
                                 errors.description
                                     ? "border-red-500"
-                                    : "border-gray-300"
+                                    : ""
                             }`}
                             rows="3"
                             maxLength="1000"
-                            placeholder="Optional description for the service..."
+                            placeholder="Optional description..."
                         />
-                        <p className="text-xs text-gray-500 mt-1">
-                            {formData.description.length}/1000 characters
+                        <p className={`text-[10px] md:text-xs mt-1 ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}>
+                            {formData.description.length}/1000
                         </p>
                         {errors.description && (
-                            <p className="text-red-500 text-xs mt-1">
+                            <p className="text-red-500 text-[10px] md:text-xs mt-1">
                                 {errors.description}
                             </p>
                         )}
                     </div>
 
-                    <div className="flex gap-2 pt-4">
+                    <div className={`flex gap-2 pt-4 border-t ${
+                        darkMode ? "border-gray-700" : "border-gray-200"
+                    }`}>
                         <button
                             type="submit"
-                            className="flex-1 bg-[#934790] hover:bg-[#6A0066] text-white py-2 px-4 rounded-lg font-medium"
+                            className="flex-1 bg-[#934790] hover:bg-[#6A0066] text-white py-2 px-4 rounded-lg font-medium text-sm"
                         >
-                            {modalType === "create" ? "Create Service" : "Update Service"}
+                            {modalType === "create" ? "Add Service" : "Update Service"}
                         </button>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg font-medium"
+                            className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm ${
+                                darkMode
+                                    ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                            }`}
                         >
                             Cancel
                         </button>

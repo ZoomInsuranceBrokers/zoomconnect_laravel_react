@@ -130,9 +130,9 @@ export default function VendorList({ vendors = [] }) {
                             <span>+</span>
                             Add Vendor
                         </button>
-                        <button className="flex items-center gap-1.5 text-gray-600 hover:text-gray-800 text-[11px]">
+                        <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-[12px] md:text-[13px] font-medium">
                             <svg
-                                className="w-3 h-3"
+                                className="w-4 h-4 md:w-5 md:h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -157,14 +157,14 @@ export default function VendorList({ vendors = [] }) {
                             placeholder="Search Vendors"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className={`w-48 pl-8 pr-3 py-1.5 border rounded-lg text-[10px] focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                            className={`w-48 pl-9 pr-3 py-1.5 border rounded-lg text-[10px] focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
                                 darkMode
                                     ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                                     : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                             }`}
                         />
                         <svg
-                            className="absolute left-2.5 top-2 w-3 h-3 text-gray-400"
+                            className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -338,9 +338,13 @@ export default function VendorList({ vendors = [] }) {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between px-4 py-3 bg-white border-t">
+                <div className={`flex items-center justify-between px-4 py-3 border-t ${
+                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                }`}>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-700">
+                        <span className={`text-[10px] ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}>
                             Showing {indexOfFirstItem + 1} to{" "}
                             {Math.min(indexOfLastItem, filteredVendors.length)}{" "}
                             of {filteredVendors.length} results
@@ -352,11 +356,17 @@ export default function VendorList({ vendors = [] }) {
                                 setCurrentPage((prev) => Math.max(prev - 1, 1))
                             }
                             disabled={currentPage === 1}
-                            className="px-2 py-1 text-[10px] bg-gray-100 text-gray-600 rounded disabled:opacity-50"
+                            className={`px-2 py-1 text-[10px] rounded disabled:opacity-50 ${
+                                darkMode
+                                    ? "bg-gray-700 text-gray-300 border border-gray-600"
+                                    : "bg-gray-100 text-gray-600"
+                            }`}
                         >
                             Previous
                         </button>
-                        <span className="text-[10px] text-gray-700">
+                        <span className={`text-[10px] ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}>
                             Page {currentPage} of {totalPages}
                         </span>
                         <button
@@ -366,7 +376,11 @@ export default function VendorList({ vendors = [] }) {
                                 )
                             }
                             disabled={currentPage === totalPages}
-                            className="px-2 py-1 text-[10px] bg-gray-100 text-gray-600 rounded disabled:opacity-50"
+                            className={`px-2 py-1 text-[10px] rounded disabled:opacity-50 ${
+                                darkMode
+                                    ? "bg-gray-700 text-gray-300 border border-gray-600"
+                                    : "bg-gray-100 text-gray-600"
+                            }`}
                         >
                             Next
                         </button>
@@ -473,18 +487,18 @@ function VendorModal({ vendor, modalType, onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">
                         {modalType === "create" ? "Add Vendor" : "Edit Vendor"}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-gray-400 hover:text-gray-600 transition"
                     >
                         <svg
-                            className="w-6 h-6"
+                            className="w-7 h-7"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -499,9 +513,9 @@ function VendorModal({ vendor, modalType, onClose }) {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-base font-semibold text-gray-700 mb-2">
                             Vendor Name *
                         </label>
                         <input
@@ -514,7 +528,7 @@ function VendorModal({ vendor, modalType, onClose }) {
                                 });
                                 setErrors({ ...errors, vendor_name: "" });
                             }}
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${
+                            className={`w-full px-4 py-3 border rounded-lg text-base focus:ring-2 focus:ring-[#934790] focus:border-transparent transition ${
                                 errors.vendor_name
                                     ? "border-red-500"
                                     : "border-gray-300"
@@ -522,22 +536,22 @@ function VendorModal({ vendor, modalType, onClose }) {
                             required
                         />
                         {errors.vendor_name && (
-                            <p className="text-red-500 text-xs mt-1">
+                            <p className="text-red-500 text-sm mt-2">
                                 {errors.vendor_name}
                             </p>
                         )}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-base font-semibold text-gray-700 mb-2">
                             Logo
                         </label>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-start gap-6">
                             {logoPreview && (
                                 <img
                                     src={logoPreview}
                                     alt="Logo preview"
-                                    className="w-16 h-16 rounded-lg object-cover border"
+                                    className="w-24 h-24 rounded-lg object-cover border-2 border-gray-200 flex-shrink-0"
                                 />
                             )}
                             <div className="flex-1">
@@ -545,17 +559,17 @@ function VendorModal({ vendor, modalType, onClose }) {
                                     type="file"
                                     accept="image/jpeg,image/jpg,image/png,.jpeg,.jpg,.png"
                                     onChange={handleLogoChange}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-sm ${
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-base transition ${
                                         errors.logo
                                             ? "border-red-500"
                                             : "border-gray-300"
                                     }`}
                                 />
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-gray-600 mt-2">
                                     Upload JPEG, PNG, or JPG files only. Max file size: 2MB
                                 </p>
                                 {errors.logo && (
-                                    <p className="text-red-500 text-xs mt-1">
+                                    <p className="text-red-500 text-sm mt-2">
                                         {errors.logo}
                                     </p>
                                 )}
@@ -563,17 +577,17 @@ function VendorModal({ vendor, modalType, onClose }) {
                         </div>
                     </div>
 
-                    <div className="flex gap-2 pt-4">
+                    <div className="flex gap-3 pt-6 border-t">
                         <button
                             type="submit"
-                            className="flex-1 bg-[#934790] hover:bg-[#6A0066] text-white py-2 px-4 rounded-lg font-medium"
+                            className="flex-1 bg-[#934790] hover:bg-[#6A0066] text-white py-2 px-4 rounded-lg font-semibold text-sm transition duration-200"
                         >
                             {modalType === "create" ? "Create Vendor" : "Update Vendor"}
                         </button>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg font-medium"
+                            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-semibold text-sm transition duration-200"
                         >
                             Cancel
                         </button>

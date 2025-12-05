@@ -57,7 +57,7 @@ export default function SuperAdminDashboard() {
     return (
         <SuperAdminLayout user={user}>
             {/* Top Section: Key Metrics Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8 pt-4">
                 {dashboardData.keyMetrics.map((metric, idx) => (
                     <Card key={metric.label} className="gap-2 border-t-4 border-[#934790]">
                         <span className={labelClass}>{metric.label}</span>
@@ -143,7 +143,7 @@ export default function SuperAdminDashboard() {
                                             {idx + 1}.
                                         </span>
                                         <div className="flex-1">
-                                            <div className="text-sm font-medium truncate">{corp.name}</div>
+                                            <div className="text-sm font-medium truncate max-w-[120px] sm:max-w-[180px] md:max-w-none">{corp.name}</div>
                                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
                                                 <div
                                                     className="bg-[#934790] h-2 rounded-full transition-all duration-1000"

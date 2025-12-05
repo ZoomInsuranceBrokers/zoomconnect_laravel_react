@@ -4,20 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\CorporateLabel;
 use App\Models\CorporateGroup;
-<<<<<<< HEAD
-=======
 use App\Models\CompanyEmployee;
->>>>>>> main
 use App\Models\CompanyMaster;
 use App\Models\MessageTemplate;
 use App\Models\UserMaster;
 use App\Models\WellnessService;
 use App\Models\WellnessCategory;
 use App\Models\Vendor;
-<<<<<<< HEAD
-use App\Models\EnrollmentDetail;
-use App\Models\EnrollmentConfig;
-=======
+use App\Models\CdMaster;
+use App\Models\TpaMaster;
 use App\Models\FaqMaster;
 use App\Models\EnrollmentDetail;
 use App\Models\EnrollmentConfig;
@@ -27,7 +22,7 @@ use App\Models\EscalationUser;
 use App\Models\BlogMaster;
 use App\Models\Resource;
 use App\Models\PushNotification;
->>>>>>> main
+use App\Models\PolicyEndorsement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -38,11 +33,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-<<<<<<< HEAD
-=======
 use App\Jobs\ReplaceEscalationUserJob;
 use App\Jobs\SendPushNotificationJob;
->>>>>>> main
 
 class SuperAdminController extends Controller
 {
@@ -62,9 +54,10 @@ class SuperAdminController extends Controller
     {
         Session::forget('superadmin_logged_in');
         Session::forget('superadmin_user');
-        Session::flush(); // Optional: clear entire session
+        Session::flush(); // clear entire session on logout
 
-        return redirect()->route('login')->with('success', 'Logged out successfully');
+        // Redirect to login page after logout so Inertia client can follow it.
+        return redirect('/login')->with('success', 'Logged out successfully');
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -376,8 +369,6 @@ class SuperAdminController extends Controller
             return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
-<<<<<<< HEAD
-=======
 
     public function corporateEdit($id)
     {
@@ -1295,7 +1286,6 @@ class SuperAdminController extends Controller
             return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
->>>>>>> main
     /////////////////////////////////////////////////////////////////////////
     ///////////////////////// Corporate List ///////////////////////////////
     /////////////////////////////////////////////////////////////////////////
@@ -1910,13 +1900,89 @@ class SuperAdminController extends Controller
             'user_name' => 'SuperAdmin',
             'email' => 'admin@zoomconnect.com'
         ]);
+        // Load welcome mailer records from DB (new table: welcome_mailers)
+        $mailers = \App\Models\WelcomeMailer::with(['company'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return Inertia::render('superadmin/Marketing/WelcomeMailer', [
             'user' => $user,
-            'mailers' => []
+            'mailers' => $mailers,
         ]);
     }
 
+    /**
+     * Show create welcome mailer form and load companies for dropdown
+     */
+    public function marketingWelcomeMailerCreate()
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        $companies = CompanyMaster::where('status', 1)
+            ->orderBy('comp_name')
+            ->get(['comp_id as id', 'comp_name as name']);
+
+        $templates = MessageTemplate::where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'name', 'subject', 'body', 'banner_image', 'attachment']);
+
+        return Inertia::render('superadmin/Marketing/CreateWelcomeMailer', [
+            'companies' => $companies,
+            'templates' => $templates,
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Return active policies for a given company (AJAX)
+     */
+    public function marketingWelcomeMailerCompanyPolicies($companyId)
+    {
+        $policies = \App\Models\PolicyMaster::where('comp_id', $companyId)
+            ->where('is_active', 1)
+            ->where('is_old', 0)
+            ->orderBy('policy_name')
+            ->get(['id', 'policy_name']);
+
+        return response()->json(['policies' => $policies]);
+    }
+
+    /**
+     * Return addition endorsement numbers for a given policy (AJAX)
+     */
+    public function marketingWelcomeMailerPolicyEndorsements($policyId)
+    {
+        $policyId = (int) $policyId;
+
+        $policy = \App\Models\PolicyMaster::with('tpa')->find($policyId);
+        if (!$policy || empty($policy->tpa) || empty($policy->tpa->tpa_table_name)) {
+            return response()->json(['endorsements' => []]);
+        }
+
+        $table_name = $policy->tpa->tpa_table_name;
+
+        // Basic validation for table name to avoid injection
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $table_name)) {
+            return response()->json(['endorsements' => []]);
+        }
+
+        try {
+            $sql = "SELECT t.addition_endorsement_id as id, pe.endorsement_no FROM {$table_name} t INNER JOIN policy_endorsements pe ON t.addition_endorsement_id = pe.id WHERE t.policy_id = ? GROUP BY t.addition_endorsement_id, pe.endorsement_no";
+            $rows = \DB::select($sql, [$policyId]);
+
+            $endorsements = array_map(function ($r) {
+                return ['id' => $r->id, 'endorsement_no' => $r->endorsement_no];
+            }, $rows);
+
+            return response()->json(['endorsements' => $endorsements]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load endorsements: ' . $e->getMessage());
+            return response()->json(['endorsements' => []]);
+        }
+    }
     /**
      * Store new welcome mailer
      */
@@ -2134,11 +2200,6 @@ class SuperAdminController extends Controller
             'email' => 'admin@zoomconnect.com'
         ]);
 
-<<<<<<< HEAD
-        return Inertia::render('superadmin/Marketing/PushNotifications', [
-            'user' => $user,
-            'notifications' => []
-=======
         $notifications = PushNotification::with(['creator', 'updater'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -2166,7 +2227,6 @@ class SuperAdminController extends Controller
         return Inertia::render('superadmin/Marketing/SendPushNotification', [
             'user' => $user,
             'companies' => $companies
->>>>>>> main
         ]);
     }
 
@@ -2175,10 +2235,6 @@ class SuperAdminController extends Controller
      */
     public function marketingPushNotificationsStore(Request $request)
     {
-<<<<<<< HEAD
-        return redirect()->route('superadmin.marketing.push-notifications.index')
-            ->with('success', 'Push notification created successfully.');
-=======
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'body' => 'required|string|max:1000',
@@ -2241,7 +2297,6 @@ class SuperAdminController extends Controller
                 ->with('error', 'Failed to create push notification. Please try again.')
                 ->withInput();
         }
->>>>>>> main
     }
 
     /**
@@ -3212,8 +3267,6 @@ class SuperAdminController extends Controller
     }
 
     /**
-<<<<<<< HEAD
-=======
      * Admin -> Surveys index
      */
     public function adminSurveysIndex()
@@ -3757,7 +3810,6 @@ class SuperAdminController extends Controller
     }
 
     /**
->>>>>>> main
      * Handle employee mapping to enrollment portal (matches CodeIgniter logic)
      */
     public function employeeMapping(Request $request)
@@ -4056,19 +4108,11 @@ class SuperAdminController extends Controller
                     'gender' => $familyDefinitionJson['spouse_gender'] ?? 'both'
                 ],
                 'kid' => [
-<<<<<<< HEAD
-                    'enabled' => ($familyDefinitionJson['kid'] ?? '0') === '1',
-                    'no' => $familyDefinitionJson['kid_no'] ?? 2,
-                    'min_age' => $familyDefinitionJson['kid_min_age'] ?? 0,
-                    'max_age' => $familyDefinitionJson['kid_max_age'] ?? 25,
-                    'gender' => $familyDefinitionJson['kid_gender'] ?? 'both'
-=======
                     'enabled' => ($familyDefinitionJson['kids'] ?? '0') === '1',
                     'no' => $familyDefinitionJson['kids_no'] ?? 2,
                     'min_age' => $familyDefinitionJson['kids_min_age'] ?? 0,
                     'max_age' => $familyDefinitionJson['kids_max_age'] ?? 25,
                     'gender' => $familyDefinitionJson['kids_gender'] ?? 'both'
->>>>>>> main
                 ],
                 'parent' => [
                     'enabled' => ($familyDefinitionJson['parent'] ?? '0') === '1',
@@ -4104,14 +4148,10 @@ class SuperAdminController extends Controller
                     'min_age' => $familyDefinitionJson['others_min_age'] ?? 18,
                     'max_age' => $familyDefinitionJson['others_max_age'] ?? 65,
                     'gender' => $familyDefinitionJson['others_gender'] ?? 'both'
-<<<<<<< HEAD
-                ]
-=======
                 ],
                 // Add parent/in-law combination rule for frontend logic
                 'add_both_parent_n_parent_in_law' => $familyDefinitionJson['add_both_parent_n_parent_in_law'] ?? 'both',
                 'spouse_with_same_gender' => $familyDefinitionJson['spouse_with_same_gender'] ?? null,
->>>>>>> main
             ];
 
             // Parse rating config to get available plans
@@ -4121,12 +4161,8 @@ class SuperAdminController extends Controller
 
             $availablePlans = [
                 'basePlans' => [],
-<<<<<<< HEAD
-                'topupPlans' => []
-=======
                 'topupPlans' => [],
                 'ratingConfig' => $ratingConfigJson ?? []
->>>>>>> main
             ];
 
             if (isset($ratingConfigJson['plans']) && is_array($ratingConfigJson['plans'])) {
@@ -4218,10 +4254,7 @@ class SuperAdminController extends Controller
      */
     public function submitEnrollment(Request $request)
     {
-<<<<<<< HEAD
-=======
         dd($request->all());
->>>>>>> main
         try {
             // Validate the request
             $validated = $request->validate([
@@ -4229,14 +4262,6 @@ class SuperAdminController extends Controller
                 'enrollment_period_id' => 'required|integer',
                 'enrollment_detail_id' => 'required|integer',
                 'enrollment_config_id' => 'nullable|integer',
-<<<<<<< HEAD
-                'dependents' => 'array',
-                'selectedPlans' => 'required|array',
-                'extraCoverage' => 'nullable|array',
-                'premiumCalculations' => 'required|array'
-            ]);
-
-=======
                 'dependents' => 'nullable|array',
                 'selectedPlans' => 'required|array',
                 'extraCoverage' => 'nullable',
@@ -4248,38 +4273,11 @@ class SuperAdminController extends Controller
                 'form_data' => $validated
             ]);
 
->>>>>>> main
             DB::beginTransaction();
 
             // Get employee and enrollment data
             $employee = \App\Models\CompanyEmployee::findOrFail($validated['employee_id']);
             $enrollmentPeriod = \App\Models\EnrollmentPeriod::findOrFail($validated['enrollment_period_id']);
-<<<<<<< HEAD
-
-            // Save enrollment data for employee
-            $this->saveEnrollmentData(
-                $employee,
-                $validated,
-                'SELF',
-                $validated['selectedPlans']['employee'] ?? null
-            );
-
-            // Save enrollment data for dependents
-            if (!empty($validated['dependents'])) {
-                foreach ($validated['dependents'] as $dependent) {
-                    $this->saveEnrollmentData(
-                        $employee,
-                        $validated,
-                        $dependent['relation'],
-                        $validated['selectedPlans'][$dependent['id']] ?? null,
-                        $dependent
-                    );
-                }
-            }
-
-            DB::commit();
-
-=======
             $enrollmentDetail = \App\Models\EnrollmentDetail::findOrFail($validated['enrollment_detail_id']);
 
             // Save enrollment data for employee (SELF)
@@ -4319,18 +4317,11 @@ class SuperAdminController extends Controller
 
             \Log::info('🎉 Enrollment submission completed successfully');
 
->>>>>>> main
             return redirect()->route('superadmin.view-live-portal', $validated['enrollment_period_id'])
                 ->with('message', 'Enrollment submitted successfully!')
                 ->with('messageType', 'success');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-<<<<<<< HEAD
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Submit enrollment failed: ' . $e->getMessage());
-=======
             \Log::error('❌ Validation failed for enrollment submission', [
                 'errors' => $e->errors(),
                 'input' => $request->all()
@@ -4342,7 +4333,6 @@ class SuperAdminController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'input' => $request->all()
             ]);
->>>>>>> main
             return back()
                 ->with('message', 'Failed to submit enrollment. Please try again.')
                 ->with('messageType', 'error')
@@ -4355,15 +4345,12 @@ class SuperAdminController extends Controller
      */
     private function saveEnrollmentData($employee, $formData, $relation, $selectedPlans = null, $dependent = null)
     {
-<<<<<<< HEAD
-=======
         Log::info("💾 Saving enrollment data for {$relation}", [
             'employee_id' => $employee->id,
             'dependent_name' => $dependent['insured_name'] ?? 'N/A',
             'selected_plans' => $selectedPlans
         ]);
 
->>>>>>> main
         // Create enrollment data record
         $enrollmentData = new \App\Models\EnrollmentData();
 
@@ -4388,39 +4375,6 @@ class SuperAdminController extends Controller
         $enrollmentData->relation = $relation;
         $enrollmentData->detailed_relation = $dependent['detailed_relation'] ?? $relation;
 
-<<<<<<< HEAD
-        // Premium calculations
-        $premiumCalc = $formData['premiumCalculations'];
-
-        if ($selectedPlans && isset($selectedPlans['basePlan'])) {
-            // Calculate base premium for this member (simplified calculation)
-            $basePremium = $this->calculatePlanPremium($selectedPlans['basePlan'], 'base');
-            $enrollmentData->base_premium_on_employee = $basePremium['employee'];
-            $enrollmentData->base_premium_on_company = $basePremium['company'];
-            $enrollmentData->base_sum_insured = $basePremium['sum_insured'];
-        }
-
-        if ($selectedPlans && isset($selectedPlans['topupPlan'])) {
-            // Calculate topup premium for this member
-            $topupPremium = $this->calculatePlanPremium($selectedPlans['topupPlan'], 'topup');
-            $enrollmentData->topup_premium_on_employee = $topupPremium['employee'];
-            $enrollmentData->topup_premium_on_company = $topupPremium['company'];
-            $enrollmentData->topup_sum_insured = $topupPremium['sum_insured'];
-        }
-
-        // Extra coverage (only for employee)
-        if ($relation === 'SELF' && !empty($formData['extraCoverage'])) {
-            $enrollmentData->extra_coverage_plan = $formData['extraCoverage']['plan_name'];
-            $enrollmentData->extra_coverage_premium = $formData['extraCoverage']['premium'] ?? 0;
-        }
-
-        // System fields
-        $enrollmentData->created_by = 'SuperAdmin';
-        $enrollmentData->updated_by = 'SuperAdmin';
-
-        $enrollmentData->save();
-
-=======
         // Premium calculations from formData
         $premiumCalc = $formData['premiumCalculations'] ?? [];
 
@@ -4470,31 +4424,10 @@ class SuperAdminController extends Controller
             'relation' => $enrollmentData->relation
         ]);
 
->>>>>>> main
         return $enrollmentData;
     }
 
     /**
-<<<<<<< HEAD
-     * Calculate premium for a specific plan
-     */
-    private function calculatePlanPremium($planId, $planType)
-    {
-        // This is a simplified calculation - in real implementation,
-        // you would fetch actual plan details from database
-        $planDetails = [
-            'base' => [
-                1 => ['employee' => 12000, 'company' => 8000, 'sum_insured' => 300000],
-                2 => ['employee' => 18000, 'company' => 12000, 'sum_insured' => 500000],
-            ],
-            'topup' => [
-                1 => ['employee' => 6000, 'company' => 0, 'sum_insured' => 200000],
-                2 => ['employee' => 12000, 'company' => 0, 'sum_insured' => 500000],
-            ]
-        ];
-
-        return $planDetails[$planType][$planId] ?? ['employee' => 0, 'company' => 0, 'sum_insured' => 0];
-=======
      * Update enrollment status after successful submission
      */
     private function updateEnrollmentStatus($employee, $enrollmentDetail, $formData)
@@ -4700,6 +4633,217 @@ class SuperAdminController extends Controller
         return Inertia::render('superadmin/policy/Policies/Index', [
             'policies' => $policies,
             'filters' => $request->only(['search', 'status']),
+        ]);
+    }
+
+    /**
+     * Show endorsements for a specific policy and allow filtering by endorsement number
+     */
+    public function policyEndorsements(Request $request, $policyId)
+    {
+        $policy = PolicyMaster::with('company')->find($policyId);
+        if (!$policy) {
+            return redirect()->back()->with('error', 'Policy not found');
+        }
+
+        $query = PolicyEndorsement::where('policy_id', $policyId);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('endorsement_no', 'like', "%{$search}%");
+        }
+
+        $endorsements = $query->orderBy('status', 'desc')->orderBy('endorsement_date', 'desc')->paginate(10)->withQueryString();
+
+        return Inertia::render('superadmin/policy/Policies/PolicyEndorsements', [
+            'policy' => $policy,
+            'endorsements' => $endorsements,
+            'filters' => $request->only(['search']),
+        ]);
+    }
+
+    /**
+     * Show policy - currently redirects to policy endorsements list
+     */
+    public function showPolicy($policyId)
+    {
+        // If a dedicated show page exists later, replace this redirect with Inertia render
+        return redirect()->route('superadmin.policy.policies.endorsements', $policyId);
+    }
+
+    public function storePolicyEndorsement(Request $request, $policyId)
+    {
+        $policy = PolicyMaster::find($policyId);
+        if (! $policy) {
+            return redirect()->back()->with('error', 'Policy not found');
+        }
+
+        $request->validate([
+            'endorsement_no' => 'required|string|max:255',
+            'endorsement_date' => 'required|date',
+            'endorsement_copy' => 'required|file|max:5120',
+        ]);
+
+        // Check latest endorsement for this policy + company
+        $latest = PolicyEndorsement::where('policy_id', $policyId)
+            ->where('cmp_id', $policy->comp_id)
+            ->orderBy('status', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($latest) {
+            if ($latest->status != 1) {
+                return redirect()->back()->with('error', 'Please Complete your previous Endorsement');
+            }
+            // if previous endorsement exists and is completed, new type should be post
+            $endorsement_type = 'post';
+        } else {
+            // first endorsement for this policy/company should be pre
+            $endorsement_type = 'pre';
+        }
+
+        $data = $request->only(['endorsement_no', 'endorsement_date']);
+        $data['endorsement_type'] = $endorsement_type;
+        $data['policy_id'] = $policyId;
+
+        $comp = CompanyMaster::where('comp_id', $policy->comp_id)->first();
+        $data['cmp_id'] = $comp->comp_id ?? $policy->comp_id ?? null;
+        $data['status'] = 1; // new endorsement initial status (as per requirement)
+
+        if ($request->hasFile('endorsement_copy')) {
+            $file = $request->file('endorsement_copy');
+            $path = 'uploads/ebs_files';
+            if (! is_dir(public_path($path))) {
+                mkdir(public_path($path), 0777, true);
+            }
+            $filename = 'endt-' . $policyId . '_' . preg_replace('/[^A-Za-z0-9_.-]/', '_', $file->getClientOriginalName());
+            $file->move(public_path($path), $filename);
+            $data['endorsement_copy'] = $path . '/' . $filename;
+        }
+
+        try {
+            $created = PolicyEndorsement::create($data);
+            if ($created) {
+                return redirect()->route('superadmin.policy.endorsements.show', $created->id);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to create endorsement: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('error', 'Something went wrong!');
+    }
+
+    /**
+     * Show a specific endorsement (detail view)
+     */
+    public function showPolicyEndorsement($endorsementId)
+    {
+        $endorsement = PolicyEndorsement::find($endorsementId);
+        if (! $endorsement) {
+            abort(404);
+        }
+
+        $policy = PolicyMaster::find($endorsement->policy_id);
+        if (! $policy) {
+            abort(404);
+        }
+
+        $cd_ac = null;
+        if (! empty($policy->cd_ac_id)) {
+            $cd_ac = CdMaster::find($policy->cd_ac_id);
+        }
+
+        $company = CompanyMaster::where('comp_id', $endorsement->cmp_id)->first();
+
+        if ($policy->policy_status != 1) {
+            abort(404);
+        }
+
+        return Inertia::render('superadmin/policy/Policies/PolicyEndorsementShow', [
+            'endorsement' => $endorsement,
+            'policy' => $policy,
+            'cd_ac' => $cd_ac,
+            'company' => $company,
+        ]);
+    }
+
+    /**
+     * Update an endorsement
+     */
+    public function updatePolicyEndorsement(Request $request, $endorsementId)
+    {
+        $endorsement = PolicyEndorsement::find($endorsementId);
+        if (! $endorsement) {
+            return redirect()->back()->with('error', 'Endorsement not found');
+        }
+
+        $request->validate([
+            'endorsement_no' => 'required|string|max:255',
+            'endorsement_date' => 'required|date',
+            'endorsement_copy' => 'nullable|file|max:5120',
+        ]);
+
+        $data = $request->only(['endorsement_no', 'endorsement_date']);
+
+        // handle file replacement if provided
+        if ($request->hasFile('endorsement_copy')) {
+            $file = $request->file('endorsement_copy');
+            $path = 'uploads/ebs_files';
+            if (! is_dir(public_path($path))) {
+                mkdir(public_path($path), 0777, true);
+            }
+            $filename = 'endt-' . ($endorsement->policy_id ?? '0') . '_' . preg_replace('/[^A-Za-z0-9_.-]/', '_', $file->getClientOriginalName());
+            $file->move(public_path($path), $filename);
+            $data['endorsement_copy'] = $path . '/' . $filename;
+
+            // attempt to remove old file if exists and different
+            if (!empty($endorsement->endorsement_copy) && file_exists(public_path($endorsement->endorsement_copy)) && $endorsement->endorsement_copy !== $data['endorsement_copy']) {
+                @unlink(public_path($endorsement->endorsement_copy));
+            }
+        }
+
+        try {
+            $endorsement->update($data);
+            return redirect()->route('superadmin.policy.endorsements.show', $endorsement->id)->with('success', 'Endorsement updated successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to update endorsement: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update endorsement');
+        }
+    }
+
+    /**
+     * Endorsements listing (policies with policy_status = 1)
+     */
+    public function endorsements(Request $request)
+    {
+        $query = PolicyMaster::with(['company']);
+
+        // only active policies as per request
+        $query->where('policy_status', 1);
+
+        // optional corporate filter
+        if ($request->filled('corporate_id')) {
+            $query->where('comp_id', $request->corporate_id);
+        }
+
+        // search by policy name/number
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('policy_name', 'like', "%{$search}%")
+                  ->orWhere('policy_number', 'like', "%{$search}%");
+            });
+        }
+
+        $policies = $query->orderBy('created_on', 'desc')->paginate(10)->withQueryString();
+
+        // corporates for filter dropdown
+        $corporates = CompanyMaster::orderBy('comp_name')->get(['comp_id', 'comp_name']);
+
+        return Inertia::render('superadmin/policy/Policies/Endorsements', [
+            'policies' => $policies,
+            'corporates' => $corporates,
+            'filters' => $request->only(['corporate_id', 'search']),
         ]);
     }
 
@@ -5070,12 +5214,36 @@ class SuperAdminController extends Controller
     {
         try {
             // Get data for dropdowns
-            $insuranceProviders = InsuranceMaster::where('status', 1)->get();
-            $escalationUsers = EscalationUser::where('is_active', 1)->get();
+            $corporates = CompanyMaster::where('status', 1)->get(['comp_id', 'comp_name'])->map(function ($corp) {
+                return ['id' => $corp->comp_id, 'name' => $corp->comp_name];
+            });
+
+            $insuranceProviders = InsuranceMaster::where('status', 1)->get(['id', 'insurance_company_name as name'])->map(function ($ins) {
+                return ['id' => $ins->id, 'name' => $ins->name];
+            });
+
+            $tpaCompanies = TpaMaster::where('status', 1)->get(['id', 'tpa_company_name as name'])->map(function ($tpa) {
+                return ['id' => $tpa->id, 'name' => $tpa->name];
+            });
+
+            // CD accounts will be loaded dynamically based on selected company
+            $cdAccounts = [];
+
+            // Get escalation users for claim level users
+            $escalationUsers = EscalationUser::where('is_active', 1)->get(['id', 'name']);
+
+            // Get users from UserMaster for sales RM, service RM, and sales vertical
+            $userMasterUsers = UserMaster::where('is_active', 1)->get(['user_id as id', 'full_name as name'])->map(function ($user) {
+                return ['id' => $user->id, 'name' => $user->name];
+            });
 
             return Inertia::render('superadmin/policy/Policies/Create', [
+                'corporates' => $corporates,
                 'insuranceProviders' => $insuranceProviders,
+                'tpaCompanies' => $tpaCompanies,
+                'cdAccounts' => $cdAccounts,
                 'escalationUsers' => $escalationUsers,
+                'userMasterUsers' => $userMasterUsers,
             ]);
         } catch (\Exception $e) {
             Log::error('Create policy form failed: ' . $e->getMessage());
@@ -5084,52 +5252,426 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Get CD Accounts by Company ID
+     */
+    public function getCdAccountsByCompany($companyId)
+    {
+        try {
+            $cdAccounts = CdMaster::where('status', 1)
+                ->where('comp_id', $companyId)
+                ->get(['id', 'cd_ac_name as name'])
+                ->map(function ($cd) {
+                    return ['id' => $cd->id, 'name' => $cd->name];
+                });
+
+            return response()->json($cdAccounts);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch CD accounts: ' . $e->getMessage());
+            return response()->json([], 500);
+        }
+    }
+
+    /**
      * Store New Policy
      */
     public function storePolicy(Request $request)
     {
+        Log::info('=== Starting Policy Creation ===', ['request_data' => $request->except(['policy_document'])]);
+        
         try {
             $validated = $request->validate([
+                'corporate_id' => 'required|exists:company_master,comp_id',
                 'policy_name' => 'required|string|max:255',
-                'corporate_policy_name' => 'nullable|string|max:255',
+                'corporate_policy_name' => 'required|string|max:255',
+                'policy_type' => 'required|in:gmi,gpa,gtl',
                 'policy_number' => 'nullable|string|max:255',
-                'family_defination' => 'nullable|string|max:255',
-                'policy_type' => 'nullable|string|max:255',
-                'policy_type_definition' => 'nullable|string|max:255',
-                'policy_start_date' => 'nullable|date',
-                'policy_end_date' => 'nullable|date|after:policy_start_date',
+                'family_defination' => 'nullable|string',
+                'policy_start_date' => 'required|date',
+                'policy_end_date' => 'required|date|after:policy_start_date',
                 'policy_document' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
-                'policy_directory_name' => 'nullable|string|max:255',
-                'ins_id' => 'required|exists:insurance_masters,id',
-                'tpa_id' => 'nullable|string|max:255',
-                'cd_ac_id' => 'nullable|string|max:255',
+                'ins_id' => 'required|exists:insurance_master,id',
+                'tpa_id' => 'nullable|exists:tpa_master,id',
+                'cd_ac_id' => 'nullable|exists:cd_master,id',
+                'is_paperless' => 'nullable|integer|in:0,1',
+                'doc_courier_name' => 'nullable|string|max:255',
+                'doc_courier_address' => 'nullable|string|max:500',
                 'data_escalation_id' => 'nullable|exists:escalation_users,id',
                 'claim_level_1_id' => 'nullable|exists:escalation_users,id',
                 'claim_level_2_id' => 'nullable|exists:escalation_users,id',
-                'is_active' => 'boolean',
+                'is_twin_allowed' => 'nullable',
+                'natural_addition_allowed' => 'nullable',
+                'policy_features' => 'required|string',
             ]);
 
-            // Handle file upload
+            // Validate policy_features has at least one inclusion or exclusion
+            $policyFeatures = json_decode($validated['policy_features'], true);
+            if (empty($policyFeatures) || !is_array($policyFeatures)) {
+                return back()->withErrors(['policy_features' => 'At least one inclusion or exclusion is required.'])->withInput();
+            }
+
+            // Validate courier fields when paper-based
+            if (isset($validated['is_paperless']) && $validated['is_paperless'] == 0) {
+                $request->validate([
+                    'doc_courier_name' => 'required|string|max:255',
+                    'doc_courier_address' => 'required|string|max:500',
+                ]);
+            }
+
+            // Handle file upload: place file under the company's `file_dir` if available
             if ($request->hasFile('policy_document')) {
                 $file = $request->file('policy_document');
                 $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('policy_documents', $fileName, 'public');
-                $validated['policy_document'] = $filePath;
+
+                // Try to load company file_dir (CompanyMaster uses comp_id)
+                $companyDirBase = null;
+                if (!empty($validated['corporate_id'])) {
+                    $company = CompanyMaster::where('comp_id', $validated['corporate_id'])->first();
+                    if ($company && !empty($company->file_dir)) {
+                        // Ensure it does not start with a leading slash
+                        $companyDirBase = rtrim($company->file_dir, '/') . '/';
+                    }
+                }
+
+                // Fallback directory when company file_dir is not set
+                if (empty($companyDirBase)) {
+                    $companyDirBase = 'uploads/company_files/';
+                }
+
+                // Create a per-company subfolder (using comp_id) to keep files organized
+                $compIdSegment = isset($validated['corporate_id']) ? $validated['corporate_id'] : 'unknown';
+                $uploadDir = trim($companyDirBase, '/') . '/' . $compIdSegment . '/'; // relative to public/
+
+                if (!is_dir(public_path($uploadDir))) {
+                    mkdir(public_path($uploadDir), 0777, true);
+                }
+
+                $file->move(public_path($uploadDir), $fileName);
+                $validated['policy_document'] = $uploadDir . $fileName;
             }
 
-            // Set default values
-            $validated['is_ready'] = 0;
-            $validated['is_old'] = 0;
-            $validated['created_on'] = now();
+            // Build a focused array mapping to the actual policy_master columns
+            $policyData = [
+                'comp_id' => $validated['corporate_id'],
+                'policy_name' => $validated['policy_name'] ?? null,
+                'corporate_policy_name' => $validated['corporate_policy_name'] ?? null,
+                'policy_number' => $validated['policy_number'] ?? null,
+                'family_defination' => $validated['family_defination'] ?? null,
+                // Use explicit policy_type (gmi/gpa/gtl)
+                'policy_type' => $validated['policy_type'] ?? null,
+                'policy_config' => 39,
+                'policy_selection' => 'mandatory',
+                'interval_period' => 43800,
+                'creation_status' => 4,
+                'policy_type_definition' => "Group Insurance",
+                'policy_start_date' => $validated['policy_start_date'] ?? null,
+                'policy_end_date' => $validated['policy_end_date'] ?? null,
+                'policy_document' => $validated['policy_document'] ?? null,
+                'is_paperless' => isset($validated['is_paperless']) ? $validated['is_paperless'] : 1,
+                'doc_courier_name' => $validated['doc_courier_name'] ?? null,
+                'doc_courier_address' => $validated['doc_courier_address'] ?? null,
+                'policy_directory_name' => $uploadDir ?? '',
+                'policy_status' => $validated['policy_status'] ?? null,
+                'ins_id' => $validated['ins_id'] ?? null,
+                'tpa_id' => $validated['tpa_id'] ?? null,
+                'cd_ac_id' => $validated['cd_ac_id'] ?? null,
+                'is_ready' => 1,
+                'is_active' => $validated['is_active'] ?? 1,
+                'policy_status' => 1,
+                'is_old' => 2,
+                'created_on' => now(),
+                'data_escalation_id' => $validated['data_escalation_id'] ?? null,
+                'claim_level_1_id' => $validated['claim_level_1_id'] ?? null,
+                'claim_level_2_id' => $validated['claim_level_2_id'] ?? null,
+            ];
 
-            PolicyMaster::create($validated);
+            Log::info('Policy data prepared for insertion', ['policy_data' => $policyData]);
 
-            return redirect()->route('superadmin.policy.policies.index')->with('message', 'Policy created successfully.')->with('messageType', 'success');
+            // Start database transaction
+            DB::beginTransaction();
+
+            // Create policy using the explicit mapping (avoid passing extra/unexpected keys)
+            $policy = PolicyMaster::create($policyData);
+
+            if (!$policy) {
+                throw new \Exception('Failed to create policy record in database');
+            }
+
+            Log::info('Policy created successfully', ['policy_id' => $policy->id]);
+
+            // Store policy features if provided
+            if (!empty($policyFeatures) && is_array($policyFeatures)) {
+                foreach ($policyFeatures as $feature) {
+                    \App\Models\PolicyFeature::create([
+                        'policy_id' => $policy->id,
+                        'feature_type' => $feature['feature_type'] ?? 'inc',
+                        'feature_title' => $feature['title'] ?? '',
+                        'feature_desc' => $feature['description'] ?? '',
+                        'icon_type' => 'default',
+                        'icon_data' => $feature['icon'] ?? null,
+                        'is_active' => 1,
+                    ]);
+                }
+                Log::info('Policy features saved', ['policy_id' => $policy->id, 'features_count' => count($policyFeatures)]);
+            }
+
+            // Commit the transaction
+            DB::commit();
+            
+            Log::info('=== Policy Created Successfully ===', ['policy_id' => $policy->id]);
+
+            return redirect()->route('superadmin.policy.policies.index')
+                ->with('success', 'Policy created successfully.');
         } catch (ValidationException $e) {
+            DB::rollBack();
+            Log::error('Policy validation failed', ['errors' => $e->errors()]);
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            Log::error('Store policy failed: ' . $e->getMessage());
-            return back()->with('message', 'Failed to create policy.')->with('messageType', 'error')->withInput();
+            DB::rollBack();
+            Log::error('Store policy failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Failed to create policy: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    /**
+     * Edit Policy Form
+     */
+    public function editPolicy($id)
+    {
+        try {
+            $policy = PolicyMaster::with(['company', 'insurance', 'tpa'])->findOrFail($id);
+            
+            // Get policy features
+            $policyFeatures = \App\Models\PolicyFeature::where('policy_id', $id)->get();
+            
+            // Separate inclusions and exclusions
+            $inclusions = $policyFeatures->where('feature_type', 'inc')->map(function ($feature) {
+                return [
+                    'id' => $feature->id,
+                    'title' => $feature->feature_title,
+                    'description' => $feature->feature_desc,
+                    'icon' => $feature->icon_data,
+                    'feature_type' => 'inc'
+                ];
+            })->values();
+            
+            $exclusions = $policyFeatures->where('feature_type', 'exc')->map(function ($feature) {
+                return [
+                    'id' => $feature->id,
+                    'title' => $feature->feature_title,
+                    'description' => $feature->feature_desc,
+                    'icon' => $feature->icon_data,
+                    'feature_type' => 'exc'
+                ];
+            })->values();
+
+            // Get data for dropdowns
+            $corporates = CompanyMaster::where('status', 1)->get(['comp_id', 'comp_name'])->map(function ($corp) {
+                return ['id' => $corp->comp_id, 'name' => $corp->comp_name];
+            });
+
+            $insuranceProviders = InsuranceMaster::where('status', 1)->get(['id', 'insurance_company_name as name'])->map(function ($ins) {
+                return ['id' => $ins->id, 'name' => $ins->name];
+            });
+
+            $tpaCompanies = TpaMaster::where('status', 1)->get(['id', 'tpa_company_name as name'])->map(function ($tpa) {
+                return ['id' => $tpa->id, 'name' => $tpa->name];
+            });
+
+            // Get CD accounts for the policy's company
+            $cdAccounts = CdMaster::where('status', 1)
+                ->where('comp_id', $policy->comp_id)
+                ->get(['id', 'cd_ac_name as name'])
+                ->map(function ($cd) {
+                    return ['id' => $cd->id, 'name' => $cd->name];
+                });
+
+            // Get escalation users for claim level users
+            $escalationUsers = EscalationUser::where('is_active', 1)->get(['id', 'name']);
+
+            // Get users from UserMaster
+            $userMasterUsers = UserMaster::where('is_active', 1)->get(['user_id as id', 'full_name as name'])->map(function ($user) {
+                return ['id' => $user->id, 'name' => $user->name];
+            });
+
+            return Inertia::render('superadmin/policy/Policies/Edit', [
+                'policy' => $policy,
+                'inclusions' => $inclusions,
+                'exclusions' => $exclusions,
+                'corporates' => $corporates,
+                'insuranceProviders' => $insuranceProviders,
+                'tpaCompanies' => $tpaCompanies,
+                'cdAccounts' => $cdAccounts,
+                'escalationUsers' => $escalationUsers,
+                'userMasterUsers' => $userMasterUsers,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Edit policy form failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to load edit policy form.');
+        }
+    }
+
+    /**
+     * Update Policy
+     */
+    public function updatePolicy(Request $request, $id)
+    {
+        Log::info('=== Starting Policy Update ===', ['policy_id' => $id, 'request_data' => $request->except(['policy_document'])]);
+        
+        try {
+            $validated = $request->validate([
+                'corporate_id' => 'required|exists:company_master,comp_id',
+                'policy_name' => 'required|string|max:255',
+                'corporate_policy_name' => 'required|string|max:255',
+                'policy_type' => 'required|in:gmi,gpa,gtl',
+                'policy_number' => 'nullable|string|max:255',
+                'family_defination' => 'nullable|string',
+                'policy_start_date' => 'required|date',
+                'policy_end_date' => 'required|date|after:policy_start_date',
+                'policy_document' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+                'ins_id' => 'required|exists:insurance_master,id',
+                'tpa_id' => 'nullable|exists:tpa_master,id',
+                'cd_ac_id' => 'nullable|exists:cd_master,id',
+                'is_paperless' => 'nullable|integer|in:0,1',
+                'doc_courier_name' => 'nullable|string|max:255',
+                'doc_courier_address' => 'nullable|string|max:500',
+                'data_escalation_id' => 'nullable|exists:escalation_users,id',
+                'claim_level_1_id' => 'nullable|exists:escalation_users,id',
+                'claim_level_2_id' => 'nullable|exists:escalation_users,id',
+                'is_twin_allowed' => 'nullable',
+                'natural_addition_allowed' => 'nullable',
+                'policy_features' => 'required|string',
+            ]);
+
+            // Validate policy_features has at least one inclusion or exclusion
+            $policyFeatures = json_decode($validated['policy_features'], true);
+            if (empty($policyFeatures) || !is_array($policyFeatures)) {
+                return back()->withErrors(['policy_features' => 'At least one inclusion or exclusion is required.'])->withInput();
+            }
+
+            // Validate courier fields when paper-based
+            if (isset($validated['is_paperless']) && $validated['is_paperless'] == 0) {
+                $request->validate([
+                    'doc_courier_name' => 'required|string|max:255',
+                    'doc_courier_address' => 'required|string|max:500',
+                ]);
+            }
+
+            // Find the policy
+            $policy = PolicyMaster::findOrFail($id);
+
+            // Handle file upload if new file provided
+            if ($request->hasFile('policy_document')) {
+                $file = $request->file('policy_document');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+
+                // Try to load company file_dir
+                $companyDirBase = null;
+                if (!empty($validated['corporate_id'])) {
+                    $company = CompanyMaster::where('comp_id', $validated['corporate_id'])->first();
+                    if ($company && !empty($company->file_dir)) {
+                        $companyDirBase = rtrim($company->file_dir, '/') . '/';
+                    }
+                }
+
+                if (empty($companyDirBase)) {
+                    $companyDirBase = 'uploads/company_files/';
+                }
+
+                $compIdSegment = isset($validated['corporate_id']) ? $validated['corporate_id'] : 'unknown';
+                $uploadDir = trim($companyDirBase, '/') . '/' . $compIdSegment . '/';
+
+                if (!is_dir(public_path($uploadDir))) {
+                    mkdir(public_path($uploadDir), 0777, true);
+                }
+
+                $file->move(public_path($uploadDir), $fileName);
+                $validated['policy_document'] = $uploadDir . $fileName;
+            } else {
+                // Keep existing document if no new file uploaded
+                $validated['policy_document'] = $policy->policy_document;
+            }
+
+            // Build update data array
+            $policyData = [
+                'comp_id' => $validated['corporate_id'],
+                'policy_name' => $validated['policy_name'] ?? null,
+                'corporate_policy_name' => $validated['corporate_policy_name'] ?? null,
+                'policy_number' => $validated['policy_number'] ?? null,
+                'family_defination' => $validated['family_defination'] ?? null,
+                'policy_type' => $validated['policy_type'] ?? null,
+                'policy_type_definition' => $validated['policy_type_definition'] ?? null,
+                'policy_start_date' => $validated['policy_start_date'] ?? null,
+                'policy_end_date' => $validated['policy_end_date'] ?? null,
+                'policy_document' => $validated['policy_document'] ?? null,
+                'is_paperless' => isset($validated['is_paperless']) ? $validated['is_paperless'] : 1,
+                'doc_courier_name' => $validated['doc_courier_name'] ?? null,
+                'doc_courier_address' => $validated['doc_courier_address'] ?? null,
+                'policy_directory_name' => $uploadDir ?? $policy->policy_directory_name,
+                'policy_status' => $validated['policy_status'] ?? null,
+                'ins_id' => $validated['ins_id'] ?? null,
+                'tpa_id' => $validated['tpa_id'] ?? null,
+                'cd_ac_id' => $validated['cd_ac_id'] ?? null,
+                'is_active' => $validated['is_active'] ?? 1,
+                'updated_at' => now(),
+                'data_escalation_id' => $validated['data_escalation_id'] ?? null,
+                'claim_level_1_id' => $validated['claim_level_1_id'] ?? null,
+                'claim_level_2_id' => $validated['claim_level_2_id'] ?? null,
+            ];
+
+            Log::info('Policy data prepared for update', ['policy_data' => $policyData]);
+
+            // Start database transaction
+            DB::beginTransaction();
+
+            // Update policy
+            $policy->update($policyData);
+
+            if (!$policy) {
+                throw new \Exception('Failed to update policy record in database');
+            }
+
+            Log::info('Policy updated successfully', ['policy_id' => $policy->id]);
+
+            // Delete existing policy features
+            \App\Models\PolicyFeature::where('policy_id', $policy->id)->delete();
+
+            // Store new policy features
+            if (!empty($policyFeatures) && is_array($policyFeatures)) {
+                foreach ($policyFeatures as $feature) {
+                    \App\Models\PolicyFeature::create([
+                        'policy_id' => $policy->id,
+                        'feature_type' => $feature['feature_type'] ?? 'inc',
+                        'feature_title' => $feature['title'] ?? '',
+                        'feature_desc' => $feature['description'] ?? '',
+                        'icon_type' => 'default',
+                        'icon_data' => $feature['icon'] ?? null,
+                        'is_active' => 1,
+                    ]);
+                }
+                Log::info('Policy features updated', ['policy_id' => $policy->id, 'features_count' => count($policyFeatures)]);
+            }
+
+            // Commit the transaction
+            DB::commit();
+            
+            Log::info('=== Policy Updated Successfully ===', ['policy_id' => $policy->id]);
+
+            return redirect()->route('superadmin.policy.policies.index')
+                ->with('success', 'Policy updated successfully.');
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            Log::error('Policy validation failed', ['errors' => $e->errors()]);
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Update policy failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Failed to update policy: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -5259,64 +5801,295 @@ class SuperAdminController extends Controller
         return response()->json(['success' => true, 'status' => $cdAccount->status]);
     }
 
-    public function cdAccountsDetails($id)
+=======
+    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////// Insurance Management //////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+
+    public function insuranceIndex()
     {
-        $cdAccount = \App\Models\CdMaster::findOrFail($id);
-        $companies = \App\Models\CompanyMaster::where('status', 1)->orderBy('comp_name')->get(['comp_id as id', 'comp_name as company_name']);
-        $insurers = \App\Models\InsuranceMaster::where('status', 1)->orderBy('insurance_company_name')->get(['id', 'insurance_company_name as insurance_name']);
-        $transactions = \App\Models\CdMonthlyBalanceStatement::where('cd_ac_id', $id)->where('is_delete', 0)->orderBy('transaction_date', 'desc')->get();
-        return Inertia::render('superadmin/policy/CdAccounts/Details', [
-            'cdAccount' => $cdAccount,
-            'companies' => $companies,
-            'insurers' => $insurers,
-            'transactions' => $transactions
+        $insurances = InsuranceMaster::orderBy('id', 'desc')->get();
+
+        return Inertia::render('superadmin/policy/insurance/Index', [
+            'insurances' => $insurances,
         ]);
     }
 
-    public function cdAccountsTransactionStore(\Illuminate\Http\Request $request)
+    public function insuranceCreate()
     {
-        $validated = $request->validate([
-            'cd_ac_id' => 'required|integer',
-            'comp_id' => 'required|integer',
-            'transaction_name' => 'required|string',
-            'transaction_date' => 'required|date',
-            'transaction_type' => 'required|string',
-            'cd_balance_remaining' => 'nullable|numeric',
-            'premium' => 'nullable|numeric',
-            'remarks' => 'required|string',
-            'cd_file' => 'required|file',
-        ]);
-
-        $filePath = $request->file('cd_file')->store('cd_files', 'public');
-        $txn = new \App\Models\CdMonthlyBalanceStatement();
-        $txn->cd_ac_id = $validated['cd_ac_id'];
-        $txn->comp_id = $validated['comp_id'];
-        $txn->transaction_name = $validated['transaction_name'];
-        $txn->transaction_date = $validated['transaction_date'];
-        $txn->transaction_side = $validated['transaction_type'];
-        $txn->cd_balance_remaining = $validated['cd_balance_remaining'] ?? null;
-        $txn->transaction_amt = $validated['premium'] ?? null;
-        $txn->remarks = $validated['remarks'];
-        $txn->file_url = '/storage/' . $filePath;
-        $txn->is_delete = 0;
-        $txn->save();
-        return redirect()->back()->with('message', 'Transaction added successfully.');
+        return Inertia::render('superadmin/policy/insurance/Create');
     }
 
-    /**
-     * Soft delete a CD Account transaction (set is_delete = 1)
-     */
-    public function cdAccountsTransactionDelete($id)
+    public function insuranceStore(Request $request)
     {
-        $txn = \App\Models\CdMonthlyBalanceStatement::findOrFail($id);
-        $txn->is_delete = 1;
-        $txn->save();
-        $cdAcId = $txn->cd_ac_id;
-        // Inertia v0.11.x: return 204 for XHR, else redirect
-        if (request()->header('X-Inertia')) {
-            return response('', 204);
+        try {
+            $validated = $request->validate([
+                'insurance_company_name' => 'required|string|max:255',
+                'address' => 'required|string|max:500',
+                'state_name' => 'required|string|max:100',
+                'city_name' => 'required|string|max:100',
+                'pincode' => 'required|string|max:20',
+            ]);
+
+            // Create directory for insurance files
+            $slug = strtolower(str_replace(" ", "-", preg_replace('/[^A-Za-z0-9\-]/', '', $request->insurance_company_name)));
+            $insuranceDir = 'uploads/insurance_company_files/' . $slug . '/';
+
+            if (!is_dir(public_path($insuranceDir))) {
+                mkdir(public_path($insuranceDir), 0777, true);
+            }
+
+            // Handle icon upload
+            $iconPath = null;
+            if ($request->hasFile('icon')) {
+                $iconFile = $request->file('icon');
+                $iconName = 'icon_' . time() . '.' . $iconFile->getClientOriginalExtension();
+                $iconFile->move(public_path($insuranceDir), $iconName);
+                $iconPath = $insuranceDir . $iconName;
+            }
+
+            InsuranceMaster::create([
+                'insurance_company_name' => $request->insurance_company_name,
+                'address' => $request->address,
+                'file_dir' => $insuranceDir,
+                'insurance_comp_icon_url' => $iconPath,
+                'state_name' => $request->state_name,
+                'city_name' => $request->city_name,
+                'pincode' => $request->pincode,
+            ]);
+
+            return redirect()->route('superadmin.policy.insurance.index')
+                ->with('success', 'Insurance company created successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Insurance Store Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
-        return redirect()->route('superadmin.policy.cd-accounts.cd-details', $cdAcId);
->>>>>>> main
+    }
+
+    public function insuranceEdit($id)
+    {
+        $insurance = InsuranceMaster::findOrFail($id);
+
+        return Inertia::render('superadmin/policy/insurance/Edit', [
+            'insurance' => $insurance,
+        ]);
+    }
+
+    public function insuranceUpdate(Request $request, $id)
+    {
+        try {
+            $insurance = InsuranceMaster::findOrFail($id);
+
+            $validated = $request->validate([
+                'insurance_company_name' => 'required|string|max:255',
+                'address' => 'required|string|max:500',
+                'state_name' => 'required|string|max:100',
+                'city_name' => 'required|string|max:100',
+                'pincode' => 'required|string|max:20',
+                'black_hospital' => 'nullable|boolean',
+                'status' => 'nullable|boolean',
+            ]);
+
+            // Handle icon upload
+            if ($request->hasFile('icon')) {
+                $iconFile = $request->file('icon');
+                $iconName = 'icon_' . time() . '.' . $iconFile->getClientOriginalExtension();
+                $iconFile->move(public_path($insurance->file_dir), $iconName);
+                $insurance->insurance_comp_icon_url = $insurance->file_dir . $iconName;
+            }
+
+            $insurance->update([
+                'insurance_company_name' => $request->insurance_company_name,
+                'address' => $request->address,
+                'state_name' => $request->state_name,
+                'city_name' => $request->city_name,
+                'pincode' => $request->pincode,
+            ]);
+
+            return redirect()->route('superadmin.policy.insurance.index')
+                ->with('success', 'Insurance company updated successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Insurance Update Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
+
+    public function insuranceToggleStatus($id)
+    {
+        try {
+            $insurance = InsuranceMaster::findOrFail($id);
+            $insurance->update([
+                'status' => $insurance->status === 1 ? 0 : 1,
+            ]);
+
+            $statusText = $insurance->status === 1 ? 'activated' : 'deactivated';
+            return redirect()->back()->with('success', "Insurance company {$statusText} successfully!");
+        } catch (\Exception $e) {
+            \Log::error('Insurance Toggle Status Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
+
+    public function insuranceDestroy($id)
+    {
+        try {
+            $insurance = InsuranceMaster::findOrFail($id);
+            $insurance->delete();
+
+            return redirect()->route('superadmin.policy.insurance.index')
+                ->with('success', 'Insurance company deleted successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Insurance Delete Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////// TPA Management ////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+
+    public function tpaIndex()
+    {
+        $tpas = \App\Models\TpaMaster::orderBy('id', 'desc')->get();
+
+        return Inertia::render('superadmin/policy/tpa/Index', [
+            'tpas' => $tpas,
+        ]);
+    }
+
+    public function tpaCreate()
+    {
+        return Inertia::render('superadmin/policy/tpa/Create');
+    }
+
+    public function tpaStore(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'tpa_company_name' => 'required|string|max:255',
+                'address' => 'required|string|max:500',
+                'state_name' => 'required|string|max:100',
+                'city_name' => 'required|string|max:100',
+                'pincode' => 'required|string|max:20',
+                'tpa_table_name' => 'nullable|string|max:255',
+                'status' => 'nullable|boolean',
+            ]);
+
+            // Create directory for TPA files
+            $slug = strtolower(str_replace(" ", "-", preg_replace('/[^A-Za-z0-9\-]/', '', $request->tpa_company_name)));
+            $tpaDir = 'uploads/tpa_company_files/' . $slug . '-' . uniqid() . '/';
+
+            if (!is_dir(public_path($tpaDir))) {
+                mkdir(public_path($tpaDir), 0777, true);
+            }
+
+            // Handle icon upload
+            $iconPath = null;
+            if ($request->hasFile('icon')) {
+                $iconFile = $request->file('icon');
+                $iconName = 'icon_' . time() . '.' . $iconFile->getClientOriginalExtension();
+                $iconFile->move(public_path($tpaDir), $iconName);
+                $iconPath = $tpaDir . $iconName;
+            }
+
+            \App\Models\TpaMaster::create([
+                'tpa_company_name' => $request->tpa_company_name,
+                'address' => $request->address,
+                'file_dir' => $tpaDir,
+                'tpa_comp_icon_url' => $iconPath,
+                'state_name' => $request->state_name,
+                'city_name' => $request->city_name,
+                'pincode' => $request->pincode,
+                'tpa_table_name' => $request->tpa_table_name,
+                'status' => $request->status ?? 1,
+            ]);
+
+            return redirect()->route('superadmin.policy.tpa.index')
+                ->with('success', 'TPA company created successfully!');
+        } catch (\Exception $e) {
+            \Log::error('TPA Store Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
+
+    public function tpaEdit($id)
+    {
+        $tpa = \App\Models\TpaMaster::findOrFail($id);
+
+        return Inertia::render('superadmin/policy/tpa/Edit', [
+            'tpa' => $tpa,
+        ]);
+    }
+
+    public function tpaUpdate(Request $request, $id)
+    {
+        try {
+            $tpa = \App\Models\TpaMaster::findOrFail($id);
+
+            $validated = $request->validate([
+                'tpa_company_name' => 'required|string|max:255',
+                'address' => 'required|string|max:500',
+                'state_name' => 'required|string|max:100',
+                'city_name' => 'required|string|max:100',
+                'pincode' => 'required|string|max:20',
+                'tpa_table_name' => 'nullable|string|max:255',
+                'status' => 'nullable|boolean',
+            ]);
+
+            // Handle icon upload
+            if ($request->hasFile('icon')) {
+                $iconFile = $request->file('icon');
+                $iconName = 'icon_' . time() . '.' . $iconFile->getClientOriginalExtension();
+                $iconFile->move(public_path($tpa->file_dir), $iconName);
+                $tpa->tpa_comp_icon_url = $tpa->file_dir . $iconName;
+            }
+
+            $tpa->update([
+                'tpa_company_name' => $request->tpa_company_name,
+                'address' => $request->address,
+                'state_name' => $request->state_name,
+                'city_name' => $request->city_name,
+                'pincode' => $request->pincode,
+                'tpa_table_name' => $request->tpa_table_name,
+                'status' => $request->status ?? 1,
+            ]);
+
+            return redirect()->route('superadmin.policy.tpa.index')
+                ->with('success', 'TPA company updated successfully!');
+        } catch (\Exception $e) {
+            \Log::error('TPA Update Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
+
+    public function tpaToggleStatus($id)
+    {
+        try {
+            $tpa = \App\Models\TpaMaster::findOrFail($id);
+            $tpa->update([
+                'status' => $tpa->status === 1 ? 0 : 1,
+            ]);
+
+            $statusText = $tpa->status === 1 ? 'activated' : 'deactivated';
+            return redirect()->back()->with('success', "TPA company {$statusText} successfully!");
+        } catch (\Exception $e) {
+            \Log::error('TPA Toggle Status Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+    }
+
+    public function tpaDestroy($id)
+    {
+        try {
+            $tpa = \App\Models\TpaMaster::findOrFail($id);
+            $tpa->delete();
+
+            return redirect()->route('superadmin.policy.tpa.index')
+                ->with('success', 'TPA company deleted successfully!');
+        } catch (\Exception $e) {
+            \Log::error('TPA Delete Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
+
     }
 }

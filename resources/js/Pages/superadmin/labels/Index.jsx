@@ -387,30 +387,51 @@ export default function Index({ labels }) {
 
                 {/* Pagination Controls */}
                 {filteredLabels.length > 0 && (
-                    <div className={`px-6 py-3 flex items-center justify-between border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <div className="flex-1 flex justify-between sm:hidden">
+                    <div className={`px-2 md:px-6 py-2 md:py-3 flex items-center justify-center md:justify-between border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                        {/* Mobile Pagination */}
+                        <div className="flex md:hidden items-center gap-1 w-full justify-center">
                             <button
                                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
-                                className={`relative inline-flex items-center px-4 py-2 text-[11px] md:text-xs font-medium rounded-md ${currentPage === 1
-                                    ? `${darkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-100 text-gray-400'} cursor-not-allowed`
-                                    : `${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white text-gray-700 hover:bg-gray-50'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#934790]`
+                                className={`relative inline-flex items-center px-2 py-1 text-[9px] font-medium rounded-md border ${currentPage === 1
+                                    ? `${darkMode ? 'bg-gray-700 text-gray-500 border-gray-600' : 'bg-gray-100 text-gray-400 border-gray-200'} cursor-not-allowed`
+                                    : `${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600 border-gray-600' : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'}`
                                     }`}
                             >
-                                Previous
+                                Prev
                             </button>
+                            <div className="flex gap-0.5">
+                                {Array.from({ length: Math.min(4, totalPages) }, (_, i) => {
+                                    const pageNum = currentPage <= 2 ? i + 1 : currentPage + i - 2;
+                                    if (pageNum > totalPages) return null;
+                                    return (
+                                        <button
+                                            key={pageNum}
+                                            onClick={() => setCurrentPage(pageNum)}
+                                            className={`relative inline-flex items-center px-2 py-1 border text-[8px] font-medium rounded ${currentPage === pageNum
+                                                ? `${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-[#934790] text-white border-[#934790]'} z-10`
+                                                : `${darkMode ? 'bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700' : 'bg-white text-gray-500 border-gray-300 hover:bg-gray-50'}`
+                                                }`}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                             <button
                                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                 disabled={currentPage === totalPages}
-                                className={`ml-3 relative inline-flex items-center px-4 py-2 text-[11px] md:text-xs font-medium rounded-md ${currentPage === totalPages
-                                    ? `${darkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-100 text-gray-400'} cursor-not-allowed`
-                                    : `${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white text-gray-700 hover:bg-gray-50'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#934790]`
+                                className={`relative inline-flex items-center px-2 py-1 text-[9px] font-medium rounded-md border ${currentPage === totalPages
+                                    ? `${darkMode ? 'bg-gray-700 text-gray-500 border-gray-600' : 'bg-gray-100 text-gray-400 border-gray-200'} cursor-not-allowed`
+                                    : `${darkMode ? 'bg-gray-700 text-white hover:bg-gray-600 border-gray-600' : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'}`
                                     }`}
                             >
                                 Next
                             </button>
                         </div>
-                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+
+                        {/* Desktop Pagination */}
+                        <div className="hidden md:flex-1 md:flex md:items-center md:justify-between w-full">
                             <div>
                                 <p className="text-[11px] md:text-xs text-gray-500 dark:text-gray-400">
                                     Showing <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, filteredLabels.length)}</span> to{' '}

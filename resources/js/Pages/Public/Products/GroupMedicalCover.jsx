@@ -3,12 +3,10 @@ import Header from '../Layouts/Header';
 import Footer from '../Layouts/Footer';
 import { Link } from '@inertiajs/react';
 import { FaCheckCircle, FaBuilding, FaUserMd, FaMobileAlt } from 'react-icons/fa';
-import { useTheme } from '../../../Context/ThemeContext';
 import { GMCFAQDemo } from "@/Pages/Public/components/ui/GMCFAQ";
 import ScrollProgressBar from '../../../Components/ScrollProgressBar';
 
 export default function GroupMedicalCover() {
-    const { darkMode } = useTheme();
     const [hoveredIndex, setHoveredIndex] = React.useState(null);
 
     const features = [
@@ -80,11 +78,18 @@ export default function GroupMedicalCover() {
                 .gmc-card:hover::before,.gmc-card.group:hover::before{transform:scale(1);opacity:1}
             `}</style>
             <div className={`min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-x-hidden
-                ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#ffceea78] text-gray-900'}`}>
+                bg-[#ffceea78] text-gray-900`}>
 
                 {/* HERO SECTION */}
                 <section className={`min-h-screen w-full flex items-center justify-center relative overflow-hidden`}>
-                    <div className="max-w-7xl px-8 pt-12 pb-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div className="absolute inset-0 opacity-70">
+                        <img
+                            src="/assets/images/wavy design-01.png"
+                            alt="Background"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div className="max-w-7xl px-8 pt-12 pb-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center z-10">
                         <div className="space-y-5">
                             <h1 className="text-4xl md:text-5xl font-dmserif font-semibold leading-tight text-gray-800">
                                 Empower Your Team with <span className="text-[#FF0066]/80">Group Medical Cover</span>
@@ -332,7 +337,7 @@ export default function GroupMedicalCover() {
                             <h2 className="text-3xl md:text-4xl font-normal text-white mb-6 leading-tight font-dmserif">
                                 How We Support Your Team's Well-being
                             </h2>
-                                <p className="text-white/90 mb-4 text-sm md:text-base md:leading-tight">
+                            <p className="text-white/90 mb-4 text-sm md:text-base md:leading-tight">
                                 Safeguard your employees’ health with group medical cover tailored for your organization — ensuring productivity, loyalty, and peace of mind.
                             </p>
 
@@ -341,7 +346,7 @@ export default function GroupMedicalCover() {
                                     <h3 className="font-semibold text-white text-sm md:text-lg flex items-center gap-2 tracking-tight">
                                         <span className="text-xl">💼</span> Superior Claims Experience
                                     </h3>
-                                        <p className="text-white/80 ml-8 text-xs md:text-sm">
+                                    <p className="text-white/80 ml-8 text-xs md:text-sm">
                                         Quick, easy claim processing and dedicated 24/7 concierge support.
                                     </p>
                                 </div>
@@ -350,7 +355,7 @@ export default function GroupMedicalCover() {
                                     <h3 className="font-semibold text-white text-sm md:text-lg flex items-center gap-2 tracking-tight">
                                         <span className="text-xl">🧾</span> Self-Service Employee Portal
                                     </h3>
-                                        <p className="text-white/80 ml-8 text-xs md:text-sm">
+                                    <p className="text-white/80 ml-8 text-xs md:text-sm">
                                         Employees can access policy details, inclusions, exclusions, and top-up options anytime.
                                     </p>
                                 </div>
@@ -359,7 +364,7 @@ export default function GroupMedicalCover() {
                                     <h3 className="font-semibold text-white text-lg md:text-lg flex items-center gap-2 tracking-tight">
                                         <span className="text-xl">🏥</span> Not Your Regular Broker
                                     </h3>
-                                        <p className="text-white/80 ml-8 text-xs md:text-sm">
+                                    <p className="text-white/80 ml-8 text-xs md:text-sm">
                                         Get teleconsultations, gym memberships, health check-ups, and more in one plan.
                                     </p>
                                 </div>
@@ -368,7 +373,7 @@ export default function GroupMedicalCover() {
                                     <h3 className="font-semibold text-white text-lg md:text-lg flex items-center gap-2 tracking-tight">
                                         <span className="text-xl">⚙️</span> Seamless Onboarding
                                     </h3>
-                                        <p className="text-white/80 ml-8 text-xs md:text-sm">
+                                    <p className="text-white/80 ml-8 text-xs md:text-sm">
                                         Integrate easily with HRMS for automated employee additions and deletions.
                                     </p>
                                 </div>
@@ -396,7 +401,7 @@ export default function GroupMedicalCover() {
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
                         {/* Section Header */}
                         <div className="text-center mb-20">
-                           
+
                             <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-6">
                                 How It <span className="bg-gradient-to-r from-[#FF0066] to-[#934790] text-transparent bg-clip-text">Works</span>
                             </h2>

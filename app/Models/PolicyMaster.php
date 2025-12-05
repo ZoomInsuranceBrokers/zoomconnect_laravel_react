@@ -30,6 +30,9 @@ class PolicyMaster extends Model
         'policy_start_date',
         'policy_end_date',
         'policy_document',
+        'is_paperless',
+        'doc_courier_name',
+        'doc_courier_address',
         'policy_directory_name',
         'policy_status',
         'ins_id',
@@ -40,20 +43,20 @@ class PolicyMaster extends Model
         'is_old',
         'created_on',
         'updated_at',
-<<<<<<< HEAD
-=======
         'data_escalation_id',
         'claim_level_1_id',
         'claim_level_2_id',
->>>>>>> main
+        'sales_rm_id',
+        'service_rm_id',
+        'sales_vertical_id',
+        'is_twin_allowed',
+        'natural_addition_allowed',
     ];
 
     public function insurance()
     {
         return $this->belongsTo(InsuranceMaster::class, 'ins_id', 'id');
     }
-<<<<<<< HEAD
-=======
 
     public function company()
     {
@@ -79,5 +82,4 @@ class PolicyMaster extends Model
     {
         return $this->belongsTo(TpaMaster::class, 'tpa_id', 'id');
     }
->>>>>>> main
 }
