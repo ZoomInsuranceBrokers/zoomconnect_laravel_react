@@ -162,6 +162,7 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
             ],
             company_contribution: false,
             company_contribution_percentage: 0,
+<<<<<<< HEAD
             plans: [
                 {
                     id: 1,
@@ -171,6 +172,9 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                     age_brackets: []
                 }
             ],
+=======
+            plans: [], // Start with no plans by default
+>>>>>>> main
             relation_wise_config: {
                 self: {
                     sum_insured_options: [
@@ -541,6 +545,14 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
         const stepErrors = {};
         const ratingConfig = data.rating_config;
 
+<<<<<<< HEAD
+=======
+        // If plan selection is optional, skip all plan validation
+        if (ratingConfig.plan_selection_optional) {
+            return stepErrors;
+        }
+
+>>>>>>> main
         if (!ratingConfig.plan_type) {
             stepErrors.plan_type = 'Please select a plan type';
         }
@@ -565,11 +577,17 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
             stepErrors.company_contribution_percentage = 'Company contribution percentage must be between 0 and 100';
         }
 
+<<<<<<< HEAD
         // Validate plans based on plan type
         if (['simple', 'age_based', 'per_life', 'floater_highest_age'].includes(ratingConfig.plan_type)) {
             if (!ratingConfig.plans || ratingConfig.plans.length === 0) {
                 stepErrors.plans = 'At least one plan is required';
             } else {
+=======
+        // Validate plans based on plan type, but allow no plans (enrollment for dependents only)
+        if (['simple', 'age_based', 'per_life', 'floater_highest_age'].includes(ratingConfig.plan_type)) {
+            if (ratingConfig.plans && ratingConfig.plans.length > 0) {
+>>>>>>> main
                 ratingConfig.plans.forEach((plan, index) => {
                     if (!plan.plan_name?.trim()) {
                         stepErrors[`plan_${index}_name`] = 'Plan name is required';
@@ -582,6 +600,10 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                     }
                 });
             }
+<<<<<<< HEAD
+=======
+            // If plans is empty or not present, do not set an error (allow dependents-only enrollment)
+>>>>>>> main
         }
 
         return stepErrors;

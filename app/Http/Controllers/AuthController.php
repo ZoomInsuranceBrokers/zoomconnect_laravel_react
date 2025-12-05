@@ -97,11 +97,22 @@ class AuthController extends Controller
             $request->session()->regenerateToken();
             $request->session()->regenerate();
 
+<<<<<<< HEAD
+=======
+            Session::put('superadmin_logged_in', true);
+>>>>>>> main
             Session::put('superadmin_authenticated', true);
             Session::put('is_superadmin', true);
             Session::put('superadmin_email', $otpEmail);
             Session::put('superadmin_user_id', $userId);
+<<<<<<< HEAD
             Session::put('superadmin_user_name', $user ? $user->full_name : '');
+=======
+            Session::put('superadmin_user', [
+                'user_name' => $user ? $user->full_name : '',
+                'email' => $otpEmail
+            ]);
+>>>>>>> main
             Session::put('login_time', now());
 
             return response()->json([

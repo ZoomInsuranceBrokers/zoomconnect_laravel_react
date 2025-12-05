@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+=======
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+>>>>>>> main
 import CountUp from 'react-countup';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTheme } from '../../Context/ThemeContext';
+<<<<<<< HEAD
 import { FaLinkedinIn, FaInstagram, FaFacebookF, FaBars, FaTimes } from 'react-icons/fa';
 import { Link } from '@inertiajs/react';
 
@@ -52,6 +58,77 @@ const faqs = [
         answer: "Yes, security is our top priority. We implement industry-standard security measures to protect your personal and health information. Your data is encrypted and only authorized personnel can access it."
     }
 ];
+=======
+import { FaLinkedinIn, FaInstagram, FaFacebookF } from 'react-icons/fa';
+import { Link } from '@inertiajs/react';
+import Lottie from "lottie-react";
+import Header from "./Layouts/Header";
+import Footer from "./Layouts/Footer";
+import { FaqSection } from "./Faq";
+
+
+// Auto-advancing image carousel component
+// StickyDiagonalScroll replaces ScrollImageSequence
+const StackedScrollImages = () => {
+    const containerRef = useRef(null);
+
+    const images = [
+        "/assets/images/zoomConnectFeatures/HR overview Static-01.png",
+        "/assets/images/zoomConnectFeatures/HR overview Static-02.png",
+        "/assets/images/zoomConnectFeatures/HR overview Static-03.png",
+        "/assets/images/zoomConnectFeatures/HR overview Static-04.png",
+    ];
+
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start start", "end end"],
+    });
+
+    return (
+        <section
+            ref={containerRef}
+            className="relative w-full min-h-[300vh] bg-white overflow-hidden flex justify-center"
+        >
+            <div className="sticky top-0 h-screen w-full flex justify-center items-center">
+                <div className="relative w-[600px] max-w-full perspective-1000">
+                    {images.map((src, index) => {
+                        const totalImages = images.length;
+                        const peek = 50; // how much each back image peeks
+
+                        // Start position (stacked with peek)
+                        const startY = index * peek;
+
+                        // End position (move up completely off screen)
+                        const endY = -peek * (totalImages - index);
+
+                        const y = useTransform(scrollYProgress, [0, 1], [startY, endY]);
+                        const rotateX = useTransform(scrollYProgress, [0, 1], [0, -5 * (index + 1)]);
+                        const scale = useTransform(scrollYProgress, [0, 1], [1 - index * 0.05, 1 - index * 0.05 + 0.05]);
+                        const zIndex = totalImages - index;
+
+                        return (
+                            <motion.img
+                                key={index}
+                                src={src}
+                                alt={`Slide ${index + 1}`}
+                                style={{
+                                    y,
+                                    scale,
+                                    rotateX,
+                                    zIndex,
+                                    transformOrigin: "center",
+                                }}
+                                className="absolute w-full object-contain rounded-xl shadow-2xl"
+                            />
+                        );
+                    })}
+                </div>
+            </div>
+        </section>
+    );
+};
+
+>>>>>>> main
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -65,6 +142,7 @@ const CertificationCarousel = () => {
             hasCircle: true
         },
         {
+<<<<<<< HEAD
             image: "/assets/logo/Best Insurance Broker of the Year.png",
             title: "Best Insurance Broker of the Year",
             subtitle: "Certified",
@@ -75,11 +153,24 @@ const CertificationCarousel = () => {
             title: "𝐁𝐞𝐬𝐭 𝐂𝐒𝐑 𝐈𝐧𝐢𝐭𝐢𝐚𝐭𝐢𝐯𝐞 Award",
             subtitle: "Certified",
             hasCircle: false
+=======
+            image: "/assets/logo/BestBrokers2023.png",
+            title: "Best Insurance Broker of the Year",
+            // subtitle: "Certified",
+            hasCircle: true
+        },
+        {
+            image: "/assets/logo/BestCSR.png",
+            title: "Best CSR Initiative Award",
+            // subtitle: "Certified",
+            hasCircle: true
+>>>>>>> main
         }
     ];
 
     return (
         <section className="w-full relative mt-2 pb-0 bg-transparent overflow-hidden">
+<<<<<<< HEAD
             <div className="absolute inset-0 bg-gradient-to-r from-[#934790] to-[#571754] transform -skew-y-3 origin-top-right shadow-lg"></div>
             <div className="relative z-10 container mx-auto flex flex-col md:flex-row gap-8 items-center min-w-[250px] px-8 pt-24 pb-12">
                 {/* Left: Compliance & Certification Heading */}
@@ -91,12 +182,29 @@ const CertificationCarousel = () => {
                         </div>
                         <div className="text-white text-lg md:text-xl font-medium max-w-xl">
                             when it comes to managing your employee benefits.
+=======
+            <div className="absolute inset-0 bg-gradient-to-r from-[#934790] to-[#850e7f] transform -skew-y-3 origin-top-right shadow-lg"></div>
+            <div className="relative z-10 container mx-auto flex flex-col md:flex-row gap-8 items-center min-w-[250px]h-[400px] px-8 pt-24 pb-16">
+                {/* Left: Compliance & Certification Heading */}
+                <div className="flex-1 flex items-center">
+                    <div>
+                        <div className="text-white text-xl md:text-3xl font-bold leading-tight mb-2">
+                            Awarded for Innovation.<br />
+                            Certified for Trust.
+                        </div>
+                        <div className="text-white text-lg md:text-base font-extralight max-w-xl">
+                            Every accolade we receive and every certification we earn reflects our commitment to secure technology, exceptional service, and uncompromised compliance for organizations and their employees.
+>>>>>>> main
                         </div>
                     </div>
                 </div>
 
                 {/* Right: Scrolling Carousel */}
+<<<<<<< HEAD
                 <div className="flex-[2] relative overflow-hidden">
+=======
+                <div className="flex-[1] relative overflow-hidden">
+>>>>>>> main
                     <style>{`
                         @keyframes scroll-left {
                             0% {
@@ -113,6 +221,7 @@ const CertificationCarousel = () => {
                             animation-play-state: paused;
                         }
                     `}</style>
+<<<<<<< HEAD
                     
                     <div className="flex gap-8 animate-scroll">
                         {/* Render certifications 3 times for seamless loop */}
@@ -140,6 +249,41 @@ const CertificationCarousel = () => {
                                         </div>
                                     )}
                                     <div className="text-white text-lg md:text-xl font-bold mb-1 text-center">{cert.title}</div>
+=======
+
+                    <div className="flex gap-8 animate-scroll">
+                        {/* Render certifications 3 times for seamless loop */}
+                        {[...certifications, ...certifications, ...certifications].map((cert, index) => (
+                            <div
+                                key={index}
+                                className="flex flex-col items-center justify-center flex-shrink-0 transform transition-all duration-300 min-w-[200px]"
+                            >
+                                <div className="flex flex-col items-center justify-start h-full">
+                                    {cert.hasCircle ? (
+                                        <div className=" rounded-full p-4 md:p-0 hover:shadow-xl mb-4">
+                                            <img
+                                                src={cert.image}
+                                                alt={cert.title}
+                                                className="w-18 h-18 md:w-24 md:h-24 object-contain"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="mb-4 flex items-center justify-center " style={{ height: '96px' }}>
+                                            <img
+                                                src={cert.image}
+                                                alt={cert.title}
+                                                className="w-16 h-16 md:w-20 md:h-20 rounded-full"
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="text-white text-lg md:text-lg font-bold mb-1 text-center">
+                                        {cert.title === 'ISO 27001:2022'
+                                            ? cert.title
+                                            : cert.title.split(' ').length > 1
+                                                ? <>{cert.title.split(' ').slice(0, Math.ceil(cert.title.split(' ').length / 2)).join(' ')}<br />{cert.title.split(' ').slice(Math.ceil(cert.title.split(' ').length / 2)).join(' ')}</>
+                                                : cert.title}
+                                    </div>
+>>>>>>> main
                                     <div className="text-white text-base md:text-lg font-medium text-center">{cert.subtitle}</div>
                                 </div>
                             </div>
@@ -155,28 +299,49 @@ export default function Home() {
     // FAQ accordion state
     const [openFaqIdx, setOpenFaqIdx] = useState(null);
     const { darkMode, toggleDarkMode } = useTheme();
+<<<<<<< HEAD
     
     // Trusted Companies Logos
     const trustedCompanies = [
         { name: 'Wipro', logo: '/assets/logo/Gray logo/Wipro-01.png', height: 'h-12' },
         { name: 'Panasonic', logo: '/assets/logo/Gray logo/Panasonic-01.png', height: 'h-12' },
+=======
+
+    // Trusted Companies Logos
+    const trustedCompanies = [
+        { name: 'Wipro', logo: '/assets/logo/Gray logo/Wipro-01.png', height: 'h-16' },
+        { name: 'Panasonic', logo: '/assets/logo/Gray logo/Panasonic-01.png', height: 'h-16' },
+>>>>>>> main
         { name: 'Sasken', logo: '/assets/logo/Gray logo/Sasken-01.png', height: 'h-12' },
         { name: 'Munjal Showa', logo: '/assets/logo/Gray logo/Munjal Showa-01.png', height: 'h-12' },
         { name: 'JBM Group', logo: '/assets/logo/Gray logo/JBM group-01.png', height: 'h-12' },
         { name: 'Orient Bell', logo: '/assets/logo/Gray logo/Orientbell-01.png', height: 'h-20' },
+<<<<<<< HEAD
         { name: 'Sindhuja', logo: '/assets/logo/Gray logo/Sindhuja-01.png', height: 'h-12' },
         { name: 'Hamdard', logo: '/assets/logo/Gray logo/Hamdard-01.png', height: 'h-12' },
         { name: 'Vivo', logo: '/assets/logo/Gray logo/Vivo-01.png', height: 'h-12' },
         { name: 'Paytm', logo: '/assets/logo/Gray logo/Paytm-01.png', height: 'h-12' },
         { name: 'Novel Healthtech', logo: '/assets/logo/Gray logo/Novel Healthtech-01.png', height: 'h-12' },
         { name: 'Lenskart', logo: '/assets/logo/Gray logo/Lenskart-01.png', height: 'h-12' },
+=======
+        { name: 'Sindhuja', logo: '/assets/logo/Gray logo/Sindhuja-01.png', height: 'h-16' },
+        { name: 'Hamdard', logo: '/assets/logo/Gray logo/Hamdard-01.png', height: 'h-16' },
+        { name: 'Vivo', logo: '/assets/logo/Gray logo/Vivo-01.png', height: 'h-12' },
+        { name: 'Paytm', logo: '/assets/logo/Gray logo/Paytm-01.png', height: 'h-12' },
+        { name: 'Novel Healthtech', logo: '/assets/logo/Gray logo/Novel Healthtech-01.png', height: 'h-16' },
+        // { name: 'Lenskart', logo: '/assets/logo/Gray logo/Lenskart-01.png', height: 'h-16' },
+>>>>>>> main
         { name: 'Lava', logo: '/assets/logo/Gray logo/Lava-01.png', height: 'h-12' },
         { name: 'eClerx', logo: '/assets/logo/Gray logo/eClerx-01.png', height: 'h-12' },
         { name: 'CCspl', logo: '/assets/logo/Gray logo/CCspl-01.png', height: 'h-12' },
         { name: 'Apollo', logo: '/assets/logo/Gray logo/apollo logo-01.png', height: 'h-12' },
         { name: 'Fusion', logo: '/assets/logo/Gray logo/Fusion-01.png', height: 'h-12' },
     ];
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     // Testimonials data
     const testimonials = [
         {
@@ -223,6 +388,7 @@ export default function Home() {
         },
     ];
 
+<<<<<<< HEAD
     // Navigation links with dropdown items
     const navLinks = [
         { 
@@ -297,6 +463,8 @@ export default function Home() {
         setCloseTimeout(timeout);
     };
 
+=======
+>>>>>>> main
     // Animation state
     const [activeIdx, setActiveIdx] = useState(0);
     useEffect(() => {
@@ -369,6 +537,7 @@ export default function Home() {
     };
     const arcIndices = getArcIndices();
 
+<<<<<<< HEAD
 
 
     const socialLinks = [
@@ -1417,5 +1586,541 @@ export default function Home() {
             </footer>
 
         </div>
+=======
+    return (
+        <>
+            <Header />
+            <div className={`min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-hidden ${darkMode ? 'bg-gray-900 text-white' : 'bg-[#ffceea78] text-gray-900'}`}>
+                {/* Starry background effect (simple SVG or CSS) */}
+                <div className="absolute inset-0 pointer-events-none z-0">
+                    {/* You can use a star SVG, animated canvas, or just a gradient for demo */}
+                    <svg width="100%" height="100%" className="absolute inset-0" style={{ opacity: 0.2 }}>
+                        <circle cx="20%" cy="30%" r="1.5" fill="white" />
+                        <circle cx="60%" cy="70%" r="1" fill="white" />
+                        <circle cx="80%" cy="20%" r="2" fill="white" />
+                        <circle cx="40%" cy="80%" r="1.2" fill="white" />
+                        {/* ...more stars... */}
+                    </svg>
+                </div>
+
+                {/* Hero Section */}
+                <main className="min-h-screen flex flex-col items-center justify-center  md:w-full z-10 mt-5 relative">
+                    {/* Background image */}
+                    {/* <div className="absolute inset-0 z-0 opacity-70 pointer-events-none">
+                    <Lottie
+                        animationData={animationData}
+                        loop
+                        autoplay
+                        style={{ width: "100%", height: "100%" }}
+                    />
+                </div> */}
+                    {/* <div className="absolute inset-0 z-0 opacity-70">
+                        <img
+                            src="/assets/images/wavy lines-01.png"
+                            alt="Background"
+                            className="w-full h-full object-cover"
+                        />
+                    </div> */}
+
+                    {/* Content */}
+                    <div className="relative z-10 flex flex-col items-center px-4 md:px-0">
+                        <h1 className={`font-dmserif text-3xl md:text-6xl font-normal text-center leading-tight mb-6  ${darkMode ? ' text-white' : ' text-gray-800'}`}>
+                            Redefining Employee <br className="hidden md:block" />
+                            Healthcare & Insurance   Experience
+                            {/* <br className="hidden md:block" /> */}
+
+                        </h1>
+                        {/* <hr className="w-64 border-t-2 border-[#934790] my-4" /> */}
+                        <p className="text-base md:text-lg text-center mb-8 ">
+                            From policy access to claims support and wellness services —<br /> ZoomConnect puts everything your employees need in one smart platform.
+                        </p>
+                        <Link
+                            href="/book-demo"
+                            className="relative overflow-hidden font-bold px-4 md:px-8 py-2 rounded-lg text-sm md:text-lg shadow-lg transition flex items-center gap-2 bg-[#934790] text-white group"
+                        >
+                            {/* Animated ellipse background */}
+                            <span className="absolute left-1/2 bottom-0 w-0 h-0 bg-[#6A0066] rounded-full opacity-0 group-hover:w-[200%] group-hover:h-[400%] group-hover:opacity-100 transition-all duration-500 ease-out -translate-x-1/2 z-0"></span>
+                            <span className="relative z-10">Book a Demo</span>
+                            <span className="inline-block transform  relative z-10">→</span>
+                        </Link>
+                    </div>
+                </main>
+                {/* Trusted Companies Section */}
+                <section className="w-full mb-4 py-16 flex flex-col items-center justify-center ">
+                    <h2 className="font-montserrat text-2xl md:text-xl text-gray-800 font-semibold text-center  mb-4 max-w-4xl">
+                        Empowering Workforces of 1100+ Companies
+                    </h2>
+                    <p className="text-sm md:text-base text-center mb-8 md:mb-0 max-w-4xl">Our platform is trusted by industry leaders across manufacturing, IT, FMCG, automotive, healthcare, and more making employee health and insurance simpler and smarter.</p>
+                    {/* Infinite Marquee for Trusted Companies */}
+                    <div className="infinite-marquee-wrapper mt-10">
+                        <div className="infinite-marquee flex items-center gap-16 whitespace-nowrap">
+                            {/* Duplicate twice for smooth looping */}
+                            {[...trustedCompanies, ...trustedCompanies, ...trustedCompanies].map((company, index) => (
+                                <img
+                                    key={index}
+                                    src={company.logo}
+                                    alt={company.name}
+                                    className={`${company.height} w-auto object-contain`}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                </section>
+
+                {/* Health Benefits Section */}
+                <section className="w-full py-8 flex flex-col items-center justify-center">
+                    <div className="w-[95%] px-4 bg-[#f2d7b3]/70 rounded-3xl h-[600px] backdrop-blur-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start overflow-hidden h-full relative">
+                            {/* Benefits Grid - Left Side */}
+                            <div className="z-[1] bg-gradient-to-b from-[#f2d7b3]/60 to-transparent h-[70px] absolute top-0 left-0 right-0 rounded-tl-md rounded-tr-md"></div>
+                            <div className="z-[1] bg-gradient-to-t from-[#f2d7b3]/60 to-transparent h-[70px] absolute bottom-0 left-0 right-0 rounded-bl-md rounded-br-md"></div>
+
+                            <div className="grid grid-cols-3 gap-6  ">
+                                {/* Column 1: Up */}
+                                <div className=" h-96 flex flex-col items-center">
+                                    <div className="vertical-marquee-up flex flex-col gap-6">
+                                        {/* Repeat cards for seamless loop */}
+                                        <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Full body<br />health checkups</h3>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Group Accident<br />Cover</h3>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Maternal<br />Wellness</h3>
+                                        </div>
+                                        {/* Duplicate for seamless loop */}
+                                        <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Full body<br className="hidden md:block" />health checkups</h3>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Group Accident<br className="hidden md:block" />Cover</h3>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Maternal<br className="hidden md:block" />Wellness</h3>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Column 2: Down */}
+                                <div className=" h-96 flex flex-col items-center">
+                                    <div className="vertical-marquee-down flex flex-col gap-6">
+                                        <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Vision<br className="hidden md:block" />Checkups</h3>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-lg  flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Surgical <br className="hidden md:block" /> Assistance</h3>
+                                        </div>
+                                        <div className="bg-white rounded-lg p-6 flex flex-col items-center  hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Medicine</h3>
+                                        </div>
+                                        {/* Duplicate for seamless loop */}
+                                        <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Vision<br className="hidden md:block" />Checkups</h3>
+                                        </div>
+                                        <div className="bg-white p-8 rounded-lg shadow-sm flex flex-col items-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Talk to Doctor (Specialists)</h3>
+                                        </div>
+                                        <div className="bg-white rounded-lg p-6 flex flex-col items-center  text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat text-left">Condition <br className="hidden md:block" /> Management Program</h3>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Column 3: Up */}
+                                <div className=" h-96 flex flex-col items-center">
+                                    <div className="vertical-marquee-up flex flex-col gap-6">
+                                        <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Group Medical Cover</h3>
+                                        </div>
+                                        {/* Duplicate for seamless loop */}
+                                        <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Lab Tests</h3>
+                                        </div>
+                                        <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.6px 13.3px 13.3px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Talk to Doctor (GP)</h3>
+                                        </div>
+                                        <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Maternity Care Program Comprehensive</h3>
+                                        </div>
+                                        <div className="bg-white rounded-lg p-6 flex flex-col items-center  hover:-translate-y-2 transition-transform duration-300 cursor-pointer w-40 h-48" style={{ boxShadow: ' 6.7px 13.4px 13.4px hsl(0deg 0% 0% / 0.29)' }}>
+                                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-gray-800 text-sm font-medium font-montserrat">Medicine</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Content - Right Side */}
+                            <div className="flex flex-col items-start justify-center h-full w-full py-16">
+                                <h2 className="text-4xl md:text-5xl font-dmserif font-medium text-[#2D1836] mb-6 leading-tight text-left ">Health Benefits<br />Simplified</h2>
+                                <p className="text-gray-700 text-base mb-10 max-w-lg text-left">
+                                    At <span className="text-[#934790] font-bold">ZoomConnect</span>, we recognize the vital importance of <span className=" font-semibold">wellness</span> for both individuals and organizations. That’s why we provide a <span className=" font-semibold">comprehensive suite</span> of wellness and value-added services, thoughtfully designed to tackle today’s global health challenges—<span className=" font-bold">all at exclusive discounted rates</span>.
+                                </p>
+
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Testimonials Section */}
+                <section className="w-full pb-16 flex flex-col items-center justify-center ">
+                    <h2 className="font-dmserif text-2xl md:text-5xl font-medium text-center mb-8 max-w-3xl text-gray-800">What Our Clients Say</h2>
+                    <div className="w-[90%] max-w-6xl mx-auto rounded-3xl bg-white-300 flex flex-col md:flex-row items-stretch overflow-hidden" style={{ boxShadow: '0 10px 32px 0 rgba(0,0,0,0.15), 0 1.5px 6px 0 rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)' }}>
+                        {/* Left: Semicircle Testimonial List */}
+                        <div className="md:w-1/2 w-full relative flex items-center justify-center min-h-[420px] bg-white/30 ">
+                            {/* Semicircle SVG Path */}
+                            <svg width="120" height="360" viewBox="0 0 120 360" className="absolute left-8 top-8 hidden md:block" style={{ zIndex: 1 }}>
+                                <path d="M10 40 Q120 180 10 320" stroke="#D1D5DB" strokeWidth="3" fill="none" />
+                            </svg>
+                            {/* Avatars and Info on Path */}
+                            <div className="absolute left-4 top-0 w-full h-full" style={{ zIndex: 2 }}>
+                                {arcIndices.map((idx, i) => (
+                                    <div
+                                        key={idx}
+                                        className={`flex items-center gap-4 transition-all duration-700 ${i === 1 ? 'scale-110 z-10' : 'opacity-80 z-0'}`}
+                                        style={{
+                                            position: 'absolute',
+                                            left: arcPositions[i].left,
+                                            top: arcPositions[i].top,
+                                            filter: i === 1 ? 'drop-shadow(0 4px 16px rgba(0,0,0,0.12))' : 'none',
+                                            transition: 'all 0.7s ease-in-out',
+                                        }}
+                                    >
+                                        <img
+                                            src={testimonials[idx].img}
+                                            alt={testimonials[idx].name}
+                                            className={`rounded-full border-2 bg-gray-100 border-gray-500 shadow ${i === 1 ? 'w-20 h-20' : 'w-14 h-14'}`}
+                                        />
+                                        <div>
+                                            <div className="text-black font-semibold font-montserrat">{testimonials[idx].name}</div>
+                                            <div className="mt-6 h-px w-full bg-white/20"></div>
+
+                                            <div className="flex items-center gap-1 text-green-500 text-sm font-semibold">
+
+                                                {testimonials[idx].rating}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        {/* Right: Large Quote */}
+                        <div className="md:w-1/2 w-full flex flex-col justify-center items-center p-10 bg-[#934790]">
+                            <blockquote className="text-md md:text-lg font-montserrat italic text-white/80  text-center max-w-xl mx-auto transition-all duration-700" key={activeIdx}>
+                                “<span style={{ fontWeight: 'bold', fontSize: '1.5em', lineHeight: '1', display: 'inline-block' }}>{testimonials[activeIdx].quote.charAt(0)}</span>{testimonials[activeIdx].quote.slice(1)}”
+                            </blockquote>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Beyond Group Mediclaim Section - Card Grid */}
+                <section className="w-full flex flex-col items-center justify-center ">
+                    <div className="w-full pt-20 pb-48 flex flex-col items-center justify-center bg-gradient-to-b from-[#f2d7b3]/70 via-[#f2d7b3]/60 to-transparent beyond-group-section relative">
+                        <div className="container mx-auto px-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start relative">
+                                {/* Left column pinned via GSAP */}
+                                <div className="left-content lg:pt-32">
+                                    <h2 className="font-dmserif text-3xl md:text-5xl font-medium text-gray-800 mb-6">
+                                        Beyond Group <br className="hidden md:block" />
+                                        Mediclaim
+                                    </h2>
+                                    <p className="text-gray-600 text-md mb-8 max-w-lg">
+                                        Zoom Insurance Brokers offers a wide range of insurance solutions tailored to meet your diverse needs. In addition to our comprehensive group mediclaim coverage, we specialize in:
+                                    </p>
+                                    {/* <img src="/assets/images/Family Insurance Icons.png" alt="Beyond Group Mediclaim" className=" absolute w-40 h-auto" /> */}
+                                    {/* <button className="bg-transparent border-2 border-[#934790] text-[#934790] px-8 py-3 rounded-lg font-semibold hover:bg-[#934790] hover:text-white transition-all duration-300">
+                                LEARN MORE
+                            </button> */}
+                                </div>
+
+                                {/* Right column cards */}
+                                <div className="right-content space-y-12 pb-8">
+                                    {/* Row 1 - First 2 cards */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                            <div className="flex flex-col items-center text-center">
+                                                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                                    <img src="/assets/icons/ship-solid-full.svg" alt="Marine Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                    Marine Insurance
+                                                </h3>
+                                                <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                    Protect your marine assets with our tailored marine insurance policies, covering both hull and cargo risks.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                            <div className="flex flex-col items-center text-center">
+                                                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                                    <img src="/assets/icons/gears-solid-full.svg" alt="Specialty Lines" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                    Specialty Lines
+                                                </h3>
+                                                <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                    Explore our specialized insurance offerings, including aviation, construction, energy, and more.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Row 2 - Next 2 cards */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                            <div className="flex flex-col items-center text-center">
+                                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
+                                                    <img src="/assets/icons/credit-card-regular-full.svg" alt="Trade Credit Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                    Trade Credit Insurance
+                                                </h3>
+                                                <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                    Mitigate the risk of non-payment from your customers with our trade credit insurance solutions.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                            <div className="flex flex-col items-center text-center">
+                                                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                                                    <img src="/assets/icons/shield-virus-solid-full.svg" alt="Cyber Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                    Cyber Insurance
+                                                </h3>
+                                                <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                    Safeguard your digital assets and protect against cyber threats with our comprehensive cyber insurance coverage.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Row 3 - Last 2 cards */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                            <div className="flex flex-col items-center text-center">
+                                                <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
+                                                    <img src="/assets/icons/handshake-regular-full.svg" alt="Reinsurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                    Reinsurance
+                                                </h3>
+                                                <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                    Access specialized reinsurance coverage to manage your risk exposure effectively.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="card bg-white rounded-2xl p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
+                                            <div className="flex flex-col items-center text-center">
+                                                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                                                    <img src="/assets/icons/leaf-solid-full.svg" alt="Agriculture Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-4">
+                                                    Agriculture Insurance
+                                                </h3>
+                                                <p className="text-gray-600 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                                                    Protect your agricultural operations against various risks with our tailored agriculture insurance solutions.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </section>
+
+                <FaqSection />
+
+                <CertificationCarousel />
+
+
+                <StackedScrollImages />
+
+                {/* Schedule a Call CTA */}
+                <section className="w-full py-16  relative">
+                    <div className="container mx-auto px-6 lg:px-12">
+                        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#441752] via-[#571754] to-[#934790] shadow-2xl">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-8 lg:px-16 py-14">
+                                <div className="space-y-6">
+                                    <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-white/70">
+                                        <span className="inline-block h-2 w-2 rounded-full bg-white/70"></span>
+                                        Ready when you are
+                                    </span>
+                                    <h2 className="font-dmserif text-3xl md:text-5xl text-white leading-snug">
+                                        Unlock bespoke Group Benefits<br className="hidden md:block" /> for your teams
+                                    </h2>
+                                    <p className="text-white/80 text-base md:text-md max-w-xl">
+                                        Schedule a quick conversation with our benefits specialists or jump straight into a tailored demo. We’ll craft a plan that mirrors your company culture and protects every employee.
+                                    </p>
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <Link
+                                            href="/book-demo"
+                                            className="px-8 py-3 rounded-xl bg-white text-[#571754] font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-center inline-block"
+                                        >
+                                            Book a Demo
+                                        </Link>
+
+                                    </div>
+                                </div>
+
+                                <div className="relative flex justify-center lg:justify-end">
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 30 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true, amount: 0.4 }}
+                                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                                        className="relative w-full max-w-sm"
+                                    >
+                                        <div className="absolute -top-10 -left-6 h-24 w-24 rounded-full bg-white/10 blur-2xl"></div>
+                                        <div className="absolute -bottom-12 -right-10 h-28 w-28 rounded-full bg-[#FF0066]/30 blur-3xl"></div>
+                                        <div className="relative rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-6 shadow-xl">
+                                            <div className="flex items-center justify-between mb-6">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6 text-white">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c3.866 0 7-1.79 7-4s-3.134-4-7-4-7 1.79-7 4 3.134 4 7 4zm0 0v6" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 14c0 2.21 3.134 4 7 4s7-1.79 7-4" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 19c0 2.21 3.134 4 7 4s7-1.79 7-4" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-white/70 text-sm">ZoomConnect Advisor</p>
+                                                        <p className="text-white font-semibold">Live support</p>
+                                                    </div>
+                                                </div>
+                                                <span className="text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full bg-white/15 text-white/80">
+                                                    Online
+                                                </span>
+                                            </div>
+                                            <div className="space-y-4 text-white/80 text-sm">
+                                                <div className="flex items-start gap-3">
+                                                    <span className="mt-1 h-2 w-2 rounded-full bg-[#FF9BD2]"></span>
+                                                    <p>Customise coverage across GMC, GPA, GTL and wellness add-ons.</p>
+                                                </div>
+                                                <div className="flex items-start gap-3">
+                                                    <span className="mt-1 h-2 w-2 rounded-full bg-[#FFD166]"></span>
+                                                    <p>Compare quotes from top insurers in under 24 hours.</p>
+                                                </div>
+                                                <div className="flex items-start gap-3">
+                                                    <span className="mt-1 h-2 w-2 rounded-full bg-[#7AD9FF]"></span>
+                                                    <p>Dedicated claims desk with proactive SLAs.</p>
+                                                </div>
+                                            </div>
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                whileInView={{ opacity: 1, scale: 1 }}
+                                                viewport={{ once: true, amount: 0.6 }}
+                                                transition={{ delay: 0.4, duration: 0.6, ease: 'easeOut' }}
+                                                className="mt-8 rounded-xl bg-white/15 px-5 py-4 text-white/90 text-sm"
+                                            >
+                                                "ZoomConnect took us from fragmented benefits to a unified employee experience in weeks."
+                                            </motion.div>
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+
+                <Footer />
+            </div>
+        </>
+>>>>>>> main
     );
 }

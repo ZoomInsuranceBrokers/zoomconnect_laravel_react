@@ -127,7 +127,11 @@ export default function Index({ labels }) {
     return (
         <SuperAdminLayout>
             <Head title="Customer Labels" />
+<<<<<<< HEAD
             <div className={`p-4 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${isModalOpen ? 'blur-sm' : ''}`}> 
+=======
+            <div className={`p-4 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${isModalOpen ? 'blur-sm' : ''}`}>
+>>>>>>> main
                 {/* Header */}
                 <div className="flex justify-between items-center mb-3">
                     <h1 className={`text-base md:text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>

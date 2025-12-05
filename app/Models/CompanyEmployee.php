@@ -51,4 +51,28 @@ class CompanyEmployee extends Model
     {
         return $this->pwd;
     }
+
+    /**
+     * Get the company that owns the employee.
+     */
+    public function company()
+    {
+        return $this->belongsTo(CompanyMaster::class, 'company_id', 'comp_id');
+    }
+
+    /**
+     * Get the enrollment data for this employee.
+     */
+    public function enrollmentData()
+    {
+        return $this->hasMany(EnrollmentData::class, 'emp_id');
+    }
+
+    /**
+     * Get the location (branch) for this employee.
+     */
+    public function location()
+    {
+        return $this->belongsTo(CompanyLocationMaster::class, 'location_id', 'id');
+    }
 }

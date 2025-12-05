@@ -29,8 +29,14 @@ class InsuranceMaster extends Model
         'updated_at',
     ];
 
+<<<<<<< HEAD
     public function insurance()
     {
         return $this->belongsTo(InsuranceMaster::class, 'ins_id', 'id');
+=======
+    public function policies()
+    {
+        return $this->hasMany(PolicyMaster::class, 'ins_id', 'id');
+>>>>>>> main
     }
 }

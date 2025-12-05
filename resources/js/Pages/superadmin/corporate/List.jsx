@@ -18,6 +18,10 @@ export default function Index({ companies, labels, groups, users }) {
     const [selectAll, setSelectAll] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCompany, setSelectedCompany] = useState(null);
+<<<<<<< HEAD
+=======
+    const [openActionsDropdown, setOpenActionsDropdown] = useState(null);
+>>>>>>> main
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -125,6 +129,21 @@ export default function Index({ companies, labels, groups, users }) {
         setCurrentPage(1);
     }, [filteredCompanies.length, itemsPerPage]);
 
+<<<<<<< HEAD
+=======
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => {
+            if (openActionsDropdown) {
+                setOpenActionsDropdown(null);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [openActionsDropdown]);
+
+>>>>>>> main
     // Handle select all
     const handleSelectAll = () => {
         if (selectAll) {
@@ -158,6 +177,26 @@ export default function Index({ companies, labels, groups, users }) {
         });
     };
 
+<<<<<<< HEAD
+=======
+    // Handle toggle status
+    const handleToggleStatus = (compId, currentStatus) => {
+        if (confirm(`Are you sure you want to ${currentStatus === 1 ? 'deactivate' : 'activate'} this corporate?`)) {
+            router.put(route('corporate.toggle-status', compId), {}, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setOpenActionsDropdown(null);
+                },
+            });
+        }
+    };
+
+    // Handle edit corporate
+    const handleEditCorporate = (compId) => {
+        router.get(route('corporate.edit', compId));
+    };
+
+>>>>>>> main
     return (
         <SuperAdminLayout>
             <Head title="All Customers" />
@@ -538,6 +577,7 @@ export default function Index({ companies, labels, groups, users }) {
                                                     />
                                                 </svg>
                                             </button>
+<<<<<<< HEAD
                                             <button className="text-gray-400 hover:text-gray-600">
                                                 <svg
                                                     className="w-3 h-3"
@@ -553,6 +593,118 @@ export default function Index({ companies, labels, groups, users }) {
                                                     />
                                                 </svg>
                                             </button>
+=======
+                                            <div className="relative">
+                                                <button
+                                                    className="text-gray-400 hover:text-gray-600"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setOpenActionsDropdown(
+                                                            openActionsDropdown === company.comp_id
+                                                                ? null
+                                                                : company.comp_id
+                                                        );
+                                                    }}
+                                                >
+                                                    <svg
+                                                        className="w-3 h-3"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                                {openActionsDropdown === company.comp_id && (
+                                                    <div
+                                                        className="absolute left-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <div className="py-1">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleEditCorporate(company.comp_id);
+                                                                }}
+                                                                className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                                                            >
+                                                                <svg
+                                                                    className="w-3 h-3 inline-block mr-2"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                                    />
+                                                                </svg>
+                                                                Edit Corporate
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleToggleStatus(company.comp_id, company.status);
+                                                                }}
+                                                                className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                                                            >
+                                                                <svg
+                                                                    className="w-3 h-3 inline-block mr-2"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                                                                    />
+                                                                </svg>
+                                                                {company.status === 1 ? 'Deactivate' : 'Activate'}
+                                                            </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        // Navigate to manage employees
+                                                                        router.get(route('corporate.manage-employees', company.comp_id));
+                                                                        setOpenActionsDropdown(null);
+                                                                    }}
+                                                                    className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                                                                >
+                                                                    <svg className="w-3 h-3 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a4 4 0 00-4-4h-1" />
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20H4v-2a4 4 0 014-4h1" />
+                                                                        <circle cx="12" cy="7" r="4" strokeWidth="2" stroke="currentColor" fill="none" />
+                                                                    </svg>
+                                                                    Manage Employees
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        // Navigate to manage entity
+                                                                        router.get(route('corporate.manage-entity', company.comp_id));
+                                                                        setOpenActionsDropdown(null);
+                                                                    }}
+                                                                    className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                                                                >
+                                                                    <svg className="w-3 h-3 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18M3 17h18" />
+                                                                    </svg>
+                                                                    Manage Entity
+                                                                </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+>>>>>>> main
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap">

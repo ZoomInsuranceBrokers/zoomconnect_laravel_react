@@ -40,10 +40,44 @@ class PolicyMaster extends Model
         'is_old',
         'created_on',
         'updated_at',
+<<<<<<< HEAD
+=======
+        'data_escalation_id',
+        'claim_level_1_id',
+        'claim_level_2_id',
+>>>>>>> main
     ];
 
     public function insurance()
     {
         return $this->belongsTo(InsuranceMaster::class, 'ins_id', 'id');
     }
+<<<<<<< HEAD
+=======
+
+    public function company()
+    {
+        return $this->belongsTo(CompanyMaster::class, 'comp_id', 'comp_id');
+    }
+
+    public function dataEscalationUser()
+    {
+        return $this->belongsTo(EscalationUser::class, 'data_escalation_id', 'id');
+    }
+
+    public function claimLevel1User()
+    {
+        return $this->belongsTo(EscalationUser::class, 'claim_level_1_id', 'id');
+    }
+
+    public function claimLevel2User()
+    {
+        return $this->belongsTo(EscalationUser::class, 'claim_level_2_id', 'id');
+    }
+
+    public function tpa()
+    {
+        return $this->belongsTo(TpaMaster::class, 'tpa_id', 'id');
+    }
+>>>>>>> main
 }

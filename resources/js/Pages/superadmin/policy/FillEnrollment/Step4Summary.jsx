@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
 
+<<<<<<< HEAD
 export default function Step4Summary({ employee, enrollmentDetail, formData, onSubmit, onPrevious }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [agreementAccepted, setAgreementAccepted] = useState(false);
 
+=======
+export default function Step4Summary({ employee, enrollmentDetail, availablePlans, formData, onSubmit, onPrevious }) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [agreementAccepted, setAgreementAccepted] = useState(false);
+
+    // Get rating config for company contribution
+    const ratingConfig = formData.ratingConfig || availablePlans?.ratingConfig || availablePlans?.rating_config || {};
+    const companyPerc = Number(ratingConfig.company_contribution_percentage || ratingConfig.company_contribution_percent || 0) || 0;
+
+    // Build unique family member list (employee + dependents excluding any duplicate SELF entries)
+>>>>>>> main
     const allMembers = [
         {
             id: 'employee',
@@ -14,7 +26,11 @@ export default function Step4Summary({ employee, enrollmentDetail, formData, onS
             dob: employee.date_of_birth,
             isEmployee: true
         },
+<<<<<<< HEAD
         ...(formData.dependents || []).map(dep => ({
+=======
+        ...((formData.dependents || []).filter(d => d.relation !== 'SELF').map(dep => ({
+>>>>>>> main
             id: dep.id,
             name: dep.insured_name,
             relation: dep.relation,
@@ -22,7 +38,11 @@ export default function Step4Summary({ employee, enrollmentDetail, formData, onS
             gender: dep.gender,
             dob: dep.dob,
             isEmployee: false
+<<<<<<< HEAD
         }))
+=======
+        })) || [])
+>>>>>>> main
     ];
 
     function calculateAge(dateOfBirth) {
@@ -212,6 +232,7 @@ export default function Step4Summary({ employee, enrollmentDetail, formData, onS
             {/* Premium Breakdown */}
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
                 <h4 className="font-medium text-green-900 mb-4">Premium Breakdown</h4>
+<<<<<<< HEAD
                 <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-green-700">Base Plan Premium:</span>
@@ -236,13 +257,71 @@ export default function Step4Summary({ employee, enrollmentDetail, formData, onS
                             <span className="text-lg font-medium text-green-900">Total Annual Premium:</span>
                             <span className="text-2xl font-bold text-green-900">
                                 {formatCurrency(formData.premiumCalculations?.totalPremium || 0)}
+=======
+                <div className="space-y-3 text-sm">
+                    <div className="flex items-center justify-between">
+                        <span className="text-green-700">Base Plan Premium</span>
+                        <span className="font-semibold text-green-900">{formatCurrency(formData.premiumCalculations?.basePremium || formData.premiumCalculations?.grossPremium || 0)}</span>
+                    </div>
+                    {(formData.premiumCalculations?.topupPremium || 0) > 0 && (
+                        <div className="flex items-center justify-between">
+                            <span className="text-green-700">Top-up Plan Premium</span>
+                            <span className="font-semibold text-green-900">{formatCurrency(formData.premiumCalculations?.topupPremium || 0)}</span>
+                        </div>
+                    )}
+                    {(formData.premiumCalculations?.extraCoveragePremium || 0) > 0 && (
+                        <div className="flex items-center justify-between">
+                            <span className="text-green-700">Extra Coverage Premium</span>
+                            <span className="font-semibold text-green-900">{formatCurrency(formData.premiumCalculations?.extraCoveragePremium || 0)}</span>
+                        </div>
+                    )}
+                    <div className="flex items-center justify-between border-t border-green-200 pt-2">
+                        <span className="text-green-700 font-medium">Subtotal (Before GST)</span>
+                        <span className="font-semibold text-green-900">{formatCurrency((Number(formData.premiumCalculations?.basePremium || formData.premiumCalculations?.grossPremium || 0) + Number(formData.premiumCalculations?.topupPremium || 0) + Number(formData.premiumCalculations?.extraCoveragePremium || 0)) || 0)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-green-700">GST (18%)</span>
+                        <span className="font-semibold text-green-900">{formatCurrency(formData.premiumCalculations?.gst || 0)}</span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-green-200 pt-2">
+                        <span className="text-green-700 font-medium">Total (with GST)</span>
+                        <span className="font-semibold text-green-900">{formatCurrency(formData.premiumCalculations?.grossPlusGst || 0)}</span>
+                    </div>
+                    {companyPerc > 0 && (
+                        <div className="flex items-center justify-between">
+                            <span className="text-green-700">Company Contribution ({companyPerc}%)</span>
+                            <span className="font-semibold text-green-600">-{formatCurrency(
+                                formData.premiumCalculations?.companyContributionAmount != null
+                                  ? formData.premiumCalculations.companyContributionAmount
+                                  : Math.round((formData.premiumCalculations?.grossPlusGst || 0) * (companyPerc / 100))
+                            )}</span>
+                        </div>
+                    )}
+                    <div className="border-t border-green-300 pt-3">
+                        <div className="flex items-center justify-between">
+                            <span className="text-lg font-medium text-green-900">Employee Annual Payable</span>
+                            <span className="text-2xl font-bold text-green-900">
+                              {formatCurrency(
+                                formData.premiumCalculations?.employeePayable != null
+                                  ? formData.premiumCalculations.employeePayable
+                                  : (Number(formData.premiumCalculations?.grossPlusGst || 0) - (
+                                      formData.premiumCalculations?.companyContributionAmount != null
+                                        ? formData.premiumCalculations.companyContributionAmount
+                                        : Math.round((formData.premiumCalculations?.grossPlusGst || 0) * (companyPerc / 100))
+                                    ))
+                              )}
+>>>>>>> main
                             </span>
                         </div>
                     </div>
                 </div>
+<<<<<<< HEAD
             </div>
 
             {/* Terms and Conditions */}
+=======
+            </div>            {/* Terms and Conditions */}
+>>>>>>> main
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-3">Terms & Conditions</h4>
                 <div className="space-y-2 text-sm text-gray-700">

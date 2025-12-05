@@ -51,4 +51,15 @@ class EnrollmentPeriod extends Model
     {
         return $this->belongsTo(CompanyMaster::class, 'cmp_id', 'comp_id');
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Relationship with EnrollmentData
+     */
+    public function enrollmentData()
+    {
+        return $this->hasMany(EnrollmentData::class, 'enrolment_portal_id');
+    }
+>>>>>>> main
 }
