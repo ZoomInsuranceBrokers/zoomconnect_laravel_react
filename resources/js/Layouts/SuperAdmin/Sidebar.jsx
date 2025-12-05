@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../../Context/ThemeContext";
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 
 export default function Sidebar({ open = true, onToggle }) {
     const { darkMode, toggleDarkMode } = useTheme();
     const currentRoute = window.location.pathname;
     const [openMenus, setOpenMenus] = useState({});
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     // Automatically open menus if the current route matches a submenu
     useEffect(() => {
@@ -871,10 +872,12 @@ export default function Sidebar({ open = true, onToggle }) {
                         </svg>
                         <span>Help</span>
                     </a>
-                    <Link
-                        href="/logout"
-                        method="post"
-                        as="button"
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowLogoutModal(true);
+                        }}
                         className={`flex items-center gap-3 py-2 font-montserrat font-normal text-[12px] w-full ${
                             darkMode
                                 ? "text-gray-400 hover:text-white"
@@ -893,7 +896,7 @@ export default function Sidebar({ open = true, onToggle }) {
                             <path d="M3 21V3a2 2 0 012-2h6a2 2 0 012 2v4" />
                         </svg>
                         <span>Log out</span>
-                    </Link>
+                    </button>
                 </div>
 
                 {/* Dark mode toggle */}
@@ -941,6 +944,29 @@ export default function Sidebar({ open = true, onToggle }) {
                         </span>
                     </button>
                 </div>
+                {/* Logout Confirmation Modal */}
+                {showLogoutModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className={`rounded-lg p-6 max-w-md w-full mx-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
+                            <h3 className="text-lg font-semibold mb-4">Confirm Logout</h3>
+                            <p className="text-sm mb-6">Are you sure you want to log out?</p>
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => setShowLogoutModal(false)}
+                                    className="px-4 py-2 rounded-lg border text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => router.post(route('logout'))}
+                                    className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700"
+                                >
+                                    Log out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </aside>
         </>
     );

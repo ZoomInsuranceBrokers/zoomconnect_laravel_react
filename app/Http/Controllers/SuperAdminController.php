@@ -54,9 +54,10 @@ class SuperAdminController extends Controller
     {
         Session::forget('superadmin_logged_in');
         Session::forget('superadmin_user');
-        Session::flush(); // Optional: clear entire session
+        Session::flush(); // clear entire session on logout
 
-        return redirect()->route('login')->with('success', 'Logged out successfully');
+        // Redirect to login page after logout so Inertia client can follow it.
+        return redirect('/login')->with('success', 'Logged out successfully');
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -1899,13 +1900,89 @@ class SuperAdminController extends Controller
             'user_name' => 'SuperAdmin',
             'email' => 'admin@zoomconnect.com'
         ]);
+        // Load welcome mailer records from DB (new table: welcome_mailers)
+        $mailers = \App\Models\WelcomeMailer::with(['company'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return Inertia::render('superadmin/Marketing/WelcomeMailer', [
             'user' => $user,
-            'mailers' => []
+            'mailers' => $mailers,
         ]);
     }
 
+    /**
+     * Show create welcome mailer form and load companies for dropdown
+     */
+    public function marketingWelcomeMailerCreate()
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        $companies = CompanyMaster::where('status', 1)
+            ->orderBy('comp_name')
+            ->get(['comp_id as id', 'comp_name as name']);
+
+        $templates = MessageTemplate::where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'name', 'subject', 'body', 'banner_image', 'attachment']);
+
+        return Inertia::render('superadmin/Marketing/CreateWelcomeMailer', [
+            'companies' => $companies,
+            'templates' => $templates,
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Return active policies for a given company (AJAX)
+     */
+    public function marketingWelcomeMailerCompanyPolicies($companyId)
+    {
+        $policies = \App\Models\PolicyMaster::where('comp_id', $companyId)
+            ->where('is_active', 1)
+            ->where('is_old', 0)
+            ->orderBy('policy_name')
+            ->get(['id', 'policy_name']);
+
+        return response()->json(['policies' => $policies]);
+    }
+
+    /**
+     * Return addition endorsement numbers for a given policy (AJAX)
+     */
+    public function marketingWelcomeMailerPolicyEndorsements($policyId)
+    {
+        $policyId = (int) $policyId;
+
+        $policy = \App\Models\PolicyMaster::with('tpa')->find($policyId);
+        if (!$policy || empty($policy->tpa) || empty($policy->tpa->tpa_table_name)) {
+            return response()->json(['endorsements' => []]);
+        }
+
+        $table_name = $policy->tpa->tpa_table_name;
+
+        // Basic validation for table name to avoid injection
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $table_name)) {
+            return response()->json(['endorsements' => []]);
+        }
+
+        try {
+            $sql = "SELECT t.addition_endorsement_id as id, pe.endorsement_no FROM {$table_name} t INNER JOIN policy_endorsements pe ON t.addition_endorsement_id = pe.id WHERE t.policy_id = ? GROUP BY t.addition_endorsement_id, pe.endorsement_no";
+            $rows = \DB::select($sql, [$policyId]);
+
+            $endorsements = array_map(function ($r) {
+                return ['id' => $r->id, 'endorsement_no' => $r->endorsement_no];
+            }, $rows);
+
+            return response()->json(['endorsements' => $endorsements]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load endorsements: ' . $e->getMessage());
+            return response()->json(['endorsements' => []]);
+        }
+    }
     /**
      * Store new welcome mailer
      */

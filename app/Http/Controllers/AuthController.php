@@ -92,8 +92,10 @@ class AuthController extends Controller
             $userId = Session::get('otp_user_id');
             $user = UserMaster::find($userId);
 
-            Session::flush();
-            $request->session()->invalidate();
+            // Do NOT flush or invalidate the entire session here — keep session data
+            // intact until the user explicitly logs out. Only remove OTP-related keys
+            // and rotate tokens/IDs to mitigate fixation risks.
+            Session::forget(['otp', 'otp_email', 'otp_user_id', 'otp_expires_at']);
             $request->session()->regenerateToken();
             $request->session()->regenerate();
 
@@ -104,7 +106,7 @@ class AuthController extends Controller
             Session::put('superadmin_user_id', $userId);
             Session::put('superadmin_user', [
                 'user_name' => $user ? $user->full_name : '',
-                'email' => $otpEmail
+                'email' => $otpEmail,
             ]);
             Session::put('login_time', now());
 

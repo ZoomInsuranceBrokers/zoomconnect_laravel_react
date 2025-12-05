@@ -40,8 +40,8 @@ Route::prefix('solutions')->name('solutions.')->group(function () {
 
 // Explore
 Route::get('/resources', [App\Http\Controllers\ProductController::class, 'resources'])->name('resources');
+Route::get('/resources/{slug}', [App\Http\Controllers\ProductController::class, 'resourceShow'])->name('resources.show');
 Route::get('/blog', [App\Http\Controllers\ProductController::class, 'blog'])->name('blog');
-Route::get('/cases', [App\Http\Controllers\ProductController::class, 'cases'])->name('cases');
 Route::get('/faq', [App\Http\Controllers\ProductController::class, 'faq'])->name('faq');
 
 // Company
@@ -55,9 +55,11 @@ Route::get('/contact-us', [ProductController::class, 'contactUs'])->name('contac
 ///////////////////////// --- SuperAdmin Login --- ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-Route::get('/login', [AuthController::class, 'superadminLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'processLogin'])->name('login.process');
-Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
+Route::middleware([\App\Http\Middleware\RedirectIfSuperadmin::class])->group(function () {
+    Route::get('/login', [AuthController::class, 'superadminLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'processLogin'])->name('login.process');
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////// --- SuperAdmin Login --- ////////////////////////////
@@ -68,7 +70,7 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
 Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');
 
 // SuperAdmin routes with prefix
-Route::prefix('superadmin')->group(function () {
+Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class])->prefix('superadmin')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
 
     // Corporate Labels Routes
@@ -143,6 +145,9 @@ Route::prefix('superadmin')->group(function () {
 
     Route::get('/marketing/welcome-mailer', [SuperAdminController::class, 'marketingWelcomeMailer'])->name('superadmin.marketing.welcome-mailer.index');
     Route::post('/marketing/welcome-mailer', [SuperAdminController::class, 'marketingWelcomeMailerStore'])->name('superadmin.marketing.welcome-mailer.store');
+    Route::get('/marketing/welcome-mailer/create', [SuperAdminController::class, 'marketingWelcomeMailerCreate'])->name('superadmin.marketing.welcome-mailer.create');
+    Route::get('/marketing/welcome-mailer/company/{companyId}/policies', [SuperAdminController::class, 'marketingWelcomeMailerCompanyPolicies'])->name('superadmin.marketing.welcome-mailer.policies');
+    Route::get('/marketing/welcome-mailer/policy/{policyId}/endorsements', [SuperAdminController::class, 'marketingWelcomeMailerPolicyEndorsements'])->name('superadmin.marketing.welcome-mailer.endorsements');
     Route::put('/marketing/welcome-mailer/{mailer}', [SuperAdminController::class, 'marketingWelcomeMailerUpdate'])->name('superadmin.marketing.welcome-mailer.update');
     Route::delete('/marketing/welcome-mailer/{mailer}', [SuperAdminController::class, 'marketingWelcomeMailerDestroy'])->name('superadmin.marketing.welcome-mailer.destroy');
 
