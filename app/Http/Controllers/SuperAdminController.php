@@ -5695,8 +5695,7 @@ class SuperAdminController extends Controller
     }
 
 
-
-    /**
+ /**
      * CD Accounts Index
      */
     public function cdAccountsIndex()
@@ -5799,6 +5798,66 @@ class SuperAdminController extends Controller
         $cdAccount->status = $cdAccount->status ? 0 : 1;
         $cdAccount->save();
         return response()->json(['success' => true, 'status' => $cdAccount->status]);
+    }
+
+    public function cdAccountsDetails($id)
+    {
+        $cdAccount = \App\Models\CdMaster::findOrFail($id);
+        $companies = \App\Models\CompanyMaster::where('status', 1)->orderBy('comp_name')->get(['comp_id as id', 'comp_name as company_name']);
+        $insurers = \App\Models\InsuranceMaster::where('status', 1)->orderBy('insurance_company_name')->get(['id', 'insurance_company_name as insurance_name']);
+        $transactions = \App\Models\CdMonthlyBalanceStatement::where('cd_ac_id', $id)->where('is_delete', 0)->orderBy('transaction_date', 'desc')->get();
+        return Inertia::render('superadmin/policy/CdAccounts/Details', [
+            'cdAccount' => $cdAccount,
+            'companies' => $companies,
+            'insurers' => $insurers,
+            'transactions' => $transactions
+        ]);
+    }
+
+    public function cdAccountsTransactionStore(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'cd_ac_id' => 'required|integer',
+            'comp_id' => 'required|integer',
+            'transaction_name' => 'required|string',
+            'transaction_date' => 'required|date',
+            'transaction_type' => 'required|string',
+            'cd_balance_remaining' => 'nullable|numeric',
+            'premium' => 'nullable|numeric',
+            'remarks' => 'required|string',
+            'cd_file' => 'required|file',
+        ]);
+
+        $filePath = $request->file('cd_file')->store('cd_files', 'public');
+        $txn = new \App\Models\CdMonthlyBalanceStatement();
+        $txn->cd_ac_id = $validated['cd_ac_id'];
+        $txn->comp_id = $validated['comp_id'];
+        $txn->transaction_name = $validated['transaction_name'];
+        $txn->transaction_date = $validated['transaction_date'];
+        $txn->transaction_side = $validated['transaction_type'];
+        $txn->cd_balance_remaining = $validated['cd_balance_remaining'] ?? null;
+        $txn->transaction_amt = $validated['premium'] ?? null;
+        $txn->remarks = $validated['remarks'];
+        $txn->file_url = '/storage/' . $filePath;
+        $txn->is_delete = 0;
+        $txn->save();
+        return redirect()->back()->with('message', 'Transaction added successfully.');
+    }
+
+    /**
+     * Soft delete a CD Account transaction (set is_delete = 1)
+     */
+    public function cdAccountsTransactionDelete($id)
+    {
+        $txn = \App\Models\CdMonthlyBalanceStatement::findOrFail($id);
+        $txn->is_delete = 1;
+        $txn->save();
+        $cdAcId = $txn->cd_ac_id;
+        // Inertia v0.11.x: return 204 for XHR, else redirect
+        if (request()->header('X-Inertia')) {
+            return response('', 204);
+        }
+        return redirect()->route('superadmin.policy.cd-accounts.cd-details', $cdAcId);
     }
 
     /////////////////////////////////////////////////////////////////////////

@@ -11,6 +11,17 @@ Route::get('/', function () {
     return Inertia::render('Public/Home');
 });
 
+Route::get('/mail-test', function () {
+    try {
+        \Illuminate\Support\Facades\Mail::raw('This is a test', function ($message) {
+            $message->to('you@yourdomain.com')->subject('Local SMTP test');
+        });
+        return 'Mail attempted; check storage/logs/laravel.log';
+    } catch (\Exception $e) {
+        return 'Mail error: ' . $e->getMessage();
+    }
+});
+
 Route::get('/book-demo', function () {
     return Inertia::render('Public/BookDemo');
 })->name('book.demo');
