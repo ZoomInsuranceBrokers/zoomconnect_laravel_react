@@ -5,22 +5,17 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SuperAdminController;
+use Illuminate\Http\Request;
+use App\Models\UserMaster;
+use App\Services\PermissionService;
 use App\Http\Controllers\ProductController;
+use App\Services\PHPMailerService;
+use App\Services\MailService;
 
 Route::get('/', function () {
     return Inertia::render('Public/Home');
 });
 
-Route::get('/mail-test', function () {
-    try {
-        \Illuminate\Support\Facades\Mail::raw('This is a test', function ($message) {
-            $message->to('you@yourdomain.com')->subject('Local SMTP test');
-        });
-        return 'Mail attempted; check storage/logs/laravel.log';
-    } catch (\Exception $e) {
-        return 'Mail error: ' . $e->getMessage();
-    }
-});
 
 Route::get('/book-demo', function () {
     return Inertia::render('Public/BookDemo');
@@ -81,8 +76,36 @@ Route::middleware([\App\Http\Middleware\RedirectIfSuperadmin::class])->group(fun
 Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');
 
 // SuperAdmin routes with prefix
-Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class])->prefix('superadmin')->group(function () {
+Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'permission'])->prefix('superadmin')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
+
+    // Debug route: return session superadmin_user, resolved roleId and userId
+    Route::get('/session-user', function (Request $request) {
+        $sessionUser = session('superadmin_user');
+        if (!$sessionUser || !is_array($sessionUser) || !isset($sessionUser['email'])) {
+            return response()->json(['ok' => false, 'message' => 'no session user', 'session' => $sessionUser]);
+        }
+        $user = UserMaster::where('email', $sessionUser['email'])->first();
+        $roleId = $user ? $user->role_id : null;
+        $userId = $user ? $user->user_id : null;
+        $permissions = [];
+        if ($roleId) {
+            $perms = PermissionService::getPermissionsForFrontend($roleId);
+            $permissions = [
+                'routes' => $perms['routes'] ?? [],
+                'modules' => $perms['modules'] ?? [],
+                'routeKeys' => array_keys($perms['routes'] ?? []),
+            ];
+        }
+
+        return response()->json([
+            'ok' => true,
+            'session_user' => $sessionUser,
+            'roleId' => $roleId,
+            'userId' => $userId,
+            'permissions' => $permissions,
+        ]);
+    })->name('superadmin.session.user');
 
     // Corporate Labels Routes
     Route::get('/corporate/labels', [SuperAdminController::class, 'corporateLabelsIndex'])->name('corporate.labels.index');
@@ -133,9 +156,7 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class])->
     Route::post('/corporate/{company}/upload-bulk-csv', [SuperAdminController::class, 'uploadBulkCsv'])->name('corporate.upload-bulk-csv');
     Route::post('/corporate/{company}/process-bulk-action', [SuperAdminController::class, 'processBulkAction'])->name('corporate.process-bulk-action');
     Route::get('/bulk-action/{action}/download/{type}', [SuperAdminController::class, 'downloadBulkActionFile'])->name('bulk-action.download-file');
-
-    // Wellness Module Routes
-    Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
+ Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
     Route::post('/wellness/vendor-list', [SuperAdminController::class, 'vendorStore'])->name('superadmin.wellness.vendor.store');
     Route::put('/wellness/vendor/{vendor}', [SuperAdminController::class, 'vendorUpdate'])->name('superadmin.wellness.vendor.update');
     Route::put('/wellness/vendor/{vendor}/toggle-status', [SuperAdminController::class, 'vendorToggleStatus'])->name('wellness.vendor.toggle-status');
@@ -213,6 +234,14 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class])->
     Route::put('/admin/resources/{resource}', [SuperAdminController::class, 'adminResourcesUpdate'])->name('superadmin.admin.resources.update');
     Route::delete('/admin/resources/{resource}', [SuperAdminController::class, 'adminResourcesDestroy'])->name('superadmin.admin.resources.destroy');
 
+    // Admin -> Roles & Permissions Routes
+    Route::get('/admin/roles-permissions', [\App\Http\Controllers\RolePermissionController::class, 'index'])->name('superadmin.admin.roles-permissions.index');
+    Route::get('/admin/roles/{roleId}/permissions-manage', [\App\Http\Controllers\RolePermissionController::class, 'managePermissions'])->name('superadmin.admin.roles.permissions.manage');
+    Route::get('/admin/roles/{roleId}/permissions', [\App\Http\Controllers\RolePermissionController::class, 'getRolePermissions'])->name('superadmin.admin.roles.permissions');
+    Route::post('/admin/roles/{roleId}/permissions', [\App\Http\Controllers\RolePermissionController::class, 'updatePermissions'])->name('superadmin.admin.roles.permissions.update');
+    Route::post('/admin/roles', [\App\Http\Controllers\RolePermissionController::class, 'createRole'])->name('superadmin.admin.roles.create');
+    Route::put('/admin/roles/{id}', [\App\Http\Controllers\RolePermissionController::class, 'updateRole'])->name('superadmin.admin.roles.update');
+    Route::delete('/admin/roles/{id}', [\App\Http\Controllers\RolePermissionController::class, 'deleteRole'])->name('superadmin.admin.roles.delete');
 
     // Insurance Routes
     Route::get('/policy/insurance', [SuperAdminController::class, 'insuranceIndex'])->name('superadmin.policy.insurance.index');
@@ -294,6 +323,8 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class])->
     Route::put('/policy/cd-accounts/{id}/toggle-active', [SuperAdminController::class, 'cdAccountsToggleActive'])->name('superadmin.policy.cd-accounts.toggle-active');
     Route::post('/policy/cd-accounts/transaction', [SuperAdminController::class, 'cdAccountsTransactionStore']);
     Route::delete('/policy/cd-accounts/transaction/{id}', [SuperAdminController::class, 'cdAccountsTransactionDelete']);
+    // Wellness Module Routes
+   
 });
 // });
 // });

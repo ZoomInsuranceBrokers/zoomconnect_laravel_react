@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
+import SuperAdminLayout from '../../../Layouts/SuperAdmin/Layout';
 import { Link } from '@inertiajs/react';
 
 export default function Index({ cdAccounts = [], filters = {} }) {

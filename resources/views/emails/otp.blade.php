@@ -1,56 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTP Verification</title>
-    <!-- Inline styles will be applied directly on elements for email client compatibility -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+        @media only screen and (max-width: 620px) {
+            .wrapper { width: 100% !important; }
+            .otp-box { font-size: 32px !important; letter-spacing: 8px !important; }
+        }
+    </style>
 </head>
-</body>
-    <body style="font-family: 'Poppins', Arial, Helvetica, sans-serif; background-color:#f8f9fa; padding:20px; -webkit-text-size-adjust:100%;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa; width:100%;">
-        <tr>
-            <td align="center">
-                <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
-                    <tr>
-                        <td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); text-align:center; padding:32px 20px;">
-                            <img src="{{ asset('assets/logo/ZoomConnect-logo.png') }}" alt="ZoomConnect" style="height:48px; max-width:220px; display:inline-block;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding:32px 28px; text-align:center; color:#2c3e50;">
-                            <h2 style="font-size:22px; font-weight:700; margin:0 0 8px;">Verification Code</h2>
-                            <p style="margin:0 0 18px; color:#7f8c8d; font-size:15px;">Login verification required.</p>
 
-                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0 22px;">
-                                <tr>
-                                    <td style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:8px; padding:16px; text-align:left; font-size:14px; color:#2c3e50;">
-                                        <strong>Login Verification:</strong>
-                                        <p style="margin:8px 0 0;">We received a request to login to your ZoomConnect account. Please use the verification code below to complete your login. If you didn't request this login, please ignore this email.</p>
-                                    </td>
-                                </tr>
-                            </table>
+<body style="margin:0; padding:0; background:#f5f3fa; font-family:'Poppins', Arial, sans-serif;">
 
-                            <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:12px; padding:22px; color:#ffffff; display:inline-block; min-width:260px;">
-                                <div style="font-size:13px; opacity:0.95; margin-bottom:8px;">Your verification code is:</div>
-                                <div style="font-size:34px; font-weight:700; letter-spacing:6px; font-family: 'Courier New', Courier, monospace; margin:6px 0;">{{ $otp }}</div>
-                                <div style="font-size:13px; opacity:0.9; margin-top:8px;">This code will expire in 10 minutes</div>
-                            </div>
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
+<tr><td align="center">
 
-                            <div style="background:#fff3cd; border:1px solid #ffeaa7; border-radius:8px; padding:12px; margin:20px auto 0; display:inline-block; color:#856404; font-size:13px;">
-                                <strong>Expires:</strong> {{ date('d/m/Y H:i', strtotime('+10 minutes')) }}
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="background:#2c3e50; color:#ecf0f1; text-align:center; padding:20px;">
-                            <p style="font-size:12px; margin:0 0 6px;">&copy; {{ date('Y') }} ZoomConnect. All rights reserved.</p>
-                            <p style="font-size:12px; margin:0;">This email was sent to {{ $email ?? 'your email' }}. If you didn't request this, please ignore this email.</p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+<!-- MAIN WRAPPER -->
+<table class="wrapper" width="600" cellpadding="0" cellspacing="0"
+       style="max-width:600px; background:#ffffff; border-radius:20px; overflow:hidden;
+              box-shadow:0 10px 25px rgba(0,0,0,0.08);">
+
+    <!-- HEADER WITH GRADIENT -->
+    <tr>
+        <td align="center" style="
+            padding:45px 20px;
+            background-size:cover; background-repeat:no-repeat;
+            color:#ffffff;
+        ">
+
+            <img src="https://portal.zoomconnect.co.in/assets/logo/ZoomConnect-logo.png"
+                 alt="ZoomConnect" style="height:58px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+
+        
+        </td>
+    </tr>
+
+    <!-- MAIN CONTENT -->
+    <tr>
+        <td align="center" valign="top" style="padding:30px;">
+            <div style="max-width:520px; width:100%; margin:0 auto; text-align:left;">
+
+            <!-- GLASS CARD -->
+            <div style="padding:20px 25px; border-radius:16px; background:rgba(147,71,144,0.05); border:1px solid rgba(147,71,144,0.12); backdrop-filter:blur(8px); margin-bottom:25px; text-align:left;">
+                <h3 style="margin:0; color:#4b0e55; font-size:18px;">One-Time Verification Code</h3>
+                <p style="margin:8px 0 0; color:#675e6d; font-size:14px; line-height:1.6;">We are verifying your identity to keep your ZoomConnect account secure.</p>
+
+                <h3 style="margin:12px 0 0; color:#4b0e55; font-size:18px;">Action Needed</h3>
+                <p style="margin:8px 0 0; color:#675e6d; font-size:14px; line-height:1.6;">A login request has been initiated. To proceed, use the verification code below.</p>
+            </div>
+
+            <!-- SIMPLE OTP BOX (CLEAN WHITE TEXT, NO GRADIENT) -->
+            <div style="
+                margin:20px auto 25px;
+                display:inline-block;
+                padding:28px 40px;
+                border-radius:18px;
+                border:2px dashed #934790;
+                background:#ffffff;
+                color:#934790;
+            ">
+
+                <div style="font-size:14px; opacity:0.8; margin-bottom:8px;">
+                    Your OTP
+                </div>
+
+                <div class="otp-box"
+                     style="font-size:44px; font-weight:800;
+                            letter-spacing:12px;
+                            font-family:'Courier New', monospace;
+                            color:#934790; margin:8px 0;">
+                    {{ $otp }}
+                </div>
+
+                <div style="font-size:13px; color:#6b5570; margin-top:8px;">
+                    Expires in <strong>10 minutes</strong>
+                </div>
+            </div>
+
+            <!-- FOOTER WARNING -->
+            <div style="
+                margin-top:10px;
+                background:#fff6f0;
+                border:1px solid #ffd7c1;
+                padding:10px 16px;
+                border-radius:10px;
+                display:inline-block;
+                font-size:12px;
+                color:#b04c0d;
+            ">
+                If this wasn't you, simply ignore this message.
+            </div>
+
+            </div>
+        </td>
+    </tr>
+
+    <!-- FOOTER -->
+    <tr>
+        <td align="center" style="background:#18031d; padding:22px;">
+            <p style="margin:0; font-size:12px; color:#bca9c5;">
+                © {{ date('Y') }} ZoomConnect • Secure Communication
+            </p>
+            <p style="margin:5px 0 0; font-size:12px; color:#897b93;">
+                Sent to {{ $email ?? 'your email address' }}
+            </p>
+        </td>
+    </tr>
+
+</table>
+
+</td></tr>
+</table>
+
 </body>
 </html>

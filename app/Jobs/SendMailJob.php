@@ -7,7 +7,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
 class SendMailJob implements ShouldQueue
@@ -34,143 +33,165 @@ class SendMailJob implements ShouldQueue
     public function handle()
     {
         try {
-            $to = $this->mailData['to']; // Mandatory
-            $subject = $this->mailData['subject'] ?? 'No Subject';
-            $body = $this->mailData['body'] ?? '';
-            $cc = $this->mailData['cc'] ?? [];
-            $bcc = $this->mailData['bcc'] ?? [];
-            $attachments = $this->mailData['attachments'] ?? [];
-            $isHtml = $this->mailData['is_html'] ?? false;
-            $fromEmail = $this->mailData['from_email'] ?? config('mail.from.address');
-            $fromName = $this->mailData['from_name'] ?? config('mail.from.name');
-            $replyTo = $this->mailData['reply_to'] ?? null;
-            $template = $this->mailData['template'] ?? null;
-            $templateData = $this->mailData['template_data'] ?? [];
-
-            // Send email using Laravel Mail
-            if ($template) {
-                // Send using Blade template
-                Mail::send($template, $templateData, function ($message) use (
-                    $to, $subject, $cc, $bcc, $attachments, $fromEmail, $fromName, $replyTo
-                ) {
-                    $this->configureMessage($message, $to, $subject, $cc, $bcc, $attachments, $fromEmail, $fromName, $replyTo);
-                });
-            } else {
-                // Send raw email
-                $method = $isHtml ? 'html' : 'raw';
-                Mail::$method($body, function ($message) use (
-                    $to, $subject, $cc, $bcc, $attachments, $fromEmail, $fromName, $replyTo
-                ) {
-                    $this->configureMessage($message, $to, $subject, $cc, $bcc, $attachments, $fromEmail, $fromName, $replyTo);
-                });
+            $jobId = null;
+            try {
+                $jobId = isset($this->job) && method_exists($this->job, 'getJobId') ? $this->job->getJobId() : null;
+            } catch (\Throwable $_) {
+                $jobId = null;
             }
 
-            Log::info('Email sent successfully', [
-                'to' => $to,
-                'subject' => $subject,
-                'job_id' => $this->job->getJobId()
+            // Perform the HTTP send to ZeptoMail directly in the job
+            $apiKey = env('ZEPTO_API_KEY', env('MAIL_PASSWORD'));
+            $url = env('ZEPTO_API_URL', 'https://api.zeptomail.in/v1.1/email');
+
+            if (empty($apiKey)) {
+                throw new \Exception('ZeptoMail API key not configured');
+            }
+
+            $data = $this->mailData;
+            $fromEmail = $data['from_email'] ?? env('MAIL_FROM_ADDRESS', 'noreply@portal.zoomconnect.co.in');
+            $fromName = $data['from_name'] ?? env('MAIL_FROM_NAME', 'Zoom Connect');
+            $subject = $data['subject'] ?? 'No Subject';
+
+            // Build payload
+            $payload = [
+                'from' => ['address' => $fromEmail, 'name' => $fromName],
+                'subject' => $subject
+            ];
+
+            // to
+            $to = $data['to'] ?? null;
+            if (empty($to) && !empty($data['bcc'])) {
+                $to = $fromEmail;
+            }
+
+            $toList = [];
+            if (is_array($to)) {
+                foreach ($to as $recipient) {
+                    if (is_array($recipient) && isset($recipient['email'])) {
+                        $toList[] = ['email_address' => ['address' => $recipient['email'], 'name' => $recipient['name'] ?? '']];
+                    } elseif (is_array($recipient) && isset($recipient['email_address'])) {
+                        $toList[] = $recipient;
+                    } else {
+                        $toList[] = ['email_address' => ['address' => $recipient, 'name' => '']];
+                    }
+                }
+            } elseif ($to) {
+                $toList[] = ['email_address' => ['address' => $to, 'name' => '']];
+            }
+            if (!empty($toList)) {
+                $payload['to'] = $toList;
+            }
+
+            // cc
+            if (!empty($data['cc'])) {
+                $ccList = [];
+                foreach ((array)$data['cc'] as $c) {
+                    if (is_array($c) && isset($c['email'])) {
+                        $ccList[] = ['email_address' => ['address' => $c['email'], 'name' => $c['name'] ?? '']];
+                    } else {
+                        $ccList[] = ['email_address' => ['address' => $c, 'name' => '']];
+                    }
+                }
+                $payload['cc'] = $ccList;
+            }
+
+            // bcc
+            if (!empty($data['bcc'])) {
+                $bccList = [];
+                foreach ((array)$data['bcc'] as $b) {
+                    if (is_array($b) && isset($b['email'])) {
+                        $bccList[] = ['email_address' => ['address' => $b['email'], 'name' => $b['name'] ?? '']];
+                    } else {
+                        $bccList[] = ['email_address' => ['address' => $b, 'name' => '']];
+                    }
+                }
+                $payload['bcc'] = $bccList;
+            }
+
+            // Render template or use body
+            if (!empty($data['template'])) {
+                try {
+                    $html = view($data['template'], $data['template_data'] ?? [])->render();
+                    $payload['htmlbody'] = $html;
+                } catch (\Throwable $e) {
+                    Log::error('SendMailJob: template render failed', ['error' => $e->getMessage(), 'template' => $data['template']]);
+                    $payload['htmlbody'] = $data['body'] ?? '';
+                }
+            } else {
+                $payload['htmlbody'] = $data['body'] ?? '';
+            }
+
+            // attachments (optional) - expect array of ['path'=>..., 'name'=>..., 'mime'=>...]
+            if (!empty($data['attachments'])) {
+                $payload['attachments'] = [];
+                foreach ($data['attachments'] as $att) {
+                    if (is_array($att) && !empty($att['path']) && file_exists($att['path'])) {
+                        try {
+                            $contents = base64_encode(file_get_contents($att['path']));
+                            $payload['attachments'][] = [
+                                'content' => $contents,
+                                'name' => $att['name'] ?? basename($att['path']),
+                                'type' => $att['mime'] ?? null
+                            ];
+                        } catch (\Throwable $e) {
+                            Log::warning('SendMailJob: failed to read attachment', ['path' => $att['path'], 'error' => $e->getMessage()]);
+                        }
+                    }
+                }
+            }
+
+            // Perform curl
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Accept: application/json',
+                'Content-Type: application/json',
+                'Authorization: Zoho-enczapikey ' . $apiKey
             ]);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+
+            $response = curl_exec($ch);
+            $curlErr = curl_error($ch);
+            $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($curlErr) {
+                Log::error('SendMailJob curl error', ['error' => $curlErr, 'mail_data' => $this->mailData]);
+                throw new \Exception('Mail sending failed: ' . $curlErr);
+            }
+
+            $decoded = json_decode($response, true);
+
+            if ($httpStatus >= 200 && $httpStatus < 300) {
+                Log::info('Email sent via ZeptoMail', [
+                    'to' => $this->mailData['to'] ?? null,
+                    'subject' => $subject,
+                    'job_id' => $jobId,
+                    'response' => $decoded
+                ]);
+            } else {
+                Log::error('SendMailJob: API error', ['http_status' => $httpStatus, 'response' => $decoded ?? $response, 'mail_data' => $this->mailData]);
+                throw new \Exception('Mail sending failed with status ' . $httpStatus . ': ' . ($decoded['message'] ?? $response));
+            }
 
         } catch (\Exception $e) {
-            Log::error('Failed to send email', [
+            $jobId = null;
+            try {
+                $jobId = isset($this->job) && method_exists($this->job, 'getJobId') ? $this->job->getJobId() : null;
+            } catch (\Throwable $_) {
+                $jobId = null;
+            }
+
+            Log::error('Failed to send email in job', [
                 'error' => $e->getMessage(),
                 'mail_data' => $this->mailData,
-                'job_id' => $this->job->getJobId()
+                'job_id' => $jobId
             ]);
 
-            // Optionally rethrow to retry the job
+            // Rethrow to allow the queue to retry the job
             throw $e;
-        }
-    }
-
-    /**
-     * Configure the message with all parameters
-     *
-     * @param $message
-     * @param $to
-     * @param $subject
-     * @param $cc
-     * @param $bcc
-     * @param $attachments
-     * @param $fromEmail
-     * @param $fromName
-     * @param $replyTo
-     */
-    private function configureMessage($message, $to, $subject, $cc, $bcc, $attachments, $fromEmail, $fromName, $replyTo)
-    {
-        // Set recipient(s) - can be string or array
-        if (is_array($to)) {
-            foreach ($to as $recipient) {
-                if (is_array($recipient)) {
-                    $message->to($recipient['email'], $recipient['name'] ?? '');
-                } else {
-                    $message->to($recipient);
-                }
-            }
-        } else {
-            $message->to($to);
-        }
-
-        // Set subject
-        $message->subject($subject);
-
-        // Set from address
-        $message->from($fromEmail, $fromName);
-
-        // Set reply-to if provided
-        if ($replyTo) {
-            if (is_array($replyTo)) {
-                $message->replyTo($replyTo['email'], $replyTo['name'] ?? '');
-            } else {
-                $message->replyTo($replyTo);
-            }
-        }
-
-        // Set CC recipients
-        if (!empty($cc)) {
-            if (is_array($cc)) {
-                foreach ($cc as $ccRecipient) {
-                    if (is_array($ccRecipient)) {
-                        $message->cc($ccRecipient['email'], $ccRecipient['name'] ?? '');
-                    } else {
-                        $message->cc($ccRecipient);
-                    }
-                }
-            } else {
-                $message->cc($cc);
-            }
-        }
-
-        // Set BCC recipients
-        if (!empty($bcc)) {
-            if (is_array($bcc)) {
-                foreach ($bcc as $bccRecipient) {
-                    if (is_array($bccRecipient)) {
-                        $message->bcc($bccRecipient['email'], $bccRecipient['name'] ?? '');
-                    } else {
-                        $message->bcc($bccRecipient);
-                    }
-                }
-            } else {
-                $message->bcc($bcc);
-            }
-        }
-
-        // Attach files
-        if (!empty($attachments)) {
-            foreach ($attachments as $attachment) {
-                if (is_array($attachment)) {
-                    $message->attach(
-                        $attachment['path'],
-                        [
-                            'as' => $attachment['name'] ?? null,
-                            'mime' => $attachment['mime'] ?? null
-                        ]
-                    );
-                } else {
-                    $message->attach($attachment);
-                }
-            }
         }
     }
 
@@ -182,10 +203,17 @@ class SendMailJob implements ShouldQueue
      */
     public function failed(\Exception $exception)
     {
+        $jobId = null;
+        try {
+            $jobId = isset($this->job) && method_exists($this->job, 'getJobId') ? $this->job->getJobId() : null;
+        } catch (\Throwable $_) {
+            $jobId = null;
+        }
+
         Log::error('SendMailJob failed permanently', [
             'error' => $exception->getMessage(),
             'mail_data' => $this->mailData,
-            'job_id' => $this->job->getJobId()
+            'job_id' => $jobId
         ]);
     }
 }

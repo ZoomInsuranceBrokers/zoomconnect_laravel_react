@@ -19,6 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureSuperadminAuthenticated::class,
         ]);
 
+            // Register route middleware aliases used by routes (Laravel 12 style)
+            $middleware->alias([
+                'permission' => \App\Http\Middleware\CheckPermission::class,
+            ]);
+
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {

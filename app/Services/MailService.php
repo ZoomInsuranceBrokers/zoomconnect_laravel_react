@@ -2,23 +2,60 @@
 
 namespace App\Services;
 
-use App\Jobs\SendMailJob;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Log;
 
 class MailService
 {
     /**
-     * Send OTP email
+     * Dispatch mail to the queue. This prepares and normalizes parameters and
+     * pushes a SendMailJob which will perform the actual HTTP call.
      *
-     * @param string $email
-     * @param string $otp
-     * @param bool $useTemplate
+     * @param array $params
      * @return void
      */
-    public static function sendOtpEmail(string $email, string $otp, bool $useTemplate = false)
+    public static function dispatchMail(array $params)
+    {
+        // Normalize and provide defaults
+        $default = [
+            'subject' => $params['subject'] ?? 'Zoom Connect Notification',
+            'body' => $params['body'] ?? '',
+            'is_html' => $params['is_html'] ?? false,
+            'cc' => $params['cc'] ?? [],
+            'bcc' => $params['bcc'] ?? [],
+            'attachments' => $params['attachments'] ?? [],
+            'from_email' => $params['from_email'] ?? env('MAIL_FROM_ADDRESS', 'noreply@portal.zoomconnect.co.in'),
+            'from_name' => $params['from_name'] ?? env('MAIL_FROM_NAME', 'Zoom Connect'),
+            'reply_to' => $params['reply_to'] ?? null,
+            'template' => $params['template'] ?? null,
+            'template_data' => $params['template_data'] ?? [],
+            'to' => $params['to'] ?? null
+        ];
+
+        $mailData = array_merge($default, $params);
+
+        // If only bcc is provided, ensure there's a top-level 'to' (ZeptoMail requirement)
+        if (empty($mailData['to']) && !empty($mailData['bcc'])) {
+            $mailData['to'] = $mailData['from_email'];
+        }
+
+        // Validate basic requirements
+        if (empty($mailData['to'])) {
+            throw new \InvalidArgumentException('The "to" field is required when dispatching mail');
+        }
+
+        // Dispatch job
+        \App\Jobs\SendMailJob::dispatch($mailData);
+    }
+
+    /* ---------------------------------------------------------------------
+     | Backwards-compatible convenience wrappers (delegate to sendMail())
+     | Keep these so existing callers continue to work while using the
+     | single dynamic backend.
+     */
+
+    public static function sendOtpEmail(string $email, string $otp, bool $useTemplate = true)
     {
         if ($useTemplate) {
-            // Send with HTML template
             $mailData = [
                 'to' => $email,
                 'subject' => 'Zoom Connect - Login OTP',
@@ -26,33 +63,19 @@ class MailService
                 'template_data' => [
                     'otp' => $otp,
                     'email' => $email
-                ],
-                'from_email' => 'noreply@zoomconnect.co.in',
-                'from_name' => 'ZoomConnect'
+                ]
             ];
         } else {
-            // Send as plain text
             $mailData = [
                 'to' => $email,
                 'subject' => 'Zoom Connect - Login OTP',
-                'body' => "Your OTP for Zoom Connect login is: {$otp}\n\nThis OTP will expire in 10 minutes.\n\nIf you didn't request this OTP, please ignore this email.",
-                'is_html' => false,
-                'from_email' => 'noreply@zoomconnect.co.in',
-                'from_name' => 'ZoomConnect'
+                'body' => "Your OTP for Zoom Connect login is: {$otp}\n\nThis OTP will expire in 10 minutes.\n\nIf you didn't request this OTP, please ignore this email."
             ];
         }
 
-        SendMailJob::dispatch($mailData);
+        return self::dispatchMail($mailData);
     }
 
-    /**
-     * Send welcome email with template
-     *
-     * @param string $email
-     * @param string $name
-     * @param array $additionalData
-     * @return void
-     */
     public static function sendWelcomeEmail(string $email, string $name, array $additionalData = [])
     {
         $mailData = [
@@ -62,117 +85,48 @@ class MailService
             'template_data' => array_merge([
                 'name' => $name,
                 'email' => $email
-            ], $additionalData),
-            'from_email' => 'noreply@zoomconnect.co.in',
-            'from_name' => 'ZoomConnect'
+            ], $additionalData)
         ];
 
-        SendMailJob::dispatch($mailData);
+        return self::dispatchMail($mailData);
     }
 
-    /**
-     * Send custom email
-     *
-     * @param array $params
-     * @return void
-     */
     public static function sendCustomEmail(array $params)
     {
-        // Validate required fields
-        if (!isset($params['to'])) {
-            throw new \InvalidArgumentException('The "to" field is required');
-        }
-
-        $defaultParams = [
-            'subject' => 'Zoom Connect Notification',
-            'body' => '',
-            'is_html' => false,
-            'from_email' => 'noreply@zoomconnect.co.in',
-            'from_name' => 'ZoomConnect',
-            'cc' => [],
-            'bcc' => [],
-            'attachments' => []
-        ];
-
-        $mailData = array_merge($defaultParams, $params);
-
-        SendMailJob::dispatch($mailData);
+        return self::dispatchMail($params);
     }
 
-    /**
-     * Send HTML email
-     *
-     * @param string|array $to
-     * @param string $subject
-     * @param string $htmlBody
-     * @param array $options
-     * @return void
-     */
     public static function sendHtmlEmail($to, string $subject, string $htmlBody, array $options = [])
     {
         $mailData = array_merge([
             'to' => $to,
             'subject' => $subject,
-            'body' => $htmlBody,
-            'is_html' => true,
-            'from_email' => 'noreply@zoomconnect.co.in',
-            'from_name' => 'ZoomConnect',
-            'cc' => [],
-            'bcc' => [],
-            'attachments' => []
+            'body' => $htmlBody
         ], $options);
 
-        SendMailJob::dispatch($mailData);
+        return self::dispatchMail($mailData);
     }
 
-    /**
-     * Send email with attachments
-     *
-     * @param string|array $to
-     * @param string $subject
-     * @param string $body
-     * @param array $attachments
-     * @param array $options
-     * @return void
-     */
     public static function sendEmailWithAttachments($to, string $subject, string $body, array $attachments, array $options = [])
     {
         $mailData = array_merge([
             'to' => $to,
             'subject' => $subject,
             'body' => $body,
-            'attachments' => $attachments,
-            'is_html' => false,
-            'from_email' => 'noreply@zoomconnect.co.in',
-            'from_name' => 'ZoomConnect',
-            'cc' => [],
-            'bcc' => []
+            'attachments' => $attachments
         ], $options);
 
-        SendMailJob::dispatch($mailData);
+        return self::dispatchMail($mailData);
     }
 
-    /**
-     * Send bulk email (with BCC)
-     *
-     * @param string $subject
-     * @param string $body
-     * @param array $recipients
-     * @param array $options
-     * @return void
-     */
     public static function sendBulkEmail(string $subject, string $body, array $recipients, array $options = [])
     {
         $mailData = array_merge([
-            'to' => 'noreply@zoomconnect.co.in', // Required field
             'bcc' => $recipients,
             'subject' => $subject,
-            'body' => $body,
-            'is_html' => false,
-            'from_email' => 'noreply@zoomconnect.co.in',
-            'from_name' => 'ZoomConnect'
+            'body' => $body
         ], $options);
 
-        SendMailJob::dispatch($mailData);
+        return self::dispatchMail($mailData);
     }
 }
