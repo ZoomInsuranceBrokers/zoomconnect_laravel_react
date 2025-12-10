@@ -3,12 +3,15 @@ import { Link, router, useForm, usePage } from '@inertiajs/react';
 import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
 
 export default function PolicyEndorsements({ policy, endorsements, filters = {} }) {
+    const [detailsTab, setDetailsTab] = useState('Details');
+    const [selectedEndorsement, setSelectedEndorsement] = useState(null);
     const { flash } = usePage().props;
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [modalOpen, setModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [currentFile, setCurrentFile] = useState(null);
+    const [openActionsDropdown, setOpenActionsDropdown] = useState(null);
 
     const form = useForm({
         endorsement_no: '',
@@ -100,40 +103,155 @@ export default function PolicyEndorsements({ policy, endorsements, filters = {} 
                     </div>
                 </div>
 
-                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mx-4">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 text-sm">
-                            <thead className="bg-gray-50">
+                <div className="flex">
+                    <div className="rounded-lg shadow overflow-x-auto bg-white border border-gray-200 w-full">
+                        <table className="w-full min-w-max">
+                            <thead className="bg-gray-100 border-b border-gray-200">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">#</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Endorsement No</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                                    <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider min-w-[60px] text-gray-500">S.No</th>
+                                    <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider min-w-[120px] text-gray-500">Actions</th>
+                                    <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider min-w-[120px] text-gray-500">Endorsement No</th>
+                                    <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider min-w-[100px] text-gray-500">Date</th>
+                                    <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider min-w-[100px] text-gray-500">Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-gray-200 bg-white">
                                 {endorsements.data.length > 0 ? (
                                     endorsements.data.map((e, idx) => (
-                                        <tr key={e.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                            <td className="px-4 py-3 text-xs text-gray-700">{(endorsements.current_page - 1) * endorsements.per_page + idx + 1}</td>
-                                            <td className="px-4 py-3 text-xs text-gray-700">{e.endorsement_no}</td>
-                                            <td className="px-4 py-3 text-xs text-gray-700">{e.endorsement_date ? new Date(e.endorsement_date).toLocaleDateString('en-GB') : '-'}</td>
-                                            <td className="px-4 py-3 text-xs text-gray-700">{e.status}</td>
-                                            <td className="px-4 py-3 text-xs text-right">
-                                                <button onClick={() => { form.clearErrors(); setClientErrors({}); setModalOpen(true); setEditMode(true); setEditingId(e.id); form.setData('endorsement_no', e.endorsement_no); form.setData('endorsement_date', formatDateForInput(e.endorsement_date)); setCurrentFile(e.endorsement_copy || null); }} className="px-2 py-1 mr-2 border rounded text-xs">Edit</button>
-                                                <a href={route('superadmin.policy.endorsements.show', e.id)} className="px-3 py-1 bg-[#934790] text-white rounded text-sm">View</a>
+                                        <tr
+                                            key={e.id}
+                                            className={
+                                                (selectedEndorsement && selectedEndorsement.id === e.id ? 'bg-purple-50' : (idx % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-gray-100'))
+                                            }
+                                            onClick={() => setSelectedEndorsement(e)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <td className="px-3 py-2 text-[10px] text-gray-700">{(endorsements.current_page - 1) * endorsements.per_page + idx + 1}</td>
+                                            <td className="px-3 py-2 text-[10px] text-gray-700">
+                                                <div className="flex items-center gap-1">
+                                                    <button className="text-gray-400 hover:text-gray-600" title="View Detail">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </button>
+                                                    <a
+                                                        className="text-gray-400 hover:text-gray-600"
+                                                        title="Download Copy"
+                                                        href={'/' + e.endorsement_copy?.replace(/^\/+/, '')}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                    </a>
+                                                    <div className="relative">
+                                                        <button
+                                                            className="text-gray-400 hover:text-gray-600"
+                                                            title="More Actions"
+                                                            onClick={ev => {
+                                                                ev.stopPropagation();
+                                                                setOpenActionsDropdown(openActionsDropdown === e.id ? null : e.id);
+                                                            }}
+                                                        >
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                                            </svg>
+                                                        </button>
+                                                        {openActionsDropdown === e.id && (
+                                                            <div className="absolute left-0 mt-1 w-40 rounded-md shadow-lg z-50 border bg-white border-gray-200" onClick={ev => ev.stopPropagation()}>
+                                                                <div className="py-1">
+                                                                    <button
+                                                                        onClick={ev => {
+                                                                            ev.stopPropagation();
+                                                                            form.clearErrors(); setClientErrors({}); setModalOpen(true); setEditMode(true); setEditingId(e.id); form.setData('endorsement_no', e.endorsement_no); form.setData('endorsement_date', formatDateForInput(e.endorsement_date)); setCurrentFile(e.endorsement_copy || null); setOpenActionsDropdown(null);
+                                                                        }}
+                                                                        className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                                                                    >
+                                                                        <svg className="w-3 h-3 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                        </svg>
+                                                                        Edit Endo. Details
+                                                                    </button>
+                                                                    <a href={route('superadmin.policy.endorsements.show', e.id)}
+                                                                        className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        onClick={() => setOpenActionsDropdown(null)}>
+                                                                        <svg className="w-3 h-3 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a4 4 0 00-4-4h-1" />
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20H4v-2a4 4 0 014-4h1" />
+                                                                            <circle cx="12" cy="7" r="4" strokeWidth="2" stroke="currentColor" fill="none" />
+                                                                        </svg>
+                                                                        Manage Data
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </td>
+                                            <td className="px-3 py-2 text-[10px] text-gray-900 font-medium">{e.endorsement_no}</td>
+                                            <td className="px-3 py-2 text-[10px] text-gray-700">{e.endorsement_date ? new Date(e.endorsement_date).toLocaleDateString('en-GB') : '-'}</td>
+                                            <td className="px-3 py-2 text-[10px] text-gray-700">{e.status}</td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="text-center py-4 text-xs text-gray-500">No endorsements found.</td>
+                                        <td colSpan="5" className="text-center py-4 text-xs text-gray-500">No endorsements found.</td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
+                    {/* Modal Drawer for Details */}
+                    {selectedEndorsement && (
+                        <div className="fixed inset-0 right-0 z-50 flex items-center justify-end bg-black bg-opacity-30">
+                            <div className="bg-white rounded-l-lg shadow-lg w-full max-w-md h-full flex flex-col overflow-hidden">
+                                <div className="flex items-center justify-between px-6 py-4 border-b">
+                                    <h2 className="text-lg font-semibold">Endorsement Details</h2>
+                                    <button onClick={() => setSelectedEndorsement(null)} className="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                                </div>
+                                <div className="flex border-b px-6 pt-4 pb-2 gap-6">
+                                    {['Details'].map(tab => (
+                                        <button
+                                            key={tab}
+                                            className={`pb-2 text-sm font-medium border-b-2 ${detailsTab === tab ? 'border-[#934790] text-[#934790]' : 'border-transparent text-gray-500'}`}
+                                            onClick={() => setDetailsTab(tab)}
+                                        >
+                                            {tab}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-6">
+                                    {detailsTab === 'Details' && (
+                                        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="bg-purple-100 text-[#934790] px-2 py-1 rounded text-xs font-semibold">Group</span>
+                                                <span className="font-semibold">{policy.policy_name || policy.corporate_policy_name}</span>
+                                            </div>
+                                            <div className="text-xs text-gray-500 mb-2">{selectedEndorsement.id}</div>
+                                            <div className="grid grid-cols-2 gap-2 mb-2">
+                                                <div><span className="font-semibold">Endo. Date</span><br />{selectedEndorsement.endorsement_date ? new Date(selectedEndorsement.endorsement_date).toLocaleDateString('en-GB') : '-'}</div>
+                                                <div><span className="font-semibold">Endo. No</span><br />{selectedEndorsement.endorsement_no}</div>
+                                                <div><span className="font-semibold">Status</span><br />{selectedEndorsement.status}</div>
+                                                <div><span className="font-semibold">Policy No.</span><br />{policy.policy_number}</div>
+                                            </div>
+                                            {selectedEndorsement.endorsement_copy && (
+                                                <div className="mb-2 text-sm"><span className="font-semibold">Document:</span> <a href={'/' + selectedEndorsement.endorsement_copy.replace(/^\/+/, '')} target="_blank" rel="noreferrer" className="text-indigo-600 underline">{selectedEndorsement.endorsement_copy.split('/').pop()}</a></div>
+                                            )}
+                                            {/* <div className="flex gap-2 mt-4">
+                                                <button className="px-3 py-1 bg-gray-100 rounded text-xs font-medium">Details</button>
+                                                <button className="px-3 py-1 bg-gray-100 rounded text-xs font-medium">Members</button>
+                                                <button className="px-3 py-1 bg-gray-100 rounded text-xs font-medium">Policy Setup</button>
+                                            </div> */}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {endorsements.links && endorsements.links.length > 0 && (

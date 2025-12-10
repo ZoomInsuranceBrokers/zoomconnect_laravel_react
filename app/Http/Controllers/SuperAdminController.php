@@ -4759,11 +4759,68 @@ class SuperAdminController extends Controller
             abort(404);
         }
 
+
+        // Determine tpa_table_name
+        $tpa_table_name = '';
+        if (isset($policy->is_old) && $policy->is_old == 0) {
+            // Get tpa_id from policy, then fetch tpa_table_name from tpa_master
+            $tpa_id = $policy->tpa_id ?? null;
+            if ($tpa_id) {
+                $tpa = \DB::table('tpa_master')->where('id', $tpa_id)->first();
+                if ($tpa && isset($tpa->tpa_table_name)) {
+                    $tpa_table_name = $tpa->tpa_table_name;
+                }
+            }
+        } elseif (isset($policy->is_old) && $policy->is_old == 2) {
+            $tpa_table_name = 'endorsement_data';
+        } else {
+            $tpa_table_name = $policy->tpa_table_name ?? '';
+        }
+
+        $additionMembers = [];
+        $deletionMembers = [];
+        if ($tpa_table_name) {
+            try {
+
+                $additionMembers = \DB::select("
+                    SELECT ce.employees_code, ce.email, ce.full_name, tpa.*
+                    FROM {$tpa_table_name} tpa
+                    INNER JOIN policy_mapping_master pmm ON tpa.mapping_id = pmm.id
+                    INNER JOIN company_employees ce ON ce.id = tpa.emp_id
+                    WHERE pmm.policy_id = ?
+                        AND pmm.cmp_id = ?
+                        AND pmm.status = 1
+                        AND tpa.addition_endorsement_id = ?
+                        AND tpa.updation_endorsement_id IS NULL
+                    ORDER BY tpa.id DESC
+                ", [$policy->id, $endorsement->cmp_id, $endorsement->id]);
+
+                $deletionMembers = \DB::select("
+                    SELECT ce.employees_code, ce.email, ce.full_name, tpa.*
+                    FROM {$tpa_table_name} tpa
+                    INNER JOIN policy_mapping_master pmm ON tpa.mapping_id = pmm.id
+                    INNER JOIN company_employees ce ON ce.id = tpa.emp_id
+                    WHERE pmm.policy_id = ?
+                        AND pmm.cmp_id = ?
+                        AND pmm.status = 1
+                        AND tpa.deletion_endorsement_id = ?
+                        AND tpa.addition_endorsement_id != 0
+                        AND tpa.updated_entry_id IS NULL
+                    ORDER BY tpa.id DESC
+                ", [$policy->id, $endorsement->cmp_id, $endorsement->id]);
+            } catch (\Exception $e) {
+                // Log error if needed
+            }
+        }
+
         return Inertia::render('superadmin/policy/Policies/PolicyEndorsementShow', [
             'endorsement' => $endorsement,
             'policy' => $policy,
             'cd_ac' => $cd_ac,
             'company' => $company,
+            'additionMembers' => $additionMembers,
+            'deletionMembers' => $deletionMembers,
+            'tpa_table_name' => $tpa_table_name,
         ]);
     }
 
@@ -4819,7 +4876,7 @@ class SuperAdminController extends Controller
         $query = PolicyMaster::with(['company']);
 
         // only active policies as per request
-        $query->where('policy_status', 1);
+        $query->where('is_active', 1);
 
         // optional corporate filter
         if ($request->filled('corporate_id')) {
@@ -4831,7 +4888,7 @@ class SuperAdminController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('policy_name', 'like', "%{$search}%")
-                  ->orWhere('policy_number', 'like', "%{$search}%");
+                    ->orWhere('policy_number', 'like', "%{$search}%");
             });
         }
 
@@ -5277,7 +5334,7 @@ class SuperAdminController extends Controller
     public function storePolicy(Request $request)
     {
         Log::info('=== Starting Policy Creation ===', ['request_data' => $request->except(['policy_document'])]);
-        
+
         try {
             $validated = $request->validate([
                 'corporate_id' => 'required|exists:company_master,comp_id',
@@ -5416,7 +5473,7 @@ class SuperAdminController extends Controller
 
             // Commit the transaction
             DB::commit();
-            
+
             Log::info('=== Policy Created Successfully ===', ['policy_id' => $policy->id]);
 
             return redirect()->route('superadmin.policy.policies.index')
@@ -5442,10 +5499,10 @@ class SuperAdminController extends Controller
     {
         try {
             $policy = PolicyMaster::with(['company', 'insurance', 'tpa'])->findOrFail($id);
-            
+
             // Get policy features
             $policyFeatures = \App\Models\PolicyFeature::where('policy_id', $id)->get();
-            
+
             // Separate inclusions and exclusions
             $inclusions = $policyFeatures->where('feature_type', 'inc')->map(function ($feature) {
                 return [
@@ -5456,7 +5513,7 @@ class SuperAdminController extends Controller
                     'feature_type' => 'inc'
                 ];
             })->values();
-            
+
             $exclusions = $policyFeatures->where('feature_type', 'exc')->map(function ($feature) {
                 return [
                     'id' => $feature->id,
@@ -5519,7 +5576,7 @@ class SuperAdminController extends Controller
     public function updatePolicy(Request $request, $id)
     {
         Log::info('=== Starting Policy Update ===', ['policy_id' => $id, 'request_data' => $request->except(['policy_document'])]);
-        
+
         try {
             $validated = $request->validate([
                 'corporate_id' => 'required|exists:company_master,comp_id',
@@ -5656,7 +5713,7 @@ class SuperAdminController extends Controller
 
             // Commit the transaction
             DB::commit();
-            
+
             Log::info('=== Policy Updated Successfully ===', ['policy_id' => $policy->id]);
 
             return redirect()->route('superadmin.policy.policies.index')
