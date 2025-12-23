@@ -1,11 +1,151 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../../Context/ThemeContext";
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
+import { usePermissions } from "../../Hooks/usePermissions";
 
 export default function Sidebar({ open = true, onToggle }) {
     const { darkMode, toggleDarkMode } = useTheme();
     const currentRoute = window.location.pathname;
     const [openMenus, setOpenMenus] = useState({});
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const { hasRoute, hasAny, hasHref, permissions, roleId, routeKeys, currentRouteName } = usePermissions();
+
+    // Log the shared auth permissions once on mount for debugging
+    useEffect(() => {
+        try {
+            console.groupCollapsed && console.groupCollapsed('[Sidebar.mount] auth snapshot');
+        } catch (e) {}
+        console.log && console.log('permissions.routes count:', Object.keys(permissions?.routes || {}).length);
+        console.log && console.log('routeKeys length:', (routeKeys || []).length);
+        console.log && console.log('roleId (client):', roleId);
+        console.log && console.log('currentRouteName (server):', currentRouteName);
+        console.groupEnd && console.groupEnd();
+    }, []);
+
+    // Robust href -> permission check combining multiple strategies
+    const canAccessHref = (href) => {
+        if (!href) return false;
+
+        // normalize parts early and ensure dotKey is available in all checks
+        const parts = String(href || "").split('/').filter(Boolean);
+        const meaningful = parts[0] === 'superadmin' ? parts.slice(1) : parts;
+        const dotKey = meaningful.length ? meaningful.join('.') : null;
+
+        // Debug: log each call and the key pieces we use for matching
+        try {
+            console.groupCollapsed && console.groupCollapsed("[Sidebar.canAccessHref] ", href);
+        } catch (e) {}
+        console.debug && console.debug({ href, dotKey, meaningful, routeKeysCount: Array.isArray(routeKeys) ? routeKeys.length : 0, currentRouteName });
+
+        // 1) use the centralized hasHref heuristic first
+        let h1 = false;
+        try {
+            h1 = !!hasHref(href);
+            console.debug && console.debug('hasHref', h1);
+            if (h1) {
+                console.groupEnd && console.groupEnd();
+                return true;
+            }
+        } catch (e) {
+            console.debug && console.debug('hasHref error', e && e.message);
+        }
+
+        // 2) dot-joined key direct check
+        if (dotKey) {
+            const h2 = !!hasRoute(dotKey);
+            console.debug && console.debug('hasRoute(dotKey)', dotKey, h2);
+            if (h2) {
+                console.groupEnd && console.groupEnd();
+                return true;
+            }
+        }
+
+        // 3) check against routeKeys array (shared from backend)
+        if (Array.isArray(routeKeys) && routeKeys.length) {
+            const lowerDot = dotKey ? dotKey.toLowerCase() : null;
+            const exact = lowerDot && routeKeys.some(k => k.toLowerCase() === lowerDot);
+            const containsAll = routeKeys.some(k => meaningful.length && meaningful.every(seg => k.toLowerCase().includes(seg.toLowerCase())));
+            const startsWith = routeKeys.some(k => meaningful.length && k.toLowerCase().startsWith(meaningful[0].toLowerCase()));
+            console.debug && console.debug('routeKeys checks', { exact, containsAll, startsWith });
+            if (exact || containsAll || startsWith) {
+                console.groupEnd && console.groupEnd();
+                return true;
+            }
+        }
+
+        // 4) try current route name from server (if it matches menu area)
+        if (currentRouteName && meaningful.length) {
+            const lower = currentRouteName.toLowerCase();
+            const match = meaningful.some(seg => lower.includes(seg.toLowerCase()));
+            console.debug && console.debug('currentRouteName match', currentRouteName, match);
+            if (match) {
+                console.groupEnd && console.groupEnd();
+                return true;
+            }
+        }
+
+        // 5) fallback: try hasAny with some likely candidates (e.g., 'module.index')
+        if (meaningful.length) {
+            const module = meaningful[0];
+            const candidates = [`${module}.index`, `${module}.list`, `${module}.show`, `${module}.create`];
+            const any = hasAny(...candidates);
+            console.debug && console.debug('hasAny candidates', candidates, any);
+            if (any) {
+                console.groupEnd && console.groupEnd();
+                return true;
+            }
+        }
+
+        console.groupEnd && console.groupEnd();
+        return false;
+    };
+
+    // Helper: determine if user has access to a menu
+    // NOTE: do not rely on `roleId` here — use the shared `permissions` map only.
+    const hasAccessToMenu = (routeNames = [], prefix = null) => {
+        try {
+            console.groupCollapsed && console.groupCollapsed('[Sidebar.hasAccessToMenu]', prefix, routeNames);
+        } catch (e) {}
+
+        // If any explicit route names supplied match, allow
+        if (routeNames && routeNames.length) {
+            const any = hasAny(...routeNames);
+            console.log && console.log('hasAny routeNames', routeNames, any);
+            if (any) {
+                console.groupEnd && console.groupEnd();
+                return true;
+            }
+        }
+
+        // If prefix supplied, check for any permission route keys that match in several ways
+        if (prefix && permissions && permissions.routes) {
+            const keys = Object.keys(permissions.routes);
+            const routeKeysArr = Array.isArray(routeKeys) ? routeKeys : [];
+
+            console.log && console.log('checking prefix', { prefix, keysCount: keys.length, routeKeysCount: routeKeysArr.length, sampleKeys: keys.slice(0, 3) });
+
+            // Check if ANY route key contains this prefix as a segment
+            const hasMatch = keys.some(k => {
+                const parts = k.toLowerCase().split('.');
+                return parts.includes(prefix.toLowerCase());
+            }) || routeKeysArr.some(k => {
+                const parts = k.toLowerCase().split('.');
+                return parts.includes(prefix.toLowerCase());
+            });
+
+            console.log && console.log('prefix match result:', hasMatch);
+
+            if (hasMatch) {
+                console.groupEnd && console.groupEnd();
+                return true;
+            }
+        }
+
+        console.groupEnd && console.groupEnd();
+        return false;
+    };
+
+    // Use hook's `hasHref` for href -> permission matching (best-effort)
 
     // Automatically open menus if the current route matches a submenu
     useEffect(() => {
@@ -66,9 +206,9 @@ export default function Sidebar({ open = true, onToggle }) {
                         viewBox="0 0 24 24"
                     >
                         {open ? (
-                            <path d="M15 18l-6-6 6-6" /> // left arrow
+                            <path d="M15 18l-6-6 6-6" />
                         ) : (
-                            <path d="M9 6l6 6-6 6" /> // right arrow
+                            <path d="M9 6l6 6-6 6" />
                         )}
                     </svg>
                 </button>
@@ -139,6 +279,7 @@ export default function Sidebar({ open = true, onToggle }) {
                         </li>
 
                         {/* Corporate Menu with Submenu */}
+                        {hasAccessToMenu([], 'corporate') && (
                         <li>
                             <button
                                 onClick={() => toggleMenu("corporate")}
@@ -185,6 +326,7 @@ export default function Sidebar({ open = true, onToggle }) {
                             {/* Submenu */}
                             {openMenus.corporate && (
                                 <ul className="ml-4 mt-1 space-y-1">
+                                    {canAccessHref("/superadmin/corporate/list") && (
                                     <li>
                                         <Link
                                             href="/superadmin/corporate/list"
@@ -210,6 +352,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Corporate List</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/corporate/labels") && (
                                     <li>
                                         <Link
                                             href="/superadmin/corporate/labels"
@@ -235,6 +379,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Corporate Labels</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/corporate/groups") && (
                                     <li>
                                         <Link
                                             href="/superadmin/corporate/groups"
@@ -260,11 +406,14 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Corporate Groups</span>
                                         </Link>
                                     </li>
+                                    )}
                                 </ul>
                             )}
                         </li>
+                        )}
 
                         {/* Wellness Menu with Submenu */}
+                        {hasAccessToMenu([], 'wellness') && (
                         <li>
                             <button
                                 onClick={() => toggleMenu("wellness")}
@@ -321,6 +470,7 @@ export default function Sidebar({ open = true, onToggle }) {
                             {/* Submenu */}
                             {openMenus.wellness && (
                                 <ul className="ml-4 mt-1 space-y-1">
+                                    {canAccessHref("/superadmin/wellness/vendor-list") && (
                                     <li>
                                         <Link
                                             href="/superadmin/wellness/vendor-list"
@@ -346,6 +496,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Vendor List</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/wellness/category-list") && (
                                     <li>
                                         <Link
                                             href="/superadmin/wellness/category-list"
@@ -371,6 +523,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Category List</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/wellness/services") && (
                                     <li>
                                         <Link
                                             href="/superadmin/wellness/services"
@@ -396,11 +550,14 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Wellness Services</span>
                                         </Link>
                                     </li>
+                                    )}
                                 </ul>
                             )}
                         </li>
+                        )}
 
                         {/* Marketing Menu with Submenu */}
+                        {hasAccessToMenu([], 'marketing') && (
                         <li>
                             <button
                                 onClick={() => toggleMenu("marketing")}
@@ -454,6 +611,7 @@ export default function Sidebar({ open = true, onToggle }) {
                             {/* Submenu */}
                             {openMenus.marketing && (
                                 <ul className="ml-4 mt-1 space-y-1">
+                                    {canAccessHref("/superadmin/marketing/campaigns") && (
                                     <li>
                                         <Link
                                             href="/superadmin/marketing/campaigns"
@@ -479,6 +637,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Campaigns</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/marketing/welcome-mailer") && (
                                     <li>
                                         <Link
                                             href="/superadmin/marketing/welcome-mailer"
@@ -504,6 +664,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Welcome Mailer</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/marketing/message-template") && (
                                     <li>
                                         <Link
                                             href="/superadmin/marketing/message-template"
@@ -529,6 +691,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Message Template</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/marketing/push-notifications") && (
                                     <li>
                                         <Link
                                             href="/superadmin/marketing/push-notifications"
@@ -554,11 +718,14 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Push Notifications</span>
                                         </Link>
                                     </li>
+                                    )}
                                 </ul>
                             )}
                         </li>
+                        )}
 
                         {/* Policy Menu with Submenu */}
+                        {hasAccessToMenu([], 'policy') && (
                         <li>
                             <button
                                 onClick={() => toggleMenu("policy")}
@@ -613,6 +780,7 @@ export default function Sidebar({ open = true, onToggle }) {
                             {/* Submenu */}
                             {openMenus.policy && (
                                 <ul className="ml-4 mt-1 space-y-1">
+                                    {canAccessHref("/superadmin/policy/enrollment-lists") && (
                                     <li>
                                         <Link
                                             href="/superadmin/policy/enrollment-lists"
@@ -638,6 +806,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Enrollment Lists</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/policy/policy-users") && (
                                     <li>
                                         <Link
                                             href="/superadmin/policy/policy-users"
@@ -663,6 +833,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Policy Users</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/policy/policies") && (
                                     <li>
                                         <Link
                                             href="/superadmin/policy/policies"
@@ -688,6 +860,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Policies</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/policy/endorsements") && (
                                     <li>
                                         <Link
                                             href="/superadmin/policy/endorsements"
@@ -709,6 +883,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Endorsements</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/policy/cd-accounts") && (
                                     <li>
                                         <Link
                                             href="/superadmin/policy/cd-accounts"
@@ -734,6 +910,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>CD Accounts</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/policy/insurance") && (
                                     <li>
                                         <Link
                                             href="/superadmin/policy/insurance"
@@ -759,6 +937,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Insurance</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {canAccessHref("/superadmin/policy/tpa") && (
                                     <li>
                                         <Link
                                             href="/superadmin/policy/tpa"
@@ -784,11 +964,20 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>TPA</span>
                                         </Link>
                                     </li>
+                                    )}
                                 </ul>
                             )}
                         </li>
+                        )}
 
                         {/* Admin Menu with Submenu */}
+                        {hasAccessToMenu([
+                            'superadmin.admin.resources.index',
+                            'superadmin.admin.blogs.index',
+                            'superadmin.admin.faqs.index',
+                            'superadmin.admin.surveys.index',
+                            'superadmin.admin.roles-permissions.index'
+                        ], 'superadmin.admin') && (
                         <li>
                             <button
                                 onClick={() => toggleMenu("admin")}
@@ -818,6 +1007,7 @@ export default function Sidebar({ open = true, onToggle }) {
                             {/* Submenu */}
                             {openMenus.admin && (
                                 <ul className="ml-4 mt-1 space-y-1">
+                                    {hasHref("/superadmin/admin/resources") && (
                                     <li>
                                         <Link href="/superadmin/admin/resources" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
                                             currentRoute === "/superadmin/admin/resources" ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
@@ -826,6 +1016,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Resources</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {hasHref("/superadmin/admin/blogs") && (
                                     <li>
                                         <Link href="/superadmin/admin/blogs" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
                                             currentRoute === "/superadmin/admin/blogs" ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
@@ -834,6 +1026,8 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Blogs</span>
                                         </Link>
                                     </li>
+                                    )}
+                                    {hasHref("/superadmin/admin/faqs") && (
                                     <li>
                                         <Link href="/superadmin/admin/faqs" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
                                             currentRoute === "/superadmin/admin/faqs" ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
@@ -842,6 +1036,7 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Faqs</span>
                                         </Link>
                                     </li>
+                                    )}
                                     <li>
                                         <Link href="/superadmin/admin/surveys" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
                                             currentRoute === "/superadmin/admin/surveys" ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
@@ -850,9 +1045,28 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Surveys</span>
                                         </Link>
                                     </li>
+                                    {hasHref("/superadmin/admin/users") && (
+                                    <li>
+                                        <Link href="/superadmin/admin/users" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                            currentRoute === "/superadmin/admin/users" || currentRoute.startsWith("/superadmin/admin/users") ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
+                                        }`}>
+                                            <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/users" || currentRoute.startsWith("/superadmin/admin/users") ? "bg-[#934790]" : "bg-gray-400"}`}></span>
+                                            <span>Users</span>
+                                        </Link>
+                                    </li>
+                                    )}
+                                    <li>
+                                        <Link href="/superadmin/admin/roles-permissions" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                            currentRoute === "/superadmin/admin/roles-permissions" || currentRoute.startsWith("/superadmin/admin/roles") ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
+                                        }`}>
+                                            <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/roles-permissions" || currentRoute.startsWith("/superadmin/admin/roles") ? "bg-[#934790]" : "bg-gray-400"}`}></span>
+                                            <span>Roles & Permissions</span>
+                                        </Link>
+                                    </li>
                                 </ul>
                             )}
                         </li>
+                        )}
                     </ul>
                 </nav>
 
@@ -880,10 +1094,12 @@ export default function Sidebar({ open = true, onToggle }) {
                         </svg>
                         <span>Help</span>
                     </a>
-                    <Link
-                        href="/logout"
-                        method="post"
-                        as="button"
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowLogoutModal(true);
+                        }}
                         className={`flex items-center gap-3 py-2 font-montserrat font-normal text-[12px] w-full ${
                             darkMode
                                 ? "text-gray-400 hover:text-white"
@@ -902,7 +1118,7 @@ export default function Sidebar({ open = true, onToggle }) {
                             <path d="M3 21V3a2 2 0 012-2h6a2 2 0 012 2v4" />
                         </svg>
                         <span>Log out</span>
-                    </Link>
+                    </button>
                 </div>
 
                 {/* Dark mode toggle */}
@@ -950,6 +1166,29 @@ export default function Sidebar({ open = true, onToggle }) {
                         </span>
                     </button>
                 </div>
+                {/* Logout Confirmation Modal */}
+                {showLogoutModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className={`rounded-lg p-6 max-w-md w-full mx-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
+                            <h3 className="text-lg font-semibold mb-4">Confirm Logout</h3>
+                            <p className="text-sm mb-6">Are you sure you want to log out?</p>
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => setShowLogoutModal(false)}
+                                    className="px-4 py-2 rounded-lg border text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => router.post(route('logout'))}
+                                    className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700"
+                                >
+                                    Log out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </aside>
         </>
     );

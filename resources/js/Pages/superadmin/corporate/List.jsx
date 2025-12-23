@@ -579,8 +579,8 @@ export default function Index({ companies, labels, groups, users }) {
                                     <td className="px-3 py-2 whitespace-nowrap text-[10px]">
                                         <div className="flex items-center gap-1">
                                             <button className={`${
-                                                darkMode 
-                                                    ? "text-gray-400 hover:text-gray-300" 
+                                                darkMode
+                                                    ? "text-gray-400 hover:text-gray-300"
                                                     : "text-gray-400 hover:text-gray-600"
                                             }`}>
                                                 <svg
@@ -604,8 +604,8 @@ export default function Index({ companies, labels, groups, users }) {
                                                 </svg>
                                             </button>
                                             <button className={`${
-                                                darkMode 
-                                                    ? "text-gray-400 hover:text-gray-300" 
+                                                darkMode
+                                                    ? "text-gray-400 hover:text-gray-300"
                                                     : "text-gray-400 hover:text-gray-600"
                                             }`}>
                                                 <svg
@@ -790,8 +790,8 @@ export default function Index({ companies, labels, groups, users }) {
                                     <td className="px-3 py-2 whitespace-nowrap">
                                         {company.corporate_label ? (
                                             <span className={`inline-flex px-2 py-1 text-[9px] font-semibold rounded ${
-                                                darkMode 
-                                                    ? "bg-blue-900 text-blue-200" 
+                                                darkMode
+                                                    ? "bg-blue-900 text-blue-200"
                                                     : "bg-blue-100 text-blue-800"
                                             }`}>
                                                 {company.corporate_label.label}
@@ -807,8 +807,8 @@ export default function Index({ companies, labels, groups, users }) {
                                     <td className="px-3 py-2 whitespace-nowrap">
                                         {company.corporate_group ? (
                                             <span className={`inline-flex px-2 py-1 text-[9px] font-semibold rounded ${
-                                                darkMode 
-                                                    ? "bg-green-900 text-green-200" 
+                                                darkMode
+                                                    ? "bg-green-900 text-green-200"
                                                     : "bg-green-100 text-green-800"
                                             }`}>
                                                 {

@@ -5,11 +5,17 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SuperAdminController;
+use Illuminate\Http\Request;
+use App\Models\UserMaster;
+use App\Services\PermissionService;
 use App\Http\Controllers\ProductController;
+use App\Services\PHPMailerService;
+use App\Services\MailService;
 
 Route::get('/', function () {
     return Inertia::render('Public/Home');
 });
+
 
 Route::get('/book-demo', function () {
     return Inertia::render('Public/BookDemo');
@@ -40,8 +46,8 @@ Route::prefix('solutions')->name('solutions.')->group(function () {
 
 // Explore
 Route::get('/resources', [App\Http\Controllers\ProductController::class, 'resources'])->name('resources');
+Route::get('/resources/{slug}', [App\Http\Controllers\ProductController::class, 'resourceShow'])->name('resources.show');
 Route::get('/blog', [App\Http\Controllers\ProductController::class, 'blog'])->name('blog');
-Route::get('/cases', [App\Http\Controllers\ProductController::class, 'cases'])->name('cases');
 Route::get('/faq', [App\Http\Controllers\ProductController::class, 'faq'])->name('faq');
 
 // Company
@@ -55,9 +61,11 @@ Route::get('/contact-us', [ProductController::class, 'contactUs'])->name('contac
 ///////////////////////// --- SuperAdmin Login --- ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-Route::get('/login', [AuthController::class, 'superadminLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'processLogin'])->name('login.process');
-Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
+Route::middleware([\App\Http\Middleware\RedirectIfSuperadmin::class])->group(function () {
+    Route::get('/login', [AuthController::class, 'superadminLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'processLogin'])->name('login.process');
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////// --- SuperAdmin Login --- ////////////////////////////
@@ -68,8 +76,36 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.o
 Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');
 
 // SuperAdmin routes with prefix
-Route::prefix('superadmin')->group(function () {
+Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'permission'])->prefix('superadmin')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
+
+    // Debug route: return session superadmin_user, resolved roleId and userId
+    Route::get('/session-user', function (Request $request) {
+        $sessionUser = session('superadmin_user');
+        if (!$sessionUser || !is_array($sessionUser) || !isset($sessionUser['email'])) {
+            return response()->json(['ok' => false, 'message' => 'no session user', 'session' => $sessionUser]);
+        }
+        $user = UserMaster::where('email', $sessionUser['email'])->first();
+        $roleId = $user ? $user->role_id : null;
+        $userId = $user ? $user->user_id : null;
+        $permissions = [];
+        if ($roleId) {
+            $perms = PermissionService::getPermissionsForFrontend($roleId);
+            $permissions = [
+                'routes' => $perms['routes'] ?? [],
+                'modules' => $perms['modules'] ?? [],
+                'routeKeys' => array_keys($perms['routes'] ?? []),
+            ];
+        }
+
+        return response()->json([
+            'ok' => true,
+            'session_user' => $sessionUser,
+            'roleId' => $roleId,
+            'userId' => $userId,
+            'permissions' => $permissions,
+        ]);
+    })->name('superadmin.session.user');
 
     // Corporate Labels Routes
     Route::get('/corporate/labels', [SuperAdminController::class, 'corporateLabelsIndex'])->name('corporate.labels.index');
@@ -120,9 +156,7 @@ Route::prefix('superadmin')->group(function () {
     Route::post('/corporate/{company}/upload-bulk-csv', [SuperAdminController::class, 'uploadBulkCsv'])->name('corporate.upload-bulk-csv');
     Route::post('/corporate/{company}/process-bulk-action', [SuperAdminController::class, 'processBulkAction'])->name('corporate.process-bulk-action');
     Route::get('/bulk-action/{action}/download/{type}', [SuperAdminController::class, 'downloadBulkActionFile'])->name('bulk-action.download-file');
-
-    // Wellness Module Routes
-    Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
+ Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
     Route::post('/wellness/vendor-list', [SuperAdminController::class, 'vendorStore'])->name('superadmin.wellness.vendor.store');
     Route::put('/wellness/vendor/{vendor}', [SuperAdminController::class, 'vendorUpdate'])->name('superadmin.wellness.vendor.update');
     Route::put('/wellness/vendor/{vendor}/toggle-status', [SuperAdminController::class, 'vendorToggleStatus'])->name('wellness.vendor.toggle-status');
@@ -143,6 +177,9 @@ Route::prefix('superadmin')->group(function () {
 
     Route::get('/marketing/welcome-mailer', [SuperAdminController::class, 'marketingWelcomeMailer'])->name('superadmin.marketing.welcome-mailer.index');
     Route::post('/marketing/welcome-mailer', [SuperAdminController::class, 'marketingWelcomeMailerStore'])->name('superadmin.marketing.welcome-mailer.store');
+    Route::get('/marketing/welcome-mailer/create', [SuperAdminController::class, 'marketingWelcomeMailerCreate'])->name('superadmin.marketing.welcome-mailer.create');
+    Route::get('/marketing/welcome-mailer/company/{companyId}/policies', [SuperAdminController::class, 'marketingWelcomeMailerCompanyPolicies'])->name('superadmin.marketing.welcome-mailer.policies');
+    Route::get('/marketing/welcome-mailer/policy/{policyId}/endorsements', [SuperAdminController::class, 'marketingWelcomeMailerPolicyEndorsements'])->name('superadmin.marketing.welcome-mailer.endorsements');
     Route::put('/marketing/welcome-mailer/{mailer}', [SuperAdminController::class, 'marketingWelcomeMailerUpdate'])->name('superadmin.marketing.welcome-mailer.update');
     Route::delete('/marketing/welcome-mailer/{mailer}', [SuperAdminController::class, 'marketingWelcomeMailerDestroy'])->name('superadmin.marketing.welcome-mailer.destroy');
 
@@ -197,6 +234,20 @@ Route::prefix('superadmin')->group(function () {
     Route::put('/admin/resources/{resource}', [SuperAdminController::class, 'adminResourcesUpdate'])->name('superadmin.admin.resources.update');
     Route::delete('/admin/resources/{resource}', [SuperAdminController::class, 'adminResourcesDestroy'])->name('superadmin.admin.resources.destroy');
 
+    // Admin -> Roles & Permissions Routes
+    Route::get('/admin/roles-permissions', [\App\Http\Controllers\RolePermissionController::class, 'index'])->name('superadmin.admin.roles-permissions.index');
+
+    // Admin -> Users Routes
+    Route::get('/admin/users', [SuperAdminController::class, 'adminUsersIndex'])->name('superadmin.admin.users.index');
+    Route::post('/admin/users', [SuperAdminController::class, 'adminUsersStore'])->name('superadmin.admin.users.store');
+    Route::put('/admin/users/{user}', [SuperAdminController::class, 'adminUsersUpdate'])->name('superadmin.admin.users.update');
+    Route::put('/admin/users/{user}/toggle-active', [SuperAdminController::class, 'adminUsersToggleActive'])->name('superadmin.admin.users.toggle-active');
+    Route::get('/admin/roles/{roleId}/permissions-manage', [\App\Http\Controllers\RolePermissionController::class, 'managePermissions'])->name('superadmin.admin.roles.permissions.manage');
+    Route::get('/admin/roles/{roleId}/permissions', [\App\Http\Controllers\RolePermissionController::class, 'getRolePermissions'])->name('superadmin.admin.roles.permissions');
+    Route::post('/admin/roles/{roleId}/permissions', [\App\Http\Controllers\RolePermissionController::class, 'updatePermissions'])->name('superadmin.admin.roles.permissions.update');
+    Route::post('/admin/roles', [\App\Http\Controllers\RolePermissionController::class, 'createRole'])->name('superadmin.admin.roles.create');
+    Route::put('/admin/roles/{id}', [\App\Http\Controllers\RolePermissionController::class, 'updateRole'])->name('superadmin.admin.roles.update');
+    Route::delete('/admin/roles/{id}', [\App\Http\Controllers\RolePermissionController::class, 'deleteRole'])->name('superadmin.admin.roles.delete');
 
     // Insurance Routes
     Route::get('/policy/insurance', [SuperAdminController::class, 'insuranceIndex'])->name('superadmin.policy.insurance.index');
@@ -268,13 +319,18 @@ Route::prefix('superadmin')->group(function () {
     Route::get('/fill-enrollment/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'fillEnrollment'])->name('superadmin.fill-enrollment');
     Route::post('/fill-enrollment/submit', [SuperAdminController::class, 'submitEnrollment'])->name('superadmin.submit-enrollment');
 
-    // CD Accounts Routes
+ // CD Accounts Routes
     Route::get('/policy/cd-accounts', [SuperAdminController::class, 'cdAccountsIndex'])->name('superadmin.policy.cd-accounts.index');
     Route::get('/policy/cd-accounts/create', [SuperAdminController::class, 'cdAccountsCreate'])->name('superadmin.policy.cd-accounts.create');
     Route::post('/policy/cd-accounts', [SuperAdminController::class, 'cdAccountsStore'])->name('superadmin.policy.cd-accounts.store');
     Route::get('/policy/cd-accounts/{id}/edit', [SuperAdminController::class, 'cdAccountsEdit'])->name('superadmin.policy.cd-accounts.edit');
+    Route::get('/policy/cd-accounts/{id}/cd-details', [SuperAdminController::class, 'cdAccountsDetails'])->name('superadmin.policy.cd-accounts.cd-details');
     Route::put('/policy/cd-accounts/{id}', [SuperAdminController::class, 'cdAccountsUpdate'])->name('superadmin.policy.cd-accounts.update');
     Route::put('/policy/cd-accounts/{id}/toggle-active', [SuperAdminController::class, 'cdAccountsToggleActive'])->name('superadmin.policy.cd-accounts.toggle-active');
+    Route::post('/policy/cd-accounts/transaction', [SuperAdminController::class, 'cdAccountsTransactionStore']);
+    Route::delete('/policy/cd-accounts/transaction/{id}', [SuperAdminController::class, 'cdAccountsTransactionDelete']);
+    // Wellness Module Routes
+   
 });
 // });
 // });

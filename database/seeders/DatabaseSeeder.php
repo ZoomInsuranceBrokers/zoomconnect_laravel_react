@@ -14,7 +14,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            CorporateLabelSeeder::class
+            CorporateLabelSeeder::class,
+            RoutesMasterSeeder::class,
+            UpdatedSuperadminRolePermissionSeeder::class,
         ]);
         // User::factory()->create([
         //     'name' => 'Test User',

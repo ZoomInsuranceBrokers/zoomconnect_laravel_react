@@ -8,6 +8,7 @@ use App\Models\CompanyEmployee;
 use App\Models\CompanyMaster;
 use App\Models\MessageTemplate;
 use App\Models\UserMaster;
+use App\Models\RoleMaster;
 use App\Models\WellnessService;
 use App\Models\WellnessCategory;
 use App\Models\Vendor;
@@ -54,9 +55,10 @@ class SuperAdminController extends Controller
     {
         Session::forget('superadmin_logged_in');
         Session::forget('superadmin_user');
-        Session::flush(); // Optional: clear entire session
+        Session::flush(); // clear entire session on logout
 
-        return redirect()->route('login')->with('success', 'Logged out successfully');
+        // Redirect to login page after logout so Inertia client can follow it.
+        return redirect('/login')->with('success', 'Logged out successfully');
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -211,6 +213,92 @@ class SuperAdminController extends Controller
         return Inertia::render('superadmin/corporate/List', [
             'companies' => $companies,
         ]);
+    }
+
+    /**
+     * Admin Users - list users
+     */
+    public function adminUsersIndex()
+    {
+        $users = UserMaster::where('is_delete', 0)
+            ->with('role')
+            ->orderBy('user_id', 'desc')
+            ->get();
+
+        $roles = RoleMaster::active()->get();
+
+        return Inertia::render('superadmin/admin/users/Index', [
+            'users' => $users,
+            'roles' => $roles,
+        ]);
+    }
+
+    /**
+     * Store a new admin user
+     */
+    public function adminUsersStore(Request $request)
+    {
+        $request->validate([
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:user_master,email',
+            'role_id' => 'required|integer|exists:role_master,role_id',
+            'mobile' => 'nullable|string|max:20',
+        ]);
+
+        $user = UserMaster::create([
+            'full_name' => $request->full_name,
+            'email' => $request->email,
+            'first_name' => $request->first_name ?? null,
+            'last_name' => $request->last_name ?? null,
+            'mobile' => $request->mobile ?? null,
+            'role_id' => $request->role_id,
+            'pwd' => Hash::make('12345678'),
+            'is_active' => 1,
+            'is_delete' => 0,
+            'created_by' => Session::get('superadmin_user_id', 1),
+        ]);
+
+        return redirect()->route('superadmin.admin.users.index')->with('success', 'User created. Default password: 12345678');
+    }
+
+    /**
+     * Update user details
+     */
+    public function adminUsersUpdate(Request $request, $userId)
+    {
+        $user = UserMaster::findOrFail($userId);
+
+        $request->validate([
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:user_master,email,' . $user->user_id . ',user_id',
+            'role_id' => 'required|integer|exists:role_master,role_id',
+            'mobile' => 'nullable|string|max:20',
+        ]);
+
+        $user->update([
+            'full_name' => $request->full_name,
+            'email' => $request->email,
+            'first_name' => $request->first_name ?? $user->first_name,
+            'last_name' => $request->last_name ?? $user->last_name,
+            'mobile' => $request->mobile ?? $user->mobile,
+            'role_id' => $request->role_id,
+            'updated_by' => Session::get('superadmin_user_id', 1),
+        ]);
+
+        return redirect()->route('superadmin.admin.users.index')->with('success', 'User updated successfully.');
+    }
+
+    /**
+     * Toggle user active/inactive (do not delete)
+     */
+    public function adminUsersToggleActive(Request $request, $userId)
+    {
+        $user = UserMaster::findOrFail($userId);
+        $user->is_active = $user->is_active ? 0 : 1;
+        $user->updated_by = Session::get('superadmin_user_id', 1);
+        $user->save();
+
+        return redirect()->route('superadmin.admin.users.index')->with('success', 'User status updated.');
     }
 
     public function corporateCreate()
@@ -1899,13 +1987,89 @@ class SuperAdminController extends Controller
             'user_name' => 'SuperAdmin',
             'email' => 'admin@zoomconnect.com'
         ]);
+        // Load welcome mailer records from DB (new table: welcome_mailers)
+        $mailers = \App\Models\WelcomeMailer::with(['company'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return Inertia::render('superadmin/Marketing/WelcomeMailer', [
             'user' => $user,
-            'mailers' => []
+            'mailers' => $mailers,
         ]);
     }
 
+    /**
+     * Show create welcome mailer form and load companies for dropdown
+     */
+    public function marketingWelcomeMailerCreate()
+    {
+        $user = Session::get('superadmin_user', [
+            'user_name' => 'SuperAdmin',
+            'email' => 'admin@zoomconnect.com'
+        ]);
+
+        $companies = CompanyMaster::where('status', 1)
+            ->orderBy('comp_name')
+            ->get(['comp_id as id', 'comp_name as name']);
+
+        $templates = MessageTemplate::where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'name', 'subject', 'body', 'banner_image', 'attachment']);
+
+        return Inertia::render('superadmin/Marketing/CreateWelcomeMailer', [
+            'companies' => $companies,
+            'templates' => $templates,
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Return active policies for a given company (AJAX)
+     */
+    public function marketingWelcomeMailerCompanyPolicies($companyId)
+    {
+        $policies = \App\Models\PolicyMaster::where('comp_id', $companyId)
+            ->where('is_active', 1)
+            ->where('is_old', 0)
+            ->orderBy('policy_name')
+            ->get(['id', 'policy_name']);
+
+        return response()->json(['policies' => $policies]);
+    }
+
+    /**
+     * Return addition endorsement numbers for a given policy (AJAX)
+     */
+    public function marketingWelcomeMailerPolicyEndorsements($policyId)
+    {
+        $policyId = (int) $policyId;
+
+        $policy = \App\Models\PolicyMaster::with('tpa')->find($policyId);
+        if (!$policy || empty($policy->tpa) || empty($policy->tpa->tpa_table_name)) {
+            return response()->json(['endorsements' => []]);
+        }
+
+        $table_name = $policy->tpa->tpa_table_name;
+
+        // Basic validation for table name to avoid injection
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $table_name)) {
+            return response()->json(['endorsements' => []]);
+        }
+
+        try {
+            $sql = "SELECT t.addition_endorsement_id as id, pe.endorsement_no FROM {$table_name} t INNER JOIN policy_endorsements pe ON t.addition_endorsement_id = pe.id WHERE t.policy_id = ? GROUP BY t.addition_endorsement_id, pe.endorsement_no";
+            $rows = \DB::select($sql, [$policyId]);
+
+            $endorsements = array_map(function ($r) {
+                return ['id' => $r->id, 'endorsement_no' => $r->endorsement_no];
+            }, $rows);
+
+            return response()->json(['endorsements' => $endorsements]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load endorsements: ' . $e->getMessage());
+            return response()->json(['endorsements' => []]);
+        }
+    }
     /**
      * Store new welcome mailer
      */
@@ -4682,11 +4846,68 @@ class SuperAdminController extends Controller
             abort(404);
         }
 
+
+        // Determine tpa_table_name
+        $tpa_table_name = '';
+        if (isset($policy->is_old) && $policy->is_old == 0) {
+            // Get tpa_id from policy, then fetch tpa_table_name from tpa_master
+            $tpa_id = $policy->tpa_id ?? null;
+            if ($tpa_id) {
+                $tpa = \DB::table('tpa_master')->where('id', $tpa_id)->first();
+                if ($tpa && isset($tpa->tpa_table_name)) {
+                    $tpa_table_name = $tpa->tpa_table_name;
+                }
+            }
+        } elseif (isset($policy->is_old) && $policy->is_old == 2) {
+            $tpa_table_name = 'endorsement_data';
+        } else {
+            $tpa_table_name = $policy->tpa_table_name ?? '';
+        }
+
+        $additionMembers = [];
+        $deletionMembers = [];
+        if ($tpa_table_name) {
+            try {
+
+                $additionMembers = \DB::select("
+                    SELECT ce.employees_code, ce.email, ce.full_name, tpa.*
+                    FROM {$tpa_table_name} tpa
+                    INNER JOIN policy_mapping_master pmm ON tpa.mapping_id = pmm.id
+                    INNER JOIN company_employees ce ON ce.id = tpa.emp_id
+                    WHERE pmm.policy_id = ?
+                        AND pmm.cmp_id = ?
+                        AND pmm.status = 1
+                        AND tpa.addition_endorsement_id = ?
+                        AND tpa.updation_endorsement_id IS NULL
+                    ORDER BY tpa.id DESC
+                ", [$policy->id, $endorsement->cmp_id, $endorsement->id]);
+
+                $deletionMembers = \DB::select("
+                    SELECT ce.employees_code, ce.email, ce.full_name, tpa.*
+                    FROM {$tpa_table_name} tpa
+                    INNER JOIN policy_mapping_master pmm ON tpa.mapping_id = pmm.id
+                    INNER JOIN company_employees ce ON ce.id = tpa.emp_id
+                    WHERE pmm.policy_id = ?
+                        AND pmm.cmp_id = ?
+                        AND pmm.status = 1
+                        AND tpa.deletion_endorsement_id = ?
+                        AND tpa.addition_endorsement_id != 0
+                        AND tpa.updated_entry_id IS NULL
+                    ORDER BY tpa.id DESC
+                ", [$policy->id, $endorsement->cmp_id, $endorsement->id]);
+            } catch (\Exception $e) {
+                // Log error if needed
+            }
+        }
+
         return Inertia::render('superadmin/policy/Policies/PolicyEndorsementShow', [
             'endorsement' => $endorsement,
             'policy' => $policy,
             'cd_ac' => $cd_ac,
             'company' => $company,
+            'additionMembers' => $additionMembers,
+            'deletionMembers' => $deletionMembers,
+            'tpa_table_name' => $tpa_table_name,
         ]);
     }
 
@@ -4742,7 +4963,7 @@ class SuperAdminController extends Controller
         $query = PolicyMaster::with(['company']);
 
         // only active policies as per request
-        $query->where('policy_status', 1);
+        $query->where('is_active', 1);
 
         // optional corporate filter
         if ($request->filled('corporate_id')) {
@@ -4754,7 +4975,7 @@ class SuperAdminController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('policy_name', 'like', "%{$search}%")
-                  ->orWhere('policy_number', 'like', "%{$search}%");
+                    ->orWhere('policy_number', 'like', "%{$search}%");
             });
         }
 
@@ -5200,7 +5421,7 @@ class SuperAdminController extends Controller
     public function storePolicy(Request $request)
     {
         Log::info('=== Starting Policy Creation ===', ['request_data' => $request->except(['policy_document'])]);
-        
+
         try {
             $validated = $request->validate([
                 'corporate_id' => 'required|exists:company_master,comp_id',
@@ -5339,7 +5560,7 @@ class SuperAdminController extends Controller
 
             // Commit the transaction
             DB::commit();
-            
+
             Log::info('=== Policy Created Successfully ===', ['policy_id' => $policy->id]);
 
             return redirect()->route('superadmin.policy.policies.index')
@@ -5365,10 +5586,10 @@ class SuperAdminController extends Controller
     {
         try {
             $policy = PolicyMaster::with(['company', 'insurance', 'tpa'])->findOrFail($id);
-            
+
             // Get policy features
             $policyFeatures = \App\Models\PolicyFeature::where('policy_id', $id)->get();
-            
+
             // Separate inclusions and exclusions
             $inclusions = $policyFeatures->where('feature_type', 'inc')->map(function ($feature) {
                 return [
@@ -5379,7 +5600,7 @@ class SuperAdminController extends Controller
                     'feature_type' => 'inc'
                 ];
             })->values();
-            
+
             $exclusions = $policyFeatures->where('feature_type', 'exc')->map(function ($feature) {
                 return [
                     'id' => $feature->id,
@@ -5442,7 +5663,7 @@ class SuperAdminController extends Controller
     public function updatePolicy(Request $request, $id)
     {
         Log::info('=== Starting Policy Update ===', ['policy_id' => $id, 'request_data' => $request->except(['policy_document'])]);
-        
+
         try {
             $validated = $request->validate([
                 'corporate_id' => 'required|exists:company_master,comp_id',
@@ -5579,7 +5800,7 @@ class SuperAdminController extends Controller
 
             // Commit the transaction
             DB::commit();
-            
+
             Log::info('=== Policy Updated Successfully ===', ['policy_id' => $policy->id]);
 
             return redirect()->route('superadmin.policy.policies.index')
@@ -5618,8 +5839,7 @@ class SuperAdminController extends Controller
     }
 
 
-
-    /**
+ /**
      * CD Accounts Index
      */
     public function cdAccountsIndex()
@@ -5722,6 +5942,66 @@ class SuperAdminController extends Controller
         $cdAccount->status = $cdAccount->status ? 0 : 1;
         $cdAccount->save();
         return response()->json(['success' => true, 'status' => $cdAccount->status]);
+    }
+
+    public function cdAccountsDetails($id)
+    {
+        $cdAccount = \App\Models\CdMaster::findOrFail($id);
+        $companies = \App\Models\CompanyMaster::where('status', 1)->orderBy('comp_name')->get(['comp_id as id', 'comp_name as company_name']);
+        $insurers = \App\Models\InsuranceMaster::where('status', 1)->orderBy('insurance_company_name')->get(['id', 'insurance_company_name as insurance_name']);
+        $transactions = \App\Models\CdMonthlyBalanceStatement::where('cd_ac_id', $id)->where('is_delete', 0)->orderBy('transaction_date', 'desc')->get();
+        return Inertia::render('superadmin/policy/CdAccounts/Details', [
+            'cdAccount' => $cdAccount,
+            'companies' => $companies,
+            'insurers' => $insurers,
+            'transactions' => $transactions
+        ]);
+    }
+
+    public function cdAccountsTransactionStore(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'cd_ac_id' => 'required|integer',
+            'comp_id' => 'required|integer',
+            'transaction_name' => 'required|string',
+            'transaction_date' => 'required|date',
+            'transaction_type' => 'required|string',
+            'cd_balance_remaining' => 'nullable|numeric',
+            'premium' => 'nullable|numeric',
+            'remarks' => 'required|string',
+            'cd_file' => 'required|file',
+        ]);
+
+        $filePath = $request->file('cd_file')->store('cd_files', 'public');
+        $txn = new \App\Models\CdMonthlyBalanceStatement();
+        $txn->cd_ac_id = $validated['cd_ac_id'];
+        $txn->comp_id = $validated['comp_id'];
+        $txn->transaction_name = $validated['transaction_name'];
+        $txn->transaction_date = $validated['transaction_date'];
+        $txn->transaction_side = $validated['transaction_type'];
+        $txn->cd_balance_remaining = $validated['cd_balance_remaining'] ?? null;
+        $txn->transaction_amt = $validated['premium'] ?? null;
+        $txn->remarks = $validated['remarks'];
+        $txn->file_url = '/storage/' . $filePath;
+        $txn->is_delete = 0;
+        $txn->save();
+        return redirect()->back()->with('message', 'Transaction added successfully.');
+    }
+
+    /**
+     * Soft delete a CD Account transaction (set is_delete = 1)
+     */
+    public function cdAccountsTransactionDelete($id)
+    {
+        $txn = \App\Models\CdMonthlyBalanceStatement::findOrFail($id);
+        $txn->is_delete = 1;
+        $txn->save();
+        $cdAcId = $txn->cd_ac_id;
+        // Inertia v0.11.x: return 204 for XHR, else redirect
+        if (request()->header('X-Inertia')) {
+            return response('', 204);
+        }
+        return redirect()->route('superadmin.policy.cd-accounts.cd-details', $cdAcId);
     }
 
     /////////////////////////////////////////////////////////////////////////

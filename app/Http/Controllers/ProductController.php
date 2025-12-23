@@ -33,15 +33,27 @@ class ProductController extends Controller
     }
     public function resources()
     {
-        return Inertia::render('Public/Resources');
+        $resources = \App\Models\Resource::whereIn('status', [1, 'published'])
+            ->orderBy('published_at', 'desc')
+            ->get();
+        return Inertia::render('Public/Resources', [
+            'resources' => $resources
+        ]);
+    }
+
+    public function resourceShow($slug)
+    {
+        $resource = \App\Models\Resource::where('slug', $slug)
+            ->whereIn('status', [1, 'published'])
+            ->firstOrFail();
+        
+        return Inertia::render('Public/ResourceShow', [
+            'resource' => $resource
+        ]);
     }
     public function blog()
     {
         return Inertia::render('Public/Blog');
-    }
-    public function cases()
-    {
-        return Inertia::render('Public/Cases');
     }
     public function faq()
     {
