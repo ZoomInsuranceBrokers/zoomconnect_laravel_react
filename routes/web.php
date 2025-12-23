@@ -35,7 +35,7 @@ Route::get('/mobile', [App\Http\Controllers\ProductController::class, 'mobile'])
 Route::prefix('solutions')->name('solutions.')->group(function () {
     Route::get('/small-teams', [App\Http\Controllers\ProductController::class, 'smallTeams'])->name('smallTeams');
     Route::get('/large-teams', [App\Http\Controllers\ProductController::class, 'largeTeams'])->name('largeTeams');
-    Route::get('/hybrid', [App\Http\Controllers\ProductController::class, 'hybrid'])->name('hybrid');
+    Route::get('/medium-teams', [App\Http\Controllers\ProductController::class, 'mediumTeams'])->name('mediumTeams');
 });
 
 // Explore

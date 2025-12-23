@@ -317,31 +317,32 @@ const WellnessPrograms = () => {
                             {/* Right side - 3D Illustrations and Icons */}
                             <div className="relative h-[300px] lg:h-[600px] pt-10">
                                 {/* Central glassmorphism card */}
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-80 bg-white/40 backdrop-blur-xl rounded-3xl border border-white/60 shadow-2xl p-4 transform hover:scale-105 transition-all duration-500">
-                                    {/* Dashboard illustration placeholder */}
-                                    <div className="w-full h-full bg-gradient-to-br from-blue-100/50 to-purple-100/50 rounded-2xl p-6 flex flex-col gap-4">
-                                        <div className="h-16 bg-white/60 rounded-xl flex items-center justify-center">
-                                            <div className="text-4xl">📊</div>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <div className="h-3 bg-gradient-to-r from-blue-400/60 to-purple-400/60 rounded-full w-3/4"></div>
-                                            <div className="h-3 bg-gradient-to-r from-purple-400/60 to-pink-400/60 rounded-full w-1/2"></div>
-                                            <div className="h-3 bg-gradient-to-r from-teal-400/60 to-blue-400/60 rounded-full w-5/6"></div>
-                                        </div>
-                                        <div className="flex-1 bg-white/40 rounded-xl mt-4"></div>
+                                <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96  backdrop-blur-xl rounded-3xl p-4 transform hover:scale-105 transition-all duration-500">
+                                    {/* Enhanced hero image clarity - larger image */}
+                                    <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 relative">
+                                        <img
+                                            src="/assets/images/products/Workspace_Wellness_Harmony_simple.png"
+                                            alt="Wellness Dashboard Hero"
+                                            className="w-[340px] h-[340px] md:w-[420px] md:h-[420px] object-contain rounded-xl drop-shadow-lg z-10"
+                                        />
                                     </div>
+                                    {/* Elliptical shadow below image */}
+                                    <div
+                                        className="absolute left-1/2 -translate-x-1/2 w-[60%] h-4 md:h-8 bg-black/20 rounded-full blur-md z-0"
+                                        style={{ filter: 'blur(8px)', bottom: '-2.25rem' }}
+                                    />
                                 </div>
 
                                 {/* Floating icon cards */}
                                 {/* Health Shield - Top Left */}
-                                <div className="absolute top-20 left-0 w-16 h-16 bg-white/50 backdrop-blur-md rounded-2xl border border-white/80 shadow-xl flex items-center justify-center animate-float transform hover:scale-110 transition-transform">
+                                <div className="absolute top-20 left-12 w-16 h-16 bg-white/50 backdrop-blur-md rounded-2xl border border-white/80 shadow-xl flex items-center justify-center animate-float transform hover:scale-110 transition-transform">
                                     <svg className="w-12 h-12 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clipRule="evenodd" />
                                     </svg>
                                 </div>
 
                                 {/* Heart Rate - Top Right */}
-                                <div className="absolute top-28 right-8 w-16 h-16 bg-white/50 backdrop-blur-md rounded-2xl border border-white/80 shadow-xl flex items-center justify-center animate-float-delayed transform hover:scale-110 transition-transform">
+                                <div className="absolute top-24 right-24 w-16 h-16 bg-white/50 backdrop-blur-md rounded-2xl border border-white/80 shadow-xl flex items-center justify-center animate-float-delayed transform hover:scale-110 transition-transform">
                                     <svg className="w-12 h-12 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                                     </svg>
@@ -384,7 +385,7 @@ const WellnessPrograms = () => {
 
                 {/* FEATURES SECTION */}
                 <section className="w-full relative py-16">
-                    <div className="max-w-6xl mx-auto text-center  px-6 relative">
+                    <div className="max-w-6xl mx-auto text-center px-6 relative">
                         <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-4">
                             Features of Wellness Programs
                         </h2>
@@ -504,9 +505,9 @@ const WellnessPrograms = () => {
                                         description: "Connect instantly with top-rated doctors via video or voice calls. Get expert medical advice anytime, anywhere, directly from the ZoomConnect app.",
                                         content: (
                                             <img
-                                                src="/assets/images/wellness-doctor-mediBuddy.png"
+                                                src="/assets/images/products/Instant Doctor Consultations_medibuddy.png"
                                                 alt="MediBuddy Doctor Consultation"
-                                                className="h-full w-full object-cover rounded-md"
+                                                className="h-full w-full object-contain rounded-md"
                                             />
                                         ),
                                     },
@@ -517,7 +518,7 @@ const WellnessPrograms = () => {
                                             <img
                                                 src="/assets/images/wellness-novel-healthcare.png"
                                                 alt="General Physician Consultation"
-                                                className="h-full w-full object-cover rounded-md"
+                                                className="h-full w-full object-contain rounded-md"
                                             />
                                         ),
                                     },
@@ -528,7 +529,7 @@ const WellnessPrograms = () => {
                                             <img
                                                 src="/assets/images/wellness-lab-tests.png"
                                                 alt="Lab Tests & Checkups"
-                                                className="h-full w-full object-cover rounded-md"
+                                                className="h-full w-full object-contain rounded-md"
                                             />
                                         ),
                                     },
@@ -539,7 +540,7 @@ const WellnessPrograms = () => {
                                             <img
                                                 src="/assets/images/wellness-medicines.png"
                                                 alt="Medicine & Pharmacy"
-                                                className="h-full w-full object-cover rounded-md"
+                                                className="h-full w-full object-contain rounded-md"
                                             />
                                         ),
                                     },
@@ -548,9 +549,9 @@ const WellnessPrograms = () => {
                                         description: "Tailored health programs based on your lifestyle and goals. Track your progress, receive expert guidance, and stay motivated with our app.",
                                         content: (
                                             <img
-                                                src="/assets/images/wellness-personalized.png"
+                                                src="/assets/images/products/personalized_Wellness.png"
                                                 alt="Personalized Wellness"
-                                                className="h-full w-full object-cover rounded-md"
+                                                className="h-full w-full object-contain rounded-md"
                                             />
                                         ),
                                     },
@@ -587,7 +588,15 @@ const WellnessPrograms = () => {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="flex items-start space-x-4">
                                                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/70 flex items-center justify-center shadow">
-                                                    <svg className="w-6 h-6 text-[#FF0066]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a9 9 0 100 18 9 9 0 000-18zm1 13h-2v-2h2v2zm0-4h-2V6h2v5z" /></svg>
+                                                    <svg className="w-6 h-6 text-[#FF0066]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                        <g>
+                                                            <rect x="7" y="8" width="10" height="10" rx="3" fill="currentColor" fillOpacity="0.15" />
+                                                            <rect x="7" y="8" width="10" height="10" rx="3" stroke="currentColor" strokeWidth="1.5" />
+                                                            <rect x="10" y="4" width="4" height="4" rx="1" fill="currentColor" fillOpacity="0.15" />
+                                                            <rect x="10" y="4" width="4" height="4" rx="1" stroke="currentColor" strokeWidth="1.5" />
+                                                            <path d="M9 13h6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                                                        </g>
+                                                    </svg>
                                                 </div>
                                                 <div>
                                                     <h3 className="font-semibold text-gray-800">Medicine at Discount</h3>
@@ -607,7 +616,11 @@ const WellnessPrograms = () => {
 
                                             <div className="flex items-start space-x-4">
                                                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/70 flex items-center justify-center shadow">
-                                                    <svg className="w-6 h-6 text-[#0066ff]" fill="currentColor" viewBox="0 0 24 24"><path d="M21 3H3v18h18V3zM8 19H5V8h3v11zm6 0h-3V5h3v14zm6 0h-3v-6h3v6z" /></svg>
+                                                    <svg className="w-6 h-6 text-[#0066ff]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                        <path d="M7 3v2a2 2 0 0 1-.59 1.41l-2.7 2.7A2 2 0 0 0 3 10.17V19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8.83a2 2 0 0 0-.59-1.41l-2.7-2.7A2 2 0 0 1 17 5V3" />
+                                                        <rect x="9" y="13" width="6" height="5" rx="1" />
+                                                        <path d="M9 13V7a3 3 0 0 1 6 0v6" />
+                                                    </svg>
                                                 </div>
                                                 <div>
                                                     <h3 className="font-semibold text-gray-800">Book Lab Tests</h3>
@@ -617,7 +630,14 @@ const WellnessPrograms = () => {
 
                                             <div className="flex items-start space-x-4">
                                                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/70 flex items-center justify-center shadow">
-                                                    <svg className="w-6 h-6 text-[#00b37e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2 5h5l-4 3 2 5-5-3-5 3 2-5-4-3h5z" /></svg>
+                                                    <svg className="w-6 h-6 text-[#00b37e]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                        <circle cx="18" cy="18" r="2" fill="currentColor" fillOpacity="0.15" />
+                                                        <circle cx="18" cy="18" r="2" stroke="currentColor" strokeWidth="1.5" />
+                                                        <path d="M6 4v6a6 6 0 0 0 12 0V4" stroke="currentColor" strokeWidth="1.5" />
+                                                        <path d="M6 4h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                        <path d="M16 4h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                        <path d="M12 16v2a4 4 0 0 0 8 0v-2" stroke="currentColor" strokeWidth="1.5" />
+                                                    </svg>
                                                 </div>
                                                 <div>
                                                     <h3 className="font-semibold text-gray-800">Other Wellness Services</h3>

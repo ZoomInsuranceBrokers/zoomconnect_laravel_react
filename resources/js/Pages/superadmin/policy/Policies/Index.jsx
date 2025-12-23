@@ -98,7 +98,7 @@ export default function Index({ policies, filters }) {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-wrap items-center gap-3">
+                <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-wrap items-center gap-3 dark:bg-gray-800 dark:border-gray-700">
                     <form
                         onSubmit={handleSearch}
                         className="flex flex-wrap gap-3 items-center w-full"
@@ -108,12 +108,12 @@ export default function Index({ policies, filters }) {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search by policy name, corporate policy name, or number..."
-                            className="w-60 px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                            className="w-60 px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#934790] focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                         />
                         <select
                             value={selectedStatus}
                             onChange={(e) => setSelectedStatus(e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-xs"
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-xs dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                         >
                             <option value="">All Status</option>
                             <option value="active">Active</option>
@@ -121,7 +121,7 @@ export default function Index({ policies, filters }) {
                         </select>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-[#934790] text-white text-xs rounded-lg hover:bg-[#7a3d7a]"
+                            className="px-4 py-2 bg-[#934790] text-white text-xs rounded-lg hover:bg-[#7a3d7a] dark:bg-[#7a3d7a] dark:hover:bg-[#934790] dark:text-white"
                         >
                             Search
                         </button>
@@ -129,52 +129,52 @@ export default function Index({ policies, filters }) {
                 </div>
 
                 {/* Policies Table */}
-                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                    <div className="px-4 py-3 border-b border-gray-200">
-                        <h3 className="text-sm font-semibold text-gray-900">
+                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                             All Policies ({policies.total})
                         </h3>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 text-sm">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase dark:text-gray-300">
                                         Status
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase dark:text-gray-300">
                                         Actions
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase dark:text-gray-300">
                                         Corporate
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase dark:text-gray-300">
                                         Policy Name
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase dark:text-gray-300">
                                         Insurer
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase dark:text-gray-300">
                                         TPA
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase dark:text-gray-300">
                                         Period
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {policies.data.length > 0 ? (
                                     policies.data.map((policy) => (
                                         <tr
                                             key={policy.id}
-                                            className="hover:bg-gray-50 transition"
+                                            className="hover:bg-gray-50 transition dark:hover:bg-gray-900"
                                         >
                                             <td className="px-4 py-3 text-xs whitespace-nowrap">
                                                 <span
                                                     className={`px-2 py-1 rounded-full font-semibold ${
                                                         policy.is_active === 1
-                                                            ? "bg-green-100 text-green-800"
-                                                            : "bg-red-100 text-red-800"
+                                                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                                                     }`}
                                                 >
                                                     {policy.is_active === 1
@@ -188,7 +188,7 @@ export default function Index({ policies, filters }) {
                                                     onClick={() =>
                                                         handleView(policy)
                                                     }
-                                                    className="text-[#934790] hover:text-[#7a3d7a] focus:outline-none"
+                                                    className="text-[#934790] hover:text-[#7a3d7a] focus:outline-none dark:text-[#e9c6e8] dark:hover:text-[#934790]"
                                                     title="View"
                                                 >
                                                     {/* Eye SVG */}
@@ -213,7 +213,7 @@ export default function Index({ policies, filters }) {
                                                 </button>
                                                 <Link
                                                     href={`/superadmin/policy/policies/${policy.id}/edit`}
-                                                    className="text-[#934790] hover:text-[#7a3d7a]"
+                                                    className="text-[#934790] hover:text-[#7a3d7a] dark:text-[#e9c6e8] dark:hover:text-[#934790]"
                                                     title="Edit"
                                                 >
                                                     {/* Pencil SVG */}
@@ -233,27 +233,27 @@ export default function Index({ policies, filters }) {
                                                     </svg>
                                                 </Link>
                                             </td>
-                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap dark:text-gray-200">
                                                 {policy.company?.comp_name ||
                                                     "-"}
                                             </td>
-                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap dark:text-gray-200">
                                                 {policy.policy_name ||
                                                     policy.corporate_policy_name}
                                             </td>
-                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap dark:text-gray-200">
                                                 {policy.insurance
                                                     ?.insurance_company_name ||
                                                     "-"}
                                             </td>
-                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap dark:text-gray-200">
                                                 {policy.tpa?.tpa_company_name ||
                                                     "-"}
                                             </td>
-                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap dark:text-gray-200">
                                                 {formatDate(
                                                     policy.policy_start_date
-                                                )}{" "}
+                                                )} {" "}
                                                 -{" "}
                                                 {formatDate(
                                                     policy.policy_end_date
@@ -265,7 +265,7 @@ export default function Index({ policies, filters }) {
                                     <tr>
                                         <td
                                             colSpan="7"
-                                            className="text-center py-4 text-xs text-gray-500"
+                                            className="text-center py-4 text-xs text-gray-500 dark:text-gray-400"
                                         >
                                             No policies found.
                                         </td>
@@ -287,8 +287,8 @@ export default function Index({ policies, filters }) {
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                 className={`px-3 py-1 text-xs border rounded-md ${
                                     link.active
-                                        ? "bg-[#934790] text-white border-[#934790]"
-                                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                                        ? "bg-[#934790] text-white border-[#934790] dark:bg-[#7a3d7a] dark:border-[#934790]"
+                                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800"
                                 } ${
                                     !link.url
                                         ? "cursor-not-allowed opacity-50"
@@ -300,26 +300,26 @@ export default function Index({ policies, filters }) {
                 )}
                 {/* 🔹 Modal Drawer */}
                 {showModal && selectedPolicy && (
-                    <div className="fixed inset-0 z-50 flex items-start justify-end bg-black bg-opacity-40">
-                        <div className="bg-white rounded-l-lg shadow-lg w-full max-w-md h-full overflow-auto relative animate-slideInRight">
+                    <div className="fixed inset-0 z-50 flex items-start justify-end bg-black bg-opacity-40 dark:bg-opacity-70">
+                        <div className="bg-white rounded-l-lg shadow-lg w-full max-w-md h-full overflow-auto relative animate-slideInRight dark:bg-gray-800 dark:text-white">
                             <button
-                                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl font-bold dark:text-gray-300 dark:hover:text-white"
                                 onClick={handleCloseModal}
                             >
                                 &times;
                             </button>
-                            <div className="px-6 pt-6 pb-3 border-b">
-                                <h2 className="text-xl font-bold text-gray-900">
+                            <div className="px-6 pt-6 pb-3 border-b dark:border-gray-700">
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                                     {selectedPolicy.company?.comp_name || "-"}
                                 </h2>
                             </div>
                             <div className="px-6 pt-4 pb-6">
-                                <div className="flex border-b mb-4">
+                                <div className="flex border-b mb-4 dark:border-gray-700">
                                     <button
                                         className={`py-2 px-4 text-base font-semibold ${
                                             activeTab === "details"
-                                                ? "border-b-2 border-[#934790] text-[#934790]"
-                                                : "text-gray-600"
+                                                ? "border-b-2 border-[#934790] text-[#934790] dark:border-[#e9c6e8] dark:text-[#e9c6e8]"
+                                                : "text-gray-600 dark:text-gray-300"
                                         }`}
                                         onClick={() => setActiveTab("details")}
                                     >
@@ -328,8 +328,8 @@ export default function Index({ policies, filters }) {
                                     <button
                                         className={`py-2 px-4 text-base font-semibold ${
                                             activeTab === "family"
-                                                ? "border-b-2 border-[#934790] text-[#934790]"
-                                                : "text-gray-600"
+                                                ? "border-b-2 border-[#934790] text-[#934790] dark:border-[#e9c6e8] dark:text-[#e9c6e8]"
+                                                : "text-gray-600 dark:text-gray-300"
                                         }`}
                                         onClick={() => setActiveTab("family")}
                                     >
@@ -340,64 +340,64 @@ export default function Index({ policies, filters }) {
                                 {activeTab === "details" && (
                                     <div className="text-sm space-y-4">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition">
-                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
+                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition dark:bg-gray-900 dark:border-gray-700">
+                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1 dark:text-gray-400">
                                                     Policy Name
                                                 </p>
-                                                <p className="text-gray-800 font-medium">
+                                                <p className="text-gray-800 font-medium dark:text-white">
                                                     {selectedPolicy.policy_name ||
                                                         "-"}
                                                 </p>
                                             </div>
 
-                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition">
-                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
+                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition dark:bg-gray-900 dark:border-gray-700">
+                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1 dark:text-gray-400">
                                                     Policy Number
                                                 </p>
-                                                <p className="text-gray-800 font-medium">
+                                                <p className="text-gray-800 font-medium dark:text-white">
                                                     {selectedPolicy.policy_number ||
                                                         "-"}
                                                 </p>
                                             </div>
 
-                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition">
-                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
+                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition dark:bg-gray-900 dark:border-gray-700">
+                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1 dark:text-gray-400">
                                                     Insurer
                                                 </p>
-                                                <p className="text-gray-800 font-medium">
+                                                <p className="text-gray-800 font-medium dark:text-white">
                                                     {selectedPolicy.insurance
                                                         ?.insurance_company_name ||
                                                         "-"}
                                                 </p>
                                             </div>
 
-                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition">
-                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
+                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition dark:bg-gray-900 dark:border-gray-700">
+                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1 dark:text-gray-400">
                                                     TPA
                                                 </p>
-                                                <p className="text-gray-800 font-medium">
+                                                <p className="text-gray-800 font-medium dark:text-white">
                                                     {selectedPolicy.tpa
                                                         ?.tpa_company_name ||
                                                         "-"}
                                                 </p>
                                             </div>
 
-                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition">
-                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
+                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition dark:bg-gray-900 dark:border-gray-700">
+                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1 dark:text-gray-400">
                                                     Start Date
                                                 </p>
-                                                <p className="text-gray-800 font-medium">
+                                                <p className="text-gray-800 font-medium dark:text-white">
                                                     {formatDate(
                                                         selectedPolicy.policy_start_date
                                                     )}
                                                 </p>
                                             </div>
 
-                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition">
-                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
+                                            <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 shadow-sm hover:shadow-md transition dark:bg-gray-900 dark:border-gray-700">
+                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1 dark:text-gray-400">
                                                     End Date
                                                 </p>
-                                                <p className="text-gray-800 font-medium">
+                                                <p className="text-gray-800 font-medium dark:text-white">
                                                     {formatDate(
                                                         selectedPolicy.policy_end_date
                                                     )}
@@ -405,7 +405,7 @@ export default function Index({ policies, filters }) {
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 p-3 bg-[#f9f5fa] border border-[#e6d8eb] rounded-lg text-center text-xs text-[#934790] font-semibold">
+                                        <div className="mt-4 p-3 bg-[#f9f5fa] border border-[#e6d8eb] rounded-lg text-center text-xs text-[#934790] font-semibold dark:bg-[#2d1e2d] dark:border-[#7a3d7a] dark:text-[#e9c6e8]">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
@@ -486,15 +486,15 @@ export default function Index({ policies, filters }) {
                                                                             key={
                                                                                 member
                                                                             }
-                                                                            className="border border-gray-200 rounded-xl p-4 shadow-sm bg-gray-50 hover:shadow-md transition"
+                                                                            className="border border-gray-200 rounded-xl p-4 shadow-sm bg-gray-50 hover:shadow-md transition dark:bg-gray-900 dark:border-gray-700"
                                                                         >
-                                                                            <h4 className="text-sm font-semibold text-[#934790] capitalize border-b pb-1 mb-2">
+                                                                            <h4 className="text-sm font-semibold text-[#934790] capitalize border-b pb-1 mb-2 dark:text-[#e9c6e8] dark:border-gray-700">
                                                                                 {member.replace(
                                                                                     /_/g,
                                                                                     " "
                                                                                 )}
                                                                             </h4>
-                                                                            <ul className="text-xs text-gray-700 space-y-1">
+                                                                            <ul className="text-xs text-gray-700 space-y-1 dark:text-gray-200">
                                                                                 {Object.entries(
                                                                                     details
                                                                                 ).map(
@@ -516,7 +516,7 @@ export default function Index({ policies, filters }) {
                                                                                                 }
                                                                                                 className="flex justify-between"
                                                                                             >
-                                                                                                <span className="capitalize text-gray-600">
+                                                                                                <span className="capitalize text-gray-600 dark:text-gray-300">
                                                                                                     {key.replace(
                                                                                                         /_/g,
                                                                                                         " "
@@ -524,7 +524,7 @@ export default function Index({ policies, filters }) {
 
                                                                                                     :
                                                                                                 </span>
-                                                                                                <span className="font-medium text-gray-900">
+                                                                                                <span className="font-medium text-gray-900 dark:text-gray-100">
                                                                                                     {
                                                                                                         val
                                                                                                     }
@@ -542,7 +542,7 @@ export default function Index({ policies, filters }) {
                                                     );
                                                 } catch (err) {
                                                     return (
-                                                        <span className="text-xs text-gray-500">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
                                                             Invalid family
                                                             definition format.
                                                         </span>
@@ -550,7 +550,7 @@ export default function Index({ policies, filters }) {
                                                 }
                                             })()
                                         ) : (
-                                            <span className="text-xs text-gray-500">
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">
                                                 No data available.
                                             </span>
                                         )}

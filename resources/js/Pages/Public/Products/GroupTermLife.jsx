@@ -257,10 +257,10 @@ export default function GroupTermLife() {
                         <div className="max-w-7xl mx-auto w-full px-6 relative z-10">
                             <div className="relative max-w-6xl mx-auto text-center">
                                 <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 font-dmserif">
-                                    Why Group Term Life matters
+                                    Why Group Term Life is Essential for Employees
                                 </h2>
                                 <p className="text-gray-700 mb-16 max-w-3xl mx-auto text-xs md:text-base leading-snug">
-                                    Ensure your employees’ families are protected, and show your organisation cares.
+                                    Group term life insurance gives families vital financial support, helps employees feel secure, and strengthens your company’s reputation as a caring employer.
                                 </p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -382,11 +382,11 @@ export default function GroupTermLife() {
 
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
                         <div className="text-center mb-20">
-                            <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-6">
+                            <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-6 drop-shadow-lg">
                                 How Group Term Life Insurance Works
                             </h2>
                             <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto">
-                                A simple and effective process to ensure your employees and their families are covered.
+                                Coverage made easy—just 4 steps to secure your employees and their loved ones for life.
                             </p>
                         </div>
 
@@ -394,16 +394,15 @@ export default function GroupTermLife() {
                             {/* Connecting line for desktop */}
                             <div className="hidden lg:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#934790]/20 to-transparent"></div>
 
-                            {/* Step 1 - Enrollment */}
+                            {/* Step 1 - Easy Onboarding */}
                             <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105 h-full flex flex-col">
                                     {/* Step number badge */}
                                     <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                                         <div className="w-12 h-12 bg-gradient-to-br from-[#934790] to-[#6a0066] rounded-full flex items-center justify-center shadow-xl shadow-[#934790]/30 group-hover:shadow-2xl group-hover:shadow-[#934790]/50 transition-all duration-300">
                                             <span className="text-white font-bold text-lg">1</span>
                                         </div>
                                     </div>
-
                                     {/* Icon */}
                                     <div className="mt-8 mb-6 flex justify-center">
                                         <div className="w-12 h-12 bg-gradient-to-br from-[#934790]/10 to-[#6a0066]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -412,33 +411,30 @@ export default function GroupTermLife() {
                                             </svg>
                                         </div>
                                     </div>
-
                                     {/* Content */}
                                     <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
-                                        Quick Enrollment
+                                        Effortless Employee Onboarding
                                     </h3>
                                     <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
-                                        Simple online registration through HR portal. Digital forms completed in minutes.
+                                        Add employees in bulk or individually. Simple digital forms and HR integration for quick setup.
                                     </p>
-
                                     {/* Feature tag */}
                                     <div className="flex items-center justify-center gap-2 text-sm">
                                         <div className="w-2 h-2 bg-[#934790] rounded-full animate-pulse"></div>
-                                        <span className="text-[#934790] font-semibold">5 Minutes Setup</span>
+                                        <span className="text-[#934790] font-semibold">Fast Setup</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Step 2 - Activation */}
+                            {/* Step 2 - Instant Coverage */}
                             <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105 h-full flex flex-col">
                                     {/* Step number badge */}
                                     <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066] to-[#d40055] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group_hover:shadow-[#FF0066]/50 transition-all duration-300">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066] to-[#d40055] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group-hover:shadow-[#FF0066]/50 transition-all duration-300">
                                             <span className="text-white font-bold text-lg">2</span>
                                         </div>
                                     </div>
-
                                     {/* Icon */}
                                     <div className="mt-8 mb-6 flex justify-center">
                                         <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066]/10 to-[#d40055]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -447,33 +443,30 @@ export default function GroupTermLife() {
                                             </svg>
                                         </div>
                                     </div>
-
                                     {/* Content */}
                                     <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
-                                        Instant Activation
+                                        Immediate Life Cover
                                     </h3>
                                     <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
-                                        Coverage begins immediately with full benefits. No waiting periods for care.
+                                        Employees are protected from day one. No medical tests or waiting periods for standard coverage.
                                     </p>
-
                                     {/* Feature tag */}
                                     <div className="flex items-center justify-center gap-2 text-sm">
                                         <div className="w-2 h-2 bg-[#FF0066] rounded-full animate-pulse"></div>
-                                        <span className="text-[#FF0066] font-semibold">Zero Wait Time</span>
+                                        <span className="text-[#FF0066] font-semibold">Zero Wait</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Step 3 - Support */}
+                            {/* Step 3 - Hassle-Free Claims */}
                             <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#6a0066]/10 hover:border-[#6a0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#6a0066]/10 hover:border-[#6a0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105 h-full flex flex-col">
                                     {/* Step number badge */}
                                     <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#6a0066] to-[#934790] rounded-full flex items-center justify-center shadow-xl shadow-[#6a0066]/30 group-hover:shadow-2xl group_hover:shadow-[#6a0066]/50 transition-all duration-300">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-[#6a0066] to-[#934790] rounded-full flex items-center justify-center shadow-xl shadow-[#6a0066]/30 group-hover:shadow-2xl group-hover:shadow-[#6a0066]/50 transition-all duration-300">
                                             <span className="text-white font-bold text-lg">3</span>
                                         </div>
                                     </div>
-
                                     {/* Icon */}
                                     <div className="mt-8 mb-6 flex justify-center">
                                         <div className="w-12 h-12 bg-gradient-to-br from-[#6a0066]/10 to-[#934790]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -482,33 +475,30 @@ export default function GroupTermLife() {
                                             </svg>
                                         </div>
                                     </div>
-
                                     {/* Content */}
                                     <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
-                                        24/7 Care Support
+                                        Simple Claims Process
                                     </h3>
                                     <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
-                                        Round-the-clock assistance with claims and cashless hospital access nationwide.
+                                        Quick, transparent claims with dedicated support for families. Minimal paperwork and fast disbursal.
                                     </p>
-
                                     {/* Feature tag */}
                                     <div className="flex items-center justify-center gap-2 text-sm">
                                         <div className="w-2 h-2 bg-[#934790] rounded-full animate-pulse"></div>
-                                        <span className="text-[#934790] font-semibold">Always Available</span>
+                                        <span className="text-[#934790] font-semibold">Quick Payout</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Step 4 - Wellness */}
+                            {/* Step 4 - Ongoing Support */}
                             <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105 h-full flex flex-col">
                                     {/* Step number badge */}
                                     <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066] to-[#FF0066] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group_hover:shadow-[#FF0066]/50 transition-all duration-300">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066] to-[#FF0066] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group-hover:shadow-[#FF0066]/50 transition-all duration-300">
                                             <span className="text-white font-bold text-lg">4</span>
                                         </div>
                                     </div>
-
                                     {/* Icon */}
                                     <div className="mt-8 mb-6 flex justify-center">
                                         <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066]/10 to-[#FF0066]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -517,19 +507,17 @@ export default function GroupTermLife() {
                                             </svg>
                                         </div>
                                     </div>
-
                                     {/* Content */}
                                     <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
-                                        Ongoing Wellness
+                                        Ongoing Family Support
                                     </h3>
                                     <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
-                                        Regular health check-ups, preventive care programs, and wellness initiatives included.
+                                        Access to counseling, advisory services, and annual policy reviews to keep your team protected.
                                     </p>
-
                                     {/* Feature tag */}
                                     <div className="flex items-center justify-center gap-2 text-sm">
                                         <div className="w-2 h-2 bg-[#FF0066] rounded-full animate-pulse"></div>
-                                        <span className="text-[#FF0066] font-semibold">Preventive Care</span>
+                                        <span className="text-[#FF0066] font-semibold">Care & Guidance</span>
                                     </div>
                                 </div>
                             </div>

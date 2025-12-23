@@ -21,36 +21,36 @@ function FeatureModal({ open, onClose, onSave, initial, type }) {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 dark:bg-opacity-70">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md dark:bg-gray-800 dark:text-white">
                 <h3 className="text-lg font-semibold mb-4">Add {type}</h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Feature Title</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Feature Title</label>
                         <input
                             type="text"
                             value={title}
                             onChange={e => setTitle(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                             placeholder="Enter feature title"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Feature Description</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Feature Description</label>
                         <textarea
                             value={description}
                             onChange={e => setDescription(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                             rows="3"
                             placeholder="Enter feature description"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Feature Type</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Feature Type</label>
                         <select
                             value={type === 'Inclusion' ? 'inc' : 'exc'}
                             disabled
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                         >
                             <option value="inc">Inclusion</option>
                             <option value="exc">Exclusion</option>
@@ -61,7 +61,7 @@ function FeatureModal({ open, onClose, onSave, initial, type }) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:text-white dark:hover:bg-gray-900"
                     >
                         Cancel
                     </button>
@@ -74,7 +74,7 @@ function FeatureModal({ open, onClose, onSave, initial, type }) {
                             setIcon(null);
                             onClose();
                         }}
-                        className="px-4 py-2 bg-[#934790] text-white rounded-lg hover:bg-[#6A0066]"
+                        className="px-4 py-2 bg-[#934790] text-white rounded-lg hover:bg-[#6A0066] dark:bg-[#7a3d7a] dark:hover:bg-[#934790]"
                     >
                         Save
                     </button>
@@ -99,12 +99,12 @@ function SelectWithSearch({ options = [], value, onChange, placeholder = '', req
                 onChange={e => setQuery(e.target.value)}
                 onFocus={() => setIsOpen(true)}
                 placeholder={`Search ${placeholder}...`}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white"
             />
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
-                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto dark:bg-gray-800 dark:border-gray-700">
                         {filtered.length > 0 ? (
                             filtered.map(opt => (
                                 <div
@@ -114,13 +114,13 @@ function SelectWithSearch({ options = [], value, onChange, placeholder = '', req
                                         setQuery(displayLabel(opt));
                                         setIsOpen(false);
                                     }}
-                                    className="px-4 py-2 hover:bg-purple-50 cursor-pointer"
+                                    className="px-4 py-2 hover:bg-purple-50 cursor-pointer dark:hover:bg-gray-900 dark:text-white"
                                 >
                                     {displayLabel(opt)}
                                 </div>
                             ))
                         ) : (
-                            <div className="px-4 py-2 text-gray-500 text-sm">No results found</div>
+                            <div className="px-4 py-2 text-gray-500 text-sm dark:text-gray-400">No results found</div>
                         )}
                     </div>
                 </>
@@ -133,8 +133,10 @@ function SelectWithSearch({ options = [], value, onChange, placeholder = '', req
 import { Link, router } from '@inertiajs/react';
 import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
 import { useEffect } from 'react';
+import { useTheme } from '../../../../Context/ThemeContext';
 
 export default function Create({ corporates, insuranceProviders, tpaCompanies, cdAccounts: initialCdAccounts, escalationUsers, userMasterUsers }) {
+    const { darkMode } = useTheme();
     // Validation function for each step
     const validateStep = (stepNumber) => {
         const newErrors = {};
@@ -437,21 +439,23 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
         <SuperAdminLayout>
             <div className="space-y-6">
                 {/* Header */}
-                <div className="border-b border-gray-200 pb-4">
-                    <div className="flex items-center justify-between">
+                <div className="border-b border-gray-200 pb-4 mt-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Create New Policy</h1>
-                            <p className="mt-1 text-sm text-gray-600">Add a new insurance policy to the system.</p>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Policy</h1>
+                            <p className="mt-1 text-xs sm:text-sm text-gray-600">Add a new insurance policy to the system.</p>
                         </div>
-                        <Link
-                            href="/superadmin/policy/policies"
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                        >Back to Policies</Link>
+                        <div className="flex sm:block justify-end w-full sm:w-auto">
+                            <Link
+                                href="/superadmin/policy/policies"
+                                className="px-4 py-2 text-xs md:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                            >Back to Policies</Link>
+                        </div>
                     </div>
                 </div>
 
                 {/* Step Indicator */}
-                <div className="flex items-center justify-center mb-8">
+                <div className="flex items-center justify-center mb-8 bg-white dark:bg-transparent rounded-lg">
                     {[1, 2, 3].map((stepNum) => (
                         <React.Fragment key={stepNum}>
                             <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step >= stepNum ? 'bg-[#934790] text-white' : 'bg-gray-200 text-gray-600'}`}>{stepNum}</div>
@@ -460,13 +464,13 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                     ))}
                 </div>
 
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="bg-white border border-gray-200 rounded-lg p-6 dark:bg-transparent">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Step 1: Basic Information */}
                         {step === 1 && (
                             <div className="space-y-8">
                                 {/* POLICY DETAILS SECTION */}
-                                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                                <div className={`${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gradient-to-r from-purple-50 to-pink-50 text-gray-900'} rounded-xl p-6 border border-purple-200`}> 
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="w-10 h-10 bg-[#934790] rounded-lg flex items-center justify-center">
                                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -481,12 +485,12 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* Policy Name */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Name <span className="text-red-500">*</span></label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-300">Policy Name <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
                                                 value={formData.policy_name}
                                                 onChange={e => setFormData(prev => ({ ...prev, policy_name: e.target.value }))}
-                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm"
+                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                                 required
                                                 placeholder="Enter policy name"
                                             />
@@ -494,12 +498,12 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                         {/* Corporate Policy Name */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Corporate Policy Name <span className="text-red-500">*</span></label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-300">Corporate Policy Name <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
                                                 value={formData.corporate_policy_name}
                                                 onChange={e => setFormData(prev => ({ ...prev, corporate_policy_name: e.target.value }))}
-                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm"
+                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                                 required
                                                 placeholder="Enter corporate policy name"
                                             />
@@ -508,11 +512,11 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         {/* corporate_policy_type removed — use 'Policy Type' select instead */}
                                         {/* Policy Type (GMI / GPA / GTL) */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Type <span className="text-red-500">*</span></label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-300">Policy Type <span className="text-red-500">*</span></label>
                                             <select
                                                 value={formData.policy_type}
                                                 onChange={e => setFormData(prev => ({ ...prev, policy_type: e.target.value }))}
-                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm"
+                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                             >
                                                 <option value="">Select policy type</option>
                                                 <option value="gmi">GMI</option>
@@ -523,19 +527,19 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                         {/* Policy Number */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Number</label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-300">Policy Number</label>
                                             <input
                                                 type="text"
                                                 value={formData.policy_number}
                                                 onChange={e => setFormData(prev => ({ ...prev, policy_number: e.target.value }))}
-                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm"
+                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                                 placeholder="Enter policy number"
                                             />
                                             {getError('policy_number') && <div className="text-red-500 text-sm mt-1">{getError('policy_number')}</div>}
                                         </div>
                                         {/* Policy Start Date */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Start Date <span className="text-red-500">*</span></label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-300">Policy Start Date <span className="text-red-500">*</span></label>
                                             <input
                                                 type="date"
                                                 value={formData.policy_start_date}
@@ -551,19 +555,19 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                         setFormData(prev => ({ ...prev, policy_end_date: endDate }));
                                                     }
                                                 }}
-                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm"
+                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                                 required
                                             />
                                             {getError('policy_start_date') && <div className="text-red-500 text-sm mt-1">{getError('policy_start_date')}</div>}
                                         </div>
                                         {/* Policy End Date */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Policy End Date <span className="text-red-500">*</span></label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-300">Policy End Date <span className="text-red-500">*</span></label>
                                             <input
                                                 type="date"
                                                 value={formData.policy_end_date}
                                                 onChange={e => setFormData(prev => ({ ...prev, policy_end_date: e.target.value }))}
-                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm"
+                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent shadow-sm dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                                 required
                                             />
                                             {getError('policy_end_date') && <div className="text-red-500 text-sm mt-1">{getError('policy_end_date')}</div>}
@@ -571,7 +575,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         {/* Policy Document */}
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">Policy Document</label>
-                                            <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50 hover:bg-purple-100 transition-colors">
+                                            <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50 hover:bg-purple-100 transition-colors dark:bg-gray-900 dark:border-purple-700 dark:hover:bg-gray-800">
                                                 <div className="flex items-center justify-center">
                                                     <label className="cursor-pointer flex flex-col items-center">
                                                         <svg className="w-12 h-12 text-[#934790] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -589,7 +593,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                 </div>
                                                     {getError('policy_document') && <div className="text-red-500 text-sm mt-2">{getError('policy_document')}</div>}
                                                 {formData.policy_document && (
-                                                    <div className="mt-4 flex items-center justify-between bg-white px-4 py-2 rounded border border-purple-200">
+                                                    <div className="mt-4 flex items-center justify-between bg-white px-4 py-2 rounded border border-purple-200 dark:bg-gray-800 dark:border-purple-700">
                                                         <div className="flex items-center gap-2">
                                                             <svg className="w-5 h-5 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -612,25 +616,25 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         {/* Twin Allowed & Natural Addition */}
                                         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="flex items-center">
-                                                <label className="flex items-center space-x-3 cursor-pointer bg-white px-4 py-3 rounded-lg border border-purple-300 hover:bg-purple-50 transition-colors w-full">
+                                                <label className="flex items-center space-x-3 cursor-pointer bg-white px-4 py-3 rounded-lg border border-purple-300 hover:bg-purple-50 transition-colors w-full dark:bg-gray-900 dark:border-purple-700 dark:hover:bg-gray-800">
                                                     <input
                                                         type="checkbox"
                                                         checked={formData.is_twin_allowed}
                                                         onChange={e => setFormData(prev => ({ ...prev, is_twin_allowed: e.target.checked }))}
                                                         className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
                                                     />
-                                                    <span className="text-sm font-semibold text-gray-700">Twin Members Allowed</span>
+                                                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Twin Members Allowed</span>
                                                 </label>
                                             </div>
                                             <div className="flex items-center">
-                                                <label className="flex items-center space-x-3 cursor-pointer bg-white px-4 py-3 rounded-lg border border-purple-300 hover:bg-purple-50 transition-colors w-full">
+                                                <label className="flex items-center space-x-3 cursor-pointer bg-white px-4 py-3 rounded-lg border border-purple-300 hover:bg-purple-50 transition-colors w-full dark:bg-gray-900 dark:border-purple-700 dark:hover:bg-gray-800">
                                                     <input
                                                         type="checkbox"
                                                         checked={formData.natural_addition_allowed}
                                                         onChange={e => setFormData(prev => ({ ...prev, natural_addition_allowed: e.target.checked }))}
                                                         className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
                                                     />
-                                                    <span className="text-sm font-semibold text-gray-700">Natural Addition Allowed</span>
+                                                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Natural Addition Allowed</span>
                                                 </label>
                                             </div>
                                         </div>
@@ -638,7 +642,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                 </div>
 
                                 {/* USER DETAILS SECTION */}
-                                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200 dark:bg-gradient-to-r dark:from-gray-900 dark:to-gray-800 dark:border-blue-900">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -653,7 +657,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* Corporate */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Corporate <span className="text-red-500">*</span></label>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-300">Corporate <span className="text-red-500">*</span></label>
                                             <SelectWithSearch
                                                 options={corporates}
                                                 value={formData.corporate_id}
@@ -701,7 +705,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                 </div>
 
                                 {/* INSURANCE DETAILS SECTION */}
-                                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200 dark:bg-gradient-to-r dark:from-gray-900 dark:to-gray-800 dark:border-green-900">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
                                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -800,7 +804,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                 setStep(2);
                                             }
                                         }}
-                                        className="px-8 py-3 bg-gradient-to-r from-[#934790] to-[#6A0066] text-white rounded-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 font-semibold flex items-center gap-2"
+                                        className="px-8 py-3 bg-gradient-to-r from-[#934790] to-[#6A0066] text-white rounded-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 font-semibold flex items-center gap-2 text-xs md:text-sm"
                                     >
                                         Next: Family Definition
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -814,17 +818,17 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                         {/* Step 2: Family Definition */}
                         {step === 2 && (
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-900 mb-6">Family Definition</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6 dark:text-white">Family Definition</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {Object.entries(FamilyIcons).map(([memberType, icon]) => {
                                         const isEnabled = formData.family_defination[memberType] === "1";
                                         const memberTitle = memberType.charAt(0).toUpperCase() + memberType.slice(1).replace(/_/g, ' ');
 
                                         return (
-                                            <div key={memberType} className={`border-2 rounded-lg p-4 transition-all duration-200 ${isEnabled ? 'border-[#934790] bg-purple-50' : 'border-gray-200 bg-white'}`}>
+                                            <div key={memberType} className={`border-2 rounded-lg p-4 transition-all duration-200 ${isEnabled ? 'border-[#934790] bg-purple-50 dark:bg-gray-900 dark:border-purple-700' : 'border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700'}`}>
                                                 <div className="text-center mb-4">
                                                     {icon}
-                                                    <h3 className="text-sm font-medium text-gray-900 mt-2">{memberTitle}</h3>
+                                                    <h3 className="text-sm font-medium text-gray-900 mt-2 dark:text-gray-200">{memberTitle}</h3>
                                                 </div>
                                                 <div className="space-y-3">
                                                     <div className="flex items-center justify-center">
@@ -842,13 +846,13 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                                 }))}
                                                                 className="rounded border-gray-300 text-[#934790] focus:ring-[#934790] focus:ring-offset-0"
                                                             />
-                                                            <span className="ml-2 text-sm text-gray-700">Include</span>
+                                                            <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">Include</span>
                                                         </label>
                                                     </div>
                                                     {isEnabled && (
                                                         <div className="space-y-2">
                                                             <div>
-                                                                <label className="block text-xs text-gray-600 mb-1">Number</label>
+                                                                <label className="block text-xs text-gray-600 mb-1 dark:text-gray-400">Number</label>
                                                                 <input
                                                                     type="number"
                                                                     min="0"
@@ -861,12 +865,12 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                                             [`${memberType}_no`]: e.target.value
                                                                         }
                                                                     }))}
-                                                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790] focus:border-transparent"
+                                                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790] focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-2 gap-2">
                                                                 <div>
-                                                                    <label className="block text-xs text-gray-600 mb-1">Min Age</label>
+                                                                    <label className="block text-xs text-gray-600 mb-1 dark:text-gray-400">Min Age</label>
                                                                     <input
                                                                         type="number"
                                                                         min="0"
@@ -879,11 +883,11 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                                                 [`${memberType}_min_age`]: e.target.value
                                                                             }
                                                                         }))}
-                                                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790] focus:border-transparent"
+                                                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790] focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                                                     />
                                                                 </div>
                                                                 <div>
-                                                                    <label className="block text-xs text-gray-600 mb-1">Max Age</label>
+                                                                    <label className="block text-xs text-gray-600 mb-1 dark:text-gray-400">Max Age</label>
                                                                     <input
                                                                         type="number"
                                                                         min="0"
@@ -896,12 +900,12 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                                                 [`${memberType}_max_age`]: e.target.value
                                                                             }
                                                                         }))}
-                                                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790] focus:border-transparent"
+                                                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790] focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                                                     />
                                                                 </div>
                                                             </div>
                                                             <div>
-                                                                <label className="block text-xs text-gray-600 mb-1">Gender</label>
+                                                                <label className="block text-xs text-gray-600 mb-1 dark:text-gray-400">Gender</label>
                                                                 <select
                                                                     value={formData.family_defination[`${memberType}_gender`]}
                                                                     onChange={e => setFormData(prev => ({
@@ -911,7 +915,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                                             [`${memberType}_gender`]: e.target.value
                                                                         }
                                                                     }))}
-                                                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790] focus:border-transparent"
+                                                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790] focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                                                 >
                                                                     <option value="both">Both</option>
                                                                     <option value="male">Male</option>
@@ -940,14 +944,14 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                         spouse_with_same_gender: e.target.value
                                                     }
                                                 }))}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                             >
                                                 <option value="null">Not Allowed</option>
                                                 <option value="allowed">Allowed</option>
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Parent & Parent-in-Law</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Parent & Parent-in-Law</label>
                                             <select
                                                 value={formData.family_defination.add_both_parent_n_parent_in_law}
                                                 onChange={e => setFormData(prev => ({
@@ -957,7 +961,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                         add_both_parent_n_parent_in_law: e.target.value
                                                     }
                                                 }))}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                                             >
                                                 <option value="either">Either</option>
                                                 <option value="both">Both Allowed</option>
@@ -966,9 +970,9 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex justify-between mt-8">
-                                    <button type="button" className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md" onClick={() => setStep(1)}>Back</button>
-                                    <button type="button" className="px-4 py-2 bg-[#934790] text-white rounded-md" onClick={() => setStep(3)}>Next</button>
+                                <div className="flex flex-col md:flex-row justify-between mt-8 space-y-2 md:space-y-0 md:space-x-4">
+                                    <button type="button" className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md dark:bg-gray-800 dark:text-gray-200" onClick={() => setStep(1)}>Back</button>
+                                    <button type="button" className="px-4 py-2 bg-[#934790] text-white rounded-md dark:bg-[#7a3a6e]" onClick={() => setStep(3)}>Next</button>
                                 </div>
                             </div>
                         )}
@@ -1006,10 +1010,10 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                     type={modalOpen?.includes('inclusion') ? 'Inclusion' : 'Exclusion'}
                                 />
                                 <div className="space-y-6">
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Policy Features</h2>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-4 dark:text-white">Policy Features</h2>
 
                                     {/* CSV Upload Section */}
-                                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl shadow-sm p-6 border border-purple-200">
+                                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl shadow-sm p-6 border border-purple-200 dark:bg-gradient-to-r dark:from-gray-900 dark:to-gray-800 dark:border-purple-700">
                                         <div className="flex items-center gap-3 mb-4">
                                             <svg className="w-6 h-6 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -1018,7 +1022,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div className="md:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Upload CSV File <span className="text-xs text-red-600">(inc/exc feature types)</span></label>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Upload CSV File <span className="text-xs text-red-600">(inc/exc feature types)</span></label>
                                                 <input
                                                     type="file"
                                                     accept=".csv"
@@ -1026,7 +1030,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                         const file = e.target.files[0];
                                                         if (file) handleCsvUpload(file);
                                                     }}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent bg-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#934790] file:text-white hover:file:bg-[#6A0066]"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent bg-white dark:bg-gray-900 dark:border-gray-700 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#934790] file:text-white hover:file:bg-[#6A0066]"
                                                 />
                                                 {csvError && (
                                                     <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -1040,7 +1044,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                             <div className="flex items-end">
                                                 <button
                                                     type="button"
-                                                    className="w-full px-4 py-2 bg-white border-2 border-[#934790] text-[#934790] rounded-lg shadow hover:bg-[#934790] hover:text-white transition-colors font-semibold"
+                                                    className="w-full px-4 py-2 bg-white border-2 border-[#934790] text-[#934790] rounded-lg shadow hover:bg-[#934790] hover:text-white transition-colors font-semibold dark:bg-gray-900 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-[#934790] dark:hover:text-white"
                                                     onClick={handleSampleDownload}
                                                 >
                                                     Download Sample CSV
@@ -1051,13 +1055,13 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
 
                                     {/* Stats */}
                                     <div className="flex gap-4">
-                                        <div className="flex-1 bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg shadow px-6 py-4 border-l-4 border-green-500">
-                                            <div className="text-sm font-medium text-gray-600">Total Inclusions</div>
-                                            <div className="text-3xl font-bold text-green-600 mt-1">{formData.inclusions?.length || 0}</div>
+                                        <div className="flex-1 bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg shadow px-6 py-4 border-l-4 border-green-500 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 dark:border-green-700">
+                                            <div className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Inclusions</div>
+                                            <div className="text-3xl font-bold text-green-600 mt-1 dark:text-green-400">{formData.inclusions?.length || 0}</div>
                                         </div>
-                                        <div className="flex-1 bg-gradient-to-br from-red-50 to-pink-100 rounded-lg shadow px-6 py-4 border-l-4 border-red-500">
-                                            <div className="text-sm font-medium text-gray-600">Total Exclusions</div>
-                                            <div className="text-3xl font-bold text-red-600 mt-1">{formData.exclusions?.length || 0}</div>
+                                        <div className="flex-1 bg-gradient-to-br from-red-50 to-pink-100 rounded-lg shadow px-6 py-4 border-l-4 border-red-500 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 dark:border-red-700">
+                                            <div className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Exclusions</div>
+                                            <div className="text-3xl font-bold text-red-600 mt-1 dark:text-red-400">{formData.exclusions?.length || 0}</div>
                                         </div>
                                     </div>
                                     
@@ -1074,10 +1078,10 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                     )}
 
                                     {/* Two Column Layout - Exclusions Left, Inclusions Right */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         {/* LEFT SIDE - Policy Exclusions */}
-                                        <div className="bg-white rounded-xl shadow-lg border-2 border-red-200">
-                                            <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 rounded-t-xl">
+                                        <div className="bg-white rounded-xl shadow-lg border-2 border-red-200 dark:bg-gray-900 dark:border-red-700">
+                                            <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-4 rounded-t-xl dark:bg-gradient-to-r dark:from-red-900 dark:to-pink-900">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1098,11 +1102,11 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                 {formData.exclusions && formData.exclusions.length > 0 ? (
                                                     <div className="space-y-3">
                                                         {formData.exclusions.map((exc, idx) => (
-                                                            <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                                            <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-4 hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-red-700">
                                                                 <div className="flex justify-between items-start mb-2">
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">{idx + 1}</span>
-                                                                        <h4 className="font-semibold text-gray-800">{exc.title}</h4>
+                                                                        <h4 className="font-semibold text-gray-800 dark:text-gray-200">{exc.title}</h4>
                                                                     </div>
                                                                     <div className="flex gap-2">
                                                                         <button
@@ -1121,15 +1125,15 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                                         </button>
                                                                     </div>
                                                                 </div>
-                                                                <p className="text-sm text-gray-600">{exc.description}</p>
-                                                                <div className="mt-2 text-xs text-gray-500">
+                                                                <p className="text-sm text-gray-600 dark:text-gray-300">{exc.description}</p>
+                                                                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                                                     <span className="bg-red-100 px-2 py-1 rounded">Type: exc</span>
                                                                 </div>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 ) : (
-                                                    <div className="text-center py-12 text-gray-400">
+                                                    <div className="text-center py-12 text-gray-400 dark:text-gray-500">
                                                         <svg className="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                         </svg>
@@ -1141,8 +1145,8 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
 
                                         {/* RIGHT SIDE - Policy Inclusions */}
-                                        <div className="bg-white rounded-xl shadow-lg border-2 border-green-200">
-                                            <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-t-xl">
+                                        <div className="bg-white rounded-xl shadow-lg border-2 border-green-200 dark:bg-gray-900 dark:border-green-700">
+                                            <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-t-xl dark:bg-gradient-to-r dark:from-green-900 dark:to-emerald-900">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1163,11 +1167,11 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                 {formData.inclusions && formData.inclusions.length > 0 ? (
                                                     <div className="space-y-3">
                                                         {formData.inclusions.map((inc, idx) => (
-                                                            <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                                            <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-4 hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-green-700">
                                                                 <div className="flex justify-between items-start mb-2">
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">{idx + 1}</span>
-                                                                        <h4 className="font-semibold text-gray-800">{inc.title}</h4>
+                                                                        <h4 className="font-semibold text-gray-800 dark:text-gray-200">{inc.title}</h4>
                                                                     </div>
                                                                     <div className="flex gap-2">
                                                                         <button
@@ -1186,15 +1190,15 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                                                         </button>
                                                                     </div>
                                                                 </div>
-                                                                <p className="text-sm text-gray-600">{inc.description}</p>
-                                                                <div className="mt-2 text-xs text-gray-500">
+                                                                <p className="text-sm text-gray-600 dark:text-gray-300">{inc.description}</p>
+                                                                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                                                     <span className="bg-green-100 px-2 py-1 rounded">Type: inc</span>
                                                                 </div>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 ) : (
-                                                    <div className="text-center py-12 text-gray-400">
+                                                    <div className="text-center py-12 text-gray-400 dark:text-gray-500">
                                                         <svg className="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                         </svg>
@@ -1206,10 +1210,10 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-between mt-8 pt-6 border-t-2 border-gray-200">
+                                    <div className="flex flex-col md:flex-row justify-between mt-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700 space-y-2 md:space-y-0 md:space-x-4">
                                         <button
                                             type="button"
-                                            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 font-semibold flex items-center gap-2"
+                                            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 font-semibold flex items-center gap-2 dark:bg-gray-800 dark:text-gray-200 hover:dark:bg-gray-700"
                                             onClick={() => setStep(2)}
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1220,7 +1224,7 @@ export default function Create({ corporates, insuranceProviders, tpaCompanies, c
                                         <button
                                             type="submit"
                                             disabled={isSubmitting}
-                                            className="px-8 py-3 bg-gradient-to-r from-[#934790] to-[#6A0066] text-white rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center gap-2"
+                                            className="px-8 py-3 bg-gradient-to-r from-[#934790] to-[#6A0066] text-white rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center gap-2 dark:bg-gradient-to-r dark:from-[#7a3a6e] dark:to-[#934790]"
                                         >
                                             {isSubmitting ? (
                                                 <>

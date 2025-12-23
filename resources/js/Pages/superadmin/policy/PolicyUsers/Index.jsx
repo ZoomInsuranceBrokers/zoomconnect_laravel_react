@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+﻿import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { router, Link, useForm } from '@inertiajs/react';
 import SuperAdminLayout from '../../../../Layouts/SuperAdmin/Layout';
+import { useTheme } from '../../../../Context/ThemeContext';
 
 export default function PolicyUsers({ policyUsers, filters, escalationUsers = [] }) {
+        const { darkMode } = useTheme();
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [showModal, setShowModal] = useState(false);
@@ -209,50 +211,55 @@ export default function PolicyUsers({ policyUsers, filters, escalationUsers = []
         reset();
     };
 
-    // Status toggle removed per request — status is now display-only
+    // Utility to strip HTML from pagination labels
+    const stripHtml = (s) => (s || '').replace(/<[^>]+>/g, '').trim();
+
+    // Status toggle removed per request â€” status is now display-only
 
     return (
         <SuperAdminLayout>
-            <div className="p-6 space-y-6">
+            <div className={`${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'} p-3 space-y-6 overflow-x-hidden`}>
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-900">Policy Users</h1>
+                    <h1 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Policy Users</h1>
                     <button
                         onClick={() => openModal()}
-                        className="bg-[#934790] text-white px-4 py-2 rounded-md hover:bg-[#7a3d7a]"
+                        className={`px-3 py-1 text-sm rounded-md ${darkMode ? 'bg-[#934790] text-white hover:bg-[#7a3d7a]' : 'bg-[#934790] text-white hover:bg-[#7a3d7a]'}`}
                     >
                         + Add User
                     </button>
                 </div>
 
-                <form onSubmit={handleSearch} className="flex flex-wrap gap-4 bg-white p-4 border rounded-lg">
-                    <input
-                        type="text"
-                        placeholder="Search by name, email, or mobile"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="border px-3 py-2 rounded-md w-64"
-                    />
-                    <select
-                        value={status}
-                        onChange={(e) => {
-                            setStatus(e.target.value);
-                            // apply filters immediately when status changes
-                            setTimeout(() => applyFilters(), 0);
-                        }}
-                        className="border px-3 py-2 rounded-md"
-                    >
-                        <option value="">All</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                    <button type="submit" className="bg-[#934790] text-white px-4 py-2 rounded-md hover:bg-[#7a3d7a]">
+                <form onSubmit={handleSearch} className={`flex flex-wrap gap-4 items-center ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-4 border rounded-lg`}>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                        <input
+                            type="text"
+                            placeholder="Search by name, email, or mobile"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className={`flex-1 min-w-0 border px-2 py-1 rounded text-sm placeholder-gray-400 placeholder:text-sm ${darkMode ? 'bg-gray-900 border-gray-700 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
+                        />
+                        <select
+                            value={status}
+                            onChange={(e) => {
+                                setStatus(e.target.value);
+                                // apply filters immediately when status changes
+                                setTimeout(() => applyFilters(), 0);
+                            }}
+                            className={`flex-none w-36 border px-2 py-1 rounded-md text-sm ${darkMode ? 'bg-gray-900 border-gray-700 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
+                        >
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <button type="submit" className={`px-3 py-1 text-sm rounded ${darkMode ? 'bg-[#934790] text-white hover:bg-[#7a3d7a]' : 'bg-[#934790] text-white hover:bg-[#7a3d7a]'}`}>
                         Search
                     </button>
                 </form>
 
-                <div className="bg-white border rounded-lg overflow-hidden">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gray-100">
+                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg overflow-x-auto` }>
+                    <table className={`min-w-max w-full text-sm ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                        <thead className={darkMode ? 'bg-gray-700' : 'bg-gray-100'}>
                             <tr>
                                 <th className="px-4 py-2 text-left">Name</th>
                                 <th className="px-4 py-2 text-left">Email</th>
@@ -273,8 +280,8 @@ export default function PolicyUsers({ policyUsers, filters, escalationUsers = []
                                     );
                                 });
                             }, [search, policyUsers.data]).map((user) => (
-                                <tr key={user.id} className="border-t hover:bg-gray-50">
-                                    <td className="px-4 py-2">{user.name}</td>
+                                <tr key={user.id} className={`${darkMode ? 'border-t border-gray-700 hover:bg-gray-700' : 'border-t hover:bg-gray-50'}`}>
+                                    <td className="px-4 py-2 text-sm">{user.name}</td>
                                     <td className="px-4 py-2">{user.email || '-'}</td>
                                     <td className="px-4 py-2">{user.mobile || '-'}</td>
                                     <td className="px-4 py-2">
@@ -287,7 +294,7 @@ export default function PolicyUsers({ policyUsers, filters, escalationUsers = []
                                                 disabled={togglingId === user.id}
                                             />
                                             <div
-                                                className={`w-7 h-4 rounded-full transition-colors duration-200 ${user.is_active ? 'bg-[#934790]' : 'bg-gray-300'} flex items-center ${togglingId === user.id ? 'opacity-60' : ''}`}
+                                                className={`w-7 h-4 rounded-full transition-colors duration-200 ${user.is_active ? 'bg-[#934790]' : darkMode ? 'bg-gray-600' : 'bg-gray-300'} flex items-center ${togglingId === user.id ? 'opacity-60' : ''}`}
                                             >
                                                 <div
                                                     className={`w-3 h-3 rounded-full bg-white shadow-md transform transition-transform duration-200 ${user.is_active ? 'translate-x-4' : 'translate-x-0'}`}
@@ -298,7 +305,7 @@ export default function PolicyUsers({ policyUsers, filters, escalationUsers = []
                                     <td className="px-4 py-2">
                                         <button
                                             onClick={() => openModal(user)}
-                                            className="text-[#934790] hover:text-[#7a3d7a]"
+                                            className={`hover:underline ${darkMode ? 'text-[#e0aaff] hover:text-[#c77dff]' : 'text-[#934790] hover:text-[#7a3d7a]'}`}
                                         >
                                             Edit
                                         </button>
@@ -309,66 +316,144 @@ export default function PolicyUsers({ policyUsers, filters, escalationUsers = []
                     </table>
 
                     {policyUsers.last_page > 1 && (
-                        <div className="flex justify-between items-center p-4 border-t text-sm">
-                            <span>
+                        <div className={`w-full flex flex-col sm:flex-row justify-between items-center gap-3 p-4 border-t text-sm ${darkMode ? 'border-gray-700' : ''}`}>
+                            <div className="w-full sm:w-auto text-center sm:text-left text-sm text-gray-500">
                                 Showing {policyUsers.from} to {policyUsers.to} of {policyUsers.total} results
-                            </span>
-                            <div className="flex gap-1">
-                                {policyUsers.links.map((link, i) => (
-                                    <button
-                                        key={i}
-                                        type="button"
-                                        onClick={() => handlePage(link.url)}
-                                        className={`px-3 py-1 rounded border text-sm ${
-                                            link.active
-                                                ? 'bg-[#934790] text-white border-[#934790]'
-                                                : 'border-gray-300 hover:bg-gray-50'
-                                        }`}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                ))}
                             </div>
+                            <div className="flex flex-wrap gap-1 justify-center sm:justify-end w-full sm:w-auto">
+                                {/* Desktop/tablet: render all page links (existing behavior) */}
+                                <div className="hidden sm:flex flex-wrap gap-1">
+                                    {policyUsers.links.map((link, i) => (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            onClick={() => handlePage(link.url)}
+                                            className={`px-3 py-1 rounded border text-sm ${
+                                                link.active
+                                                    ? 'bg-[#934790] text-white border-[#934790]'
+                                                    : darkMode
+                                                        ? 'border-gray-700 bg-gray-800 text-gray-100 hover:bg-gray-700'
+                                                        : 'border-gray-300 hover:bg-gray-50'
+                                            }`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+
+                                                                {/* Mobile: Prev, up to 4 numbers, ellipsis+last, Next */}
+                                <div className="flex sm:hidden items-center gap-1">
+                                    {(() => {
+                                        const links = policyUsers.links || [];
+                                        const numericLinks = links.filter((l) => /^\d+$/.test(stripHtml(l.label)));
+                                        if (numericLinks.length === 0) return null;
+                                        const prevLink = links.find((l) => /prev|previous||/i.test(stripHtml(l.label)));
+                                        const nextLink = links.find((l) => /next||/i.test(stripHtml(l.label)));
+                                        const showCount = 4;
+                                        const firstSlice = numericLinks.slice(0, showCount);
+                                        const lastNumeric = numericLinks[numericLinks.length - 1];
+                                        return (
+                                            <>
+                                                {prevLink && prevLink.url && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handlePage(prevLink.url)}
+                                                        className={`px-2 py-1 rounded border text-sm ${darkMode ? 'border-gray-700 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-700'}`}>
+                                                        
+                                                    </button>
+                                                )}
+
+                                                {firstSlice.map((l, idx) => (
+                                                    <button
+                                                        key={`m-${idx}`}
+                                                        type="button"
+                                                        onClick={() => handlePage(l.url)}
+                                                        className={`px-3 py-1 rounded border text-sm ${
+                                                            l.active
+                                                                ? 'bg-[#934790] text-white border-[#934790]'
+                                                                : darkMode
+                                                                    ? 'border-gray-700 bg-gray-800 text-gray-100 hover:bg-gray-700'
+                                                                    : 'border-gray-300 hover:bg-gray-50'
+                                                        }`}>
+                                                        {stripHtml(l.label)}
+                                                    </button>
+                                                ))}
+
+                                                {numericLinks.length > showCount && (
+                                                    <>
+                                                        <span className="px-2 text-sm"></span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handlePage(lastNumeric.url)}
+                                                            className={`px-3 py-1 rounded border text-sm ${
+                                                                lastNumeric.active
+                                                                    ? 'bg-[#934790] text-white border-[#934790]'
+                                                                    : darkMode
+                                                                        ? 'border-gray-700 bg-gray-800 text-gray-100 hover:bg-gray-700'
+                                                                        : 'border-gray-300 hover:bg-gray-50'
+                                                            }`}>
+                                                            {stripHtml(lastNumeric.label)}
+                                                        </button>
+                                                    </>
+                                                )}
+
+                                                {nextLink && nextLink.url && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handlePage(nextLink.url)}
+                                                        className={`px-2 py-1 rounded border text-sm ${darkMode ? 'border-gray-700 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-700'}`}>
+                                                        
+                                                    </button>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
+                                </div></div>
                         </div>
                     )}
                 </div>
 
                 {/* Modal */}
                 {showModal && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                        <div className="bg-white rounded-lg p-6 w-96">
-                            <h2 className="text-lg font-semibold mb-4">
-                                {editingUser ? 'Edit Policy User' : 'Add Policy User'}
-                            </h2>
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+                        <div className={`${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'} rounded-lg p-6 w-full max-w-md`}>
+                            <h2 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-gray-100' : ''}`}>{editingUser ? 'Edit Policy User' : 'Add Policy User'}</h2>
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                <input
-                                    type="text"
-                                    placeholder="Name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    className="border px-3 py-2 rounded-md w-full"
-                                />
-                                <input
-                                    type="email"
-                                    placeholder="Email"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    className="border px-3 py-2 rounded-md w-full"
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Phone"
-                                    value={data.mobile}
-                                    onChange={(e) => setData('mobile', e.target.value)}
-                                    className="border px-3 py-2 rounded-md w-full"
-                                />
+                                <div>
+                                    <label className={`block mb-1 font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        className={`border px-3 py-2 rounded-md w-full text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={`block mb-1 font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Email</label>
+                                    <input
+                                        type="email"
+                                        placeholder="Email"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        className={`border px-3 py-2 rounded-md w-full text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={`block mb-1 font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Phone</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Phone"
+                                        value={data.mobile}
+                                        onChange={(e) => setData('mobile', e.target.value)}
+                                        className={`border px-3 py-2 rounded-md w-full text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                                    />
+                                </div>
                                 <div className="flex justify-end gap-2">
-                                    <button type="button" onClick={closeModal} className="px-3 py-2 border rounded-md">
-                                        Cancel
-                                    </button>
+                                    <button type="button" onClick={closeModal} className={`px-3 py-1 border rounded-md text-sm ${darkMode ? 'border-gray-600 text-gray-200 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>Cancel</button>
                                     <button
                                         type="submit"
                                         disabled={processing}
-                                        className="px-4 py-2 bg-[#934790] text-white rounded-md hover:bg-[#7a3d7a]"
+                                        className={`px-3 py-1 rounded-md text-sm ${darkMode ? 'bg-[#934790] text-white hover:bg-[#7a3d7a]' : 'bg-[#934790] text-white hover:bg-[#7a3d7a]'}`}
                                     >
                                         {editingUser ? 'Update' : 'Save'}
                                     </button>
@@ -380,8 +465,8 @@ export default function PolicyUsers({ policyUsers, filters, escalationUsers = []
 
                 {/* Assign replacement modal when deactivating a user */}
                 {showAssignModal && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                        <div className="bg-white rounded-lg p-6 w-96">
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+                        <div className="bg-white rounded-lg p-6 w-full max-w-md">
                             <h2 className="text-lg font-semibold mb-4">Replace Escalation User</h2>
                             <p className="text-sm text-gray-600 mb-4">You're deactivating <strong>{pendingDeactivateUser?.name}</strong>. Choose another escalation user to reassign any policy responsibilities to.</p>
                             <div>
@@ -447,3 +532,4 @@ export default function PolicyUsers({ policyUsers, filters, escalationUsers = []
         </SuperAdminLayout>
     );
 }
+

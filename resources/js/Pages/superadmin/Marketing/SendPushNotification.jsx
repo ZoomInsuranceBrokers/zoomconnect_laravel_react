@@ -1,8 +1,10 @@
 import React, { useState, useRef } from "react";
 import { Head, useForm } from "@inertiajs/react";
 import SuperAdminLayout from "../../../Layouts/SuperAdmin/Layout";
+import { useTheme } from '../../../Context/ThemeContext';
 
 export default function SendPushNotification({ user, companies }) {
+    const { darkMode } = useTheme();
     const { data, setData, post, processing, errors } = useForm({
         title: "",
         body: "",
@@ -92,19 +94,19 @@ export default function SendPushNotification({ user, companies }) {
         <SuperAdminLayout user={user}>
             <Head title="Send Push Notification" />
 
-            <div className="p-4 h-full overflow-y-auto bg-gray-50">
+            <div className={`p-4 h-full overflow-y-auto ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
                 <div className="max-w-6xl mx-auto">
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-[14px] font-medium text-gray-900">
+                    <div className={`rounded-lg shadow p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
+                            <h2 className={`text-[14px] font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                 Create Push Notification
                             </h2>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between w-full md:w-auto ml-0">
                                 <button
                                     type="submit"
                                     form="pushForm"
                                     disabled={processing}
-                                    className="bg-[#934790] hover:bg-[#6A0066] text-white px-3 py-1.5 rounded-lg text-[11px] font-medium"
+                                    className="bg-[#934790] hover:bg-[#6A0066] text-white px-3 py-1.5 rounded-lg text-[11px] font-medium mr-4"
                                 >
                                     Send Notification
                                 </button>
@@ -112,7 +114,7 @@ export default function SendPushNotification({ user, companies }) {
                                     href={route(
                                         "superadmin.marketing.push-notifications.index"
                                     )}
-                                    className="text-[10px] text-gray-600"
+                                    className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}
                                 >
                                     Cancel
                                 </a>
@@ -124,7 +126,7 @@ export default function SendPushNotification({ user, companies }) {
                                 {/* Left: form (occupies 2 cols on md+) */}
                                 <div className="md:col-span-2 space-y-4">
                                     <div>
-                                        <label className="block text-[10px] font-medium text-gray-700">
+                                        <label className={`block text-[10px] font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                             Title
                                         </label>
                                         <input
@@ -133,7 +135,7 @@ export default function SendPushNotification({ user, companies }) {
                                             onChange={(e) =>
                                                 setData("title", e.target.value)
                                             }
-                                            className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-[12px]"
+                                            className={`mt-1 block w-full border rounded-md p-2 text-[12px] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                                         />
                                         {errors.title && (
                                             <div className="text-red-600 text-[10px] mt-1">
@@ -143,7 +145,7 @@ export default function SendPushNotification({ user, companies }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-medium text-gray-700">
+                                        <label className={`block text-[10px] font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                             Message
                                         </label>
                                         <textarea
@@ -151,7 +153,7 @@ export default function SendPushNotification({ user, companies }) {
                                             onChange={(e) =>
                                                 setData("body", e.target.value)
                                             }
-                                            className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-[12px]"
+                                            className={`mt-1 block w-full border rounded-md p-2 text-[12px] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                                             rows={6}
                                         />
                                         {errors.body && (
@@ -163,7 +165,7 @@ export default function SendPushNotification({ user, companies }) {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-[10px] font-medium text-gray-700">
+                                            <label className={`block text-[10px] font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                 Image (optional)
                                             </label>
 
@@ -175,11 +177,11 @@ export default function SendPushNotification({ user, companies }) {
                                                     fileInputRef.current &&
                                                     fileInputRef.current.click()
                                                 }
-                                                className="flex items-center justify-between border-2 border-dashed border-gray-200 rounded-md p-3 cursor-pointer hover:border-gray-300 bg-gray-50"
+                                                className={`flex items-center justify-between border-2 border-dashed rounded-md p-3 cursor-pointer ${darkMode ? 'border-gray-600 hover:border-gray-500 bg-gray-700' : 'border-gray-200 hover:border-gray-300 bg-gray-50'}`}
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <svg
-                                                        className="w-6 h-6 text-gray-400"
+                                                        className={`w-6 h-6 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
@@ -191,15 +193,15 @@ export default function SendPushNotification({ user, companies }) {
                                                             d="M7 16v-4a4 4 0 114 4h-1"
                                                         />
                                                     </svg>
-                                                    <div className="text-[11px] text-gray-600">
+                                                    <div className={`text-[11px] ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                         Drag & drop an image
                                                         here or{" "}
-                                                        <span className="text-indigo-600 underline">
+                                                        <span className={`underline ${darkMode ? 'text-purple-400' : 'text-indigo-600'}`}>
                                                             browse
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div className="text-[11px] text-gray-500">
+                                                <div className={`text-[11px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                     {selectedFile
                                                         ? selectedFile.name
                                                         : "No file chosen"}
@@ -218,10 +220,10 @@ export default function SendPushNotification({ user, companies }) {
                                                     <img
                                                         src={previewUrl}
                                                         alt="preview"
-                                                        className="w-28 h-16 object-cover rounded border"
+                                                        className={`w-28 h-16 object-cover rounded ${darkMode ? 'border-gray-600' : 'border-gray-300'} border`}
                                                     />
                                                     <div className="flex flex-col">
-                                                        <div className="text-[11px] text-gray-700">
+                                                        <div className={`text-[11px] ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                             Selected image
                                                         </div>
                                                         <button
@@ -239,7 +241,7 @@ export default function SendPushNotification({ user, companies }) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-[10px] font-medium text-gray-700">
+                                            <label className={`block text-[10px] font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                 Notification Type
                                             </label>
                                             <select
@@ -250,7 +252,7 @@ export default function SendPushNotification({ user, companies }) {
                                                         e.target.value
                                                     )
                                                 }
-                                                className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-[12px]"
+                                                className={`mt-1 block w-full border rounded-md p-2 text-[12px] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                                             >
                                                 <option value="Home">
                                                     Home
@@ -266,10 +268,10 @@ export default function SendPushNotification({ user, companies }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-medium text-gray-700">
+                                        <label className={`block text-[10px] font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                             Target Audience
                                         </label>
-                                        <div className="mt-2 space-y-2 text-[12px]">
+                                        <div className={`mt-2 space-y-2 text-[12px] ${darkMode ? 'text-gray-300' : 'text-gray-900'}`}>
                                             <label className="inline-flex items-center">
                                                 <input
                                                     type="radio"
@@ -314,11 +316,11 @@ export default function SendPushNotification({ user, companies }) {
                                     {data.target_type === "specific" && (
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
-                                                <div className="text-[10px] font-medium text-gray-700">
+                                                <div className={`text-[10px] font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                                     Select companies
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    <div className="text-[11px] text-gray-600">
+                                                    <div className={`text-[11px] ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                         {
                                                             selectedCompanies.length
                                                         }{" "}
@@ -329,7 +331,7 @@ export default function SendPushNotification({ user, companies }) {
                                                         onClick={
                                                             handleSelectAll
                                                         }
-                                                        className="text-[10px] text-indigo-600"
+                                                        className={`text-[10px] ${darkMode ? 'text-purple-400' : 'text-indigo-600'}`}
                                                     >
                                                         {selectAll
                                                             ? "Deselect All"
@@ -347,7 +349,7 @@ export default function SendPushNotification({ user, companies }) {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="w-full border rounded px-2 py-1 text-[11px]"
+                                                    className={`w-full border rounded px-2 py-1 text-[11px] ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                                                 />
                                             </div>
 
@@ -355,7 +357,7 @@ export default function SendPushNotification({ user, companies }) {
                                                 {selectedCompanies.map((c) => (
                                                     <span
                                                         key={c.comp_id}
-                                                        className="inline-flex items-center gap-2 bg-gray-100 text-[11px] px-2 py-1 rounded-full"
+                                                        className={`inline-flex items-center gap-2 text-[11px] px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'}`}
                                                     >
                                                         <span>
                                                             {c.comp_name}
@@ -375,10 +377,10 @@ export default function SendPushNotification({ user, companies }) {
                                                 ))}
                                             </div>
 
-                                            <div className="max-h-56 overflow-auto border border-gray-200 rounded-md p-2 bg-white">
+                                            <div className={`max-h-56 overflow-auto border rounded-md p-2 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'}`}>
                                                 {filteredCompanies.length ===
                                                     0 && (
-                                                    <div className="text-[11px] text-gray-500">
+                                                    <div className={`text-[11px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                                         No companies found.
                                                     </div>
                                                 )}
@@ -387,7 +389,7 @@ export default function SendPushNotification({ user, companies }) {
                                                         (c) => (
                                                             <label
                                                                 key={c.comp_id}
-                                                                className="inline-flex items-center space-x-2 text-[11px]"
+                                                                className={`inline-flex items-center space-x-2 text-[11px] ${darkMode ? 'text-gray-300' : 'text-gray-900'}`}
                                                             >
                                                                 <input
                                                                     type="checkbox"
@@ -423,18 +425,18 @@ export default function SendPushNotification({ user, companies }) {
                                 </div>
 
                                 {/* Right: preview / tips (single column) */}
-                                <aside className="md:col-span-1 border-l pl-4">
+                                <aside className={`md:col-span-1 border-l pl-4 ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
                                     <div className="sticky top-6 space-y-4">
-                                        <div className="bg-gray-50 rounded p-3 text-[12px]">
-                                            <h3 className="font-semibold text-gray-800 text-[12px]">
+                                        <div className={`rounded p-3 text-[12px] ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                            <h3 className={`font-semibold text-[12px] ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                                                 Preview
                                             </h3>
                                             <div className="mt-2">
-                                                <div className="text-sm font-medium text-gray-900">
+                                                <div className={`text-sm font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                                     {data.title ||
                                                         "Notification Title"}
                                                 </div>
-                                                <div className="text-[11px] text-gray-600 mt-1">
+                                                <div className={`text-[11px] mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                     {data.body ||
                                                         "Message preview will appear here."}
                                                 </div>
@@ -448,11 +450,11 @@ export default function SendPushNotification({ user, companies }) {
                                             </div>
                                         </div>
 
-                                        <div className="bg-white rounded p-3 border text-[11px]">
-                                            <h4 className="font-semibold mb-2">
+                                        <div className={`rounded p-3 border text-[11px] ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'}`}>
+                                            <h4 className={`font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                                 Tips
                                             </h4>
-                                            <ul className="list-disc pl-5 space-y-1 text-gray-600">
+                                            <ul className={`list-disc pl-5 space-y-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                 <li>
                                                     Keep title short (30 chars).
                                                 </li>

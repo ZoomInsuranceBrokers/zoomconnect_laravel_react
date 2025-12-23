@@ -10,7 +10,7 @@ export default function SuperAdminLayout({ user, children }) {
   const handleSidebarToggle = () => setSidebarOpen((prev) => !prev);
 
   return (
-  <div className={`relative min-h-screen w-full font-montserrat ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen`}> 
+  <div className={`relative min-h-screen w-full font-montserrat overflow-x-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} `}> 
       {/* Fixed Sidebar */}
   <div className="fixed top-0 left-0 z-30 w-64">
         <Sidebar open={sidebarOpen} onToggle={handleSidebarToggle} />

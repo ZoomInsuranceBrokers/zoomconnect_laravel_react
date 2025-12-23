@@ -39,29 +39,33 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl font-bold text-gray-900">
-                            Messaging templates
-                        </h1>
-                        <Link
-                            href={route("superadmin.marketing.message-template.create")}
-                            className="inline-flex items-center px-4 py-2 bg-[#934790] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#6A0066] active:bg-[#6A0066] focus:outline-none focus:border-[#934790] focus:ring ring-purple-300 disabled:opacity-25 transition ease-in-out duration-150"
-                        >
-                            <svg
-                                className="w-4 h-4 mr-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M12 4v16m8-8H4"
-                                />
-                            </svg>
-                            New Message
-                        </Link>
+                    <div className="mb-6">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
+                            <h1 className="text-2xl font-bold text-gray-900">
+                                Messaging templates
+                            </h1>
+                            <div className="flex justify-end w-full sm:w-auto">
+                                <Link
+                                    href={route("superadmin.marketing.message-template.create")}
+                                    className="inline-flex items-center px-4 py-2 bg-[#934790] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#6A0066] active:bg-[#6A0066] focus:outline-none focus:border-[#934790] focus:ring ring-purple-300 disabled:opacity-25 transition ease-in-out duration-150"
+                                >
+                                    <svg
+                                        className="w-4 h-4 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M12 4v16m8-8H4"
+                                        />
+                                    </svg>
+                                    New Message
+                                </Link>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Info Banner */}
@@ -113,7 +117,7 @@ export default function MessageTemplate({ auth, user, templates, categories }) {
                                         <input
                                             type="text"
                                             placeholder="Search Records"
-                                            className={`block w-full pl-10 pr-3 py-2 border rounded-md leading-5 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${darkMode ? 'border-gray-700 bg-gray-800 text-gray-200 placeholder-gray-400' : 'border-gray-300 bg-gray-100 text-gray-900 placeholder-gray-500'}`}
+                                            className={`block w-full pl-10 pr-3 py-2 border rounded-md leading-5 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-[#934790] focus:border-[#934790] sm:text-sm ${darkMode ? 'border-gray-700 bg-gray-800 text-gray-200 placeholder-gray-400' : 'border-gray-300 bg-gray-100 text-gray-900 placeholder-gray-500'}`}
                                             value={searchTerm}
                                             onChange={(e) =>
                                                 setSearchTerm(e.target.value)
