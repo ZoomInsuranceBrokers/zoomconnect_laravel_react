@@ -233,39 +233,39 @@ export default function GroupAccidentCover() {
                             <div className="relative max-w-6xl mx-auto text-center">
                                 {/* Heading */}
                                 <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 font-dmserif">
-                                    Why Group Medical Cover is Essential for Employees
+                                    Why Group Accident Cover is Essential for Employees
                                 </h2>
                                 <p className="text-gray-700 mb-8 max-w-3xl mx-auto text-xs md:text-base leading-snug">
-                                    Offering group medical cover ensures employee well-being, financial security during emergencies, and strengthens loyalty and morale.
+                                    Offering group accident cover ensures employee well-being, financial security during emergencies, and strengthens loyalty and morale.
                                 </p>
 
                                 {/* Grid of benefit cards */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                                     {/* Card 1 */}
                                     <div className="group relative bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
-                                        <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
-                                            <span className="text-[#934790] text-3xl">🎯</span>
+                                        <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                                            <span className="text-[#FFB300] text-3xl">🦺</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Attract & Retain Talent</h3>
+                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Accident Protection</h3>
                                         <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                                            Shows employees you care about their health, helping attract top talent and reduce turnover.
+                                            Covers accidental injuries, disabilities, and emergencies—on or off the job.
                                         </p>
                                         <div className="pt-4 border-t border-gray-100">
-                                            <span className="text-[#934790] font-bold text-xl">+30% Retention</span>
+                                            <span className="text-[#FFB300] font-bold text-xl">24/7 Cover</span>
                                         </div>
                                     </div>
 
                                     {/* Card 2 */}
                                     <div className="group relative bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
                                         <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
-                                            <span className="text-[#FF0066] text-3xl">💖</span>
+                                            <span className="text-[#FF0066] text-3xl">🚑</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Ensure Well-being</h3>
+                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Emergency Assistance</h3>
                                         <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                                            Employees feel cared for when their health and families are protected, increasing satisfaction.
+                                            Immediate help for medical emergencies, including ambulance and hospital admission.
                                         </p>
                                         <div className="pt-4 border-t border-gray-100">
-                                            <span className="text-[#FF0066] font-bold text-xl">+40% Productivity</span>
+                                            <span className="text-[#FF0066] font-bold text-xl">Fast Response</span>
                                         </div>
                                     </div>
 
@@ -276,24 +276,24 @@ export default function GroupAccidentCover() {
                                         </div>
                                         <h3 className="text-lg font-bold text-gray-800 mb-2">Financial Security</h3>
                                         <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                                            Provides protection during medical emergencies so employees can focus on recovery.
+                                            Lump sum payout for accidental death or disability, supporting families when it matters most.
                                         </p>
                                         <div className="pt-4 border-t border-gray-100">
-                                            <span className="text-amber-600 font-bold text-xl">₹5L Coverage</span>
+                                            <span className="text-amber-600 font-bold text-xl">₹5L+ Benefit</span>
                                         </div>
                                     </div>
 
                                     {/* Card 4 */}
                                     <div className="group relative bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
                                         <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
-                                            <span className="text-emerald-600 text-3xl">📜</span>
+                                            <span className="text-emerald-600 text-3xl">📄</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Compliance & Morale</h3>
+                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Simple Claims</h3>
                                         <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                                            Fulfills statutory requirements and boosts employee confidence and loyalty.
+                                            Hassle-free digital claims process with dedicated support for quick settlements.
                                         </p>
                                         <div className="pt-4 border-t border-gray-100">
-                                            <span className="text-emerald-600 font-bold text-xl">100% Compliance</span>
+                                            <span className="text-emerald-600 font-bold text-xl">Quick Approval</span>
                                         </div>
                                     </div>
                                 </div>
@@ -371,20 +371,20 @@ export default function GroupAccidentCover() {
 
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
                         <div className="text-center mb-20">
-                            <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-6">
-                                How It <span className="bg-gradient-to-r from-[#FF0066] to-[#934790] text-transparent bg-clip-text">Works</span>
+                            <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-6 drop-shadow-lg">
+                                How Our Accident Cover Works
                             </h2>
                             <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto">
-                                Get your entire team covered in four seamless steps
+                                Secure your team with ease—just four simple steps to total accident protection!
                             </p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
                             <div className="hidden lg:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#934790]/20 to-transparent"></div>
 
-                            {/* Step 1 */}
-                            <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                            {/* Step 1 - Easy Enrollment */}
+                            <div className="group relative h-full">
+                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105 h-full flex flex-col">
                                     <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                                         <div className="w-12 h-12 bg-gradient-to-br from-[#934790] to-[#6a0066] rounded-full flex items-center justify-center shadow-xl shadow-[#934790]/30 group-hover:shadow-2xl group-hover:shadow-[#934790]/50 transition-all duration-300">
                                             <span className="text-white font-bold text-lg">1</span>
@@ -398,46 +398,42 @@ export default function GroupAccidentCover() {
                                         </div>
                                     </div>
                                     <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
-                                        Quick Enrollment
+                                        Effortless Enrollment
                                     </h3>
                                     <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
-                                        Simple online registration through HR portal. Digital forms completed in minutes.
+                                        Add employees quickly with digital forms and HR integration. Get your team protected in minutes.
                                     </p>
-                                    <div className="flex items-center justify-center gap-2 text-sm">
-                                        <div className="w-2 h-2 bg-[#934790] rounded-full animate-pulse"></div>
-                                        <span className="text-[#934790] font-semibold">5 Minutes Setup</span>
-                                    </div>
                                 </div>
                             </div>
 
-                            {/* Step 2 */}
-                            <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                            {/* Step 2 - Instant Accident Cover */}
+                            <div className="group relative h-full">
+                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105 h-full flex flex-col">
                                     <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#934790] to-[#6a0066] rounded-full flex items-center justify-center shadow-xl shadow-[#934790]/30 group-hover:shadow-2xl group-hover:shadow-[#934790]/50 transition-all duration-300">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066] to-[#d40055] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group-hover:shadow-[#FF0066]/50 transition-all duration-300">
                                             <span className="text-white font-bold text-lg">2</span>
                                         </div>
                                     </div>
                                     <div className="mt-8 mb-6 flex justify-center">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#934790]/10 to-[#6a0066]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                            <svg className="w-8 h-8 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066]/10 to-[#d40055]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-8 h-8 text-[#FF0066]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2s2-.9 2-2v-4c0-1.1-.9-2-2-2z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 12h12" />
                                             </svg>
                                         </div>
                                     </div>
                                     <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
-                                        Policy Customization
+                                        Immediate Accident Protection
                                     </h3>
                                     <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
-                                        Tailor coverage options to meet the unique needs of your organization and employees.
+                                        Employees are covered for accidental injuries and emergencies from day one—no waiting period.
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Step 3 */}
-                            <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                            {/* Step 3 - Emergency Assistance */}
+                            <div className="group relative h-full">
+                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105 h-full flex flex-col">
                                     <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                                         <div className="w-12 h-12 bg-gradient-to-br from-[#934790] to-[#6a0066] rounded-full flex items-center justify-center shadow-xl shadow-[#934790]/30 group-hover:shadow-2xl group-hover:shadow-[#934790]/50 transition-all duration-300">
                                             <span className="text-white font-bold text-lg">3</span>
@@ -452,25 +448,25 @@ export default function GroupAccidentCover() {
                                         </div>
                                     </div>
                                     <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
-                                        Instant Activation
+                                        24/7 Emergency Assistance
                                     </h3>
                                     <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
-                                        Policies activated immediately upon enrollment, ensuring no waiting period.
+                                        Access to ambulance, hospitalization, and support services whenever accidents happen.
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Step 4 */}
-                            <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                            {/* Step 4 - Hassle-Free Claims */}
+                            <div className="group relative h-full">
+                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105 h-full flex flex-col">
                                     <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#934790] to-[#6a0066] rounded-full flex items-center justify-center shadow-xl shadow-[#934790]/30 group-hover:shadow-2xl group-hover:shadow-[#934790]/50 transition-all duration-300">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066] to-[#d40055] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group-hover:shadow-[#FF0066]/50 transition-all duration-300">
                                             <span className="text-white font-bold text-lg">4</span>
                                         </div>
                                     </div>
                                     <div className="mt-8 mb-6 flex justify-center">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#934790]/10 to-[#6a0066]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                            <svg className="w-8 h-8 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066]/10 to-[#d40055]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-8 h-8 text-[#FF0066]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v8m-4-4h8" />
                                             </svg>
                                         </div>
@@ -479,7 +475,7 @@ export default function GroupAccidentCover() {
                                         Hassle-Free Claims
                                     </h3>
                                     <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
-                                        Simplified claims process with dedicated support for quick settlements.
+                                        Fast, simple claims with dedicated support for quick settlements and peace of mind.
                                     </p>
                                 </div>
                             </div>

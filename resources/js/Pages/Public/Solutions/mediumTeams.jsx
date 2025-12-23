@@ -81,32 +81,33 @@ function LargeBizSolutions() {
     );
 }
 
-function WhyStartupsLoveZoomConnect() {
+function WhyMediumTeamsLoveZoomConnect() {
 
     const features = [
         {
-            icon: <FaGlobe />,
-            title: "Global Capabilities",
-            desc: "Healthcare and benefits solutions that scale across geographies, integrate compliance requirements, and support diverse enterprise workforces.",
+            icon: <FaChartLine />,
+            title: "Cost Optimization & Affordability",
+            desc: "Get the best rates and maximize benefits for your budget—no overpaying, more value.",
             bgColor: '#E8F5E9',
             accentColor: '#81C784',
             borderColor: '#4CAF50'
         },
         {
-            icon: <FaChartBar />,
-            title: "Advanced Analytics",
-            desc: "Data-driven insights into claims, utilization patterns, and cost trends to enable smarter, strategic benefits decisions.",
-            bgColor: '#FFF4E6',
-            accentColor: '#FFD89B',
-            borderColor: '#FFB84D'
+            icon: <FaCheck />,
+            title: "Streamlined Onboarding & Admin",
+            desc: "Easy employee enrollment, claims, and policy management—less HR hassle, more time saved.",
+            bgColor: '#FFE5F0',
+            accentColor: '#FF69B4',
+            borderColor: '#FF1493'
         },
+    
         {
-            icon: <FaPuzzlePiece />,
-            title: "Custom-Tailored Plans",
-            desc: "Flexible, enterprise-ready benefit programs designed to align with organizational scale, complexity, and workforce diversity.",
-            bgColor: '#FFE6F0',
-            accentColor: '#FFB3D9',
-            borderColor: '#FF80BF'
+            icon: <FaShieldAlt />,
+            title: "Expert Claims Support",
+            desc: "Direct help for employees—fast, hassle-free settlements and real support when it matters most.",
+            bgColor: '#FFFDE7',
+            accentColor: '#FFF59D',
+            borderColor: '#FBC02D'
         },
     ];
 
@@ -151,10 +152,10 @@ function WhyStartupsLoveZoomConnect() {
                     {/* Left Side - Heading & Subheading */}
                     <div className="flex flex-col justify-start sticky top-20">
                         <h2 className="text-2xl lg:text-5xl font-dmserif font-semibold text-gray-900 mb-6 leading-tight drop-shadow-lg">
-                            Why large teams love ZoomConnect
+                            Why medium-sized companies love ZoomConnect
                         </h2>
                         <p className="text-sm lg:text-base text-gray-700 font-medium leading-relaxed">
-                            Simple, scalable healthcare & benefits — curated plans, fast onboarding, and 24/7 support so your team can focus on growth.
+                            Flexible, digital-first insurance and wellness benefits—built for growing teams that want to save time, control costs, and keep employees happy.
                         </p>
                     </div>
 
@@ -258,151 +259,69 @@ function WhyStartupsLoveZoomConnect() {
     );
 }
 
-export default function LargeTeams() {
+export default function MediumTeams() {
 
     const features = [
         {
             icon: (
                 <svg className="w-12 h-12" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* Shield outline */}
-                    <path d="M32 8L12 16v14c0 14.5 10.5 26 20 28 9.5-2 20-13.5 20-28V16L32 8z" fill="#FFE5F0" stroke="#FFB300" strokeWidth="2" />
-                    {/* Building silhouette */}
-                    <rect x="24" y="28" width="16" height="14" rx="2" fill="#FFB300" fillOpacity="0.18" />
-                    <rect x="28" y="32" width="2" height="6" rx="1" fill="#FFB300" fillOpacity="0.7" />
-                    <rect x="34" y="32" width="2" height="6" rx="1" fill="#FFB300" fillOpacity="0.7" />
-                    <rect x="40" y="32" width="2" height="6" rx="1" fill="#FFB300" fillOpacity="0.7" />
-                    {/* Checkmark */}
-                    <path d="M26 40l4 4 8-8" stroke="#FFB300" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <rect x="10" y="20" width="44" height="28" rx="6" fill="#FFECB3" />
+                    <rect x="10" y="20" width="44" height="10" rx="5" fill="#FFD600" fillOpacity="0.3" />
+                    <rect x="18" y="34" width="12" height="8" rx="2" fill="#FFD600" fillOpacity="0.5" />
+                    <rect x="34" y="36" width="12" height="6" rx="2" fill="#FFD600" fillOpacity="0.7" />
+                    <path d="M22 40l4 4 8-8" stroke="#FFB300" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="20" cy="26" r="2" fill="#FFB300" />
                 </svg>
             ),
-            title: 'Enterprise-Grade Benefits',
-            description: 'Comprehensive insurance and wellness solutions designed for large teams—robust, scalable, and future-ready.',
+            title: 'Affordable, Flexible Plans',
+            description: 'Insurance and wellness packages that fit your budget and scale as your business grows—no compromise on quality.',
             iconBg: '#ffbf3f',
             iconColor: '#ffbf3f'
         },
         {
             icon: (
-                <svg
-                    className="w-12 h-12"
-                    viewBox="0 0 64 64"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    {/* Horizontal slider lines in blue */}
-                    <rect x="12" y="18" width="40" height="4" rx="2" fill="#2196F3" fillOpacity="0.25" />
-                    <rect x="12" y="30" width="40" height="4" rx="2" fill="#2196F3" fillOpacity="0.25" />
-                    <rect x="12" y="42" width="40" height="4" rx="2" fill="#2196F3" fillOpacity="0.25" />
-
-                    {/* Slider knobs in blue shades */}
-                    <circle cx="26" cy="20" r="5" fill="#BBDEFB" stroke="#1976D2" strokeWidth="2" />
-                    <circle cx="40" cy="32" r="5" fill="#90CAF9" stroke="#1976D2" strokeWidth="2" />
-                    <circle cx="22" cy="44" r="5" fill="#64B5F6" stroke="#1976D2" strokeWidth="2" />
+                <svg className="w-12 h-12" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="32" r="28" fill="#B3E0FF" />
+                    <circle cx="32" cy="28" r="8" fill="#2196F3" />
+                    <ellipse cx="32" cy="44" rx="14" ry="6" fill="#90CAF9" />
+                    <circle cx="18" cy="34" r="4" fill="#2196F3" />
+                    <circle cx="46" cy="34" r="4" fill="#2196F3" />
                 </svg>
             ),
-            title: 'Flexible, Custom Plans',
-            description:
-                'Benefit options that adapt to your company’s needs—choose, combine, and scale as you grow.',
-            iconBg: '#E3F2FD',
-            iconColor: '#1976D2'
-
+            title: 'Grows With Your Team',
+            description: 'Coverage that adapts as you hire—perfect for fast-moving, medium-sized companies.',
+            iconBg: '#B3E0FF',
+            iconColor: '#2196F3'
         },
         {
             icon: (
-                <svg
-                    className="w-12 h-12"
-                    viewBox="0 0 64 64"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    {/* Dashboard base */}
-                    <rect
-                        x="8"
-                        y="12"
-                        width="48"
-                        height="40"
-                        rx="8"
-                        fill="#F0E6F5"
-                    />
-
-                    {/* Top bar */}
-                    <rect
-                        x="8"
-                        y="12"
-                        width="48"
-                        height="8"
-                        rx="8"
-                        fill="#934790"
-                        fillOpacity="0.25"
-                    />
-
-                    {/* Settings gear */}
-                    <circle cx="26" cy="34" r="6" fill="#934790" fillOpacity="0.35" />
-                    <path
-                        d="M26 30v-2M26 40v-2M30 34h2M20 34h2
-         M29 31l1.5-1.5M22.5 38.5L24 37
-         M29 37l1.5 1.5M22.5 29.5L24 31"
-                        stroke="#934790"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                    />
-
-                    {/* Automation check */}
-                    <path
-                        d="M38 36l3 3 6-6"
-                        stroke="#934790"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
+                <svg className="w-12 h-12" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="12" width="48" height="40" rx="8" fill="#FFD1E8" />
+                    <path d="M20 32h24M20 40h24" stroke="#E75480" strokeWidth="2.5" strokeLinecap="round" />
+                    <circle cx="20" cy="24" r="3" fill="#E75480" />
+                    <circle cx="32" cy="24" r="3" fill="#E75480" />
+                    <circle cx="44" cy="24" r="3" fill="#E75480" />
                 </svg>
             ),
-            title: 'Streamlined Team Administration',
-            description:
-                'Automated onboarding, easy benefits management, and digital tools that save time—perfect for growing, mid-sized teams.',
-            iconBg: '#FFB8E0',
-            iconColor: '#FFB8E0'
-
-
+            title: 'Easy Claims Tracking',
+            description: 'Track claims status and history online—no more guesswork or paperwork for your HR or employees.',
+            iconBg: '#FFD1E8',
+            iconColor: '#E75480'
         },
         {
             icon: (
-                <svg
-                    className="w-12 h-12"
-                    viewBox="0 0 64 64"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    {/* Support background */}
-                    <rect x="10" y="10" width="44" height="44" rx="8" fill="#C8E6C9" />
-
-                    {/* Head */}
-                    <circle cx="32" cy="28" r="8" fill="#388E3C" fillOpacity="0.25" />
-
-                    {/* Headset */}
-                    <path
-                        d="M20 30c0-8 5.5-14 12-14s12 6 12 14"
-                        stroke="#388E3C"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                    />
-                    <rect x="18" y="30" width="6" height="10" rx="3" fill="#388E3C" />
-                    <rect x="40" y="30" width="6" height="10" rx="3" fill="#388E3C" />
-
-                    {/* Mic */}
-                    <path
-                        d="M32 36v6c0 2-2 4-4 4"
-                        stroke="#388E3C"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                    />
+                <svg className="w-12 h-12" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="12" y="12" width="40" height="40" rx="10" fill="#C8E6C9" />
+                    <path d="M32 38c-6-4-12-8-12-14a8 8 0 0 1 16 0 8 8 0 0 1 16 0c0 6-6 10-12 14Z" fill="#388E3C" fillOpacity="0.7" />
+                    <path d="M32 38c-6-4-12-8-12-14a8 8 0 0 1 16 0" stroke="#388E3C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    <path d="M44 24c0 6-6 10-12 14" stroke="#388E3C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    <path d="M32 38c2-2 6-6 6-10a6 6 0 0 0-12 0c0 4 4 8 6 10Z" fill="#66BB6A" />
                 </svg>
             ),
-            title: 'Dedicated Enterprise Support',
-            description:
-                '24/7 expert help for HR and employees—fast answers, instant claims help, and real human support.',
+            title: 'Wellness & Preventive Care',
+            description: 'Access to wellness programs, health checkups, and preventive care to keep your team healthy and productive.',
             iconBg: '#C8E6C9',
             iconColor: '#388E3C'
-
         }
     ];
 
@@ -461,11 +380,11 @@ export default function LargeTeams() {
                     <div className="max-w-7xl z-10 mx-auto px-6 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <div>
                             <h1 className="text-4xl sm:text-5xl font-extrabold font-dmserif leading-tight mb-6">
-                                Benefits & Insurance Solutions for <span className="text-[#FF0066] ">Large Enterprises</span>
+                                Benefits & Insurance Solutions for <span className="text-[#FF0066] ">Medium-Sized Teams</span>
                             </h1>
 
                             <p className="text-sm md:text-base text-gray-600 mb-8 max-w-xl">
-                                Comprehensive employee benefit solutions designed for scale, efficiency, and impact.
+                                Flexible insurance and wellness benefits for medium teams—affordable, digital, and built to help you grow.
                             </p>
 
                             <div className="flex flex-wrap gap-4">
@@ -492,7 +411,7 @@ export default function LargeTeams() {
                         </div>
                         <div className="relative">
                             <div className="">
-                                <img src="/assets/images/solutions/large_enterprises _image.png" alt="Team meeting" className="w-full h-[450px] object-contain" />
+                                <img src="/assets/images/solutions/futuristic_corporate_ecosystem.png" alt="Team meeting" className="w-full h-[450px] object-contain" />
                             </div>
                         </div>
                     </div>
@@ -503,7 +422,7 @@ export default function LargeTeams() {
                             <h2 className="text-4xl font-dmserif font-bold leading-tight mb-2">
                                 Trusted by Growing Businesses
                             </h2>
-                            <div className="text-base text-white/80 font-medium mb-2">Large teams making a big impact</div>
+                            <div className="text-base text-white/80 font-medium mb-2">Medium-sized companies making a big impact</div>
                             <div className="text-sm text-white/60">Trusted by companies for comprehensive insurance brokerage, claims support, and employee health benefit solutions.</div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
@@ -535,7 +454,7 @@ export default function LargeTeams() {
                 {/* Why Startups Love Section */}
                 <section className=" w-full py-20  text-gray-900">
                     <div className="max-w-7xl mx-auto px-6 lg:px-8">
-                        <WhyStartupsLoveZoomConnect />
+                        <WhyMediumTeamsLoveZoomConnect />
                     </div>
                 </section>
 
@@ -549,10 +468,10 @@ export default function LargeTeams() {
                     <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
                         <div className="mb-12 text-center">
                             <h2 className="text-4xl md:text-5xl font-dmserif font-medium text-gray-800 drop-shadow-lg mb-4">
-                                What ZoomConnect provides to Large businesses
+                                What ZoomConnect provides to Medium-sized businesses
                             </h2>
                             <p className="text-md md:text-base text-gray-800 font-medium max-w-2xl mx-auto">
-                                Premium, modern insurance & wellness solutions designed for Large teams that want enterprise-quality benefits.
+                                Premium, modern insurance & wellness solutions designed for medium-sized businesses that want enterprise-quality benefits.
                             </p>
                         </div>
                         <div className="flex flex-row gap-12 items-center">
@@ -582,10 +501,10 @@ export default function LargeTeams() {
                     <div className="max-w-7xl mx-auto px-6 lg:px-8">
                         <div className="text-center mb-20">
                             <h2 className="text-xl md:text-5xl font-dmserif font-semibold mb-4 text-gray-800">
-                                Why ZoomConnect Is the Right Partner for Your Large Business
+                                Why Choose ZoomConnect for Your Medium-Sized Business??
                             </h2>
                             <p className="text-sm md:text-base text-gray-700 font-medium mb-6 max-w-2xl mx-auto">
-                                Give your team enterprise-grade insurance and wellness benefits—designed to be affordable, flexible, and effortless for growing companies.
+                                Empower your team with flexible, digital-first insurance and wellness benefits—affordable, easy to manage, and built for modern, growing businesses.
                             </p>
                         </div>
 
@@ -636,7 +555,7 @@ export default function LargeTeams() {
                             Elevate Your Employee Healthcare <span className="italic font-dmserif text-[#934790]">with</span> ZoomConnect
                         </h1>
                         <p className="text-md md:text-base text-gray-700 mb-8 font-medium">
-                            ZoomConnect is designed for larger business or enterprise that value their people and want benefits that grow with them. Let us help you build a healthier, happier workforce.
+                            ZoomConnect is designed for SMBs that value their people and want benefits that grow with them. Let us help you build a healthier, happier workforce.
                         </p>
                         <a href="/contact" className="inline-block bg-[#FF0066] text-white px-8 py-2 rounded-lg font-semibold md:text-base shadow hover:bg-[#d40055] transition-all">
                             TALK TO SALES

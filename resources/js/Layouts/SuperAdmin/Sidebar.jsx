@@ -213,12 +213,21 @@ export default function Sidebar({ open = true, onToggle }) {
                     </svg>
                 </button>
             </div>
+            <style>{`
+                .sidebar-no-scroll::-webkit-scrollbar {
+                    display: none;
+                }
+                .sidebar-no-scroll {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
             <aside
                 className={`${sidebarBase} ${sidebarMobile} ${
                     darkMode
                         ? "bg-gray-900 text-white"
                         : "bg-[#F5F6FF] text-black"
-                } overflow-y-auto`} 
+                } overflow-y-auto sidebar-no-scroll`} 
                 style={{ minHeight: "100vh", maxHeight: "100vh" }}
             >
                 {/* Logo */}

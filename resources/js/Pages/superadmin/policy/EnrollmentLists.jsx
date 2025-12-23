@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Head, Link, useForm, router } from "@inertiajs/react";
 import SuperAdminLayout from "../../../Layouts/SuperAdmin/Layout";
+import { useTheme } from '../../../Context/ThemeContext';
 
 export default function EnrollmentLists({ enrollments, filters, message, messageType }) {
+    const { darkMode } = useTheme();
     const [searchQuery, setSearchQuery] = useState(filters.search || "");
     const [statusFilter, setStatusFilter] = useState(filters.status || "");
     const [showMessage, setShowMessage] = useState(null);
@@ -166,14 +168,14 @@ export default function EnrollmentLists({ enrollments, filters, message, message
         <SuperAdminLayout>
             <Head title="Enrollment Lists - Policy Management" />
 
-            <div className="p-6">
+            <div className={`p-2 md:p-6 ${darkMode ? 'bg-gray-900 min-h-screen' : ''}`}> 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 font-montserrat">
+                        <h1 className={`text-2xl font-bold font-montserrat ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                             Enrollment Lists
                         </h1>
-                        <p className="text-gray-600 text-sm mt-1">
+                        <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                             Manage policy enrollments and their configurations
                         </p>
                     </div>
@@ -234,7 +236,7 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                 )}
 
                 {/* Search and Filters */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+                <div className={`rounded-lg border p-4 mb-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}> 
                     <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1">
                             <input
@@ -242,14 +244,14 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                                 placeholder="Search by enrollment name..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-sm"
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900'}`}
                             />
                         </div>
                         <div className="sm:w-48">
                             <select
                                 value={statusFilter}
                                 onChange={handleStatusFilterChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-sm"
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                             >
                                 <option value="">All Status</option>
                                 <option value="1">Active</option>
@@ -281,53 +283,53 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                 </div>
 
                 {/* Enrollments Table */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className={`rounded-lg border overflow-hidden ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}> 
                     {enrollments.data && enrollments.data.length > 0 ? (
                         <>
                             <div className="overflow-x-auto">
                                 <table className="w-full">
-                                    <thead className="bg-gray-50 border-b border-gray-200">
+                                    <thead className={`${darkMode ? 'bg-gray-700 border-b border-gray-600' : 'bg-gray-50 border-b border-gray-200'}`}> 
                                         <tr>
-                                            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            <th className={`px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}> 
                                                 Enrollment Name
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            <th className={`px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                 Company
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            <th className={`px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                 Policy Period
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            <th className={`px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                 Status
                                             </th>
-                                            <th className="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            <th className={`px-3 py-2 text-right text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                 Actions
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className={`${darkMode ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-y divide-gray-200'}`}> 
                                         {enrollments.data.map((enrollment) => (
-                                            <tr
-                                                key={enrollment.id}
-                                                className="hover:bg-gray-50 transition-colors duration-200"
-                                            >
+                                                <tr
+                                                    key={enrollment.id}
+                                                    className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors duration-200`}
+                                                >
                                                 <td className="px-3 py-3">
                                                     <div>
-                                                        <div className="text-xs font-medium text-gray-900">
+                                                        <div className={`text-xs font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}> 
                                                             {enrollment.enrolment_name}
                                                         </div>
-                                                        <div className="text-xs text-gray-500 mt-0.5">
+                                                        <div className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}> 
                                                             {enrollment.corporate_enrolment_name}
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-3">
-                                                    <div className="text-xs text-gray-900">
+                                                    <div className={`text-xs ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}> 
                                                         {enrollment.company ? enrollment.company.comp_name : 'N/A'}
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-3">
-                                                    <div className="text-xs text-gray-900">
+                                                    <div className={`text-xs ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}> 
                                                         {new Date(enrollment.policy_start_date).toLocaleDateString()} - {new Date(enrollment.policy_end_date).toLocaleDateString()}
                                                     </div>
                                                 </td>
@@ -437,13 +439,13 @@ export default function EnrollmentLists({ enrollments, filters, message, message
 
                             {/* Pagination */}
                             {enrollments.links && enrollments.links.length > 3 && (
-                                <div className="bg-white px-3 py-2 border-t border-gray-200 sm:px-4">
+                                <div className={`${darkMode ? 'bg-gray-700 border-t border-gray-600 text-gray-200' : 'bg-white border-t border-gray-200 text-gray-700'} px-3 py-2 sm:px-4`}>
                                     <div className="flex items-center justify-between">
                                         <div className="flex-1 flex justify-between sm:hidden">
                                             {enrollments.prev_page_url && (
                                                 <Link
                                                     href={enrollments.prev_page_url}
-                                                    className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                                                    className={`relative inline-flex items-center px-3 py-2 border text-xs font-medium rounded-md transition-colors duration-200 ${darkMode ? 'border-gray-600 text-gray-200 bg-gray-800 hover:bg-gray-700' : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'}`}
                                                 >
                                                     <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -454,7 +456,7 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                                             {enrollments.next_page_url && (
                                                 <Link
                                                     href={enrollments.next_page_url}
-                                                    className="ml-3 relative inline-flex items-center px-3 py-2 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                                                    className={`ml-3 relative inline-flex items-center px-3 py-2 border text-xs font-medium rounded-md transition-colors duration-200 ${darkMode ? 'border-gray-600 text-gray-200 bg-gray-800 hover:bg-gray-700' : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'}`}
                                                 >
                                                     Next
                                                     <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -465,11 +467,11 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                                         </div>
                                         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                                             <div>
-                                                <p className="text-xs text-gray-600">
+                                                <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                     Showing{" "}
-                                                    <span className="font-semibold text-gray-900">{enrollments.from}</span> to{" "}
-                                                    <span className="font-semibold text-gray-900">{enrollments.to}</span> of{" "}
-                                                    <span className="font-semibold text-gray-900">{enrollments.total}</span> results
+                                                    <span className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{enrollments.from}</span> to{" "}
+                                                    <span className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{enrollments.to}</span> of{" "}
+                                                    <span className={`font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{enrollments.total}</span> results
                                                 </p>
                                             </div>
                                             <div>
@@ -480,10 +482,14 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                                                             href={link.url || "#"}
                                                             className={`relative inline-flex items-center px-2 py-1 border text-xs font-medium transition-colors duration-200 ${
                                                                 link.active
-                                                                    ? "z-10 bg-[#934790] border-[#934790] text-white"
+                                                                    ? `z-10 bg-[#934790] border-[#934790] text-white` 
                                                                     : link.url
-                                                                    ? "bg-white border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                                                                    : "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
+                                                                    ? darkMode
+                                                                        ? 'bg-gray-800 border-gray-600 text-gray-200 hover:bg-gray-700 hover:text-white'
+                                                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                                                                    : darkMode
+                                                                        ? 'bg-gray-700 border-gray-600 text-gray-500 cursor-not-allowed'
+                                                                        : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'
                                                             } ${
                                                                 index === 0 ? "rounded-l-md" : ""
                                                             } ${
@@ -514,8 +520,8 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                 />
                             </svg>
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">No enrollments found</h3>
-                            <p className="mt-1 text-sm text-gray-500">
+                            <h3 className={`mt-2 text-sm font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>No enrollments found</h3>
+                            <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}> 
                                 Get started by creating a new enrollment.
                             </p>
                             <div className="mt-6">
@@ -540,7 +546,7 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                     <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                         {/* Background overlay */}
                         <div
-                            className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                            className={`fixed inset-0 transition-opacity ${darkMode ? 'bg-gray-900 bg-opacity-80' : 'bg-gray-500 bg-opacity-75'}`}
                             aria-hidden="true"
                             onClick={() => setShowConfirmModal(null)}
                         ></div>
@@ -549,12 +555,12 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                         {/* Modal panel */}
-                        <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                        <div className={`inline-block align-bottom rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}> 
                             <div className="sm:flex sm:items-start">
                                 <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10 ${
                                     showConfirmModal.type === 'activate'
-                                        ? 'bg-green-100'
-                                        : 'bg-red-100'
+                                        ? (darkMode ? 'bg-green-900' : 'bg-green-100')
+                                        : (darkMode ? 'bg-red-900' : 'bg-red-100')
                                 }`}>
                                     {showConfirmModal.type === 'activate' ? (
                                         <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -567,11 +573,11 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                                     )}
                                 </div>
                                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                    <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                    <h3 className={`text-lg leading-6 font-medium ${darkMode ? 'text-gray-100' : 'text-gray-900'}`} id="modal-title">
                                         {showConfirmModal.title}
                                     </h3>
                                     <div className="mt-2">
-                                        <p className="text-sm text-gray-500">
+                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}> 
                                             {showConfirmModal.message}
                                         </p>
                                     </div>
@@ -587,7 +593,7 @@ export default function EnrollmentLists({ enrollments, filters, message, message
                                 </button>
                                 <button
                                     type="button"
-                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                                    className={`mt-3 w-full inline-flex justify-center rounded-md border shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600 focus:ring-purple-500' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-indigo-500'}`}
                                     onClick={() => setShowConfirmModal(null)}
                                 >
                                     Cancel
