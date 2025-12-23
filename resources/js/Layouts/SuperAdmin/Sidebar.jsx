@@ -1036,12 +1036,22 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Surveys</span>
                                         </Link>
                                     </li>
+                                    {hasHref("/superadmin/admin/users") && (
+                                    <li>
+                                        <Link href="/superadmin/admin/users" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                            currentRoute === "/superadmin/admin/users" || currentRoute.startsWith("/superadmin/admin/users") ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
+                                        }`}>
+                                            <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/users" || currentRoute.startsWith("/superadmin/admin/users") ? "bg-[#934790]" : "bg-gray-400"}`}></span>
+                                            <span>Users</span>
+                                        </Link>
+                                    </li>
+                                    )}
                                     <li>
                                         <Link href="/superadmin/admin/roles-permissions" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
                                             currentRoute === "/superadmin/admin/roles-permissions" || currentRoute.startsWith("/superadmin/admin/roles") ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
                                         }`}>
                                             <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/roles-permissions" || currentRoute.startsWith("/superadmin/admin/roles") ? "bg-[#934790]" : "bg-gray-400"}`}></span>
-                                            <span>Users & Permissions</span>
+                                            <span>Roles & Permissions</span>
                                         </Link>
                                     </li>
                                 </ul>

@@ -236,6 +236,12 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
 
     // Admin -> Roles & Permissions Routes
     Route::get('/admin/roles-permissions', [\App\Http\Controllers\RolePermissionController::class, 'index'])->name('superadmin.admin.roles-permissions.index');
+
+    // Admin -> Users Routes
+    Route::get('/admin/users', [SuperAdminController::class, 'adminUsersIndex'])->name('superadmin.admin.users.index');
+    Route::post('/admin/users', [SuperAdminController::class, 'adminUsersStore'])->name('superadmin.admin.users.store');
+    Route::put('/admin/users/{user}', [SuperAdminController::class, 'adminUsersUpdate'])->name('superadmin.admin.users.update');
+    Route::put('/admin/users/{user}/toggle-active', [SuperAdminController::class, 'adminUsersToggleActive'])->name('superadmin.admin.users.toggle-active');
     Route::get('/admin/roles/{roleId}/permissions-manage', [\App\Http\Controllers\RolePermissionController::class, 'managePermissions'])->name('superadmin.admin.roles.permissions.manage');
     Route::get('/admin/roles/{roleId}/permissions', [\App\Http\Controllers\RolePermissionController::class, 'getRolePermissions'])->name('superadmin.admin.roles.permissions');
     Route::post('/admin/roles/{roleId}/permissions', [\App\Http\Controllers\RolePermissionController::class, 'updatePermissions'])->name('superadmin.admin.roles.permissions.update');

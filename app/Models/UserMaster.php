@@ -44,7 +44,7 @@ class UserMaster extends Authenticatable
      */
     public function role(): BelongsTo
     {
-        return $this->belongsTo(Role::class, 'role_id');
+        return $this->belongsTo(RoleMaster::class, 'role_id');
     }
 
     public function getAuthPassword()
