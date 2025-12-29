@@ -1,5 +1,5 @@
 import React from "react"
-import { HorizontalScrollCarousel } from "@/components/ui/HorizontalScrollCarousel"
+// import { HorizontalScrollCarousel } from "@/components/ui/HorizontalScrollCarousel"
 
 const images = [
   "https://images.unsplash.com/photo-1572099606223-6e29045d7de3?q=80&w=1000&auto=format&fit=crop",
@@ -46,13 +46,19 @@ export default function HorizontalScrollCarouselDemo() {
       </section>
 
       {/* Carousel Section */}
-      <HorizontalScrollCarousel 
+      {/* <HorizontalScrollCarousel 
         images={images}
         title="Featured Gallery"
         subtitle="Experience the smooth horizontal scroll effect as you scroll down the page"
         cardWidth={400}
         cardHeight={450}
-      />
+      /> */}
+      <section className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center text-white px-4">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold mb-4">Carousel Component Coming Soon</h2>
+          <p className="text-gray-400">The HorizontalScrollCarousel component is currently being developed.</p>
+        </div>
+      </section>
 
       {/* Footer Section */}
       <section className="min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 flex flex-col items-center justify-center text-white px-4">

@@ -1,5 +1,5 @@
 import { useForm, usePage, Head } from "@inertiajs/react";
-import SuperAdminLayout from "../../../../Layouts/SuperAdmin/Layout";
+import SuperAdminLayout from "../../../Layouts/SuperAdmin/Layout";
 import React from "react";
 import Select from "react-select";
 
