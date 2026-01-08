@@ -41,7 +41,7 @@ Route::get('/mobile', [App\Http\Controllers\ProductController::class, 'mobile'])
 Route::prefix('solutions')->name('solutions.')->group(function () {
     Route::get('/small-teams', [App\Http\Controllers\ProductController::class, 'smallTeams'])->name('smallTeams');
     Route::get('/large-teams', [App\Http\Controllers\ProductController::class, 'largeTeams'])->name('largeTeams');
-    Route::get('/hybrid', [App\Http\Controllers\ProductController::class, 'hybrid'])->name('hybrid');
+    Route::get('/medium-teams', [App\Http\Controllers\ProductController::class, 'mediumTeams'])->name('mediumTeams');
 });
 
 // Explore
@@ -236,6 +236,12 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
 
     // Admin -> Roles & Permissions Routes
     Route::get('/admin/roles-permissions', [\App\Http\Controllers\RolePermissionController::class, 'index'])->name('superadmin.admin.roles-permissions.index');
+
+    // Admin -> Users Routes
+    Route::get('/admin/users', [SuperAdminController::class, 'adminUsersIndex'])->name('superadmin.admin.users.index');
+    Route::post('/admin/users', [SuperAdminController::class, 'adminUsersStore'])->name('superadmin.admin.users.store');
+    Route::put('/admin/users/{user}', [SuperAdminController::class, 'adminUsersUpdate'])->name('superadmin.admin.users.update');
+    Route::put('/admin/users/{user}/toggle-active', [SuperAdminController::class, 'adminUsersToggleActive'])->name('superadmin.admin.users.toggle-active');
     Route::get('/admin/roles/{roleId}/permissions-manage', [\App\Http\Controllers\RolePermissionController::class, 'managePermissions'])->name('superadmin.admin.roles.permissions.manage');
     Route::get('/admin/roles/{roleId}/permissions', [\App\Http\Controllers\RolePermissionController::class, 'getRolePermissions'])->name('superadmin.admin.roles.permissions');
     Route::post('/admin/roles/{roleId}/permissions', [\App\Http\Controllers\RolePermissionController::class, 'updatePermissions'])->name('superadmin.admin.roles.permissions.update');
@@ -339,6 +345,13 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
 });
 // });
 // });
+
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////// --- Mobile API Routes --- ///////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+// Mobile API Routes moved to routes/api.php to avoid CSRF (419 Page Expired)
+// See routes/api.php for the API endpoints under /api/v1/*
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////// --- Product Pages Routes --- ///////////////////////

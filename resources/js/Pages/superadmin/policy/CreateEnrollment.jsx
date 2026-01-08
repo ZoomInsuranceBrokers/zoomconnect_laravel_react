@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Head, useForm, router } from "@inertiajs/react";
 import SuperAdminLayout from "../../../Layouts/SuperAdmin/Layout";
+import { useTheme } from '../../../Context/ThemeContext';
 
 // Family member avatar icons
 const FamilyIcons = {
@@ -87,6 +88,7 @@ const FamilyIcons = {
 };
 
 export default function CreateEnrollment({ companies, messageTemplates }) {
+        const { darkMode } = useTheme();
     const [step, setStep] = useState(1);
     const [previewTemplate, setPreviewTemplate] = useState(null);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -723,7 +725,7 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
         <div className="flex items-center justify-center mb-8">
             {[1, 2, 3, 4, 5, 6].map((stepNum) => (
                 <React.Fragment key={stepNum}>
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                    <div className={`flex items-center justify-center w-8  md:w-8 md:h-8 rounded-full ${
                         step >= stepNum ? 'bg-[#934790] text-white' : 'bg-gray-200 text-gray-600'
                     }`}>
                         {stepNum}
@@ -742,36 +744,32 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
         <SuperAdminLayout>
             <Head title="Create New Enrollment - Policy Management" />
 
-            <div className="p-6">
+            <div className={`p-6 ${darkMode ? 'bg-gray-900 min-h-screen' : ''}`}>
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="text-2xl font-bold text-gray-900 font-montserrat mb-2">
-                            Create New Enrollment
-                        </h1>
-                        <p className="text-gray-600 text-sm">
-                            Configure a new policy enrollment with family definitions and rators
-                        </p>
+                        <h1 className={`text-2xl font-bold font-montserrat mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Create New Enrollment</h1>
+                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Configure a new policy enrollment with family definitions and rators</p>
                     </div>
 
                     {/* Step Indicator */}
                     {renderStepIndicator()}
 
-                    <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-6">
+                    <form onSubmit={handleSubmit} className={`rounded-lg border p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}> 
                         {/* Step 1: Basic Information */}
                         {step === 1 && (
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-900 mb-6">Basic Information</h2>
+                                <h2 className={`text-lg font-semibold mb-6 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Basic Information</h2>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                                             Select Company *
                                         </label>
                                         <select
                                             value={data.cmp_id}
                                             onChange={(e) => setData('cmp_id', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                                             required
                                         >
                                             <option value="">Select Company</option>
@@ -786,14 +784,14 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                                             Enrollment Name *
                                         </label>
                                         <input
                                             type="text"
                                             value={data.enrolment_name}
                                             onChange={(e) => setData('enrolment_name', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900'}`}
                                             placeholder="Enter enrollment name"
                                             required
                                         />
@@ -802,14 +800,14 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                                             Corporate Enrollment Name *
                                         </label>
                                         <input
                                             type="text"
                                             value={data.corporate_enrolment_name}
                                             onChange={(e) => setData('corporate_enrolment_name', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900'}`}
                                             placeholder="Enter corporate enrollment name"
                                             required
                                         />
@@ -818,7 +816,7 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                                             Policy Start Date *
                                         </label>
                                         <input
@@ -827,20 +825,16 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                             onChange={(e) => {
                                                 const startDate = e.target.value;
                                                 setData('policy_start_date', startDate);
-
-                                                // Automatically set end date to 1 year later minus 1 day
                                                 if (startDate) {
                                                     const startDateObj = new Date(startDate);
                                                     const endDateObj = new Date(startDateObj);
                                                     endDateObj.setFullYear(startDateObj.getFullYear() + 1);
-                                                    endDateObj.setDate(endDateObj.getDate() - 1); // Subtract 1 day
-
-                                                    // Format as YYYY-MM-DD for date input
+                                                    endDateObj.setDate(endDateObj.getDate() - 1);
                                                     const endDate = endDateObj.toISOString().split('T')[0];
                                                     setData('policy_end_date', endDate);
                                                 }
                                             }}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                                             required
                                         />
                                         {errors.policy_start_date && <p className="text-red-600 text-sm mt-1">{errors.policy_start_date}</p>}
@@ -848,14 +842,14 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                                             Policy End Date *
                                         </label>
                                         <input
                                             type="date"
                                             value={data.policy_end_date}
                                             onChange={(e) => setData('policy_end_date', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                                             required
                                         />
                                         {errors.policy_end_date && <p className="text-red-600 text-sm mt-1">{errors.policy_end_date}</p>}

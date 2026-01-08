@@ -30,8 +30,8 @@ const navLinks = [
     href: '#solutions',
     dropdownItems: [
       { label: 'Small Teams', href: '/solutions/small-teams', description: 'Flexible plans designed for startups and SMEs' },
+      { label: 'Medium Enterprises', href: '/solutions/medium-teams', description: 'Benefits that work for remote and on-site teams' },
       { label: 'Large Enterprises', href: '/solutions/large-teams', description: 'Scalable solutions for large organizations' },
-      { label: 'Hybrid Workforce', href: '/solutions/hybrid', description: 'Benefits that work for remote and on-site teams' },
     ]
   },
   {

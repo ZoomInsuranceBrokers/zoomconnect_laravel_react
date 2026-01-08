@@ -8,6 +8,7 @@ use App\Models\CompanyEmployee;
 use App\Models\CompanyMaster;
 use App\Models\MessageTemplate;
 use App\Models\UserMaster;
+use App\Models\RoleMaster;
 use App\Models\WellnessService;
 use App\Models\WellnessCategory;
 use App\Models\Vendor;
@@ -212,6 +213,92 @@ class SuperAdminController extends Controller
         return Inertia::render('superadmin/corporate/List', [
             'companies' => $companies,
         ]);
+    }
+
+    /**
+     * Admin Users - list users
+     */
+    public function adminUsersIndex()
+    {
+        $users = UserMaster::where('is_delete', 0)
+            ->with('role')
+            ->orderBy('user_id', 'desc')
+            ->get();
+
+        $roles = RoleMaster::active()->get();
+
+        return Inertia::render('superadmin/admin/users/Index', [
+            'users' => $users,
+            'roles' => $roles,
+        ]);
+    }
+
+    /**
+     * Store a new admin user
+     */
+    public function adminUsersStore(Request $request)
+    {
+        $request->validate([
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:user_master,email',
+            'role_id' => 'required|integer|exists:role_master,role_id',
+            'mobile' => 'nullable|string|max:20',
+        ]);
+
+        $user = UserMaster::create([
+            'full_name' => $request->full_name,
+            'email' => $request->email,
+            'first_name' => $request->first_name ?? null,
+            'last_name' => $request->last_name ?? null,
+            'mobile' => $request->mobile ?? null,
+            'role_id' => $request->role_id,
+            'pwd' => Hash::make('12345678'),
+            'is_active' => 1,
+            'is_delete' => 0,
+            'created_by' => Session::get('superadmin_user_id', 1),
+        ]);
+
+        return redirect()->route('superadmin.admin.users.index')->with('success', 'User created. Default password: 12345678');
+    }
+
+    /**
+     * Update user details
+     */
+    public function adminUsersUpdate(Request $request, $userId)
+    {
+        $user = UserMaster::findOrFail($userId);
+
+        $request->validate([
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:user_master,email,' . $user->user_id . ',user_id',
+            'role_id' => 'required|integer|exists:role_master,role_id',
+            'mobile' => 'nullable|string|max:20',
+        ]);
+
+        $user->update([
+            'full_name' => $request->full_name,
+            'email' => $request->email,
+            'first_name' => $request->first_name ?? $user->first_name,
+            'last_name' => $request->last_name ?? $user->last_name,
+            'mobile' => $request->mobile ?? $user->mobile,
+            'role_id' => $request->role_id,
+            'updated_by' => Session::get('superadmin_user_id', 1),
+        ]);
+
+        return redirect()->route('superadmin.admin.users.index')->with('success', 'User updated successfully.');
+    }
+
+    /**
+     * Toggle user active/inactive (do not delete)
+     */
+    public function adminUsersToggleActive(Request $request, $userId)
+    {
+        $user = UserMaster::findOrFail($userId);
+        $user->is_active = $user->is_active ? 0 : 1;
+        $user->updated_by = Session::get('superadmin_user_id', 1);
+        $user->save();
+
+        return redirect()->route('superadmin.admin.users.index')->with('success', 'User status updated.');
     }
 
     public function corporateCreate()

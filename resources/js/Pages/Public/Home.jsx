@@ -11,66 +11,185 @@ import Footer from "./Layouts/Footer";
 import { FaqSection } from "./Faq";
 
 
-// Auto-advancing image carousel component
-// StickyDiagonalScroll replaces ScrollImageSequence
-const StackedScrollImages = () => {
-    const containerRef = useRef(null);
+// Professional scroll-based image viewer with smooth transitions
 
+// Stacked 3D scroll viewer (non-hijacking): each card occupies a full viewport height so normal
+// vertical scrolling brings each card to the center. We transform cards using translate3d and scale
+// to create a premium 3D stack effect. Uses a scroll listener + rAF to update transforms directly for performance.
+
+const StackedScrollImages = () => {
     const images = [
         "/assets/images/zoomConnectFeatures/HR overview Static-01.png",
-        "/assets/images/zoomConnectFeatures/HR overview Static-02.png",
-        "/assets/images/zoomConnectFeatures/HR overview Static-03.png",
-        "/assets/images/zoomConnectFeatures/HR overview Static-04.png",
+        "/assets/images/zoomConnectFeatures/HR overview Static-01.png",
+        "/assets/images/zoomConnectFeatures/HR overview Static-01.png",
+        "/assets/images/zoomConnectFeatures/HR overview Static-01.png",
     ];
 
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start start", "end end"],
-    });
+    const cardRefs = useRef([]);
+    const containerRef = useRef(null);
+    const stickyRef = useRef(null);
+
+    useEffect(() => {
+        const els = cardRefs.current;
+        if (!els || els.length === 0) return;
+
+        let ticking = false;
+
+        const handle = () => {
+            if (ticking) return;
+            ticking = true;
+
+            window.requestAnimationFrame(() => {
+                const container = containerRef.current;
+                if (!container) {
+                    ticking = false;
+                    return;
+                }
+
+                const vh = window.innerHeight;
+                const viewportCenter = window.scrollY + vh / 2;
+                const containerTop = container.getBoundingClientRect().top + window.scrollY;
+                const sticky = stickyRef.current;
+                if (!sticky) {
+                    ticking = false;
+                    return;
+                }
+
+                // sticky center (page coordinates)
+                const stickyRect = sticky.getBoundingClientRect();
+                const stickyCenterPage = stickyRect.top + window.scrollY + stickyRect.height / 2;
+
+                // If the sticky viewport hasn't reached the page center yet, keep cards stacked and visible (peek)
+                if (viewportCenter < stickyCenterPage) {
+                    els.forEach((el, idx) => {
+                        if (!el) return;
+                        const peekBase = 100;
+                        const peekSpacing = 48;
+                        const stackY = idx === 0 ? 0 : peekBase + (idx - 1) * peekSpacing;
+                        const stackZ = -idx * 40;
+                        const stackScale = 1 - idx * 0.02;
+                        const zIndex = images.length - idx;
+                        el.style.transform = `translate(-50%, -50%) translate3d(0, ${stackY}px, ${stackZ}px) rotateX(0deg) scale(${stackScale})`;
+                        el.style.opacity = '1';
+                        el.style.zIndex = zIndex;
+                        el.style.boxShadow = idx === 0 ? '0 30px 60px rgba(0,0,0,0.18)' : '0 12px 30px rgba(0,0,0,0.12)';
+                        el.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    });
+                    ticking = false;
+                    return;
+                }
+
+                // progress relative to when sticky center meets viewport center
+                let progressRelative = (viewportCenter - stickyCenterPage) / vh; // 0 => first card starts
+                progressRelative = Math.max(0, Math.min(images.length, progressRelative));
+
+                els.forEach((el, idx) => {
+                    if (!el) return;
+                    // card progress after sticky-center reached
+                    const cardProgress = progressRelative - idx; // 0..1 means current card exiting
+                    if (cardProgress > 0 && cardProgress < 1) {
+                        const exitProg = cardProgress;
+                        const rotateX = exitProg * exitProg * 50;
+                        const translateY = -exitProg * 140;
+                        const translateZ = -exitProg * exitProg * 160;
+                        const scale = Math.max(0.6, 1 - exitProg * 0.4);
+                        el.style.transform = `translate(-50%, -50%) translate3d(0, ${translateY}px, ${translateZ}px) rotateX(${rotateX}deg) scale(${scale})`;
+                        el.style.opacity = '1';
+                        el.style.zIndex = 100 + idx;
+                    } else if (cardProgress >= 1) {
+                        el.style.transform = `translate(-50%, -50%) translate3d(0, -200px, -300px) rotateX(60deg) scale(0.5)`;
+                        el.style.opacity = '0';
+                        el.style.zIndex = 100 + idx;
+                    } else {
+                        // waiting cards remain stacked and peek
+                        const peekBase = 100;
+                        const peekSpacing = 48;
+                        const stackY = idx === 0 ? 0 : peekBase + (idx - 1) * peekSpacing;
+                        const stackZ = -idx * 40;
+                        const stackScale = 1 - idx * 0.02;
+                        const zIndex = images.length - idx;
+                        el.style.transform = `translate(-50%, -50%) translate3d(0, ${stackY}px, ${stackZ}px) rotateX(0deg) scale(${stackScale})`;
+                        el.style.opacity = '1';
+                        el.style.zIndex = zIndex;
+                        el.style.boxShadow = idx === 0 ? '0 30px 60px rgba(0,0,0,0.18)' : '0 12px 30px rgba(0,0,0,0.12)';
+                    }
+
+                    el.style.transition = "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+                    el.style.transformStyle = "preserve-3d";
+                    el.style.transformOrigin = "center center";
+                    el.style.willChange = "transform, opacity";
+                });
+
+                ticking = false;
+            });
+        };
+
+        handle(); // initial update
+
+        window.addEventListener("scroll", handle, { passive: true });
+        window.addEventListener("resize", handle);
+
+        return () => {
+            window.removeEventListener("scroll", handle);
+            window.removeEventListener("resize", handle);
+        };
+    }, [images.length]);
+
+    // Set container and sticky heights
+    useEffect(() => {
+        const setHeights = () => {
+            const container = containerRef.current;
+            const sticky = stickyRef.current;
+            if (!container || !sticky) return;
+
+            const h = window.innerHeight * 2;
+            container.style.minHeight = `${h}px`;
+            sticky.style.height = `${window.innerHeight}px`;
+        };
+
+        setHeights();
+        window.addEventListener("resize", setHeights);
+
+        return () => window.removeEventListener("resize", setHeights);
+    }, [images.length]);
 
     return (
-        <section
-            ref={containerRef}
-            className="relative w-full min-h-[300vh] bg-white overflow-hidden flex justify-center"
-        >
-            <div className="sticky top-0 h-screen w-full flex justify-center items-center">
-                <div className="relative w-[600px] max-w-full perspective-1000">
-                    {images.map((src, index) => {
-                        const totalImages = images.length;
-                        const peek = 50; // how much each back image peeks
-
-                        // Start position (stacked with peek)
-                        const startY = index * peek;
-
-                        // End position (move up completely off screen)
-                        const endY = -peek * (totalImages - index);
-
-                        const y = useTransform(scrollYProgress, [0, 1], [startY, endY]);
-                        const rotateX = useTransform(scrollYProgress, [0, 1], [0, -5 * (index + 1)]);
-                        const scale = useTransform(scrollYProgress, [0, 1], [1 - index * 0.05, 1 - index * 0.05 + 0.05]);
-                        const zIndex = totalImages - index;
-
-                        return (
-                            <motion.img
-                                key={index}
-                                src={src}
-                                alt={`Slide ${index + 1}`}
-                                style={{
-                                    y,
-                                    scale,
-                                    rotateX,
-                                    zIndex,
-                                    transformOrigin: "center",
-                                }}
-                                className="absolute w-full object-contain rounded-xl shadow-2xl"
-                            />
-                        );
-                    })}
+        <section ref={containerRef} className="w-full">
+            <div
+                className="max-w-7xl mx-auto px-4 md:px-8 py-20"
+                style={{ perspective: "1200px", transformStyle: "preserve-3d" }}
+            >
+                <h2 className="font-dmserif text-3xl md:text-5xl text-gray-800 text-center mb-6">
+                    Stacked Feature Preview
+                </h2>
+                <p className="text-center text-gray-600 max-w-2xl mx-auto mb-12">
+                    Scroll to move the stack — each card becomes dominant when centered.
+                </p>
+                <div className="relative" style={{ transformStyle: "preserve-3d" }}>
+                    <div
+                        ref={stickyRef}
+                        className="sticky top-0 h-screen flex items-center justify-center"
+                        style={{ transformStyle: "preserve-3d" }}
+                    >
+                        <div className="relative w-full h-full flex items-center justify-center" style={{ perspective: '1200px' }}>
+                            {images.map((src, i) => (
+                                <div
+                                    key={i}
+                                    ref={(el) => (cardRefs.current[i] = el)}
+                                    className="absolute left-1/2 top-1/2 w-full max-w-4xl h-[90vh] rounded-2xl overflow-hidden shadow-2xl bg-white transform -translate-x-1/2 -translate-y-1/2"
+                                    style={{ transformStyle: "preserve-3d", backfaceVisibility: "hidden", willChange: 'transform, opacity' }}
+                                >
+                                    <img src={src} alt={`Stack ${i + 1}`} className="w-full h-full object-cover" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
     );
 };
+
 
 
 gsap.registerPlugin(ScrollTrigger);
@@ -121,8 +240,8 @@ const CertificationCarousel = () => {
                         @keyframes scroll-left {
                             0% {
                                 transform: translateX(0);
-                            }
-                            100% {
+                    const cardRefs = useRef([]);
+                    const outerRef = useRef(null);
                                 transform: translateX(-33.333%);
                             }
                         }
@@ -306,6 +425,7 @@ export default function Home() {
             mm.revert();
         };
     }, []);
+
     // Arc positions for 3 visible avatars
     const arcPositions = [
         { left: '-2px', top: '32px' }, // top
@@ -583,7 +703,7 @@ export default function Home() {
                 </section>
 
                 {/* Testimonials Section */}
-                <section className="w-full pb-16 flex flex-col items-center justify-center ">
+                <section className="w-full pb-16 flex flex-col items-center justify-center pt-12 ">
                     <h2 className="font-dmserif text-2xl md:text-5xl font-medium text-center mb-8 max-w-3xl text-gray-800">What Our Clients Say</h2>
                     <div className="w-[90%] max-w-6xl mx-auto rounded-3xl bg-white-300 flex flex-col md:flex-row items-stretch overflow-hidden" style={{ boxShadow: '0 10px 32px 0 rgba(0,0,0,0.15), 0 1.5px 6px 0 rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)' }}>
                         {/* Left: Semicircle Testimonial List */}

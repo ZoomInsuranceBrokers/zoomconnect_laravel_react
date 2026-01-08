@@ -27,9 +27,9 @@ class ProductController extends Controller
     {
         return Inertia::render('Public/Solutions/LargeTeams');
     }
-    public function hybrid()
+    public function mediumTeams()
     {
-        return Inertia::render('Public/Solutions/Hybrid');
+        return Inertia::render('Public/Solutions/mediumTeams');
     }
     public function resources()
     {

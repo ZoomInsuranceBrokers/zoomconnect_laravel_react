@@ -164,7 +164,7 @@ export default function Contact() {
 					<div className="container mx-auto px-6 md:px-8 grid grid-cols-1 md:grid-cols-12 gap-8 relative z-10">
 						{/* Left Section */}
 						<div className="md:col-span-7 flex flex-col  justify-center">
-							<h1 className="text-4xl md:text-5xl font-semibold font-dmserif text-gray-800 mb-4">Contact <span className="text-[#FF0066]/80">Us</span></h1>
+							<h1 className="text-4xl md:text-5xl font-semibold font-dmserif text-gray-800 mb-4">Contact Us </h1>
 							<p className="text-base text-gray-800 mb-6">Have a query about any of the solutions we provide? Reach out to us anytime — we’re happy to help.</p>
 
 							<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

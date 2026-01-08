@@ -213,12 +213,21 @@ export default function Sidebar({ open = true, onToggle }) {
                     </svg>
                 </button>
             </div>
+            <style>{`
+                .sidebar-no-scroll::-webkit-scrollbar {
+                    display: none;
+                }
+                .sidebar-no-scroll {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
             <aside
                 className={`${sidebarBase} ${sidebarMobile} ${
                     darkMode
                         ? "bg-gray-900 text-white"
                         : "bg-[#F5F6FF] text-black"
-                } overflow-y-auto`} 
+                } overflow-y-auto sidebar-no-scroll`} 
                 style={{ minHeight: "100vh", maxHeight: "100vh" }}
             >
                 {/* Logo */}
@@ -1036,12 +1045,22 @@ export default function Sidebar({ open = true, onToggle }) {
                                             <span>Surveys</span>
                                         </Link>
                                     </li>
+                                    {hasHref("/superadmin/admin/users") && (
+                                    <li>
+                                        <Link href="/superadmin/admin/users" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
+                                            currentRoute === "/superadmin/admin/users" || currentRoute.startsWith("/superadmin/admin/users") ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
+                                        }`}>
+                                            <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/users" || currentRoute.startsWith("/superadmin/admin/users") ? "bg-[#934790]" : "bg-gray-400"}`}></span>
+                                            <span>Users</span>
+                                        </Link>
+                                    </li>
+                                    )}
                                     <li>
                                         <Link href="/superadmin/admin/roles-permissions" className={`flex items-center gap-3 px-7 py-2 font-montserrat font-medium text-[12px] transition-colors duration-200 ${
                                             currentRoute === "/superadmin/admin/roles-permissions" || currentRoute.startsWith("/superadmin/admin/roles") ? "text-[#934790]" : `hover:text-[#934790] ${darkMode ? "text-gray-300" : "text-gray-600"}`
                                         }`}>
                                             <span className={`w-2 h-2 rounded-full ${currentRoute === "/superadmin/admin/roles-permissions" || currentRoute.startsWith("/superadmin/admin/roles") ? "bg-[#934790]" : "bg-gray-400"}`}></span>
-                                            <span>Users & Permissions</span>
+                                            <span>Roles & Permissions</span>
                                         </Link>
                                     </li>
                                 </ul>

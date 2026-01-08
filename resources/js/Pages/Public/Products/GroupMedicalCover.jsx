@@ -401,12 +401,11 @@ export default function GroupMedicalCover() {
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
                         {/* Section Header */}
                         <div className="text-center mb-20">
-
-                            <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-6">
-                                How It <span className="bg-gradient-to-r from-[#FF0066] to-[#934790] text-transparent bg-clip-text">Works</span>
+                            <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-6 drop-shadow-lg">
+                                How We Simplify Group Medical Coverage
                             </h2>
-                            <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto">
-                                Get your entire team covered in four seamless steps
+                            <p className="text-gray-800 text-sm md:text-base max-w-2xl mx-auto">
+                                Protect your team effortlessly—just four simple steps to complete coverage!
                             </p>
                         </div>
 
