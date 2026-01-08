@@ -1223,20 +1223,49 @@ class SuperAdminController extends Controller
 
     public function downloadBulkActionFile($actionId, $type)
     {
-        $action = \App\Models\BulkEmployeeAction::findOrFail($actionId);
+        // Try BulkEmployeeAction first
+        $action = \App\Models\BulkEmployeeAction::find($actionId);
+        if (!$action) {
+            // If not found, try BulkEndorsementAction
+            $action = \App\Models\BulkEndorsementAction::findOrFail($actionId);
+        }
 
+        // For endorsement, prefer public URL if available
+        if ($action instanceof \App\Models\BulkEndorsementAction) {
+            $url = match ($type) {
+                'inserted' => $action->inserted_data_url ?? null,
+                'failed' => $action->not_inserted_data_url ?? null,
+                'uploaded' => $action->uploaded_file ? asset('storage/' . $action->uploaded_file) : null,
+                default => null
+            };
+            if ($url) {
+                // Redirect to the public URL (direct file link)
+                return redirect($url);
+            }
+            // Fallback to file path if URL not set
+            $filePath = match ($type) {
+                'uploaded' => $action->uploaded_file,
+                'inserted' => $action->inserted_data_file,
+                'failed' => $action->not_inserted_data_file,
+                default => null
+            };
+            if (!$filePath || !\Storage::disk('public')->exists($filePath)) {
+                abort(404, 'File not found');
+            }
+            return \Storage::disk('public')->download($filePath);
+        }
+
+        // For employee bulk, use file path as before
         $filePath = match ($type) {
             'uploaded' => $action->uploaded_file,
             'inserted' => $action->inserted_data_file,
             'failed' => $action->not_inserted_data_file,
             default => null
         };
-
-        if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+        if (!$filePath || !\Storage::disk('public')->exists($filePath)) {
             abort(404, 'File not found');
         }
-
-        return Storage::disk('public')->download($filePath);
+        return \Storage::disk('public')->download($filePath);
     }
 
     public function getEmployeePolicies($employeeId)
@@ -4741,6 +4770,7 @@ class SuperAdminController extends Controller
         }
 
         $endorsements = $query->orderBy('status', 'desc')->orderBy('endorsement_date', 'desc')->paginate(10)->withQueryString();
+        // dd($endorsements);
 
         return Inertia::render('superadmin/policy/Policies/PolicyEndorsements', [
             'policy' => $policy,
@@ -4846,9 +4876,9 @@ class SuperAdminController extends Controller
             abort(404);
         }
 
-
-        // Determine tpa_table_name
+        // Determine tpa_table_name and uhid
         $tpa_table_name = '';
+        $uhid = '';
         if (isset($policy->is_old) && $policy->is_old == 0) {
             // Get tpa_id from policy, then fetch tpa_table_name from tpa_master
             $tpa_id = $policy->tpa_id ?? null;
@@ -4857,11 +4887,64 @@ class SuperAdminController extends Controller
                 if ($tpa && isset($tpa->tpa_table_name)) {
                     $tpa_table_name = $tpa->tpa_table_name;
                 }
+                // Set uhid based on tpa_id
+                switch ($tpa_id) {
+                    case 60:
+                        $uhid = 'demo_id';
+                        break;
+                    case 61:
+                        $uhid = 'star_id';
+                        break;
+                    case 62:
+                        $uhid = 'phs_id';
+                        break;
+                    case 63:
+                        $uhid = 'icici_id';
+                        break;
+                    case 64:
+                        $uhid = 'go_digit_id';
+                        break;
+                    case 65:
+                        $uhid = 'vidal_id';
+                        break;
+                    case 66:
+                        $uhid = 'fhpl_id';
+                        break;
+                    case 67:
+                        $uhid = 'mediassist_id';
+                        break;
+                    case 68:
+                        $uhid = 'safeway_id';
+                        break;
+                    case 69:
+                        $uhid = 'care_id';
+                        break;
+                    case 70:
+                        $uhid = 'health_india_id';
+                        break;
+                    case 71:
+                        $uhid = 'ewa_id';
+                        break;
+                    case 72:
+                        $uhid = 'sbi_id';
+                        break;
+                    case 73:
+                        $uhid = 'ericson_id';
+                        break;
+                    case 75:
+                        $uhid = 'ab_id';
+                        break;
+                    default:
+                        $uhid = '';
+                        break;
+                }
             }
         } elseif (isset($policy->is_old) && $policy->is_old == 2) {
             $tpa_table_name = 'endorsement_data';
+            $uhid = 'uhid';
         } else {
             $tpa_table_name = $policy->tpa_table_name ?? '';
+            $uhid = '';
         }
 
         $additionMembers = [];
@@ -4870,31 +4953,31 @@ class SuperAdminController extends Controller
             try {
 
                 $additionMembers = \DB::select("
-                    SELECT ce.employees_code, ce.email, ce.full_name, tpa.*
-                    FROM {$tpa_table_name} tpa
-                    INNER JOIN policy_mapping_master pmm ON tpa.mapping_id = pmm.id
-                    INNER JOIN company_employees ce ON ce.id = tpa.emp_id
-                    WHERE pmm.policy_id = ?
-                        AND pmm.cmp_id = ?
-                        AND pmm.status = 1
-                        AND tpa.addition_endorsement_id = ?
-                        AND tpa.updation_endorsement_id IS NULL
-                    ORDER BY tpa.id DESC
-                ", [$policy->id, $endorsement->cmp_id, $endorsement->id]);
+                        SELECT ce.employees_code, ce.email, ce.full_name, tpa.*, tpa.{$uhid} as uhid
+                        FROM {$tpa_table_name} tpa
+                        INNER JOIN policy_mapping_master pmm ON tpa.mapping_id = pmm.id
+                        INNER JOIN company_employees ce ON ce.id = tpa.emp_id
+                        WHERE pmm.policy_id = ?
+                            AND pmm.cmp_id = ?
+                            AND pmm.status = 1
+                            AND tpa.addition_endorsement_id = ?
+                            AND tpa.updation_endorsement_id IS NULL
+                        ORDER BY tpa.id DESC
+                    ", [$policy->id, $endorsement->cmp_id, $endorsement->id]);
 
                 $deletionMembers = \DB::select("
-                    SELECT ce.employees_code, ce.email, ce.full_name, tpa.*
-                    FROM {$tpa_table_name} tpa
-                    INNER JOIN policy_mapping_master pmm ON tpa.mapping_id = pmm.id
-                    INNER JOIN company_employees ce ON ce.id = tpa.emp_id
-                    WHERE pmm.policy_id = ?
-                        AND pmm.cmp_id = ?
-                        AND pmm.status = 1
-                        AND tpa.deletion_endorsement_id = ?
-                        AND tpa.addition_endorsement_id != 0
-                        AND tpa.updated_entry_id IS NULL
-                    ORDER BY tpa.id DESC
-                ", [$policy->id, $endorsement->cmp_id, $endorsement->id]);
+                        SELECT ce.employees_code, ce.email, ce.full_name, tpa.*, tpa.{$uhid} as uhid
+                        FROM {$tpa_table_name} tpa
+                        INNER JOIN policy_mapping_master pmm ON tpa.mapping_id = pmm.id
+                        INNER JOIN company_employees ce ON ce.id = tpa.emp_id
+                        WHERE pmm.policy_id = ?
+                            AND pmm.cmp_id = ?
+                            AND pmm.status = 1
+                            AND tpa.deletion_endorsement_id = ?
+                            AND tpa.addition_endorsement_id != 0
+                            AND tpa.updated_entry_id IS NULL
+                        ORDER BY tpa.id DESC
+                    ", [$policy->id, $endorsement->cmp_id, $endorsement->id]);
             } catch (\Exception $e) {
                 // Log error if needed
             }
@@ -4990,6 +5073,709 @@ class SuperAdminController extends Controller
             'filters' => $request->only(['corporate_id', 'search']),
         ]);
     }
+
+    // ================= POLICY ENDORSEMENT BULK MEMBER ADDITION/REMOVAL =================
+    public function bulkMemberAdditionEndorsement($endorsementId)
+    {
+        $endorsement = \App\Models\PolicyEndorsement::findOrFail($endorsementId);
+        return \Inertia\Inertia::render('superadmin/policy/endorsement/BulkUploadEndorsementMember', [
+            'endorsement' => $endorsement,
+            'action_type' => 'bulk_add',
+        ]);
+    }
+
+    public function bulkMemberDeletionEndorsement($endorsementId)
+    {
+        $endorsement = \App\Models\PolicyEndorsement::findOrFail($endorsementId);
+        return \Inertia\Inertia::render('superadmin/policy/endorsement/BulkUploadEndorsementMember', [
+            'endorsement' => $endorsement,
+            'action_type' => 'bulk_remove',
+        ]);
+    }
+
+    public function downloadSampleCsvEndorsement($endorsementId, $type)
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="Sample_Endorsement_Member_' . ($type === 'add' ? 'Addition' : 'Deletion') . '.csv"',
+        ];
+
+
+        // Determine correct UHID column name
+        $endorsement = \App\Models\PolicyEndorsement::findOrFail($endorsementId);
+        $policy = \App\Models\PolicyMaster::findOrFail($endorsement->policy_id);
+        $uhid = 'UHID';
+        if (isset($policy->is_old) && $policy->is_old == 0) {
+            $tpa_id = $policy->tpa_id ?? null;
+            if ($tpa_id) {
+                switch ($tpa_id) {
+                    case 60:
+                        $uhid = 'demo_id';
+                        break;
+                    case 61:
+                        $uhid = 'star_id';
+                        break;
+                    case 62:
+                        $uhid = 'phs_id';
+                        break;
+                    case 63:
+                        $uhid = 'icici_id';
+                        break;
+                    case 64:
+                        $uhid = 'go_digit_id';
+                        break;
+                    case 65:
+                        $uhid = 'vidal_id';
+                        break;
+                    case 66:
+                        $uhid = 'fhpl_id';
+                        break;
+                    case 67:
+                        $uhid = 'mediassist_id';
+                        break;
+                    case 68:
+                        $uhid = 'safeway_id';
+                        break;
+                    case 69:
+                        $uhid = 'care_id';
+                        break;
+                    case 70:
+                        $uhid = 'health_india_id';
+                        break;
+                    case 71:
+                        $uhid = 'ewa_id';
+                        break;
+                    case 72:
+                        $uhid = 'sbi_id';
+                        break;
+                    case 73:
+                        $uhid = 'ericson_id';
+                        break;
+                    case 75:
+                        $uhid = 'ab_id';
+                        break;
+                    default:
+                        $uhid = '';
+                        break;
+                }
+            }
+        } elseif (isset($policy->is_old) && $policy->is_old == 2) {
+            $uhid = 'uhid';
+        }
+
+        if ($type === 'add') {
+            $columns = [
+                'S.No',
+                $uhid ?: 'UHID',
+                'Employee Code',
+                'Insured Name',
+                'Gender',
+                'Relation',
+                'D.O.B(dd-mm-yyyy)',
+                'Date Of Joining(dd-mm-yyyy)',
+                'Base Sum Insured',
+                'Base Premium On Company',
+                'Base Premium On Employee',
+                'Topup Sum Insured',
+                'Topup Premium On Company',
+                'Topup Premium On Employee',
+                'Parent Sum Insured',
+                'Parent Premium On Company',
+                'Parent Premium On Employee',
+                'Parent-In-Law Sum Insured',
+                'Parent-In-Law Premium On Company',
+                'Parent-In-Law Premium On Employee',
+            ];
+            $sample = [
+                [
+                    '1',
+                    'PHS001',
+                    'EMP001',
+                    'John Doe',
+                    'MALE',
+                    'Self',
+                    '01/01/1990',
+                    '01/01/2020',
+                    '500000',
+                    '10000',
+                    '2000',
+                    '200000',
+                    '4000',
+                    '1000',
+                    '300000',
+                    '6000',
+                    '1500',
+                    '250000',
+                    '5000',
+                    '1200',
+                ],
+                [
+                    '2',
+                    'PHS002',
+                    'EMP002',
+                    'Jane Smith',
+                    'FEMALE',
+                    'Spouse',
+                    '02/02/1992',
+                    '15/03/2021',
+                    '400000',
+                    '8000',
+                    '1500',
+                    '150000',
+                    '3000',
+                    '800',
+                    '200000',
+                    '4000',
+                    '1000',
+                    '150000',
+                    '3000',
+                    '700',
+                ],
+            ];
+        } else {
+            $columns = [
+                'S.No',
+                'Employee Code',
+                'Insured Name',
+                'Relation',
+                'Date Of Leaving(dd-mm-yyyy)',
+                'Refund Base Premium On Company',
+                'Refund Base Premium On Employee',
+                'Refund Topup Premium On Company',
+                'Refund Topup Premium On Employee',
+                'Refund Parent Premium On Company',
+                'Refund Parent Premium On Employee',
+                'Refund Parent-In-Law Premium On Company',
+                'Refund Parent-In-Law Premium On Employee',
+            ];
+            $sample = [
+                [
+                    '1',
+                    'EMP001',
+                    'John Doe',
+                    'Self',
+                    '31-12-2025',
+                    '1000',
+                    '200',
+                    '300',
+                    '50',
+                    '400',
+                    '80',
+                    '500',
+                    '100',
+                ],
+                [
+                    '2',
+                    'EMP002',
+                    'Jane Smith',
+                    'Spouse',
+                    '31-12-2025',
+                    '900',
+                    '180',
+                    '250',
+                    '40',
+                    '350',
+                    '70',
+                    '450',
+                    '90',
+                ],
+            ];
+        }
+
+        $callback = function () use ($columns, $sample) {
+            $file = fopen('php://output', 'w');
+            if ($file === false) return;
+            fputcsv($file, $columns);
+            foreach ($sample as $row) {
+                fputcsv($file, $row);
+            }
+            fflush($file);
+            fclose($file);
+        };
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function uploadBulkCsvEndorsement(\Illuminate\Http\Request $request, $endorsementId)
+    {
+        // Validate and preview CSV for endorsement member addition/removal
+        $endorsement = \App\Models\PolicyEndorsement::findOrFail($endorsementId);
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240',
+            'action_type' => 'required|in:bulk_add,bulk_remove'
+        ]);
+
+        $file = $request->file('csv_file');
+        $actionType = $request->input('action_type');
+        $csv = array_map('str_getcsv', file($file->getRealPath()));
+        $headers = array_shift($csv);
+
+
+        // Determine correct UHID column name
+        $policy = \App\Models\PolicyMaster::findOrFail($endorsement->policy_id);
+        $uhid = 'UHID';
+        if (isset($policy->is_old) && $policy->is_old == 0) {
+            $tpa_id = $policy->tpa_id ?? null;
+            if ($tpa_id) {
+                switch ($tpa_id) {
+                    case 60:
+                        $uhid = 'demo_id';
+                        break;
+                    case 61:
+                        $uhid = 'star_id';
+                        break;
+                    case 62:
+                        $uhid = 'phs_id';
+                        break;
+                    case 63:
+                        $uhid = 'icici_id';
+                        break;
+                    case 64:
+                        $uhid = 'go_digit_id';
+                        break;
+                    case 65:
+                        $uhid = 'vidal_id';
+                        break;
+                    case 66:
+                        $uhid = 'fhpl_id';
+                        break;
+                    case 67:
+                        $uhid = 'mediassist_id';
+                        break;
+                    case 68:
+                        $uhid = 'safeway_id';
+                        break;
+                    case 69:
+                        $uhid = 'care_id';
+                        break;
+                    case 70:
+                        $uhid = 'health_india_id';
+                        break;
+                    case 71:
+                        $uhid = 'ewa_id';
+                        break;
+                    case 72:
+                        $uhid = 'sbi_id';
+                        break;
+                    case 73:
+                        $uhid = 'ericson_id';
+                        break;
+                    case 75:
+                        $uhid = 'ab_id';
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } elseif (isset($policy->is_old) && $policy->is_old == 2) {
+            $uhid = 'uhid';
+        }
+
+        if ($actionType === 'bulk_add') {
+            $requiredHeaders = [
+                'S.No',
+                $uhid ?: 'UHID',
+                'Employee Code',
+                'Insured Name',
+                'Gender',
+                'Relation',
+                'D.O.B(dd-mm-yyyy)',
+                'Date Of Joining(dd-mm-yyyy)',
+                'Base Sum Insured',
+                'Base Premium On Company',
+                'Base Premium On Employee',
+                'Topup Sum Insured',
+                'Topup Premium On Company',
+                'Topup Premium On Employee',
+                'Parent Sum Insured',
+                'Parent Premium On Company',
+                'Parent Premium On Employee',
+                'Parent-In-Law Sum Insured',
+                'Parent-In-Law Premium On Company',
+                'Parent-In-Law Premium On Employee',
+            ];
+        } else {
+            $requiredHeaders = [
+                'S.No',
+                'Employee Code',
+                'Insured Name',
+                'Relation',
+                'Date Of Leaving(dd-mm-yyyy)',
+                'Refund Base Premium On Company',
+                'Refund Base Premium On Employee',
+                'Refund Topup Premium On Company',
+                'Refund Topup Premium On Employee',
+                'Refund Parent Premium On Company',
+                'Refund Parent Premium On Employee',
+                'Refund Parent-In-Law Premium On Company',
+                'Refund Parent-In-Law Premium On Employee',
+            ];
+        }
+
+        foreach ($requiredHeaders as $requiredHeader) {
+            if (!in_array($requiredHeader, $headers)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Missing required column: {$requiredHeader}"
+                ], 422);
+            }
+        }
+
+        $validRows = [];
+        $invalidRows = [];
+        $rowNumber = 2;
+        foreach ($csv as $row) {
+            if (count($row) !== count($headers)) {
+                continue;
+            }
+            $member = array_combine($headers, $row);
+            if ($actionType === 'bulk_add') {
+                $validation = $this->validateBulkAddEndorsementMember($member, $endorsement, $rowNumber);
+            } else {
+                $validation = $this->validateBulkRemoveEndorsementMember($member, $endorsement, $rowNumber);
+            }
+            if ($validation['valid']) {
+                $validRows[] = $member;
+            } else {
+                $member['_error'] = $validation['message'];
+                $invalidRows[] = $member;
+            }
+            $rowNumber++;
+        }
+        $uploadedFilePath = $file->store('bulk_uploads', 'public');
+        return response()->json([
+            'success' => true,
+            'preview' => [
+                'total' => count($csv),
+                'valid' => count($validRows),
+                'invalid' => count($invalidRows),
+                'valid_rows' => array_slice($validRows, 0, 10),
+                'invalid_rows' => $invalidRows,
+                'uploaded_file_path' => $uploadedFilePath,
+                'headers' => $headers,
+            ]
+        ]);
+    }
+
+    private function validateBulkAddEndorsementMember($member, $endorsement, $rowNumber)
+    {
+        // Determine correct UHID column name
+        $policy = $endorsement->policy ?? \App\Models\PolicyMaster::find($endorsement->policy_id);
+        $uhid = 'UHID';
+        if (isset($policy->is_old) && $policy->is_old == 0) {
+            $tpa_id = $policy->tpa_id ?? null;
+            if ($tpa_id) {
+                switch ($tpa_id) {
+                    case 60:
+                        $uhid = 'demo_id';
+                        break;
+                    case 61:
+                        $uhid = 'star_id';
+                        break;
+                    case 62:
+                        $uhid = 'phs_id';
+                        break;
+                    case 63:
+                        $uhid = 'icici_id';
+                        break;
+                    case 64:
+                        $uhid = 'go_digit_id';
+                        break;
+                    case 65:
+                        $uhid = 'vidal_id';
+                        break;
+                    case 66:
+                        $uhid = 'fhpl_id';
+                        break;
+                    case 67:
+                        $uhid = 'mediassist_id';
+                        break;
+                    case 68:
+                        $uhid = 'safeway_id';
+                        break;
+                    case 69:
+                        $uhid = 'care_id';
+                        break;
+                    case 70:
+                        $uhid = 'health_india_id';
+                        break;
+                    case 71:
+                        $uhid = 'ewa_id';
+                        break;
+                    case 72:
+                        $uhid = 'sbi_id';
+                        break;
+                    case 73:
+                        $uhid = 'ericson_id';
+                        break;
+                    case 75:
+                        $uhid = 'ab_id';
+                        break;
+                    default:
+                        $uhid = '';
+                        break;
+                }
+            }
+        } elseif (isset($policy->is_old) && $policy->is_old == 2) {
+            $uhid = 'uhid';
+        }
+        $requiredFields = [
+            'S.No',
+            $uhid ?: 'UHID',
+            'Employee Code',
+            'Insured Name',
+            'Gender',
+            'Relation',
+            'D.O.B(dd-mm-yyyy)',
+            'Date Of Joining(dd-mm-yyyy)',
+            'Base Sum Insured',
+            'Base Premium On Company',
+            'Base Premium On Employee',
+            'Topup Sum Insured',
+            'Topup Premium On Company',
+            'Topup Premium On Employee',
+            'Parent Sum Insured',
+            'Parent Premium On Company',
+            'Parent Premium On Employee',
+            'Parent-In-Law Sum Insured',
+            'Parent-In-Law Premium On Company',
+            'Parent-In-Law Premium On Employee',
+        ];
+        foreach ($requiredFields as $field) {
+            if (!isset($member[$field]) || $member[$field] === '') {
+                return ['valid' => false, 'message' => "Row {$rowNumber}: {$field} is missing"];
+            }
+        }
+        $gender = strtoupper($member['Gender']);
+        if (!in_array($gender, ['MALE', 'FEMALE', 'OTHER'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Gender must be MALE, FEMALE, or OTHER"];
+        }
+        // Optionally: add more specific validations for date, numeric, etc.
+        return ['valid' => true];
+    }
+
+    private function validateBulkRemoveEndorsementMember($member, $endorsement, $rowNumber)
+    {
+        // Only require the new deletion columns, do not require Gender or Email
+        $requiredFields = [
+            'S.No',
+            'Employee Code',
+            'Insured Name',
+            'Relation',
+            'Date Of Leaving(dd-mm-yyyy)',
+            'Refund Base Premium On Company',
+            'Refund Base Premium On Employee',
+            'Refund Topup Premium On Company',
+            'Refund Topup Premium On Employee',
+            'Refund Parent Premium On Company',
+            'Refund Parent Premium On Employee',
+            'Refund Parent-In-Law Premium On Company',
+            'Refund Parent-In-Law Premium On Employee',
+        ];
+        $missing = [];
+        foreach ($requiredFields as $field) {
+            if (!isset($member[$field]) || $member[$field] === '') {
+                $missing[] = $field;
+            }
+        }
+        if (count($missing) > 0) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: Missing fields: " . implode(', ', $missing)];
+        }
+        return ['valid' => true];
+    }
+
+    public function processBulkActionEndorsement(\Illuminate\Http\Request $request, $endorsementId)
+    {
+        $request->validate([
+            'uploaded_file_path' => 'required|string',
+            'action_type' => 'required|in:bulk_add,bulk_remove',
+        ]);
+
+        $endorsement = \App\Models\PolicyEndorsement::findOrFail($endorsementId);
+        $policy = \App\Models\PolicyMaster::findOrFail($endorsement->policy_id);
+        $userId = auth()->user()->user_id ?? 1;
+
+        // Determine tpa_table_name (reuse logic from showPolicyEndorsement)
+        $tpa_table_name = '';
+        if (isset($policy->is_old) && $policy->is_old == 0) {
+            $tpa_id = $policy->tpa_id ?? null;
+            if ($tpa_id) {
+                $tpa = \DB::table('tpa_master')->where('id', $tpa_id)->first();
+                if ($tpa && isset($tpa->tpa_table_name)) {
+                    $tpa_table_name = $tpa->tpa_table_name;
+                }
+            }
+        } elseif (isset($policy->is_old) && $policy->is_old == 2) {
+            $tpa_table_name = 'endorsement_data';
+        } else {
+            $tpa_table_name = $policy->tpa_table_name ?? '';
+        }
+
+        $bulkAction = \App\Models\BulkEndorsementAction::create([
+            'endorsement_id' => $endorsementId,
+            'action_type' => $request->input('action_type'),
+            'uploaded_file' => $request->input('uploaded_file_path'),
+            'status' => 'pending',
+            'created_by' => $userId,
+        ]);
+
+        // Bulk insert logic for bulk_add
+        if ($request->input('action_type') === 'bulk_add' && $tpa_table_name) {
+            $filePath = storage_path('app/public/' . $request->input('uploaded_file_path'));
+            if (file_exists($filePath)) {
+                $csv = array_map('str_getcsv', file($filePath));
+                $headers = array_map('trim', array_shift($csv));
+                // Determine correct UHID column name
+                $uhid = 'UHID';
+                if (isset($policy->is_old) && $policy->is_old == 0) {
+                    $tpa_id = $policy->tpa_id ?? null;
+                    if ($tpa_id) {
+                        switch ($tpa_id) {
+                            case 60:
+                                $uhid = 'demo_id';
+                                break;
+                            case 61:
+                                $uhid = 'star_id';
+                                break;
+                            case 62:
+                                $uhid = 'phs_id';
+                                break;
+                            case 63:
+                                $uhid = 'icici_id';
+                                break;
+                            case 64:
+                                $uhid = 'go_digit_id';
+                                break;
+                            case 65:
+                                $uhid = 'vidal_id';
+                                break;
+                            case 66:
+                                $uhid = 'fhpl_id';
+                                break;
+                            case 67:
+                                $uhid = 'mediassist_id';
+                                break;
+                            case 68:
+                                $uhid = 'safeway_id';
+                                break;
+                            case 69:
+                                $uhid = 'care_id';
+                                break;
+                            case 70:
+                                $uhid = 'health_india_id';
+                                break;
+                            case 71:
+                                $uhid = 'ewa_id';
+                                break;
+                            case 72:
+                                $uhid = 'sbi_id';
+                                break;
+                            case 73:
+                                $uhid = 'ericson_id';
+                                break;
+                            case 75:
+                                $uhid = 'ab_id';
+                                break;
+                            default:
+                                $uhid = '';
+                                break;
+                        }
+                    }
+                } elseif (isset($policy->is_old) && $policy->is_old == 2) {
+                    $uhid = 'uhid';
+                }
+                $requiredHeaders = [
+                    'S.No',
+                    $uhid ?: 'UHID',
+                    'Employee Code',
+                    'Insured Name',
+                    'Gender',
+                    'Relation',
+                    'D.O.B(dd-mm-yyyy)',
+                    'Date Of Joining(dd-mm-yyyy)',
+                    'Base Sum Insured',
+                    'Base Premium On Company',
+                    'Base Premium On Employee',
+                    'Topup Sum Insured',
+                    'Topup Premium On Company',
+                    'Topup Premium On Employee',
+                    'Parent Sum Insured',
+                    'Parent Premium On Company',
+                    'Parent Premium On Employee',
+                    'Parent-In-Law Sum Insured',
+                    'Parent-In-Law Premium On Company',
+                    'Parent-In-Law Premium On Employee',
+                ];
+                $inserted = 0;
+                foreach ($csv as $row) {
+                    if (count($row) !== count($headers)) continue;
+                    $member = array_combine($headers, $row);
+                    // Basic validation (skip if any required field missing)
+                    $skip = false;
+                    foreach ($requiredHeaders as $field) {
+                        if (!isset($member[$field]) || $member[$field] === '') {
+                            $skip = true;
+                            break;
+                        }
+                    }
+                    if ($skip) continue;
+                    // Prepare insert data (map CSV columns to DB columns)
+                    $insertData = [
+                        'uhid' => $member[$uhid ?: 'UHID'],
+                        'employees_code' => $member['Employee Code'],
+                        'insured_name' => $member['Insured Name'],
+                        'gender' => $member['Gender'],
+                        'relation' => $member['Relation'],
+                        'dob' => date('Y-m-d', strtotime(str_replace('/', '-', $member['D.O.B(dd-mm-yyyy)']))),
+                        'date_of_joining' => date('Y-m-d', strtotime(str_replace('/', '-', $member['Date Of Joining(dd-mm-yyyy)']))),
+                        'base_sum_insured' => $member['Base Sum Insured'],
+                        'base_premium_on_company' => $member['Base Premium On Company'],
+                        'base_premium_on_employee' => $member['Base Premium On Employee'],
+                        'topup_sum_insured' => $member['Topup Sum Insured'],
+                        'topup_premium_on_company' => $member['Topup Premium On Company'],
+                        'topup_premium_on_employee' => $member['Topup Premium On Employee'],
+                        'parent_sum_insured' => $member['Parent Sum Insured'],
+                        'parent_premium_on_company' => $member['Parent Premium On Company'],
+                        'parent_premium_on_employee' => $member['Parent Premium On Employee'],
+                        'parent_in_law_sum_insured' => $member['Parent-In-Law Sum Insured'],
+                        'parent_in_law_premium_on_company' => $member['Parent-In-Law Premium On Company'],
+                        'parent_in_law_premium_on_employee' => $member['Parent-In-Law Premium On Employee'],
+                        'addition_endorsement_id' => $endorsementId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                    try {
+                        \DB::table($tpa_table_name)->insert($insertData);
+                        $inserted++;
+                    } catch (\Exception $e) {
+                        // Optionally log or collect failed rows
+                        continue;
+                    }
+                }
+            }
+        }
+
+        // Dispatch job to process in background (if needed for further processing)
+        \App\Jobs\ProcessBulkEndorsementJob::dispatch($bulkAction);
+
+        return redirect()->route('superadmin.policy.endorsements.bulk-actions', $endorsementId)
+            ->with('message', 'Bulk action submitted successfully! Processing in background.')
+            ->with('messageType', 'success');
+    }
+
+    public function bulkActionsEndorsement($endorsementId)
+    {
+        $endorsement = \App\Models\PolicyEndorsement::findOrFail($endorsementId);
+        $actions = \App\Models\BulkEndorsementAction::where('endorsement_id', $endorsementId)
+            ->with(['creator'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return \Inertia\Inertia::render('superadmin/policy/endorsement/BulkEndorsementActions', [
+            'endorsement' => $endorsement,
+            'actions' => $actions,
+        ]);
+    }
+
+
 
     /**
      * Create Policy Form
@@ -5453,6 +6239,7 @@ class SuperAdminController extends Controller
                 return back()->withErrors(['policy_features' => 'At least one inclusion or exclusion is required.'])->withInput();
             }
 
+
             // Validate courier fields when paper-based
             if (isset($validated['is_paperless']) && $validated['is_paperless'] == 0) {
                 $request->validate([
@@ -5839,7 +6626,7 @@ class SuperAdminController extends Controller
     }
 
 
- /**
+    /**
      * CD Accounts Index
      */
     public function cdAccountsIndex()
