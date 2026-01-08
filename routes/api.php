@@ -27,5 +27,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/employee-policies', [App\Http\Controllers\ApiController::class, 'getEmployeePolicies'])->name('api.employee.policies');
         Route::post('/logout', [App\Http\Controllers\ApiController::class, 'logout'])->name('api.logout');
         Route::post('/verify-token', [App\Http\Controllers\ApiController::class, 'verifyToken'])->name('api.verify.token');
+        // Policy details (uses JWT middleware to identify employee)
+        Route::get('/policy-details/{policy}', [App\Http\Controllers\Api\PolicyDetailsController::class, 'show'])->name('api.policy.details');
     });
 });

@@ -23,12 +23,15 @@ import PremiumSummary from './PremiumSummary';
 
 export default function Step2ChoosePlans({
   employee,
+  enrollmentDetail,
   availablePlans,
   formData,
   updateFormData,
   onNext,
   onPrevious,
 }) {
+  // Note: debug logging referencing `selection` is placed later,
+  // after `selection` is declared to avoid TDZ (temporal dead zone) errors.
   // read dependents from formData only
   const [dependents, setDependents] = useState(formData?.dependents && formData.dependents.length ? formData.dependents : []);
 
@@ -87,6 +90,35 @@ export default function Step2ChoosePlans({
   });
 
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line no-console
+      console.log('📊 Step2ChoosePlans - employee:', employee);
+      // eslint-disable-next-line no-console
+      console.log('📊 Step2ChoosePlans - enrollmentDetail:', enrollmentDetail);
+      // eslint-disable-next-line no-console
+      console.log('📊 Step2ChoosePlans - selection.premiumCalculations:', selection?.premiumCalculations);
+      
+      // Calculate and log proration info
+      if (employee?.date_of_joining && enrollmentDetail?.policy_start_date) {
+        const prorationInfo = calculateProrationFactor(employee, enrollmentDetail);
+        // eslint-disable-next-line no-console
+        console.log('📊 Proration Info:', {
+          joiningDate: employee.date_of_joining,
+          policyStartDate: enrollmentDetail.policy_start_date,
+          policyEndDate: enrollmentDetail.policy_end_date,
+          prorationFactor: prorationInfo.prorationFactor,
+          remainingDays: prorationInfo.remainingDays,
+          totalPolicyDays: prorationInfo.totalPolicyDays,
+          shouldProrate: prorationInfo.prorationFactor < 1
+        });
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Error in Step2 debug logging:', e);
+    }
+  }, [employee, enrollmentDetail, selection?.premiumCalculations]);
 
   // Helper: format currency INR
   const formatCurrencyLocal = (amount) => {
@@ -242,7 +274,26 @@ export default function Step2ChoosePlans({
       // Use the new premium calculation system
       let result;
       if (premiumCalculator.calculatePremium) {
-  result = premiumCalculator.calculatePremium(employee, dependents, cfg, sel.selectedPlanId);
+        // Inject policy dates into config for pro-rata calculation
+        const cfgWithDates = {
+          ...cfg,
+          policy_start_date: enrollmentDetail?.policy_start_date,
+          policy_end_date: enrollmentDetail?.policy_end_date
+        };
+        console.log('🧮 Calling premiumCalculator.calculatePremium with:', {
+          employee_doj: employee?.date_of_joining,
+          policy_start: enrollmentDetail?.policy_start_date,
+          policy_end: enrollmentDetail?.policy_end_date,
+          selectedPlanId: sel.selectedPlanId
+        });
+        result = premiumCalculator.calculatePremium(employee, dependents, cfgWithDates, sel.selectedPlanId);
+        console.log('🧮 premiumCalculator.calculatePremium result:', {
+          total_premium: result?.total_premium,
+          prorated_premium: result?.prorated_premium,
+          proration_factor: result?.proration_factor,
+          remaining_days: result?.remaining_days,
+          total_policy_days: result?.total_policy_days
+        });
       } else {
         console.warn('⚠️ Premium calculator not available, using fallback');
         // Fallback calculation if calculator not available
@@ -254,11 +305,19 @@ export default function Step2ChoosePlans({
           ? planPremium * allMembers.length
           : planPremium;
 
+        // Apply proration if employee joined after policy start
+        const prorationData = calculateProrationFactor(employee, enrollmentDetail);
+        const proratedPremium = finalPremium * prorationData.prorationFactor;
+
         result = {
           total_premium: finalPremium,
-          employee_payable: finalPremium,
+          prorated_premium: proratedPremium,
+          employee_payable: proratedPremium,
           company_contribution_amount: 0,
           sum_insured: selectedPlan?.sum_insured ? Number(selectedPlan.sum_insured) : baseSI,
+          proration_factor: prorationData.prorationFactor,
+          remaining_days: prorationData.remainingDays,
+          total_policy_days: prorationData.totalPolicyDays,
           breakdown: allMembers.map(member => ({
             ...member,
             premium: (cfg.plan_type === 'per_life' || cfg.rator_type === 'per_life') ? planPremium : finalPremium / allMembers.length,
@@ -283,7 +342,7 @@ export default function Step2ChoosePlans({
         };
       }
 
-      // Add extra coverage premium calculation
+      // Add extra coverage premium calculation with pro-rata
       let extraCoveragePremium = 0;
       if (Array.isArray(sel.extraCoverageSelected) && extraCoveragePlans.length) {
         sel.extraCoverageSelected.forEach((id) => {
@@ -293,15 +352,18 @@ export default function Step2ChoosePlans({
           }
         });
       }
+      // Apply pro-rata to extra coverage premium
+      const prorationFactor = result?.proration_factor || 1;
+      extraCoveragePremium = extraCoveragePremium * prorationFactor;
 
-      const basePremium = result ? (Number(result.total_premium) || 0) : 0;
+      const basePremium = result ? (Number(result.prorated_premium) || 0) : 0;
       const totalWithExtra = basePremium + extraCoveragePremium;
       const gst = totalWithExtra * 0.18;
       const grossPlusGst = totalWithExtra + gst;
 
       // Apply company contribution to the total (including extra coverage)
-      let finalEmployeePayable = (result ? (Number(result.employee_payable) || 0) : 0) + extraCoveragePremium;
-      let companyContributionAmount = result ? (Number(result.company_contribution_amount) || 0) : 0;
+      let finalEmployeePayable = basePremium + extraCoveragePremium;
+      let companyContributionAmount = 0;
 
       if (cfg.company_contribution && Number(cfg.company_contribution_percentage) > 0) {
         companyContributionAmount = grossPlusGst * (Number(cfg.company_contribution_percentage) / 100);
@@ -314,6 +376,7 @@ export default function Step2ChoosePlans({
 
       return {
         grossPremium: basePremium,
+        basePremium: basePremium,
         extraCoveragePremium,
         totalPremium: totalWithExtra,
         gst,
@@ -322,9 +385,11 @@ export default function Step2ChoosePlans({
         employeePayable: Math.max(0, finalEmployeePayable),
         breakdown: result ? (result.breakdown || []) : [],
         calculationNote: result ? (result.note || '') : 'Calculated',
-        sumInsured: result ? (Number(result.sum_insured) || baseSI || 0) : (baseSI || 0),
+        sumInsured: result ? (Number(result.sum_insured) || baseSI || 0) : (baseSI || 0), // IMPORTANT: Sum insured is NEVER prorated, only premium is
         proratedPremium: result ? (Number(result.prorated_premium) || 0) : 0,
-        prorationFactor: result ? (Number(result.proration_factor) || 0) : 0
+        prorationFactor: result ? (Number(result.proration_factor) || 0) : 0,
+        remainingDays: result ? (Number(result.remaining_days) || 0) : 0,
+        totalPolicyDays: result ? (Number(result.total_policy_days) || 0) : 0
       };
 
     } catch (error) {
@@ -504,6 +569,22 @@ export default function Step2ChoosePlans({
     const isBaseCard = plan.id === 'base_sum_insured';
     const planPremium = Number(plan.premium_amount ?? plan.employee_premium ?? plan.premium ?? 0) || 0;
     const sumInsured = plan.sum_insured ? Number(plan.sum_insured) : null;
+    
+    // Calculate proration for this specific card
+    const prorationMeta = calculateProrationFactor(employee, enrollmentDetail);
+    const prorationFactor = prorationMeta?.prorationFactor || 1;
+    const shouldProrate = prorationFactor < 1 && prorationFactor > 0;
+    const proratedPlanPremium = Math.round(planPremium * prorationFactor);
+    
+    // Log proration for selected plan
+    if (selected && shouldProrate) {
+      console.log('💳 Plan Card Proration:', {
+        planName: plan.plan_name,
+        originalPremium: planPremium,
+        prorationFactor,
+        proratedPremium: proratedPlanPremium
+      });
+    }
 
     // helper to produce tooltip text explaining how premium is calculated for this plan
     const getCalculationText = () => {
@@ -553,9 +634,21 @@ export default function Step2ChoosePlans({
               {plan.plan_name || "Plan"}
               <span title={getCalculationText()} className="ml-2 inline-block text-xs text-gray-500 border rounded-full w-5 h-5 text-center leading-5 cursor-help">i</span>
             </p>
-            <p className="text-sm font-semibold text-green-600">{formatCurrencyLocal(planPremium)}</p>
+            <div className="text-right">
+              <p className="text-sm font-semibold text-green-600">{formatCurrencyLocal(proratedPlanPremium)}</p>
+              {shouldProrate && (
+                <p className="text-xs text-amber-600 mt-0.5">
+                  (Original: {formatCurrencyLocal(planPremium)})
+                </p>
+              )}
+            </div>
           </div>
           <p className="text-xs text-gray-600 mt-1">Sum Insured: {sumInsured ? formatCurrencyLocal(sumInsured) : "Auto / base"}</p>
+          {shouldProrate && (
+            <p className="text-xs text-amber-600 mt-1 font-medium">
+              ⏱️ Pro-rated: {(prorationFactor * 100).toFixed(1)}% ({prorationMeta.remainingDays} of {prorationMeta.totalPolicyDays} days)
+            </p>
+          )}
           {plan.age_brackets && plan.age_brackets.length > 0 && <p className="text-xs text-gray-500 mt-1">Age-based rates available</p>}
         </div>
       </label>
@@ -564,6 +657,55 @@ export default function Step2ChoosePlans({
 
   // compute current breakdown to show in UI (calc)
   const calc = selection.premiumCalculations || computePremiums(ratingConfig, selection, allMembers);
+
+  // Calculate proration factor based on joining date
+  function calculateProrationFactor(emp, enrollmentDetail) {
+    if (!enrollmentDetail?.policy_start_date || !enrollmentDetail?.policy_end_date || !emp?.date_of_joining) {
+      console.log('⚠️ Proration: Missing required dates', {
+        policy_start_date: enrollmentDetail?.policy_start_date,
+        policy_end_date: enrollmentDetail?.policy_end_date,
+        date_of_joining: emp?.date_of_joining
+      });
+      return { prorationFactor: 1, remainingDays: 0, totalPolicyDays: 0 };
+    }
+
+    const joiningDate = new Date(emp.date_of_joining || emp.doj);
+    const policyStartDate = new Date(enrollmentDetail.policy_start_date);
+    const policyEndDate = new Date(enrollmentDetail.policy_end_date);
+
+    // If dates are invalid or joining <= policy start, no proration
+    if (isNaN(joiningDate.getTime()) ||
+        isNaN(policyStartDate.getTime()) ||
+        isNaN(policyEndDate.getTime()) ||
+        joiningDate <= policyStartDate) {
+      console.log('ℹ️ Proration: No proration needed', {
+        joiningDate: emp.date_of_joining,
+        policyStartDate: enrollmentDetail.policy_start_date,
+        joiningBeforeOrOnStart: joiningDate <= policyStartDate
+      });
+      return { prorationFactor: 1, remainingDays: 0, totalPolicyDays: 0 };
+    }
+
+    const totalPolicyDays = Math.max(1, Math.ceil((policyEndDate - policyStartDate) / (1000 * 60 * 60 * 24)));
+    const remainingDays = Math.max(0, Math.ceil((policyEndDate - joiningDate) / (1000 * 60 * 60 * 24)));
+    const prorationFactor = remainingDays / totalPolicyDays;
+
+    console.log('✅ Proration calculated:', {
+      joiningDate: emp.date_of_joining,
+      policyStartDate: enrollmentDetail.policy_start_date,
+      policyEndDate: enrollmentDetail.policy_end_date,
+      totalPolicyDays,
+      remainingDays,
+      prorationFactor: prorationFactor.toFixed(4),
+      percentage: (prorationFactor * 100).toFixed(2) + '%'
+    });
+
+    return {
+      prorationFactor,
+      remainingDays,
+      totalPolicyDays
+    };
+  }
 
   return (
     <div className="space-y-6">

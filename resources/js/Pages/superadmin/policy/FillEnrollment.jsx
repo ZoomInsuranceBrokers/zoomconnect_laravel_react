@@ -114,6 +114,7 @@ export default function FillEnrollment({
                 return (
                     <Step2ChoosePlans
                         employee={employee}
+                        enrollmentDetail={enrollmentDetail}
                         availablePlans={availablePlans}
                         formData={formData}
                         updateFormData={updateFormData}
@@ -124,6 +125,8 @@ export default function FillEnrollment({
             case 3:
                 return (
                     <Step3ExtraCoverage
+                        employee={employee}
+                        enrollmentDetail={enrollmentDetail}
                         extraCoveragePlans={extraCoveragePlans}
                         availablePlans={availablePlans}
                         formData={formData}

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import PremiumSummary from './PremiumSummary';
 
 export default function Step3ExtraCoverage({
+    employee,
+    enrollmentDetail,
     extraCoveragePlans = [],
     availablePlans = null,
     formData,
@@ -22,6 +24,76 @@ export default function Step3ExtraCoverage({
     })();
 
     const [selectedExtraIds, setSelectedExtraIds] = useState(initSelectedIds);
+
+    // Calculate proration factor based on joining date
+    const calculateProrationFactor = (emp, enrollmentDetail) => {
+        if (!enrollmentDetail?.policy_start_date || !enrollmentDetail?.policy_end_date || !emp?.date_of_joining) {
+            console.log('⚠️ Step3 Proration: Missing required dates', {
+                policy_start_date: enrollmentDetail?.policy_start_date,
+                policy_end_date: enrollmentDetail?.policy_end_date,
+                date_of_joining: emp?.date_of_joining
+            });
+            return { prorationFactor: 1, remainingDays: 0, totalPolicyDays: 0 };
+        }
+
+        const joiningDate = new Date(emp.date_of_joining || emp.doj);
+        const policyStartDate = new Date(enrollmentDetail.policy_start_date);
+        const policyEndDate = new Date(enrollmentDetail.policy_end_date);
+
+        // If dates are invalid or joining <= policy start, no proration
+        if (isNaN(joiningDate.getTime()) ||
+            isNaN(policyStartDate.getTime()) ||
+            isNaN(policyEndDate.getTime()) ||
+            joiningDate <= policyStartDate) {
+            console.log('ℹ️ Step3 Proration: No proration needed', {
+                joiningDate: emp.date_of_joining,
+                policyStartDate: enrollmentDetail.policy_start_date,
+                joiningBeforeOrOnStart: joiningDate <= policyStartDate
+            });
+            return { prorationFactor: 1, remainingDays: 0, totalPolicyDays: 0 };
+        }
+
+        const totalPolicyDays = Math.max(1, Math.ceil((policyEndDate - policyStartDate) / (1000 * 60 * 60 * 24)));
+        const remainingDays = Math.max(0, Math.ceil((policyEndDate - joiningDate) / (1000 * 60 * 60 * 24)));
+        const prorationFactor = remainingDays / totalPolicyDays;
+
+        console.log('✅ Step3 Proration calculated:', {
+            joiningDate: emp.date_of_joining,
+            policyStartDate: enrollmentDetail.policy_start_date,
+            policyEndDate: enrollmentDetail.policy_end_date,
+            totalPolicyDays,
+            remainingDays,
+            prorationFactor: prorationFactor.toFixed(4),
+            percentage: (prorationFactor * 100).toFixed(2) + '%'
+        });
+
+        return {
+            prorationFactor,
+            remainingDays,
+            totalPolicyDays
+        };
+    };
+
+    // Debug logging
+    useEffect(() => {
+        try {
+            console.log('📊 Step3ExtraCoverage - employee:', employee);
+            console.log('📊 Step3ExtraCoverage - enrollmentDetail:', enrollmentDetail);
+            console.log('📊 Step3ExtraCoverage - selectedExtraIds:', selectedExtraIds);
+            
+            if (employee?.date_of_joining && enrollmentDetail?.policy_start_date) {
+                const prorationInfo = calculateProrationFactor(employee, enrollmentDetail);
+                console.log('📊 Step3 Proration Info:', {
+                    shouldProrate: prorationInfo.prorationFactor < 1,
+                    prorationFactor: prorationInfo.prorationFactor,
+                    remainingDays: prorationInfo.remainingDays,
+                    totalPolicyDays: prorationInfo.totalPolicyDays
+                });
+            }
+        } catch (e) {
+            console.error('Error in Step3 debug logging:', e);
+        }
+    }, [employee, enrollmentDetail, selectedExtraIds]);
 
     // Always use the latest values from formData.premiumCalculations for base/topup
     const [premiumCalculations, setPremiumCalculations] = useState(() => {
@@ -154,10 +226,13 @@ export default function Step3ExtraCoverage({
         const pc = formData?.premiumCalculations || {};
         const basePremium = Number(pc.basePremium || pc.grossPremium || 0) || 0;
         const topupPremium = Number(pc.topupPremium || 0) || 0;
+        
+        // Apply pro-rata to extra coverage premiums
+        const prorationData = calculateProrationFactor(employee, enrollmentDetail);
         const extraTotal = ids.reduce((sum, id) => {
             const p = (extraCoveragePlans || []).find(pl => String(pl.id) === String(id));
             const val = Number(p?.employee_contribution ?? p?.premium ?? p?.premium_amount ?? 0) || 0;
-            return sum + val;
+            return sum + (val * prorationData.prorationFactor);
         }, 0);
 
         const next = {
@@ -238,6 +313,9 @@ export default function Step3ExtraCoverage({
                 </p>
             </div>
 
+            {/* Premium Summary */}
+            <PremiumSummary calc={calc} ratingConfig={ratingConfig} selectedPlanObj={selectedPlanObj} baseSI={baseSI} />
+
             {/* Extra Coverage Plans */}
             <div className="space-y-4">
                 {extraCoveragePlans && extraCoveragePlans.length > 0 ? (
@@ -275,7 +353,13 @@ export default function Step3ExtraCoverage({
                         </label>
 
                         {/* Extra Coverage Options */}
-                        {extraCoveragePlans.map((plan) => (
+                        {extraCoveragePlans.map((plan) => {
+                            const prorationData = calculateProrationFactor(employee, enrollmentDetail);
+                            const shouldProrate = prorationData.prorationFactor < 1 && prorationData.prorationFactor > 0;
+                            const originalPremium = Number(plan.employee_contribution ?? plan.premium ?? plan.premium_amount ?? 0);
+                            const proratedPremium = Math.round(originalPremium * prorationData.prorationFactor);
+                            
+                            return (
                             <label
                                 key={plan.id}
                     className={`flex items-start p-4 border-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${
@@ -363,18 +447,27 @@ export default function Step3ExtraCoverage({
 
                                         <div className="text-right">
                                             <p className="text-xl font-bold text-[#934790]">
-                                                {formatCurrency(
-                                                    Number(plan.employee_contribution ?? plan.premium ?? plan.premium_amount ?? 0)
-                                                )}
+                                                {formatCurrency(proratedPremium)}
                                             </p>
+                                            {shouldProrate && (
+                                                <p className="text-xs text-amber-600 mt-0.5">
+                                                    (Original: {formatCurrency(originalPremium)})
+                                                </p>
+                                            )}
                                             <p className="text-xs text-gray-500">
                                                 per year
                                             </p>
+                                            {shouldProrate && (
+                                                <p className="text-xs text-amber-600 font-medium mt-1">
+                                                    ⏱️ Pro-rated: {(prorationData.prorationFactor * 100).toFixed(1)}%
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </label>
-                        ))}
+                            );
+                        })}
                     </>
                 ) : (
                     <div className="text-center py-12">
