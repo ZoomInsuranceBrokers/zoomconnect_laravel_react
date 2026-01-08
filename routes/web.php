@@ -156,7 +156,7 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
     Route::post('/corporate/{company}/upload-bulk-csv', [SuperAdminController::class, 'uploadBulkCsv'])->name('corporate.upload-bulk-csv');
     Route::post('/corporate/{company}/process-bulk-action', [SuperAdminController::class, 'processBulkAction'])->name('corporate.process-bulk-action');
     Route::get('/bulk-action/{action}/download/{type}', [SuperAdminController::class, 'downloadBulkActionFile'])->name('bulk-action.download-file');
- Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
+    Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
     Route::post('/wellness/vendor-list', [SuperAdminController::class, 'vendorStore'])->name('superadmin.wellness.vendor.store');
     Route::put('/wellness/vendor/{vendor}', [SuperAdminController::class, 'vendorUpdate'])->name('superadmin.wellness.vendor.update');
     Route::put('/wellness/vendor/{vendor}/toggle-status', [SuperAdminController::class, 'vendorToggleStatus'])->name('wellness.vendor.toggle-status');
@@ -293,18 +293,29 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
     // Policies Routes
     Route::get('/policy/policies', [SuperAdminController::class, 'policies'])->name('superadmin.policy.policies.index');
     Route::get('/policy/policies/create', [SuperAdminController::class, 'createPolicy'])->name('superadmin.policy.policies.create');
+
     // Endorsements list
     Route::get('/policy/endorsements', [SuperAdminController::class, 'endorsements'])->name('superadmin.policy.endorsements.index');
     // Show single endorsement
     Route::get('/policy/endorsements/{endorsement}', [SuperAdminController::class, 'showPolicyEndorsement'])->name('superadmin.policy.endorsements.show');
     // Update endorsement
     Route::put('/policy/endorsements/{endorsement}', [SuperAdminController::class, 'updatePolicyEndorsement'])->name('superadmin.policy.endorsements.update');
-    Route::get('/policy/policies/cd-accounts/{companyId}', [SuperAdminController::class, 'getCdAccountsByCompany'])->name('superadmin.policy.policies.cd-accounts');
-    Route::post('/policy/policies', [SuperAdminController::class, 'storePolicy'])->name('superadmin.policy.policies.store');
-    Route::get('/policy/policies/{policy}', [SuperAdminController::class, 'showPolicy'])->name('superadmin.policy.policies.show');
     // List endorsements for a policy and create new endorsement
     Route::get('/policy/policies/{policy}/endorsements', [SuperAdminController::class, 'policyEndorsements'])->name('superadmin.policy.policies.endorsements');
     Route::post('/policy/policies/{policy}/endorsements', [SuperAdminController::class, 'storePolicyEndorsement'])->name('superadmin.policy.policies.endorsements.store');
+    // Policy Endorsement Bulk Member Addition/Removal
+    Route::get('/policy/endorsements/{endorsement}/bulk-member-addition', [SuperAdminController::class, 'bulkMemberAdditionEndorsement'])->name('superadmin.policy.endorsements.bulk-member-addition');
+    Route::get('/policy/endorsements/{endorsement}/bulk-member-deletion', [SuperAdminController::class, 'bulkMemberDeletionEndorsement'])->name('superadmin.policy.endorsements.bulk-member-deletion');
+    Route::post('/policy/endorsements/{endorsement}/upload-bulk-csv', [SuperAdminController::class, 'uploadBulkCsvEndorsement'])->name('superadmin.policy.endorsements.upload-bulk-csv');
+    Route::post('/policy/endorsements/{endorsement}/process-bulk-action', [SuperAdminController::class, 'processBulkActionEndorsement'])->name('superadmin.policy.endorsements.process-bulk-action');
+    Route::get('/policy/endorsements/{endorsement}/download-sample-csv/{type}', [SuperAdminController::class, 'downloadSampleCsvEndorsement'])->name('superadmin.policy.endorsements.download-sample-csv');
+    Route::get('/policy/endorsements/{endorsement}/bulk-actions', [SuperAdminController::class, 'bulkActionsEndorsement'])->name('superadmin.policy.endorsements.bulk-actions');
+
+
+
+    Route::get('/policy/policies/cd-accounts/{companyId}', [SuperAdminController::class, 'getCdAccountsByCompany'])->name('superadmin.policy.policies.cd-accounts');
+    Route::post('/policy/policies', [SuperAdminController::class, 'storePolicy'])->name('superadmin.policy.policies.store');
+    Route::get('/policy/policies/{policy}', [SuperAdminController::class, 'showPolicy'])->name('superadmin.policy.policies.show');
     Route::get('/policy/policies/{policy}/edit', [SuperAdminController::class, 'editPolicy'])->name('superadmin.policy.policies.edit');
     Route::put('/policy/policies/{policy}', [SuperAdminController::class, 'updatePolicy'])->name('superadmin.policy.policies.update');
     Route::delete('/policy/policies/{policy}', [SuperAdminController::class, 'destroyPolicy'])->name('superadmin.policy.policies.destroy');
@@ -313,7 +324,7 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
     Route::get('/fill-enrollment/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'fillEnrollment'])->name('superadmin.fill-enrollment');
     Route::post('/fill-enrollment/submit', [SuperAdminController::class, 'submitEnrollment'])->name('superadmin.submit-enrollment');
 
- // CD Accounts Routes
+    // CD Accounts Routes
     Route::get('/policy/cd-accounts', [SuperAdminController::class, 'cdAccountsIndex'])->name('superadmin.policy.cd-accounts.index');
     Route::get('/policy/cd-accounts/create', [SuperAdminController::class, 'cdAccountsCreate'])->name('superadmin.policy.cd-accounts.create');
     Route::post('/policy/cd-accounts', [SuperAdminController::class, 'cdAccountsStore'])->name('superadmin.policy.cd-accounts.store');
@@ -324,7 +335,7 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
     Route::post('/policy/cd-accounts/transaction', [SuperAdminController::class, 'cdAccountsTransactionStore']);
     Route::delete('/policy/cd-accounts/transaction/{id}', [SuperAdminController::class, 'cdAccountsTransactionDelete']);
     // Wellness Module Routes
-   
+
 });
 // });
 // });

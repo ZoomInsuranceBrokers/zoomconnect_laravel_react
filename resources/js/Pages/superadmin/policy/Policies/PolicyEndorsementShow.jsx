@@ -202,7 +202,7 @@ function ModalTabs({ selectedEmployee, formatDate, editMode, editForm, setEditFo
     );
 }
 
-export default function PolicyEndorsementShow({ policy, company, endorsement, additionMembers = [], deletionMembers = [], tpa_table_name = '' }) {
+export default function PolicyEndorsementShow({ policy, company, endorsement, additionMembers = [], deletionMembers = [] }) {
     const { darkMode } = useTheme();
     const [search, setSearch] = useState("");
     const [selectedEmployees, setSelectedEmployees] = useState([]);
@@ -212,39 +212,43 @@ export default function PolicyEndorsementShow({ policy, company, endorsement, ad
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [modalEditMode, setModalEditMode] = useState(false);
     const [editForm, setEditForm] = useState({ full_name: '', email: '', mobile: '', designation: '' });
+    // Coverage details modal state
+    const [selectedCoverageMember, setSelectedCoverageMember] = useState(null);
 
     // Switch tab state
     const [activeTable, setActiveTable] = useState('addition');
 
-    // Helper to generate UHID from tpa_table_name and tpa table's id column
-    function getUHID(tpaTableName, member) {
-        if (!tpaTableName || !member) return '';
-        const prefix = tpaTableName.split('_')[0];
-        // Find the correct id column: first word + '_id'
-        const idKey = `${prefix}_id`;
-        const idValue = member[idKey];
-        return idValue ? `${idValue}` : '';
-    }
-
-    // Use tpa_table_name prop directly from backend
     const additionTableData = additionMembers.map(m => ({
         code: m.employees_code || m.code || '',
         name: m.insured_name || m.name || m.full_name || '',
         relation: m.relation || '',
-        uhid: getUHID(tpa_table_name, m),
+        uhid: m.uhid || '',
         gender: m.gender || '',
         dob: m.dob || m.date_of_birth || '',
-        sumInsured: m.sum_insured || m.sumInsured || 0,
+        base_sum_insured: m.base_sum_insured || 0,
+        base_premium_on_company: m.base_premium_on_company || 0,
+        base_premium_on_employee: m.base_premium_on_employee || 0,
+        topup_sum_insured: m.topup_sum_insured || 0,
+        topup_premium_on_company: m.topup_premium_on_company || 0,
+        topup_premium_on_employee: m.topup_premium_on_employee || 0,
+        parent_sum_insured: m.parent_sum_insured || 0,
+        parent_premium_on_company: m.parent_premium_on_company || 0,
+        parent_premium_on_employee: m.parent_premium_on_employee || 0,
         joiningDate: m.date_of_joining || m.joiningDate || '',
     }));
     const deletionTableData = deletionMembers.map(m => ({
         code: m.employees_code || m.code || '',
         name: m.insured_name || m.name || m.full_name || '',
         relation: m.relation || '',
-        uhid: getUHID(tpa_table_name, m),
+        uhid: m.uhid || '',
         gender: m.gender || '',
         dob: m.dob || m.date_of_birth || '',
-        sumInsured: m.sum_insured || m.sumInsured || 0,
+        refund_base_premium_on_company: m.refund_base_premium_on_company || 0,
+        refund_base_premium_on_employee: m.refund_base_premium_on_employee || 0,
+        refund_topup_premium_on_company: m.refund_topup_premium_on_company || 0,
+        refund_topup_premium_on_employee: m.refund_topup_premium_on_employee || 0,
+        refund_parent_premium_on_company: m.refund_parent_premium_on_company || 0,
+        refund_parent_premium_on_employee: m.refund_parent_premium_on_employee || 0,
         leavingDate: m.date_of_leaving || m.leavingDate || '',
     }));
 
@@ -381,50 +385,15 @@ export default function PolicyEndorsementShow({ policy, company, endorsement, ad
                             ← Back to Endorsements
                         </Link>
                         <div className="relative group">
-                            <button className="bg-[#934790] hover:bg-[#6A0066] text-white px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1">
+                            <Link
+                                href={route('superadmin.policy.endorsements.bulk-actions', endorsement.id)}
+                                className="bg-[#934790] hover:bg-[#6A0066] text-white px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1"
+                            >
                                 <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                                 </svg>
                                 Manage Data
-                            </button>
-                            <div
-                                className="absolute right-0 hidden group-hover:block bg-white rounded-md shadow-lg border w-56 z-50"
-                                role="menu"
-                                aria-orientation="vertical"
-                                aria-labelledby="add-employee-menu"
-                            >
-                                <div className="py-2">
-                                    <div className="px-4 py-2 border-b text-sm font-semibold text-gray-700">Add Employee</div>
-
-                                    <Link
-                                        href={route('corporate.employee.create', company.comp_id)}
-                                        className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition"
-                                        role="menuitem"
-                                    >
-                                        <svg className="w-5 h-5 text-[#934790] mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.6 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <div>
-                                            <div className="text-sm text-gray-800">Single Entry</div>
-                                            <div className="text-[11px] text-gray-500">Add one employee manually</div>
-                                        </div>
-                                    </Link>
-
-                                    <Link
-                                        href={route('corporate.bulk-employee-actions', company.comp_id)}
-                                        className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition"
-                                        role="menuitem"
-                                    >
-                                        <svg className="w-5 h-5 text-[#934790] mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v14m7-7H5" />
-                                        </svg>
-                                        <div>
-                                            <div className="text-sm text-gray-800">Bulk Upload</div>
-                                            <div className="text-[11px] text-gray-500">Upload CSV to add or remove employees</div>
-                                        </div>
-                                    </Link>
-                                </div>
-                            </div>
+                            </Link>
                         </div>
                     </div>
                     <div className="text-lg font-bold">{company?.comp_name}</div>
@@ -484,7 +453,7 @@ export default function PolicyEndorsementShow({ policy, company, endorsement, ad
                                 <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">DOB</th>
                                 {activeTable === 'addition' && <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Date of Joining</th>}
                                 {activeTable === 'deletion' && <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Date of Leaving</th>}
-                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Sum Insured</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Coverage Details</th>
                             </tr>
                         </thead>
                         <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
@@ -499,7 +468,13 @@ export default function PolicyEndorsementShow({ policy, company, endorsement, ad
                                     <td className="px-3 py-2 whitespace-nowrap text-[10px]">{formatDate(m.dob)}</td>
                                     {activeTable === 'addition' && <td className="px-3 py-2 whitespace-nowrap text-[10px]">{formatDate(m.joiningDate)}</td>}
                                     {activeTable === 'deletion' && <td className="px-3 py-2 whitespace-nowrap text-[10px]">{formatDate(m.leavingDate)}</td>}
-                                    <td className="px-3 py-2 whitespace-nowrap text-[10px] text-right">{typeof m.sumInsured === 'number' && !isNaN(m.sumInsured) ? m.sumInsured.toLocaleString() : ''}</td>
+                                    <td className="px-3 py-2 whitespace-nowrap text-[10px]">
+                                        <div className="flex justify-center items-center">
+                                            <button className="bg-[#934790] hover:bg-[#6A0066] text-white font-semibold px-4 py-1 rounded text-xs shadow" title="View Details" onClick={() => setSelectedCoverageMember(m)}>
+                                                View Details
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             )) : (
                                 <tr>
@@ -532,11 +507,10 @@ export default function PolicyEndorsementShow({ policy, company, endorsement, ad
                                 <button
                                     key={i + 1}
                                     onClick={() => setCurrentPage(i + 1)}
-                                    className={`relative inline-flex items-center px-3 py-1.5 border text-[10px] font-medium ${
-                                        currentPage === i + 1
-                                            ? 'z-10 bg-purple-50 border-purple-500 text-purple-600'
-                                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                    }`}
+                                    className={`relative inline-flex items-center px-3 py-1.5 border text-[10px] font-medium ${currentPage === i + 1
+                                        ? 'z-10 bg-purple-50 border-purple-500 text-purple-600'
+                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                        }`}
                                 >
                                     {i + 1}
                                 </button>
@@ -638,6 +612,50 @@ export default function PolicyEndorsementShow({ policy, company, endorsement, ad
                                 onSaveEdit={handleSaveEdit}
                                 onCancelEdit={handleCancelEdit}
                             />
+                        </div>
+                    </div>
+                )}
+
+                {/* Coverage Details Modal Drawer */}
+                {selectedCoverageMember && (
+                    <div className="fixed inset-0 right-0 z-50 flex items-center justify-end bg-black bg-opacity-30">
+                        <div className="bg-white rounded-l-lg shadow-lg w-full max-w-md h-full flex flex-col overflow-hidden">
+                            <div className="flex items-center justify-between px-6 py-4 border-b">
+                                <h2 className="text-lg font-semibold">Coverage Details</h2>
+                                <button onClick={() => setSelectedCoverageMember(null)} className="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-6">
+                                <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="bg-purple-100 text-[#934790] px-2 py-1 rounded text-xs font-semibold">{selectedCoverageMember.relation || '-'}</span>
+                                        <span className="font-semibold">{selectedCoverageMember.name || '-'}</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mb-2">UHID: {selectedCoverageMember.uhid || '-'}</div>
+                                    <div className="grid grid-cols-2 gap-2 mb-2">
+                                        <div><span className="font-semibold">Gender</span><br />{selectedCoverageMember.gender || '-'}</div>
+                                        <div><span className="font-semibold">DOB</span><br />{formatDate(selectedCoverageMember.dob)}</div>
+                                        {activeTable === 'addition' && <>
+                                            <div><span className="font-semibold">Base Sum Insured</span><br />{selectedCoverageMember.base_sum_insured?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Base Premium (Company)</span><br />{selectedCoverageMember.base_premium_on_company?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Base Premium (Employee)</span><br />{selectedCoverageMember.base_premium_on_employee?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Topup Sum Insured</span><br />{selectedCoverageMember.topup_sum_insured?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Topup Premium (Company)</span><br />{selectedCoverageMember.topup_premium_on_company?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Topup Premium (Employee)</span><br />{selectedCoverageMember.topup_premium_on_employee?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Parent Sum Insured</span><br />{selectedCoverageMember.parent_sum_insured?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Parent Premium (Company)</span><br />{selectedCoverageMember.parent_premium_on_company?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Parent Premium (Employee)</span><br />{selectedCoverageMember.parent_premium_on_employee?.toLocaleString() || '-'}</div>
+                                        </>}
+                                        {activeTable === 'deletion' && <>
+                                            <div><span className="font-semibold">Refund Base Premium (Company)</span><br />{selectedCoverageMember.refund_base_premium_on_company?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Refund Base Premium (Employee)</span><br />{selectedCoverageMember.refund_base_premium_on_employee?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Refund Topup Premium (Company)</span><br />{selectedCoverageMember.refund_topup_premium_on_company?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Refund Topup Premium (Employee)</span><br />{selectedCoverageMember.refund_topup_premium_on_employee?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Refund Parent Premium (Company)</span><br />{selectedCoverageMember.refund_parent_premium_on_company?.toLocaleString() || '-'}</div>
+                                            <div><span className="font-semibold">Refund Parent Premium (Employee)</span><br />{selectedCoverageMember.refund_parent_premium_on_employee?.toLocaleString() || '-'}</div>
+                                        </>}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
