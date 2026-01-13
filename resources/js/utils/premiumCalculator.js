@@ -77,7 +77,7 @@ export function calculatePremium(employee, dependents = [], policyData = {}, sel
       companyPercentage
     );
 
-    // Determine final sum insured
+    // Determine final sum insured - IMPORTANT: Sum insured is NEVER prorated, only premium is
     const sumInsured = selectedPlan?.sum_insured || baseSumInsured || 0;
 
     // Extract extra coverages

@@ -4,6 +4,12 @@ export default function PremiumSummary({ calc = {}, ratingConfig = {}, selectedP
   const formatCurrency = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(amount || 0));
 
   const ratorLabel = String(ratingConfig.plan_type || ratingConfig.rator_type || 'simple');
+  
+  // Extract pro-rata information
+  const prorationFactor = calc.prorationFactor || calc.proration_factor || 1;
+  const remainingDays = calc.remainingDays || calc.remaining_days || 0;
+  const totalPolicyDays = calc.totalPolicyDays || calc.total_policy_days || 0;
+  const isProrated = prorationFactor < 1 && remainingDays > 0;
 
   const infoTitle = (() => {
     const ptype = ratorLabel.toLowerCase();
@@ -39,6 +45,18 @@ export default function PremiumSummary({ calc = {}, ratingConfig = {}, selectedP
           <span title={infoTitle} className="inline-block text-xs text-blue-500 border border-blue-400 rounded-full w-5 h-5 text-center leading-5 cursor-help">i</span>
         </div>
       </div>
+
+      {isProrated && (
+        <div className="mb-3 p-3 bg-yellow-50 border border-yellow-300 rounded-md">
+          <div className="flex items-center gap-2 mb-1">
+            <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <p className="text-xs font-semibold text-yellow-800">Pro-rata Applied (Mid-year Joining)</p>
+          </div>
+          <p className="text-xs text-yellow-700">Premium calculated for {remainingDays} days out of {totalPolicyDays} days ({Math.round(prorationFactor * 100)}% of annual premium)</p>
+        </div>
+      )}
 
       {selectedPlanObj && (
         <div className="mb-3 pb-2 border-b border-blue-200">

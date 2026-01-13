@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('enrolment_details', function (Blueprint $table) {
             // Add self allowed by default option
-            // $table->boolean('is_self_allowed_by_default')->default(true)->after('twin_allowed');
+            $table->boolean('is_self_allowed_by_default')->default(true)->after('twin_allowed');
 
             // // Add grade exclude option - JSON field to store multiple grades
-            // $table->json('grade_exclude')->nullable()->after('is_self_allowed_by_default');
+            $table->json('grade_exclude')->nullable()->after('is_self_allowed_by_default');
         });
     }
 

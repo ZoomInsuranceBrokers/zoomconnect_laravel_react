@@ -217,9 +217,23 @@ export default function Step4Summary({ employee, enrollmentDetail, availablePlan
             {/* Premium Breakdown */}
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
                 <h4 className="font-medium text-green-900 mb-4">Premium Breakdown</h4>
+                {formData.premiumCalculations?.prorationFactor && formData.premiumCalculations.prorationFactor < 1 && (
+                    <div className="mb-3 p-3 bg-yellow-50 border border-yellow-300 rounded-md">
+                        <div className="flex items-center gap-2 mb-1">
+                            <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                            <p className="text-xs font-semibold text-yellow-800">Pro-rata Applied (Mid-year Joining)</p>
+                        </div>
+                        <p className="text-xs text-yellow-700">
+                            Premium calculated for {formData.premiumCalculations.remainingDays || 0} days out of {formData.premiumCalculations.totalPolicyDays || 0} days 
+                            ({Math.round((formData.premiumCalculations.prorationFactor || 0) * 100)}% of annual premium)
+                        </p>
+                    </div>
+                )}
                 <div className="space-y-3 text-sm">
                     <div className="flex items-center justify-between">
-                        <span className="text-green-700">Base Plan Premium</span>
+                        <span className="text-green-700">Base Plan Premium{formData.premiumCalculations?.prorationFactor && formData.premiumCalculations.prorationFactor < 1 ? ' (Pro-rated)' : ''}</span>
                         <span className="font-semibold text-green-900">{formatCurrency(formData.premiumCalculations?.basePremium || formData.premiumCalculations?.grossPremium || 0)}</span>
                     </div>
                     {(formData.premiumCalculations?.topupPremium || 0) > 0 && (
@@ -230,7 +244,7 @@ export default function Step4Summary({ employee, enrollmentDetail, availablePlan
                     )}
                     {(formData.premiumCalculations?.extraCoveragePremium || 0) > 0 && (
                         <div className="flex items-center justify-between">
-                            <span className="text-green-700">Extra Coverage Premium</span>
+                            <span className="text-green-700">Extra Coverage Premium{formData.premiumCalculations?.prorationFactor && formData.premiumCalculations.prorationFactor < 1 ? ' (Pro-rated)' : ''}</span>
                             <span className="font-semibold text-green-900">{formatCurrency(formData.premiumCalculations?.extraCoveragePremium || 0)}</span>
                         </div>
                     )}

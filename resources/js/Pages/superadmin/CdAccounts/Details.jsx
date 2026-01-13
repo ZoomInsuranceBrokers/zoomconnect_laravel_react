@@ -10,10 +10,9 @@ const numberInputNoSpinner = `
     }
 `;
 
-import { useForm, usePage, Head } from "@inertiajs/react";
+import { useForm, usePage, Head, router } from "@inertiajs/react";
 import Swal from 'sweetalert2';
-import { Inertia } from '@inertiajs/inertia';
-import SuperAdminLayout from "../../../../Layouts/SuperAdmin/Layout";
+import SuperAdminLayout from "../../../Layouts/SuperAdmin/Layout";
 import React from "react";
 import Select from "react-select";
 
@@ -31,7 +30,7 @@ export default function Details({ cdAccount, companies = [], insurers = [], tran
             cancelButtonText: 'Cancel',
         }).then((result) => {
             if (result.isConfirmed) {
-                Inertia.delete(`/superadmin/policy/cd-accounts/transaction/${id}`, {
+                router.delete(`/superadmin/policy/cd-accounts/transaction/${id}`, {
                     preserveScroll: true,
                     onSuccess: () => {
                         Swal.close();
@@ -89,11 +88,11 @@ export default function Details({ cdAccount, companies = [], insurers = [], tran
         });
         formData.append('cd_ac_id', cdAccount.id);
         formData.append('comp_id', cdAccount.comp_id);
-        Inertia.post('/superadmin/policy/cd-accounts/transaction', formData, {
+        router.post('/superadmin/policy/cd-accounts/transaction', formData, {
             preserveScroll: true,
             onSuccess: () => {
                 setShowModal(false);
-                Inertia.visit(`/superadmin/policy/cd-accounts/${cdAccount.id}/cd-details`, { replace: true });
+                router.visit(`/superadmin/policy/cd-accounts/${cdAccount.id}/cd-details`, { replace: true });
             },
             onError: (err) => {
                 setTransactionErrors(err);

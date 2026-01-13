@@ -20,4 +20,9 @@ class PolicyEndorsement extends Model
     ];
 
     public $timestamps = true;
+    // Add relationship to PolicyMaster
+    public function policy()
+    {
+        return $this->belongsTo(PolicyMaster::class, 'policy_id');
+    }
 }

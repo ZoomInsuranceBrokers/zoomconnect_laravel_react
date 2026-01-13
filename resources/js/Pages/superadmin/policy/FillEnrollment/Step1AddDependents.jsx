@@ -910,7 +910,6 @@ export default function Step1AddDependents({
       {/* Header */}
       <div className="text-center">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">Add Family Members</h3>
-        <p className="text-gray-600 max-w-2xl mx-auto">Add your family members who will be covered under this insurance policy. You can add up to <span className="font-semibold text-[#934790]">{(familyDefinition && familyDefinition.max_family_size) || 6} total members</span> including yourself.</p>
       </div>
 
       {/* Employee Card */}

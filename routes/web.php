@@ -304,18 +304,29 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
     // Policies Routes
     Route::get('/policy/policies', [SuperAdminController::class, 'policies'])->name('superadmin.policy.policies.index');
     Route::get('/policy/policies/create', [SuperAdminController::class, 'createPolicy'])->name('superadmin.policy.policies.create');
+
     // Endorsements list
     Route::get('/policy/endorsements', [SuperAdminController::class, 'endorsements'])->name('superadmin.policy.endorsements.index');
     // Show single endorsement
     Route::get('/policy/endorsements/{endorsement}', [SuperAdminController::class, 'showPolicyEndorsement'])->name('superadmin.policy.endorsements.show');
     // Update endorsement
     Route::put('/policy/endorsements/{endorsement}', [SuperAdminController::class, 'updatePolicyEndorsement'])->name('superadmin.policy.endorsements.update');
-    Route::get('/policy/policies/cd-accounts/{companyId}', [SuperAdminController::class, 'getCdAccountsByCompany'])->name('superadmin.policy.policies.cd-accounts');
-    Route::post('/policy/policies', [SuperAdminController::class, 'storePolicy'])->name('superadmin.policy.policies.store');
-    Route::get('/policy/policies/{policy}', [SuperAdminController::class, 'showPolicy'])->name('superadmin.policy.policies.show');
     // List endorsements for a policy and create new endorsement
     Route::get('/policy/policies/{policy}/endorsements', [SuperAdminController::class, 'policyEndorsements'])->name('superadmin.policy.policies.endorsements');
     Route::post('/policy/policies/{policy}/endorsements', [SuperAdminController::class, 'storePolicyEndorsement'])->name('superadmin.policy.policies.endorsements.store');
+    // Policy Endorsement Bulk Member Addition/Removal
+    Route::get('/policy/endorsements/{endorsement}/bulk-member-addition', [SuperAdminController::class, 'bulkMemberAdditionEndorsement'])->name('superadmin.policy.endorsements.bulk-member-addition');
+    Route::get('/policy/endorsements/{endorsement}/bulk-member-deletion', [SuperAdminController::class, 'bulkMemberDeletionEndorsement'])->name('superadmin.policy.endorsements.bulk-member-deletion');
+    Route::post('/policy/endorsements/{endorsement}/upload-bulk-csv', [SuperAdminController::class, 'uploadBulkCsvEndorsement'])->name('superadmin.policy.endorsements.upload-bulk-csv');
+    Route::post('/policy/endorsements/{endorsement}/process-bulk-action', [SuperAdminController::class, 'processBulkActionEndorsement'])->name('superadmin.policy.endorsements.process-bulk-action');
+    Route::get('/policy/endorsements/{endorsement}/download-sample-csv/{type}', [SuperAdminController::class, 'downloadSampleCsvEndorsement'])->name('superadmin.policy.endorsements.download-sample-csv');
+    Route::get('/policy/endorsements/{endorsement}/bulk-actions', [SuperAdminController::class, 'bulkActionsEndorsement'])->name('superadmin.policy.endorsements.bulk-actions');
+
+
+
+    Route::get('/policy/policies/cd-accounts/{companyId}', [SuperAdminController::class, 'getCdAccountsByCompany'])->name('superadmin.policy.policies.cd-accounts');
+    Route::post('/policy/policies', [SuperAdminController::class, 'storePolicy'])->name('superadmin.policy.policies.store');
+    Route::get('/policy/policies/{policy}', [SuperAdminController::class, 'showPolicy'])->name('superadmin.policy.policies.show');
     Route::get('/policy/policies/{policy}/edit', [SuperAdminController::class, 'editPolicy'])->name('superadmin.policy.policies.edit');
     Route::put('/policy/policies/{policy}', [SuperAdminController::class, 'updatePolicy'])->name('superadmin.policy.policies.update');
     Route::delete('/policy/policies/{policy}', [SuperAdminController::class, 'destroyPolicy'])->name('superadmin.policy.policies.destroy');
@@ -339,6 +350,13 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
 });
 // });
 // });
+
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////// --- Mobile API Routes --- ///////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+// Mobile API Routes moved to routes/api.php to avoid CSRF (419 Page Expired)
+// See routes/api.php for the API endpoints under /api/v1/*
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////// --- Product Pages Routes --- ///////////////////////

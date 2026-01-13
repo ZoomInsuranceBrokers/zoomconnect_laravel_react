@@ -56,6 +56,7 @@
         protected $middlewareAliases = [
             'auth' => \App\Http\Middleware\Authenticate::class,
             'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
+            'api.jwt' => \App\Http\Middleware\ApiJwtMiddleware::class,
             'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
             'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
             'can' => \Illuminate\Auth\Middleware\Authorize::class,
