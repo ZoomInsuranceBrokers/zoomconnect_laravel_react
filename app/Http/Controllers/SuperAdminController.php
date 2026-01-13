@@ -2496,7 +2496,6 @@ class SuperAdminController extends Controller
     public function policyEnrollmentListsStore(Request $request)
     {
         // Dump request for debugging enrollment creation payload
-        dd($request->all());
         // Custom validation for complex multi-step form
         $this->validateEnrollmentData($request);
 

@@ -119,4 +119,16 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Support Email Address
+    |--------------------------------------------------------------------------
+    |
+    | This email address is used for receiving support tickets from the
+    | Help/Support Chat system. All unresolved queries will be sent here.
+    |
+    */
+
+    'support_email' => env('SUPPORT_EMAIL', 'support@zoomconnect.com'),
+
 ];

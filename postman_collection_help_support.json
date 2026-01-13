@@ -1,0 +1,257 @@
+{
+  "info": {
+    "name": "ZoomConnect - Help Support Chat API",
+    "description": "Complete API collection for Help/Support Chat system with chatbot flow and ticket management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "help-support-chat-api",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "YOUR_JWT_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "ticket_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Start Help Chat",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/help/start",
+          "host": ["{{base_url}}"],
+          "path": ["help", "start"]
+        },
+        "description": "Initiates a new help chat session with the chatbot. Returns a unique ticket_id and the initial message with options."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.collectionVariables.set('ticket_id', jsonData.data.ticket_id);",
+              "    console.log('Ticket ID saved: ' + jsonData.data.ticket_id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2a. Continue Chat - Select Option",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"state_key\": \"start\",\n  \"selected_option_id\": \"policy_details\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/help/message",
+          "host": ["{{base_url}}"],
+          "path": ["help", "message"]
+        },
+        "description": "Continue chat by selecting a chatbot option. Replace 'selected_option_id' with the ID from previous response."
+      },
+      "response": []
+    },
+    {
+      "name": "2b. Continue Chat - Policy Coverage",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"state_key\": \"policy_flow\",\n  \"selected_option_id\": \"coverage\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/help/message",
+          "host": ["{{base_url}}"],
+          "path": ["help", "message"]
+        },
+        "description": "Example: Select 'coverage' option in policy flow"
+      },
+      "response": []
+    },
+    {
+      "name": "2c. Continue Chat - Claims Flow",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"state_key\": \"start\",\n  \"selected_option_id\": \"claims\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/help/message",
+          "host": ["{{base_url}}"],
+          "path": ["help", "message"]
+        },
+        "description": "Example: Select 'claims' option from start"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Submit Free Text - Create Support Ticket",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ticket_id\": \"{{ticket_id}}\",\n  \"free_text_message\": \"I need help with my claim rejection. My claim was rejected but I submitted all documents on time.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/help/message",
+          "host": ["{{base_url}}"],
+          "path": ["help", "message"]
+        },
+        "description": "Submit a free text message when chatbot can't help. This creates a support ticket and sends email to support team."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Get Chat History",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/help/chat/{{ticket_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["help", "chat", "{{ticket_id}}"]
+        },
+        "description": "Retrieve complete chat history for a specific ticket including all messages and status changes."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Get All User Tickets",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/help/tickets",
+          "host": ["{{base_url}}"],
+          "path": ["help", "tickets"]
+        },
+        "description": "Get all tickets for the authenticated user."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get Open Tickets",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/help/tickets?status=open",
+          "host": ["{{base_url}}"],
+          "path": ["help", "tickets"],
+          "query": [
+            {
+              "key": "status",
+              "value": "open"
+            }
+          ]
+        },
+        "description": "Filter tickets by status (open, in_progress, resolved, closed)"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Update Ticket Status - Resolve",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"resolved\",\n  \"remarks\": \"Issue resolved by support team. All documents approved.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/help/ticket/{{ticket_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["help", "ticket", "{{ticket_id}}", "status"]
+        },
+        "description": "Mark ticket as resolved with remarks"
+      },
+      "response": []
+    },
+    {
+      "name": "8. Update Ticket Status - Close",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"closed\",\n  \"remarks\": \"Ticket closed after user confirmation\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/help/ticket/{{ticket_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["help", "ticket", "{{ticket_id}}", "status"]
+        },
+        "description": "Close the ticket completely"
+      },
+      "response": []
+    }
+  ]
+}

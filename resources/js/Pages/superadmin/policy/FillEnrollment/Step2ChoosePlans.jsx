@@ -74,20 +74,25 @@ export default function Step2ChoosePlans({
     return (availablePlans && availablePlans.extraCoveragePlans) || [];
   }, [availablePlans]);
 
-  // selection state from formData only
-  const [selection, setSelection] = useState(formData.selectedPlans || {
-    selectedPlanId: null,
-    extraCoverageSelected: [],
-    premiumCalculations: {
-      grossPremium: 0,
-      extraCoveragePremium: 0,
-      totalPremium: 0,
-      gst: 0,
-      grossPlusGst: 0,
-      companyContributionAmount: 0,
-      employeePayable: 0,
-    },
-  });
+  // selection state from formData only — normalize incoming to ensure keys and string IDs
+  const defaultPremiumCalc = {
+    grossPremium: 0,
+    extraCoveragePremium: 0,
+    totalPremium: 0,
+    gst: 0,
+    grossPlusGst: 0,
+    companyContributionAmount: 0,
+    employeePayable: 0,
+  };
+
+  const initialIncoming = formData?.selectedPlans || {};
+  const initialSelection = {
+    selectedPlanId: initialIncoming.selectedPlanId !== undefined && initialIncoming.selectedPlanId !== null ? String(initialIncoming.selectedPlanId) : null,
+    extraCoverageSelected: Array.isArray(initialIncoming.extraCoverageSelected) ? initialIncoming.extraCoverageSelected.map(String) : [],
+    premiumCalculations: initialIncoming.premiumCalculations || defaultPremiumCalc,
+  };
+
+  const [selection, setSelection] = useState(initialSelection);
 
   const [errors, setErrors] = useState({});
 
@@ -195,7 +200,7 @@ export default function Step2ChoosePlans({
 
   // If no plan is selected and baseSI exists, select the default base plan by default
   useEffect(() => {
-    if (!selection.selectedPlanId && basePlanDefault) {
+    if ((selection.selectedPlanId === null || selection.selectedPlanId === undefined) && basePlanDefault) {
       setSelection((prev) => ({ ...prev, selectedPlanId: 'base_sum_insured' }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -294,18 +299,52 @@ export default function Step2ChoosePlans({
           remaining_days: result?.remaining_days,
           total_policy_days: result?.total_policy_days
         });
-      } else {
-        console.warn('⚠️ Premium calculator not available, using fallback');
-        // Fallback calculation if calculator not available
-        const selectedPlan = basePlans.find(p => String(p.id) === String(sel.selectedPlanId));
+
+        // If calculator returns 0 premium for a real plan (not base_sum_insured), use fallback
+        if (sel.selectedPlanId !== 'base_sum_insured' && (!result || Number(result.prorated_premium) === 0 || Number(result.total_premium) === 0)) {
+          console.warn('⚠️ Premium calculator returned 0, using fallback for plan:', sel.selectedPlanId);
+          result = null; // Force fallback
+        }
+      }
+
+      // Fallback calculation if calculator not available or returned invalid result
+      if (!result) {
+        console.warn('⚠️ Using fallback premium calculation');
+        // Find the selected plan (include default base plan)
+        const selectedPlan = plansWithBase.find(p => String(p.id) === String(sel.selectedPlanId)) || basePlans.find(p => String(p.id) === String(sel.selectedPlanId));
         const planPremium = selectedPlan ? Number(selectedPlan.premium_amount ?? selectedPlan.employee_premium ?? selectedPlan.premium ?? 0) : 0;
 
-        // Apply per-life logic if plan type is per_life
-        const finalPremium = (cfg.plan_type === 'per_life' || cfg.rator_type === 'per_life')
-          ? planPremium * allMembers.length
-          : planPremium;
+        const planType = String(cfg.plan_type || cfg.rator_type || '').toLowerCase();
+        const memberCount = members.length || 0;
+        let finalPremium = 0;
 
-        // Apply proration if employee joined after policy start
+        if (planType === 'per_life') {
+          finalPremium = planPremium * memberCount;
+        } else if (planType === 'floater_highest_age') {
+          const highestAge = memberCount ? Math.max(...members.map(m => m.age || 0)) : 0;
+          const ageBrackets = selectedPlan?.age_brackets || [];
+          const matching = ageBrackets.find(br => {
+            const minAge = Number(br.min_age || 0);
+            const maxAge = Number(br.max_age || 999);
+            return highestAge >= minAge && highestAge <= maxAge;
+          });
+          finalPremium = matching ? Number(matching.premium_amount || 0) : 0;
+        } else if (planType === 'age_based') {
+          finalPremium = 0;
+          const ageBrackets = selectedPlan?.age_brackets || [];
+          members.forEach(member => {
+            const matching = ageBrackets.find(br => {
+              const minAge = Number(br.min_age || 0);
+              const maxAge = Number(br.max_age || 999);
+              return member.age >= minAge && member.age <= maxAge;
+            });
+            if (matching) finalPremium += Number(matching.premium_amount || 0);
+          });
+        } else {
+          finalPremium = planPremium;
+        }
+
+        // Apply proration
         const prorationData = calculateProrationFactor(employee, enrollmentDetail);
         const proratedPremium = finalPremium * prorationData.prorationFactor;
 
@@ -318,9 +357,10 @@ export default function Step2ChoosePlans({
           proration_factor: prorationData.prorationFactor,
           remaining_days: prorationData.remainingDays,
           total_policy_days: prorationData.totalPolicyDays,
-          breakdown: allMembers.map(member => ({
+          breakdown: (members || []).map(member => ({
             ...member,
-            premium: (cfg.plan_type === 'per_life' || cfg.rator_type === 'per_life') ? planPremium : finalPremium / allMembers.length,
+            premium: planType === 'per_life' ? planPremium : (memberCount ? (finalPremium / memberCount) : 0),
+            prorated_premium: planType === 'per_life' ? (planPremium * prorationData.prorationFactor) : (memberCount ? ((finalPremium / memberCount) * prorationData.prorationFactor) : 0),
             calculation_note: 'Fallback calculation'
           })),
           note: 'Fallback calculation'
@@ -441,19 +481,9 @@ export default function Step2ChoosePlans({
     }))];
   }, [employee, dependents]);
 
-  // Update parent formData whenever selection changes
-  useEffect(() => {
-    if (typeof updateFormData === "function") {
-      updateFormData({
-        ...formData,
-        selectedPlans: selection,
-        premiumCalculations: selection.premiumCalculations || {},
-        ratingConfig: ratingConfig, // Add ratingConfig to formData
-        availablePlans: availablePlans, // Also add availablePlans for reference
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selection]);
+  // NOTE: parent `updateFormData` is intentionally NOT called on every render here
+  // to avoid an update loop. Parent sync happens on user actions (select/toggle)
+  // or when the user moves to next step.
 
   // If dependents from parent change, sync local dependents
   useEffect(() => {
@@ -465,15 +495,22 @@ export default function Step2ChoosePlans({
   // If parent formData.selectedPlans changes (e.g., from Step3), sync local selection
   useEffect(() => {
     const incoming = formData?.selectedPlans;
-    if (!incoming) return;
+    // Ignore empty or uninitialized incoming object to avoid overwriting local selection
+    if (!incoming || (Object.keys(incoming).length === 0 && !incoming.selectedPlanId && !Array.isArray(incoming.extraCoverageSelected))) return;
     try {
       const curPlan = String(selection.selectedPlanId || '');
-      const incPlan = String(incoming.selectedPlanId || '');
+      const incPlan = incoming.selectedPlanId !== undefined && incoming.selectedPlanId !== null ? String(incoming.selectedPlanId) : '';
       const normalizeArray = (arr) => (Array.isArray(arr) ? arr.map(String).sort() : []);
       const curExtra = JSON.stringify(normalizeArray(selection.extraCoverageSelected || []));
       const incExtra = JSON.stringify(normalizeArray(incoming.extraCoverageSelected || []));
       if (curPlan !== incPlan || curExtra !== incExtra) {
-        setSelection((prev) => ({ ...prev, ...incoming }));
+        // merge and normalize incoming values
+        const normalized = {
+          selectedPlanId: incPlan || null,
+          extraCoverageSelected: Array.isArray(incoming.extraCoverageSelected) ? incoming.extraCoverageSelected.map(String) : [],
+          premiumCalculations: incoming.premiumCalculations || selection.premiumCalculations || {}
+        };
+        setSelection((prev) => ({ ...prev, ...normalized }));
       }
     } catch (e) {
       // if anything goes wrong, safely ignore sync
@@ -481,28 +518,67 @@ export default function Step2ChoosePlans({
     }
   }, [formData?.selectedPlans]);
 
+  // Debug: log selection changes
+  useEffect(() => {
+    console.log('🟢 selection changed:', selection);
+  }, [selection]);
+
   // Recompute whenever members, selection.selectedPlanId, or extraCoverageSelected change
   useEffect(() => {
     const computed = computePremiums(ratingConfig, selection, allMembers);
-    setSelection((prev) => ({ ...prev, premiumCalculations: computed }));
+    console.log('🔁 Recompute effect: selection.selectedPlanId=', selection.selectedPlanId, 'extraCoverage=', selection.extraCoverageSelected);
+    console.log('🔁 Recompute computed:', computed);
+    setSelection((prev) => {
+      try {
+        const prevCalc = prev && prev.premiumCalculations ? prev.premiumCalculations : {};
+        console.log('🔁 Prev calc:', prevCalc);
+        if (JSON.stringify(prevCalc) !== JSON.stringify(computed)) {
+          console.log('🔁 Updating premiumCalculations in selection');
+          return { ...prev, premiumCalculations: computed };
+        }
+      } catch (e) {
+        console.warn('🔁 Recompute compare failed, applying computed', e);
+        return { ...prev, premiumCalculations: computed };
+      }
+      return prev;
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection.selectedPlanId, selection.extraCoverageSelected, allMembers.length, JSON.stringify(allMembers.map(m=>m.age)), ratingConfig]);
 
   // handle selecting global plan
   const onSelectPlan = (planId) => {
+    console.log('onSelectPlan clicked:', planId);
     setSelection((prev) => {
-      const next = { ...prev, selectedPlanId: planId };
-      return next;
+      const next = { ...prev, selectedPlanId: String(planId) };
+      try {
+        const computed = computePremiums(ratingConfig, next, allMembers);
+        console.log('onSelectPlan computed:', computed);
+        return { ...next, premiumCalculations: computed };
+      } catch (e) {
+        console.error('onSelectPlan compute error', e);
+        return next;
+      }
     });
     setErrors((s) => ({ ...s, plan: undefined }));
   };
 
   const toggleExtraCoverage = (id) => {
+    console.log('toggleExtraCoverage clicked:', id);
     setSelection((prev) => {
-      const set = new Set(prev.extraCoverageSelected || []);
-      if (set.has(id)) set.delete(id);
-      else set.add(id);
-      return { ...prev, extraCoverageSelected: Array.from(set) };
+      const existing = Array.isArray(prev.extraCoverageSelected) ? prev.extraCoverageSelected.map(String) : [];
+      const set = new Set(existing);
+      const idStr = String(id);
+      if (set.has(idStr)) set.delete(idStr);
+      else set.add(idStr);
+      const next = { ...prev, extraCoverageSelected: Array.from(set) };
+      try {
+        const computed = computePremiums(ratingConfig, next, allMembers);
+        console.log('toggleExtraCoverage computed:', computed);
+        return { ...next, premiumCalculations: computed };
+      } catch (e) {
+        console.error('toggleExtraCoverage compute error', e);
+        return next;
+      }
     });
   };
 
@@ -566,6 +642,7 @@ export default function Step2ChoosePlans({
   // UI plan card
   const PlanCard = ({ plan }) => {
     const selected = String(selection.selectedPlanId) === String(plan.id);
+    console.log('PlanCard render:', { plan, selected, selectionId: selection.selectedPlanId });
     const isBaseCard = plan.id === 'base_sum_insured';
     const planPremium = Number(plan.premium_amount ?? plan.employee_premium ?? plan.premium ?? 0) || 0;
     const sumInsured = plan.sum_insured ? Number(plan.sum_insured) : null;
@@ -598,7 +675,7 @@ export default function Step2ChoosePlans({
 
     if (isBaseCard) {
       return (
-        <label className={`p-3 border-2 border-dashed rounded-md cursor-pointer flex items-start gap-3 bg-white ${selected ? "border-[#934790] shadow-md" : "border-blue-300 hover:bg-blue-50"}`}>
+        <label onClick={() => onSelectPlan(plan.id)} className={`p-3 border-2 border-dashed rounded-md cursor-pointer flex items-start gap-3 bg-white ${selected ? "border-[#934790] shadow-md" : "border-blue-300 hover:bg-blue-50"}`}>
           <input
             type="radio"
             name="global_plan"
@@ -619,13 +696,14 @@ export default function Step2ChoosePlans({
       );
     }
     return (
-      <label className={`p-3 border rounded-md cursor-pointer flex items-start gap-3 ${selected ? "border-[#934790] shadow-md bg-white" : "border-gray-200 hover:bg-gray-50"}`}>
+      <label onClick={() => onSelectPlan(plan.id)} className={`p-3 border rounded-md cursor-pointer flex items-start gap-3 ${selected ? "border-[#934790] shadow-md bg-white" : "border-gray-200 hover:bg-gray-50"}`}>
         <input
           type="radio"
           name="global_plan"
           value={plan.id}
           checked={selected}
           onChange={() => onSelectPlan(plan.id)}
+          onClick={() => onSelectPlan(plan.id)}
           className="mt-1 mr-3 text-[#934790] focus:ring-[#934790]"
         />
         <div className="flex-1">
@@ -722,7 +800,7 @@ export default function Step2ChoosePlans({
         <h4 className="text-sm font-semibold text-gray-700">Available Plans</h4>
 
         {plansWithBase && plansWithBase.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3" onClick={(e) => { console.log('plans grid click target:', e.target, 'path:', (e.nativeEvent && e.nativeEvent.composedPath) ? e.nativeEvent.composedPath() : 'no-path'); }}>
             {plansWithBase.map((p) => <PlanCard key={p.id || p.plan_name} plan={p} />)}
           </div>
         ) : (
