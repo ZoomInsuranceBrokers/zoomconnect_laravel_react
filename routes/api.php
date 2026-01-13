@@ -35,23 +35,23 @@ Route::prefix('v1')->group(function () {
         // ============================================
         Route::prefix('help')->group(function () {
             // Start a new help chat session
-            Route::post('/start', [App\Http\Controllers\Api\HelpSupportController::class, 'startChat'])
+            Route::post('/start', [App\Http\Controllers\ApiController::class, 'startHelpChat'])
                 ->name('api.help.start');
             
             // Continue existing chat conversation
-            Route::post('/message', [App\Http\Controllers\Api\HelpSupportController::class, 'continueChat'])
+            Route::post('/message', [App\Http\Controllers\ApiController::class, 'continueHelpChat'])
                 ->name('api.help.message');
             
             // Get chat history for a specific ticket
-            Route::get('/chat/{ticket_id}', [App\Http\Controllers\Api\HelpSupportController::class, 'getChatHistory'])
+            Route::get('/chat/{ticket_id}', [App\Http\Controllers\ApiController::class, 'getHelpChatHistory'])
                 ->name('api.help.chat.history');
             
             // Get all tickets for the authenticated user
-            Route::get('/tickets', [App\Http\Controllers\Api\HelpSupportController::class, 'getUserTickets'])
+            Route::get('/tickets', [App\Http\Controllers\ApiController::class, 'getHelpTickets'])
                 ->name('api.help.tickets');
             
             // Update ticket status (resolve, close, etc.)
-            Route::patch('/ticket/{ticket_id}/status', [App\Http\Controllers\Api\HelpSupportController::class, 'updateTicketStatus'])
+            Route::patch('/ticket/{ticket_id}/status', [App\Http\Controllers\ApiController::class, 'updateHelpTicketStatus'])
                 ->name('api.help.ticket.status');
         });
     });

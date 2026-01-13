@@ -1,0 +1,584 @@
+{
+  "chatbot_flow_map": {
+    "description": "Complete multi-layered chatbot flow for Insurance Help System",
+    "total_levels": 4,
+    "total_nodes": 100,
+    "flow_structure": {
+      "level_1_start": {
+        "node": "start",
+        "message": "Hello! How can I assist you today?",
+        "options": [
+          {
+            "id": "policy_details",
+            "label": "📋 My Policy Details",
+            "leads_to": "level_2_policy_menu"
+          },
+          {
+            "id": "claims",
+            "label": "💰 Claims & Reimbursement",
+            "leads_to": "level_2_claims_menu"
+          },
+          {
+            "id": "ecard",
+            "label": "🎴 E-Card Services",
+            "leads_to": "level_2_ecard_menu"
+          },
+          {
+            "id": "network",
+            "label": "🏥 Network Hospitals",
+            "leads_to": "level_2_network_menu"
+          },
+          {
+            "id": "wellness",
+            "label": "💪 Wellness Services",
+            "leads_to": "level_2_wellness_menu"
+          },
+          {
+            "id": "enrollment",
+            "label": "📝 Enrollment & Registration",
+            "leads_to": "level_2_enrollment_menu"
+          }
+        ]
+      },
+      "level_2_policy_menu": {
+        "node": "policy_menu",
+        "message": "What information do you need about your policy?",
+        "options": [
+          {
+            "id": "coverage",
+            "label": "Coverage Details",
+            "leads_to": "level_3_coverage_submenu"
+          },
+          {
+            "id": "members",
+            "label": "Family Members & Dependants",
+            "leads_to": "level_3_members_submenu"
+          },
+          {
+            "id": "policy_docs",
+            "label": "Policy Documents",
+            "leads_to": "level_3_policy_docs_submenu"
+          },
+          {
+            "id": "policy_dates",
+            "label": "Policy Period & Renewal",
+            "leads_to": "level_3_policy_dates_submenu"
+          },
+          {
+            "id": "premium",
+            "label": "Premium & Payment",
+            "leads_to": "level_3_premium_submenu"
+          }
+        ]
+      },
+      "level_3_coverage_submenu": {
+        "node": "coverage_submenu",
+        "message": "Which coverage information would you like?",
+        "options": [
+          {
+            "id": "basic_coverage",
+            "label": "Basic Coverage",
+            "leads_to": "terminal_basic_coverage_info"
+          },
+          {
+            "id": "room_rent",
+            "label": "Room Rent Limits",
+            "leads_to": "terminal_room_rent_info"
+          },
+          {
+            "id": "pre_post_hosp",
+            "label": "Pre & Post Hospitalization",
+            "leads_to": "terminal_pre_post_hosp_info"
+          },
+          {
+            "id": "daycare",
+            "label": "Daycare Procedures",
+            "leads_to": "terminal_daycare_info"
+          },
+          {
+            "id": "maternity",
+            "label": "Maternity Coverage",
+            "leads_to": "level_4_maternity_submenu"
+          },
+          {
+            "id": "exclusions",
+            "label": "What's NOT Covered",
+            "leads_to": "terminal_exclusions_info"
+          }
+        ]
+      },
+      "level_4_maternity_submenu": {
+        "node": "maternity_submenu",
+        "message": "What would you like to know about maternity?",
+        "depth": 4,
+        "options": [
+          {
+            "id": "normal_delivery",
+            "label": "Normal Delivery Coverage",
+            "leads_to": "terminal_normal_delivery_info",
+            "has_thank_you": true
+          },
+          {
+            "id": "c_section",
+            "label": "C-Section Coverage",
+            "leads_to": "terminal_c_section_info",
+            "has_thank_you": true
+          },
+          {
+            "id": "waiting_period",
+            "label": "Waiting Period",
+            "leads_to": "terminal_maternity_waiting_info",
+            "has_thank_you": true
+          },
+          {
+            "id": "newborn_coverage",
+            "label": "Newborn Baby Coverage",
+            "leads_to": "terminal_newborn_info",
+            "has_thank_you": true
+          }
+        ]
+      },
+      "level_3_members_submenu": {
+        "node": "members_submenu",
+        "message": "What would you like to do with family members?",
+        "options": [
+          {
+            "id": "view_members",
+            "label": "View All Members",
+            "leads_to": "terminal_view_members_info"
+          },
+          {
+            "id": "add_dependant",
+            "label": "Add Dependant",
+            "leads_to": "level_4_add_dependant_submenu"
+          },
+          {
+            "id": "remove_dependant",
+            "label": "Remove Dependant",
+            "leads_to": "terminal_remove_dependant_info"
+          },
+          {
+            "id": "update_member",
+            "label": "Update Member Details",
+            "leads_to": "terminal_update_member_info"
+          }
+        ]
+      },
+      "level_4_add_dependant_submenu": {
+        "node": "add_dependant_submenu",
+        "message": "Who would you like to add?",
+        "depth": 4,
+        "options": [
+          {
+            "id": "add_spouse",
+            "label": "Add Spouse",
+            "leads_to": "terminal_add_spouse_info",
+            "has_thank_you": true
+          },
+          {
+            "id": "add_child",
+            "label": "Add Child",
+            "leads_to": "terminal_add_child_info",
+            "has_thank_you": true
+          },
+          {
+            "id": "add_parent",
+            "label": "Add Parent",
+            "leads_to": "terminal_add_parent_info",
+            "has_thank_you": true
+          },
+          {
+            "id": "add_parent_in_law",
+            "label": "Add Parent-in-law",
+            "leads_to": "terminal_add_parent_in_law_info",
+            "has_thank_you": true
+          }
+        ]
+      },
+      "level_2_claims_menu": {
+        "node": "claims_menu",
+        "message": "How can I help you with claims?",
+        "options": [
+          {
+            "id": "file_claim",
+            "label": "File a New Claim",
+            "leads_to": "level_3_file_claim_submenu"
+          },
+          {
+            "id": "track_claim",
+            "label": "Track Claim Status",
+            "leads_to": "level_3_track_claim_submenu"
+          },
+          {
+            "id": "claim_rejected",
+            "label": "Claim Rejected/Queries",
+            "leads_to": "level_3_claim_rejected_submenu"
+          },
+          {
+            "id": "claim_settlement",
+            "label": "Claim Settlement",
+            "leads_to": "level_3_claim_settlement_submenu"
+          },
+          {
+            "id": "reimbursement",
+            "label": "Reimbursement Process",
+            "leads_to": "level_3_reimbursement_submenu"
+          }
+        ]
+      },
+      "level_3_file_claim_submenu": {
+        "node": "file_claim_submenu",
+        "message": "What type of claim would you like to file?",
+        "options": [
+          {
+            "id": "cashless_claim",
+            "label": "Cashless Hospitalization",
+            "leads_to": "terminal_cashless_claim_info"
+          },
+          {
+            "id": "reimbursement_claim",
+            "label": "Reimbursement Claim",
+            "leads_to": "terminal_reimbursement_claim_info"
+          },
+          {
+            "id": "daycare_claim",
+            "label": "Daycare Claim",
+            "leads_to": "terminal_daycare_claim_info"
+          },
+          {
+            "id": "maternity_claim",
+            "label": "Maternity Claim",
+            "leads_to": "terminal_maternity_claim_info"
+          }
+        ]
+      },
+      "level_3_track_claim_submenu": {
+        "node": "track_claim_submenu",
+        "message": "How would you like to track your claim?",
+        "options": [
+          {
+            "id": "by_claim_number",
+            "label": "By Claim Number",
+            "leads_to": "terminal_track_by_number_info"
+          },
+          {
+            "id": "recent_claims",
+            "label": "View Recent Claims",
+            "leads_to": "terminal_recent_claims_info"
+          },
+          {
+            "id": "pending_claims",
+            "label": "Pending Claims",
+            "leads_to": "terminal_pending_claims_info"
+          },
+          {
+            "id": "settled_claims",
+            "label": "Settled Claims",
+            "leads_to": "terminal_settled_claims_info"
+          }
+        ]
+      },
+      "level_2_ecard_menu": {
+        "node": "ecard_menu",
+        "message": "What would you like to do with your E-Card?",
+        "options": [
+          {
+            "id": "download_ecard",
+            "label": "Download E-Card",
+            "leads_to": "terminal_download_ecard_info"
+          },
+          {
+            "id": "share_ecard",
+            "label": "Share E-Card",
+            "leads_to": "terminal_share_ecard_info"
+          },
+          {
+            "id": "family_ecards",
+            "label": "Family E-Cards",
+            "leads_to": "terminal_family_ecards_info"
+          },
+          {
+            "id": "ecard_not_working",
+            "label": "E-Card Issues",
+            "leads_to": "level_3_ecard_issues_submenu"
+          }
+        ]
+      },
+      "level_3_ecard_issues_submenu": {
+        "node": "ecard_issues_submenu",
+        "message": "What issue are you facing with E-Card?",
+        "options": [
+          {
+            "id": "cant_download",
+            "label": "Can't Download",
+            "leads_to": "terminal_cant_download_info"
+          },
+          {
+            "id": "wrong_details",
+            "label": "Wrong Details on E-Card",
+            "leads_to": "terminal_wrong_details_info"
+          },
+          {
+            "id": "ecard_expired",
+            "label": "E-Card Expired",
+            "leads_to": "terminal_ecard_expired_info"
+          },
+          {
+            "id": "hospital_rejected",
+            "label": "Hospital Rejected E-Card",
+            "leads_to": "terminal_hospital_rejected_info"
+          }
+        ]
+      },
+      "level_2_network_menu": {
+        "node": "network_menu",
+        "message": "How can I help you find network hospitals?",
+        "options": [
+          {
+            "id": "search_hospital",
+            "label": "Search Hospital",
+            "leads_to": "level_3_search_hospital_submenu"
+          },
+          {
+            "id": "nearby_hospitals",
+            "label": "Nearby Hospitals",
+            "leads_to": "terminal_nearby_hospitals_info"
+          },
+          {
+            "id": "hospital_facilities",
+            "label": "Hospital Facilities",
+            "leads_to": "terminal_hospital_facilities_info"
+          },
+          {
+            "id": "cashless_process",
+            "label": "Cashless Process at Hospital",
+            "leads_to": "terminal_cashless_process_info"
+          }
+        ]
+      },
+      "level_3_search_hospital_submenu": {
+        "node": "search_hospital_submenu",
+        "message": "How would you like to search?",
+        "options": [
+          {
+            "id": "by_city",
+            "label": "Search by City",
+            "leads_to": "terminal_by_city_info"
+          },
+          {
+            "id": "by_specialty",
+            "label": "Search by Specialty",
+            "leads_to": "terminal_by_specialty_info"
+          },
+          {
+            "id": "by_name",
+            "label": "Search by Hospital Name",
+            "leads_to": "terminal_by_name_info"
+          },
+          {
+            "id": "top_hospitals",
+            "label": "Top Rated Hospitals",
+            "leads_to": "terminal_top_hospitals_info"
+          }
+        ]
+      },
+      "level_2_wellness_menu": {
+        "node": "wellness_menu",
+        "message": "What wellness service are you interested in?",
+        "options": [
+          {
+            "id": "health_checkup",
+            "label": "Health Checkup",
+            "leads_to": "level_3_health_checkup_submenu"
+          },
+          {
+            "id": "fitness",
+            "label": "Fitness Programs",
+            "leads_to": "terminal_fitness_info"
+          },
+          {
+            "id": "mental_health",
+            "label": "Mental Health Support",
+            "leads_to": "terminal_mental_health_info"
+          },
+          {
+            "id": "nutrition",
+            "label": "Nutrition Counseling",
+            "leads_to": "terminal_nutrition_info"
+          },
+          {
+            "id": "yoga",
+            "label": "Yoga & Meditation",
+            "leads_to": "terminal_yoga_info"
+          }
+        ]
+      },
+      "level_3_health_checkup_submenu": {
+        "node": "health_checkup_submenu",
+        "message": "What type of health checkup?",
+        "options": [
+          {
+            "id": "basic_checkup",
+            "label": "Basic Health Checkup",
+            "leads_to": "terminal_basic_checkup_info"
+          },
+          {
+            "id": "comprehensive",
+            "label": "Comprehensive Checkup",
+            "leads_to": "terminal_comprehensive_info"
+          },
+          {
+            "id": "cardiac",
+            "label": "Cardiac Checkup",
+            "leads_to": "terminal_cardiac_info"
+          },
+          {
+            "id": "diabetes",
+            "label": "Diabetes Screening",
+            "leads_to": "terminal_diabetes_info"
+          },
+          {
+            "id": "women_health",
+            "label": "Women's Health Checkup",
+            "leads_to": "terminal_women_health_info"
+          }
+        ]
+      },
+      "level_2_enrollment_menu": {
+        "node": "enrollment_menu",
+        "message": "What do you need help with regarding enrollment?",
+        "options": [
+          {
+            "id": "new_enrollment",
+            "label": "New Enrollment",
+            "leads_to": "terminal_new_enrollment_info"
+          },
+          {
+            "id": "enrollment_status",
+            "label": "Check Enrollment Status",
+            "leads_to": "terminal_enrollment_status_info"
+          },
+          {
+            "id": "modify_enrollment",
+            "label": "Modify Enrollment",
+            "leads_to": "terminal_modify_enrollment_info"
+          },
+          {
+            "id": "enrollment_deadline",
+            "label": "Enrollment Deadline",
+            "leads_to": "terminal_enrollment_deadline_info"
+          }
+        ]
+      }
+    },
+    "terminal_nodes_summary": {
+      "total_terminal_nodes": 70,
+      "nodes_with_thank_you": 70,
+      "categories": {
+        "policy_details": {
+          "count": 25,
+          "examples": [
+            "basic_coverage_info",
+            "room_rent_info",
+            "normal_delivery_info",
+            "c_section_info",
+            "add_spouse_info",
+            "add_child_info"
+          ]
+        },
+        "claims": {
+          "count": 20,
+          "examples": [
+            "cashless_claim_info",
+            "track_by_number_info",
+            "missing_docs_info",
+            "settlement_time_info"
+          ]
+        },
+        "ecard": {
+          "count": 7,
+          "examples": [
+            "download_ecard_info",
+            "cant_download_info",
+            "wrong_details_info"
+          ]
+        },
+        "network_hospitals": {
+          "count": 8,
+          "examples": [
+            "by_city_info",
+            "nearby_hospitals_info",
+            "cashless_process_info"
+          ]
+        },
+        "wellness": {
+          "count": 6,
+          "examples": [
+            "basic_checkup_info",
+            "fitness_info",
+            "mental_health_info"
+          ]
+        },
+        "enrollment": {
+          "count": 4,
+          "examples": [
+            "new_enrollment_info",
+            "enrollment_status_info"
+          ]
+        }
+      }
+    },
+    "navigation_paths": {
+      "deepest_path_example_1": {
+        "depth": 4,
+        "path": "start → policy_menu → coverage_submenu → maternity_submenu → normal_delivery_info",
+        "node_sequence": [
+          "start",
+          "policy_menu",
+          "coverage_submenu",
+          "maternity_submenu",
+          "normal_delivery_info"
+        ]
+      },
+      "deepest_path_example_2": {
+        "depth": 4,
+        "path": "start → policy_menu → members_submenu → add_dependant_submenu → add_spouse_info",
+        "node_sequence": [
+          "start",
+          "policy_menu",
+          "members_submenu",
+          "add_dependant_submenu",
+          "add_spouse_info"
+        ]
+      },
+      "typical_3_level_path": {
+        "depth": 3,
+        "path": "start → claims_menu → file_claim_submenu → cashless_claim_info",
+        "node_sequence": [
+          "start",
+          "claims_menu",
+          "file_claim_submenu",
+          "cashless_claim_info"
+        ]
+      }
+    },
+    "features": {
+      "multi_layer_navigation": true,
+      "max_depth": 4,
+      "thank_you_messages": true,
+      "free_text_support": true,
+      "ticket_system": true,
+      "email_notifications": true,
+      "status_tracking": true,
+      "chat_history": true,
+      "state_management": true
+    },
+    "usage_notes": {
+      "option_selection": "User selects option by sending JSON: {\"selected_option\": \"option_id\"}",
+      "free_text_query": "User can type plain text at any point to create support ticket",
+      "terminal_behavior": "Terminal nodes show answer + thank you message, then allow free text or new chat",
+      "state_tracking": "Each message saves current state_key for navigation history",
+      "ticket_format": "TKT-YYYYMMDD-XXXXX (unique per conversation)"
+    }
+  }
+}
