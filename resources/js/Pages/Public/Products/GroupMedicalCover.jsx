@@ -383,9 +383,9 @@ export default function GroupMedicalCover() {
                         {/* Right Image */}
                         <div className="md:w-1/2 flex justify-center items-center p-10">
                             <img
-                                src="/assets/images/products/wellbeing_gmc_products.png"
+                                src="/assets/images/products/Wellbeing_GMC_products_final.png"
                                 alt="Employee Well-being"
-                                className="w-full max-w-sm object-cover"
+                                className="w-full max-w-lg object-cover"
                             />
                         </div>
                     </div>

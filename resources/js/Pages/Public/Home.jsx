@@ -875,7 +875,9 @@ export default function Home() {
                     </div>
                 </section>
 
-                <FaqSection />
+                <div id="faq">
+                    <FaqSection />
+                </div>
 
                 <CertificationCarousel />
 

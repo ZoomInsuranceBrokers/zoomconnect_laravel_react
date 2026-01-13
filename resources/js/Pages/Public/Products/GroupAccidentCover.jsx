@@ -98,8 +98,8 @@ export default function GroupAccidentCover() {
                             </div>
                         </div>
                         <div className="flex justify-center">
-                            <div className="relative overflow-hidden w-80 md:w-[350px] p-6">
-                                <img className="w-full h-full object-cover" src="/assets/images/products/group_accident_1.png" alt="Group Accident Cover" />
+                            <div className="relative overflow-hidden w-80 md:w-[750px] p-6">
+                                <img className="w-full h-full object-cover" src="/assets/images/products/Group_Accident_Cover.png" alt="Group Accident Cover" />
                             </div>
                         </div>
                     </div>

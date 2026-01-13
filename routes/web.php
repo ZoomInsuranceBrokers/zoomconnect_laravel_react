@@ -33,6 +33,11 @@ Route::prefix('products')->name('products.')->group(function () {
     Route::get('/telehealth-services', [ProductController::class, 'telehealthServices'])->name('telehealth-services');
 });
 
+Route::get('/privacy-policy', [ProductController::class, 'privacyPolicy'])->name('privacy-policy');
+
+Route::get('/terms-and-conditions', [ProductController::class, 'termsAndConditions'])->name('terms-and-conditions');
+
+
 Route::get('/employee', [App\Http\Controllers\ProductController::class, 'employee'])->name('employee');
 Route::get('/employer', [App\Http\Controllers\ProductController::class, 'employer'])->name('employer');
 Route::get('/mobile', [App\Http\Controllers\ProductController::class, 'mobile'])->name('mobile');

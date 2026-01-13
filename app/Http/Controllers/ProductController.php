@@ -100,4 +100,14 @@ class ProductController extends Controller
     {
         return Inertia::render('Public/Products/ContactUs');
     }
+     public function privacyPolicy()
+    {
+        return Inertia::render('Public/PrivacyPolicy');
+    }
+     public function termsAndConditions()
+    {
+        return Inertia::render('Public/TermsAndConditions');
+    }
+
+    
 }
