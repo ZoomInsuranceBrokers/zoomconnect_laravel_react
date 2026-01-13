@@ -100,7 +100,7 @@ function WhyMediumTeamsLoveZoomConnect() {
             accentColor: '#FF69B4',
             borderColor: '#FF1493'
         },
-    
+
         {
             icon: <FaShieldAlt />,
             title: "Expert Claims Support",
@@ -351,12 +351,11 @@ export default function MediumTeams() {
     ];
 
     const trustedLogos = [
-        { name: 'JAINA INDIA PRIVATE LIMITED' },
-        { name: 'NIHILENT LIMITED' },
-        { name: 'Konica Minolta Healthcare' },
-        { name: 'Trail Blazer Tours India Pvt Ltd' },
-        { name: 'GLOBALSTEP SERVICES PRIVATE LIMITED' },
-        { name: 'BCH ELECTRIC LTD' }
+        { name: 'JAINA INDIA PRIVATE LIMITED', logo: '/assets/images/solutions/startups_logo/jaina.png' },
+        { name: 'Konica Minolta Healthcare', logo: '/assets/images/solutions/startups_logo/konika.png' },
+        { name: 'Trail Blazer Tours India Pvt Ltd', logo: '/assets/images/solutions/startups_logo/TBI.png' },
+        { name: 'GLOBALSTEP SERVICES PRIVATE LIMITED', logo: '/assets/images/solutions/startups_logo/Global.png' },
+        { name: 'BCH ELECTRIC LTD', logo: '/assets/images/solutions/startups_logo/BCH.png' }
     ];
 
     const insights = [
@@ -416,16 +415,15 @@ export default function MediumTeams() {
                         </div>
                     </div>
                 </section>
-                <section className="w-full py-20 bg-[#3d1139] text-white">
+                <section className="w-full py-12 bg-[#3d1139] text-white">
                     <div className="max-w-7xl mx-auto px-6 lg:px-8">
                         <div className="text-center mb-10">
                             <h2 className="text-4xl font-dmserif font-bold leading-tight mb-2">
-                                Trusted by Growing Businesses
+                                Trusted by Leading Medium Businesses
                             </h2>
-                            <div className="text-base text-white/80 font-medium mb-2">Medium-sized companies making a big impact</div>
-                            <div className="text-sm text-white/60">Trusted by companies for comprehensive insurance brokerage, claims support, and employee health benefit solutions.</div>
+                            <div className="text-base text-white/80 font-medium mb-2">Empowering medium teams with trusted insurance, claims support, and employee health benefits.</div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
+                        <div className="flex flex-row flex-nowrap justify-center items-center gap-6 overflow-x-auto scrollbar-hide">
                             {trustedLogos.map((logo, idx) => {
                                 // Capitalize first letter of every word
                                 const displayName = logo.name
@@ -436,15 +434,19 @@ export default function MediumTeams() {
                                 return (
                                     <div
                                         key={idx}
-                                        className="flex items-center w-full max-w-sm bg-gradient-to-br from-[#2a0d27] via-[#3d1139] to-[#2a0d27] rounded-2xl shadow-xl border-l-8 border-[#b85c9e] p-5 hover:scale-[1.03] hover:shadow-2xl transition-all duration-300 group cursor-pointer"
-                                        style={{ minHeight: '90px' }}
+                                        className="flex items-center justify-center group mx-2"
+                                        style={{ minHeight: '100px' }}
                                     >
-                                        <div className="flex items-center justify-center bg-[#fff1e6]/10 rounded-full p-3 mr-4">
-                                            <FaShieldAlt className="text-[#FFB300] w-6 h-6" />
-                                        </div>
-                                        <div className="flex flex-col flex-1 min-w-0">
-                                            <span className="text-white font-medium text-base md:text-base group-hover:text-[#FFB300] transition-colors duration-300">{displayName}</span>
-                                        </div>
+                                        {logo.logo ? (
+                                            <img
+                                                src={logo.logo}
+                                                alt={displayName + ' logo'}
+                                                className="w-36 h-36 object-contain"
+                                                style={{ maxWidth: '110px', maxHeight: '110px' }}
+                                            />
+                                        ) : (
+                                            <FaShieldAlt className="text-[#FFB300] w-24 h-24" />
+                                        )}
                                     </div>
                                 );
                             })}

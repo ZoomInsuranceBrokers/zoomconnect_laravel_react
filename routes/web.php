@@ -33,6 +33,11 @@ Route::prefix('products')->name('products.')->group(function () {
     Route::get('/telehealth-services', [ProductController::class, 'telehealthServices'])->name('telehealth-services');
 });
 
+Route::get('/privacy-policy', [ProductController::class, 'privacyPolicy'])->name('privacy-policy');
+
+Route::get('/terms-and-conditions', [ProductController::class, 'termsAndConditions'])->name('terms-and-conditions');
+
+
 Route::get('/employee', [App\Http\Controllers\ProductController::class, 'employee'])->name('employee');
 Route::get('/employer', [App\Http\Controllers\ProductController::class, 'employer'])->name('employer');
 Route::get('/mobile', [App\Http\Controllers\ProductController::class, 'mobile'])->name('mobile');
@@ -156,7 +161,7 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
     Route::post('/corporate/{company}/upload-bulk-csv', [SuperAdminController::class, 'uploadBulkCsv'])->name('corporate.upload-bulk-csv');
     Route::post('/corporate/{company}/process-bulk-action', [SuperAdminController::class, 'processBulkAction'])->name('corporate.process-bulk-action');
     Route::get('/bulk-action/{action}/download/{type}', [SuperAdminController::class, 'downloadBulkActionFile'])->name('bulk-action.download-file');
- Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
+    Route::get('/wellness/vendor-list', [SuperAdminController::class, 'vendorList'])->name('wellness.vendor-list');
     Route::post('/wellness/vendor-list', [SuperAdminController::class, 'vendorStore'])->name('superadmin.wellness.vendor.store');
     Route::put('/wellness/vendor/{vendor}', [SuperAdminController::class, 'vendorUpdate'])->name('superadmin.wellness.vendor.update');
     Route::put('/wellness/vendor/{vendor}/toggle-status', [SuperAdminController::class, 'vendorToggleStatus'])->name('wellness.vendor.toggle-status');
@@ -319,7 +324,7 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
     Route::get('/fill-enrollment/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'fillEnrollment'])->name('superadmin.fill-enrollment');
     Route::post('/fill-enrollment/submit', [SuperAdminController::class, 'submitEnrollment'])->name('superadmin.submit-enrollment');
 
- // CD Accounts Routes
+    // CD Accounts Routes
     Route::get('/policy/cd-accounts', [SuperAdminController::class, 'cdAccountsIndex'])->name('superadmin.policy.cd-accounts.index');
     Route::get('/policy/cd-accounts/create', [SuperAdminController::class, 'cdAccountsCreate'])->name('superadmin.policy.cd-accounts.create');
     Route::post('/policy/cd-accounts', [SuperAdminController::class, 'cdAccountsStore'])->name('superadmin.policy.cd-accounts.store');
@@ -330,7 +335,7 @@ Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'p
     Route::post('/policy/cd-accounts/transaction', [SuperAdminController::class, 'cdAccountsTransactionStore']);
     Route::delete('/policy/cd-accounts/transaction/{id}', [SuperAdminController::class, 'cdAccountsTransactionDelete']);
     // Wellness Module Routes
-   
+
 });
 // });
 // });

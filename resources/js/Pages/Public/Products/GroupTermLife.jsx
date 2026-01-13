@@ -6,31 +6,6 @@ import { FaHeart, FaUsers, FaUmbrella, FaHandHoldingHeart } from 'react-icons/fa
 import ScrollProgressBar from '../../../Components/ScrollProgressBar';
 
 
-// const Droplet = ({ icon }) => (
-//     <div className="relative w-32 h-36 flex items-center justify-center">
-//         {/* Improved Droplet Background */}
-//         <svg viewBox="0 0 120 160" className="absolute inset-0 w-full h-full drop-shadow-md">
-//             <path
-//                 d="
-//                     M60 5
-//                     C35 35 15 70 15 105
-//                     C15 135 35 155 60 155
-//                     C85 155 105 135 105 105
-//                     C105 70 85 35 60 5
-//                     Z
-//                 "
-//                 fill="#f7e9f8"
-//                 stroke="#c176be"
-//                 strokeWidth="3"
-//             />
-//         </svg>
-
-//         {/* Icon */}
-//         <div className="relative z-10 text-[#c176be] text-4xl">
-//             {icon}
-//         </div>
-//     </div>
-// );
 
 
 
@@ -137,8 +112,8 @@ export default function GroupTermLife() {
                             </div>
                         </div>
                         <div className="flex justify-center">
-                            <div className="relative overflow-hidden w-80 md:w-[350px] p-6">
-                                <img className="w-full h-full object-cover" src="/assets/images/gtl_hero.png" alt="GTL hero section" />
+                            <div className="relative overflow-hidden w-80 md:w-[600px] p-6">
+                                <img className="w-full h-full object-cover" src="/assets/images/products/term_life.png" alt="GTL hero section" />
                             </div>
                         </div>
                     </div>

@@ -35,7 +35,7 @@ export default function Surveys() {
                             className="w-full h-full object-cover"
                         />
                     </div>
-                    <div className="max-w-7xl mx-auto px-6 py-20 z-10">
+                    <div className="max-w-7xl mx-auto px-6 py-10 z-10">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center min-h-[500px]">
                             <div className="flex flex-col justify-center">
                                 <h1 className="text-4xl md:text-5xl font-dmserif font-semibold leading-tight text-gray-800 mb-4">
@@ -99,14 +99,14 @@ export default function Surveys() {
                     </div>
                 </section>
 
-                <section className="w-full py-24 relative overflow-hidden">
+                <section className="w-full py-16 relative overflow-hidden">
                     {/* Decorative background elements */}
                     <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-[#FF0066]/5 to-transparent rounded-full blur-3xl"></div>
                     <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-[#934790]/5 to-transparent rounded-full blur-3xl"></div>
 
                     <div className="max-w-7xl mx-auto px-6 relative z-10">
                         <div className="text-center mb-16">
-                            <h2 className="text-md md:text-4xl font-dmserif font-bold text-gray-900 mb-5">Survey Process Overview</h2>
+                            <h2 className="text-md md:text-4xl font-dmserif font-bold text-gray-900 mb-2 drop-shadow-lg">Survey Process Overview</h2>
                             <p className="text-gray-700 max-w-3xl mx-auto text-base leading-relaxed">Create, distribute, and analyze surveys in three beautifully simple steps</p>
                         </div>
 
@@ -273,8 +273,8 @@ export default function Surveys() {
                 {/* Question types section */}
                 <section className="w-full py-16 bg-gradient-to-r from-[#441752] via-[#571754] to-[#934790]">
                     <div className="max-w-6xl mx-auto px-6">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-dmserif font-bold text-white mb-3">Explore Our Versatile Question Types</h2>
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-dmserif font-bold text-white mb-3 drop-shadow-lg">Explore Our Versatile Question Types</h2>
                             <p className="text-white max-w-2xl mx-auto text-xs md:text-base">Select from a variety of question formats to capture meaningful feedback and actionable insights.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
