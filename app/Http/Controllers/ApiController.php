@@ -1804,6 +1804,319 @@ class ApiController extends Controller
     }
 
     /**
+     * Get Policy Details with TPA-specific data
+     * 
+     * @param Request $request
+     * @param int $policy_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getPolicyDetails(Request $request, $policy_id)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Get policy details
+            $policy = DB::table('policy_master')
+                ->where('id', $policy_id)
+                ->where('is_active', 1)
+                ->first();
+
+            if (!$policy) {
+                return ApiResponse::error('Policy not found', null, 404);
+            }
+
+            // Check if employee's company matches policy company
+            if ($policy->comp_id != $employee->company_id) {
+                return ApiResponse::error('Unauthorized access to this policy', null, 403);
+            }
+
+            // Get insurance company details
+            $insuranceCompany = DB::table('insurance_master')
+                ->where('id', $policy->ins_id)
+                ->first();
+
+            // Get TPA company details
+            $tpaCompany = DB::table('tpa_master')
+                ->where('id', $policy->tpa_id)
+                ->first();
+
+            // Get policy mapping data
+            $mappingData = DB::table('policy_mapping_master')
+                ->where('policy_id', $policy->id)
+                ->where('emp_id', $employee->id)
+                ->where('cmp_id', $employee->company_id)
+                ->where('status', 1)
+                ->first();
+
+            if (!$mappingData) {
+                return ApiResponse::error('No policy mapping found for this employee', null, 404);
+            }
+
+            // Get escalation matrix
+            $escalationMatrix = DB::table('escalation_matrix')
+                ->where('policy_id', $policy->id)
+                ->get();
+
+            // Enrich escalation matrix with user details from escalation_users
+            if ($escalationMatrix && $escalationMatrix->isNotEmpty()) {
+                try {
+                    $userIds = [];
+                    foreach ($escalationMatrix as $row) {
+                        if (!empty($row->claim_level_1_id)) {
+                            $userIds[] = $row->claim_level_1_id;
+                        }
+                        if (!empty($row->claim_level_2_id)) {
+                            $userIds[] = $row->claim_level_2_id;
+                        }
+                    }
+                    $userIds = array_values(array_unique($userIds));
+
+                    $escalationUsers = [];
+                    if (!empty($userIds)) {
+                        $escalationUsers = DB::table('escalation_users')
+                            ->whereIn('id', $userIds)
+                            ->get()
+                            ->keyBy('id')
+                            ->toArray();
+                    }
+
+                    $escalationMatrix = $escalationMatrix->map(function ($row) use ($escalationUsers) {
+                        $out = (array) $row;
+
+                        // Attach full user object for claim_level_1
+                        $out['claim_level_1'] = null;
+                        if (!empty($row->claim_level_1_id) && isset($escalationUsers[$row->claim_level_1_id])) {
+                            $u = $escalationUsers[$row->claim_level_1_id];
+                            $out['claim_level_1'] = [
+                                'id' => $u->id ?? null,
+                                'name' => $u->name ?? $u->user_name ?? null,
+                                'email' => $u->email ?? null,
+                                'mobile' => $u->mobile ?? $u->phone ?? null,
+                            ];
+                        }
+
+                        // Attach full user object for claim_level_2
+                        $out['claim_level_2'] = null;
+                        if (!empty($row->claim_level_2_id) && isset($escalationUsers[$row->claim_level_2_id])) {
+                            $u = $escalationUsers[$row->claim_level_2_id];
+                            $out['claim_level_2'] = [
+                                'id' => $u->id ?? null,
+                                'name' => $u->name ?? $u->user_name ?? null,
+                                'email' => $u->email ?? null,
+                                'mobile' => $u->mobile ?? $u->phone ?? null,
+                            ];
+                        }
+
+                        return $out;
+                    })->toArray();
+                } catch (\Exception $e) {
+                    \Log::error('Failed to enrich escalation matrix: ' . $e->getMessage());
+                }
+            }
+
+            // Determine table name based on is_old flag or TPA ID
+            $tableData = $this->getPolicyTableData($policy, $employee, $mappingData);
+
+            // Get policy features (inclusion / exclusion)
+            $policyFeatures = [];
+            try {
+                $rows = DB::table('policy_feature')
+                    ->where('policy_id', $policy->id)
+                    ->where('is_active', 1)
+                    ->get();
+
+                $policyFeatures = ['inclusion' => [], 'exclusion' => []];
+                foreach ($rows as $r) {
+                    $item = [
+                        'id' => $r->id ?? null,
+                        'feature_type' => $r->feature_type ?? null,
+                        'feature_title' => $r->feature_title ?? null,
+                        'feature_desc' => $r->feature_desc ?? null,
+                        'icon_type' => $r->icon_type ?? null,
+                        'icon_data' => $r->icon_data ?? null,
+                    ];
+
+                    $type = strtolower(trim($r->feature_type ?? ''));
+                    if ($type === 'inc') {
+                        $policyFeatures['inclusion'][] = $item;
+                    } elseif ($type === 'exl' || $type === 'excl' || $type === 'ex') {
+                        $policyFeatures['exclusion'][] = $item;
+                    } else {
+                        // Unknown type: place under inclusion by default
+                        $policyFeatures['inclusion'][] = $item;
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to fetch policy features: ' . $e->getMessage());
+            }
+
+            // Return comprehensive policy details
+            return ApiResponse::success([
+                'policy' => [
+                    'id' => $policy->id,
+                    'policy_name' => $policy->policy_name ?? 'N/A',
+                    'policy_number' => $policy->policy_number ?? 'N/A',
+                    'policy_start_date' => $policy->policy_start_date ?? null,
+                    'policy_end_date' => $policy->policy_end_date ?? null,
+                    'tpa_id' => $policy->tpa_id ?? null,
+                    'is_old' => $policy->is_old ?? 0,
+                ],
+                'insurance_company' => [
+                    'id' => $insuranceCompany->id ?? null,
+                    'name' => $insuranceCompany->insurance_company_name ?? 'N/A',
+                    'logo' => $insuranceCompany->insurance_comp_icon_url ?? null,
+                ],
+                'tpa_company' => [
+                    'id' => $tpaCompany->id ?? null,
+                    'name' => $tpaCompany->tpa_company_name ?? $tpaCompany->tpa_company_name ?? 'N/A',
+                    'logo' => $tpaCompany->tpa_icon_url ?? $tpaCompany->tpa_comp_icon_url ?? $tpaCompany->logo ?? null,
+                ],
+                'employee' => [
+                    'id' => $employee->id,
+                    'name' => $employee->full_name,
+                    'employee_code' => $employee->employees_code,
+                    'email' => $employee->email,
+                ],
+                'mapping' => [
+                    'id' => $mappingData->id,
+                    'addition_endorsement_id' => $mappingData->addition_endorsement_id ?? null,
+                ],
+                'tpa_data' => $tableData['tpa_data'] ?? null,
+                'dependents' => $tableData['dependents'] ?? [],
+                'cover_summary' => $tableData['cover_str'] ?? 'No coverage information available',
+                'policy_feature' => $policyFeatures,
+                'escalation_matrix' => $escalationMatrix ?? [],
+            ], 'Policy details retrieved successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('❌ Get policy details error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return ApiResponse::error('Failed to retrieve policy details', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get TPA-specific table data based on policy configuration
+     * 
+     * @param object $policy
+     * @param object $employee
+     * @param object $mappingData
+     * @return array
+     */
+    private function getPolicyTableData($policy, $employee, $mappingData)
+    {
+        $result = [
+            'tpa_data' => null,
+            'dependents' => [],
+            'cover_str' => ''
+        ];
+
+        // If is_old == 2, use endorsement_data table
+        if (isset($policy->is_old) && $policy->is_old == 2) {
+            $tableName = 'endorsement_data';
+            $primaryKey = 'endorsement_id';
+        } else {
+            // Map TPA ID to table name and primary key
+            $tpaConfig = $this->getTpaTableConfig($policy->tpa_id);
+            $tableName = $tpaConfig['table'];
+            $primaryKey = $tpaConfig['primary_key'];
+        }
+
+        // If no valid table found, return empty
+        if (!$tableName) {
+            return $result;
+        }
+
+        try {
+            // Get main TPA data
+            $result['tpa_data'] = DB::table($tableName)
+                ->where('policy_id', $policy->id)
+                ->where('emp_id', $employee->id)
+                ->first();
+            // Get dependents
+            $result['dependents'] = DB::table($tableName)
+                ->select($primaryKey, 'insured_name', 'dob', 'gender', 'relation')
+                ->where('emp_id', $employee->id)
+                ->where('policy_id', $policy->id)
+                ->whereNotNull('addition_endorsement_id')
+                ->where('addition_endorsement_id', '!=', 0)
+                ->get();
+            // Get cover summary string
+            $coverQuery = "
+                SELECT CONCAT_WS(
+                    ' <br> & <br>', 
+                    IF(SUM(base_sum_insured) > 0, CONCAT('Base SI <br> Rs. ', FORMAT(SUM(base_sum_insured), 0)), NULL),
+                    IF(SUM(topup_sum_insured) > 0, CONCAT('Top Up SI <br> Rs. ', FORMAT(SUM(topup_sum_insured), 0)), NULL),
+                    IF(SUM(parent_sum_insured) > 0, CONCAT('Parents SI <br> Rs. ', FORMAT(SUM(parent_sum_insured), 0)), NULL),
+                    IF(SUM(parent_in_law_sum_insured) > 0, CONCAT('Parents in Law SI <br> Rs. ', FORMAT(SUM(parent_in_law_sum_insured), 0)), NULL)
+                ) AS output_string 
+                FROM {$tableName}
+                WHERE cmp_id = ? 
+                AND policy_id = ? 
+                AND emp_id = ? 
+                AND mapping_id = ? 
+                AND addition_endorsement_id = ?
+            ";
+
+            $coverResult = DB::select($coverQuery, [
+                $employee->company_id,
+                $policy->id,
+                $employee->id,
+                $mappingData->id,
+                $mappingData->addition_endorsement_id ?? 0
+            ]);
+
+            $result['cover_str'] = $coverResult[0]->output_string ?? '';
+        } catch (\Exception $e) {
+            \Log::error('Error fetching TPA table data: ' . $e->getMessage());
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get TPA table configuration (table name and primary key)
+     * 
+     * @param int $tpaId
+     * @return array
+     */
+    private function getTpaTableConfig($tpaId)
+    {
+        $tpaMapping = [
+            60 => ['table' => 'demo_endorsement_data', 'primary_key' => 'demo_id'],
+            62 => ['table' => 'phs_endorsement_data', 'primary_key' => 'phs_id'],
+            63 => ['table' => 'icici_endorsement_data', 'primary_key' => 'icici_id'],
+            64 => ['table' => 'go_digit_endorsement_data', 'primary_key' => 'go_digit_id'],
+            65 => ['table' => 'vidal_endorsement_data', 'primary_key' => 'vidal_id'],
+            66 => ['table' => 'fhpl_endorsement_data', 'primary_key' => 'main_member_uhid'],
+            67 => ['table' => 'mediassist_endorsement_data', 'primary_key' => 'mediassist_id'],
+            68 => ['table' => 'safeway_endorsement_data', 'primary_key' => 'safeway_id'],
+            69 => ['table' => 'care_endorsement_data', 'primary_key' => 'care_id'],
+            70 => ['table' => 'health_india_endorsement_data', 'primary_key' => 'health_india_id'],
+            71 => ['table' => 'ewa_endorsement_data', 'primary_key' => 'ewa_id'],
+            72 => ['table' => 'sbi_endorsement_data', 'primary_key' => 'sbi_id'],
+            73 => ['table' => 'ericson_endorsement_data', 'primary_key' => 'ericson_id'],
+            75 => ['table' => 'ab_endorsement_data', 'primary_key' => 'ab_id'],
+            76 => ['table' => 'iffco_endorsement_data', 'primary_key' => 'iffco_id'],
+        ];
+        return $tpaMapping[$tpaId];
+    }
+
+    /**
      * Check if a string is valid JSON
      * 
      * @param string $string
@@ -1813,5 +2126,734 @@ class ApiController extends Controller
     {
         json_decode($string);
         return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    // ============================================
+    // Network Hospital APIs
+    // ============================================
+
+    /**
+     * Get search options (states/cities or pincodes) for network hospitals
+     * 
+     * @param Request $request
+     * @param int $policy_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getNetworkHospitalSearchOptions(Request $request, $policy_id)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Get policy details
+            $policy = DB::table('policy_master')
+                ->where('id', $policy_id)
+                ->where('is_active', 1)
+                ->first();
+
+            if (!$policy) {
+                return ApiResponse::error('Policy not found', null, 404);
+            }
+
+            // Check if employee's company matches policy company
+            if ($policy->comp_id != $employee->company_id) {
+                return ApiResponse::error('Unauthorized access to this policy', null, 403);
+            }
+
+            $tpaId = $policy->tpa_id;
+
+            // Get TPA network hospital table configuration
+            $tpaConfig = $this->getNetworkHospitalTableConfig($tpaId);
+
+            if (!$tpaConfig) {
+                return ApiResponse::error('Network hospital data not available for this TPA', null, 404);
+            }
+
+            $tableName = $tpaConfig['table'];
+            $stateColumn = $tpaConfig['state_column'] ?? 'state';
+            $cityColumn = $tpaConfig['city_column'] ?? 'city';
+
+            // Get states with their cities
+            $statesWithCities = DB::table($tableName)
+                ->select($stateColumn . ' as state', $cityColumn . ' as city')
+                ->whereNotNull($stateColumn)
+                ->where($stateColumn, '!=', '')
+                ->whereNotNull($cityColumn)
+                ->where($cityColumn, '!=', '')
+                ->distinct()
+                ->orderBy('state')
+                ->orderBy('city')
+                ->get();
+
+            // Group cities by state
+            $groupedStates = [];
+            foreach ($statesWithCities as $row) {
+                $state = $row->state;
+                $city = $row->city;
+
+                if (!isset($groupedStates[$state])) {
+                    $groupedStates[$state] = [];
+                }
+
+                if (!in_array($city, $groupedStates[$state])) {
+                    $groupedStates[$state][] = $city;
+                }
+            }
+
+            // Format as array of state objects with cities
+            $formattedStates = [];
+            foreach ($groupedStates as $state => $cities) {
+                $formattedStates[] = [
+                    'state' => $state,
+                    'cities' => array_values($cities),
+                ];
+            }
+
+            return ApiResponse::success([
+                'policy_id' => $policy_id,
+                'policy_number' => $policy->policy_number ?? null,
+                'tpa_id' => $tpaId,
+                'search_options' => [
+                    'states' => $formattedStates,
+                ],
+            ], 'Search options retrieved successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to get network hospital search options: ' . $e->getMessage());
+            return ApiResponse::error('Failed to retrieve search options', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get network hospital list based on policy and search criteria
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getNetworkHospitalList(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'policy_id' => 'required|integer',
+                'pincode' => 'nullable|string',
+                'state' => 'nullable|string',
+                'city' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                return ApiResponse::error('Validation failed', $validator->errors(), 422);
+            }
+
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            $policyId = $request->policy_id;
+            $pincode = $request->pincode;
+            $state = $request->state;
+            $city = $request->city;
+
+            // Get policy details
+            $policy = DB::table('policy_master')
+                ->where('id', $policyId)
+                ->where('is_active', 1)
+                ->first();
+
+            if (!$policy) {
+                return ApiResponse::error('Policy not found', null, 404);
+            }
+
+            // Check if employee's company matches policy company
+            if ($policy->comp_id != $employee->company_id) {
+                return ApiResponse::error('Unauthorized access to this policy', null, 403);
+            }
+
+            $tpaId = $policy->tpa_id;
+
+            // Special handling for PHS (TPA ID 62) - uses external API
+            if ($tpaId == 62) {
+                return $this->getPhsNetworkHospitals($policy, $pincode);
+            }
+
+            // Get TPA network hospital table configuration
+            $tpaConfig = $this->getNetworkHospitalTableConfig($tpaId);
+
+            if (!$tpaConfig) {
+                return ApiResponse::error('Network hospital data not available for this TPA', null, 404);
+            }
+
+            $tableName = $tpaConfig['table'];
+
+            // Build query
+            $query = DB::table($tableName);
+
+            // Apply filters
+            if ($pincode) {
+                $pincodeColumn = $tpaConfig['pincode_column'] ?? 'pincode';
+                $query->where($pincodeColumn, $pincode);
+            } else {
+                if ($state) {
+                    $stateColumn = $tpaConfig['state_column'] ?? 'state';
+                    $query->where($stateColumn, $state);
+                }
+                if ($city) {
+                    $cityColumn = $tpaConfig['city_column'] ?? 'city';
+                    $query->where($cityColumn, $city);
+                }
+            }
+
+            $hospitals = $query->get();
+
+            // Standardize response
+            $standardizedHospitals = $this->standardizeNetworkHospitalResponse($hospitals, $tpaConfig);
+
+            return ApiResponse::success([
+                'policy_id' => $policyId,
+                'policy_number' => $policy->policy_number ?? null,
+                'tpa_id' => $tpaId,
+                'search_criteria' => [
+                    'pincode' => $pincode,
+                    'state' => $state,
+                    'city' => $city,
+                ],
+                'total_hospitals' => count($standardizedHospitals),
+                'hospitals' => $standardizedHospitals,
+            ], 'Network hospitals retrieved successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to get network hospitals: ' . $e->getMessage());
+            return ApiResponse::error('Failed to retrieve network hospitals', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get PHS network hospitals via external API
+     * 
+     * @param object $policy
+     * @param string|null $pincode
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function getPhsNetworkHospitals($policy, $pincode)
+    {
+        if (!$pincode) {
+            return ApiResponse::error('Pincode is required for PHS network hospitals', null, 400);
+        }
+
+        $attempts = 0;
+        $maxAttempts = 3;
+
+        while ($attempts < $maxAttempts) {
+            try {
+                $requestData = [
+                    "USERNAME" => "ZOOM-ADMIN",
+                    "PASSWORD" => "ADMIN-USER@389",
+                    "PIN_CODE" => $pincode,
+                    "POLICY_NO" => $policy->policy_number ?? '',
+                ];
+
+                $ch = curl_init();
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => 'https://webintegrations.paramounttpa.com/ZoomBrokerAPI/Service1.svc/GetHospitalList',
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING => '',
+                    CURLOPT_MAXREDIRS => 10,
+                    CURLOPT_TIMEOUT => 30,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST => 'POST',
+                    CURLOPT_POSTFIELDS => json_encode($requestData),
+                    CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+                ]);
+
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                // Log API call
+                \Log::info('PHS Network Hospital API Request', [
+                    'request' => $requestData,
+                    'response' => $response,
+                    'http_code' => $httpCode,
+                ]);
+
+                if ($response && $httpCode == 200) {
+                    $responseData = json_decode($response, true);
+                    $hospitals = $responseData['GetHospitalListResult'] ?? [];
+
+                    return ApiResponse::success([
+                        'policy_id' => $policy->id,
+                        'policy_number' => $policy->policy_number ?? null,
+                        'tpa_id' => 62,
+                        'search_criteria' => ['pincode' => $pincode],
+                        'total_hospitals' => count($hospitals),
+                        'hospitals' => $hospitals,
+                    ], 'PHS network hospitals retrieved successfully');
+                }
+
+                $attempts++;
+                if ($attempts < $maxAttempts) {
+                    sleep(1); // Wait 1 second before retry
+                }
+
+            } catch (\Exception $e) {
+                \Log::error('PHS API Error: ' . $e->getMessage());
+                $attempts++;
+            }
+        }
+
+        return ApiResponse::error('Failed to retrieve PHS network hospitals after multiple attempts', null, 500);
+    }
+
+    /**
+     * Standardize network hospital response across different TPAs
+     * 
+     * @param \Illuminate\Support\Collection $hospitals
+     * @param array $tpaConfig
+     * @return array
+     */
+    private function standardizeNetworkHospitalResponse($hospitals, $tpaConfig)
+    {
+        $standardized = [];
+
+        foreach ($hospitals as $hospital) {
+            $standardized[] = [
+                'id' => $hospital->{$tpaConfig['id_column'] ?? 'id'} ?? null,
+                'hospital_name' => $hospital->{$tpaConfig['name_column'] ?? 'hospital_name'} ?? null,
+                'address' => $hospital->{$tpaConfig['address_column'] ?? 'address'} ?? null,
+                'city' => $hospital->{$tpaConfig['city_column'] ?? 'city'} ?? null,
+                'state' => $hospital->{$tpaConfig['state_column'] ?? 'state'} ?? null,
+                'pincode' => $hospital->{$tpaConfig['pincode_column'] ?? 'pincode'} ?? null,
+                'contact_number' => $hospital->{$tpaConfig['contact_column'] ?? 'contact_number'} ?? $hospital->{$tpaConfig['phone_column'] ?? 'phone'} ?? null,
+                'email' => $hospital->{$tpaConfig['email_column'] ?? 'email'} ?? null,
+                'hospital_type' => $hospital->{$tpaConfig['type_column'] ?? 'hospital_type'} ?? null,
+                'speciality' => $hospital->{$tpaConfig['speciality_column'] ?? 'speciality'} ?? null,
+            ];
+        }
+
+        return $standardized;
+    }
+
+    /**
+     * Get network hospital table configuration for each TPA
+     * 
+     * @param int $tpaId
+     * @return array|null
+     */
+    private function getNetworkHospitalTableConfig($tpaId)
+    {
+        $tpaMapping = [
+            60 => [ // Demo
+                'table' => 'demo_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            63 => [ // ICICI
+                'table' => 'icici_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            65 => [ // Vidal
+                'table' => 'vidal_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            66 => [ // FHPL
+                'table' => 'fhpl_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            67 => [ // Mediassist
+                'table' => 'mediassist_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            68 => [ // Safeway
+                'table' => 'safeway_new_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            69 => [ // Care
+                'table' => 'care_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            70 => [ // Health India
+                'table' => 'health_india_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            71 => [ // EWA
+                'table' => 'ewa_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            72 => [ // SBI
+                'table' => 'sbi_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            73 => [ // Ericson
+                'table' => 'ericson_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            75 => [ // AB
+                'table' => 'ab_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+            76 => [ // IFFCO
+                'table' => 'iffco_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address_column' => 'address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'contact_column' => 'contact_number',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'speciality_column' => 'speciality',
+            ],
+        ];
+
+        return $tpaMapping[$tpaId] ?? null;
+    }
+
+    // ============================================
+    // Survey APIs
+    // ============================================
+
+    /**
+     * Get assigned surveys for the authenticated employee
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAssignedSurveys(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('Employee not found', null, 404);
+            }
+
+            $companyId = $employee->company_id;
+            $employeeId = $employee->id;
+            $today = date('Y-m-d');
+
+            // Get assigned surveys with submission status
+            $sql = "
+                SELECT 
+                    cas.*, 
+                    CASE 
+                        WHEN EXISTS (
+                            SELECT 1 
+                            FROM survey_responses sr 
+                            WHERE sr.assigned_survey_id = cas.id 
+                            AND sr.emp_id = ?
+                        ) THEN 1 
+                        ELSE 0 
+                    END AS is_submit
+                FROM 
+                    company_assign_survey cas
+                WHERE 
+                    cas.comp_id = ? 
+                    AND cas.survey_start_date <= ? 
+                    AND cas.survey_end_date >= ?
+                LIMIT 1
+            ";
+
+            $assignedSurveys = DB::select($sql, [$employeeId, $companyId, $today, $today]);
+
+            return ApiResponse::success([
+                'surveys' => $assignedSurveys,
+            ], 'Assigned surveys retrieved successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to get assigned surveys: ' . $e->getMessage());
+            return ApiResponse::error('Failed to retrieve assigned surveys', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get survey questions for a specific survey
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSurveyQuestions(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'survey_id' => 'required|integer',
+            ]);
+
+            if ($validator->fails()) {
+                return ApiResponse::error('Validation failed', $validator->errors(), 422);
+            }
+
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('Employee not found', null, 404);
+            }
+
+            $surveyId = $request->survey_id;
+
+            // Get survey questions
+            $questions = DB::table('survey_questions')
+                ->where('survey_id', $surveyId)
+                ->orderBy('id')
+                ->get();
+
+            return ApiResponse::success([
+                'survey_id' => $surveyId,
+                'questions' => $questions,
+            ], 'Survey questions retrieved successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to get survey questions: ' . $e->getMessage());
+            return ApiResponse::error('Failed to retrieve survey questions', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Submit survey responses
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function submitSurveyResponse(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'survey_id' => 'required|integer',
+                'assigned_survey_id' => 'required|integer',
+                'responses' => 'required|array',
+                'responses.*.question_id' => 'required|integer',
+                'responses.*.rating' => 'nullable|integer',
+                'responses.*.response_text' => 'nullable|string',
+                'responses.*.response_choice' => 'nullable|string',
+                'responses.*.response_checkboxes' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                return ApiResponse::error('Validation failed', $validator->errors(), 422);
+            }
+
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('Employee not found', null, 404);
+            }
+
+            $employeeId = $employee->id;
+            $surveyId = $request->survey_id;
+            $assignedSurveyId = $request->assigned_survey_id;
+            $responses = $request->responses;
+
+            // Check if survey already submitted
+            $existingResponse = DB::table('survey_responses')
+                ->where('assigned_survey_id', $assignedSurveyId)
+                ->where('emp_id', $employeeId)
+                ->exists();
+
+            if ($existingResponse) {
+                return ApiResponse::error('Survey already submitted', null, 400);
+            }
+
+            // Insert all responses
+            $insertData = [];
+            $now = now();
+
+            foreach ($responses as $response) {
+                $insertData[] = [
+                    'assigned_survey_id' => $assignedSurveyId,
+                    'survey_id' => $surveyId,
+                    'question_id' => $response['question_id'],
+                    'emp_id' => $employeeId,
+                    'rating' => $response['rating'] ?? null,
+                    'response_text' => $response['response_text'] ?? null,
+                    'response_choice' => $response['response_choice'] ?? null,
+                    'response_checkboxes' => $response['response_checkboxes'] ?? null,
+                    'focus_area' => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            DB::table('survey_responses')->insert($insertData);
+
+            return ApiResponse::success([
+                'survey_id' => $surveyId,
+                'assigned_survey_id' => $assignedSurveyId,
+                'responses_count' => count($insertData),
+            ], 'Survey responses saved successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to submit survey responses: ' . $e->getMessage());
+            return ApiResponse::error('Failed to save survey responses', $e->getMessage(), 500);
+        }
     }
 }

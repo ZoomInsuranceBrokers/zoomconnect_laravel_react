@@ -4357,7 +4357,6 @@ class SuperAdminController extends Controller
                 : $enrollmentDetail->enrollment_statements;
 
             $enrollmentStatements = is_array($enrollmentStatementsJson) ? $enrollmentStatementsJson : [];
-
             return Inertia::render('superadmin/policy/FillEnrollment', [
                 'enrollmentPeriod' => $enrollmentPeriod,
                 'enrollmentDetail' => $enrollmentDetail,
@@ -4406,6 +4405,7 @@ class SuperAdminController extends Controller
             $enrollmentPeriod = \App\Models\EnrollmentPeriod::findOrFail($validated['enrollment_period_id']);
             $enrollmentDetail = \App\Models\EnrollmentDetail::findOrFail($validated['enrollment_detail_id']);
 
+            dd( $validated['enrolment_mapping_id']);
             // Get mapping details if provided
             $mappingId = $validated['enrolment_mapping_id'] ?? null;
 
