@@ -31,6 +31,9 @@ Route::prefix('v1')->group(function () {
         // Policy details (uses JWT middleware to identify employee)
         Route::get('/policy-details/{policy}', [App\Http\Controllers\ApiController::class, 'getPolicyDetails'])->name('api.policy.details');
         
+        // Download E-Card for employee
+        Route::post('/download-ecard', [App\Http\Controllers\ApiController::class, 'downloadECard'])->name('api.download.ecard');
+        
         // ============================================
         // Help / Support Chat API Routes
         // ============================================

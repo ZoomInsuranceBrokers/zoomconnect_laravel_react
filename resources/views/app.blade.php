@@ -15,6 +15,9 @@
         @routes
         @viteReactRefresh
         @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])
+        <!-- Favicon / App icon -->
+        <link rel="icon" href="/assets/images/Purple New ZoomConnect Logo-01.png" />
+        <link rel="apple-touch-icon" href="/assets/images/Purple New ZoomConnect Logo-01.png" />
         @inertiaHead
     </head>
     <body class="font-sans antialiased">

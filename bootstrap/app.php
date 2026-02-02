@@ -14,14 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-            // Superadmin route protection middleware (only active for their target paths)
-            \App\Http\Middleware\RedirectIfSuperadmin::class,
-            \App\Http\Middleware\EnsureSuperadminAuthenticated::class,
         ]);
 
             // Register route middleware aliases used by routes (Laravel 12 style)
             $middleware->alias([
                 'permission' => \App\Http\Middleware\CheckPermission::class,
+                'redirect.if.superadmin' => \App\Http\Middleware\RedirectIfSuperadmin::class,
+                'superadmin.auth' => \App\Http\Middleware\EnsureSuperadminAuthenticated::class,
+                'redirect.if.employee' => \App\Http\Middleware\RedirectIfEmployee::class,
+                'employee.auth' => \App\Http\Middleware\EnsureEmployeeAuthenticated::class,
             ]);
 
         //

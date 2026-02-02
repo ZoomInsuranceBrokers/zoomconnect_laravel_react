@@ -2128,16 +2128,156 @@ class ApiController extends Controller
         return json_last_error() === JSON_ERROR_NONE;
     }
 
-    // ============================================
-    // Network Hospital APIs
-    // ============================================
+    /**
+     * Get network hospital table configuration for each TPA
+     * 
+     * @param int $tpaId
+     * @return array|null
+     */
+    private function getNetworkHospitalTableConfig($tpaId)
+    {
+        $tpaMapping = [
+            62 => [ // PHS - Uses external API
+                'table' => null,
+                'uses_api' => true,
+            ],
+            63 => [ // ICICI
+                'table' => 'icici_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address1_column' => 'addressLine1',
+                'address2_column' => 'addressLine2',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pinCode',
+                'phone_column' => 'landLineNumber',
+                'email_column' => 'email',
+                'type_column' => 'hospitalType',
+            ],
+            65 => [ // Vidal
+                'table' => 'vidal_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address1_column' => 'address_line_1',
+                'address2_column' => 'address_line_2',
+                'city_column' => 'city_name',
+                'state_column' => 'state_name',
+                'pincode_column' => 'pincode',
+                'phone_column' => 'phone_number',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+                'landmark1_column' => 'landmark1',
+            ],
+            66 => [ // FHPL
+                'table' => 'fhpl_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address1_column' => 'address_line_1',
+                'address2_column' => 'address_line_2',
+                'city_column' => 'city_name',
+                'state_column' => 'state_name',
+                'pincode_column' => 'pincode',
+                'phone_column' => 'phone_number',
+                'email_column' => 'email',
+                'landmark1_column' => 'landmark1',
+            ],
+            67 => [ // Mediassist
+                'table' => 'mediassist_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospitaL_NAME',
+                'address1_column' => 'addresS1',
+                'address2_column' => 'addresS2',
+                'city_column' => 'citY_NAME',
+                'state_column' => 'statE_NAME',
+                'pincode_column' => 'piN_CODE',
+                'phone_column' => 'phonE_NO',
+                'email_column' => 'email',
+                'landmark1_column' => 'landmarK_1',
+            ],
+            68 => [ // Safeway
+                'table' => 'safeway_new_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'Name',
+                'address1_column' => 'Address',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pincode',
+                'phone_column' => 'phone',
+                'email_column' => 'email',
+            ],
+            69 => [ // Care
+                'table' => 'care_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'city_column' => 'city',
+                'state_column' => 'state',
+                'pincode_column' => 'pinCode',
+                'phone_column' => 'phone',
+                'location_column' => 'location',
+            ],
+            71 => [ // EWA
+                'table' => 'ewa_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address1_column' => 'address_line_1',
+                'address2_column' => 'address_line_2',
+                'city_column' => 'city_name',
+                'state_column' => 'state_name',
+                'pincode_column' => 'pincode',
+                'phone_column' => 'phone_number',
+                'email_column' => 'email',
+                'landmark1_column' => 'landmark1',
+                'type_column' => 'hospital_type',
+            ],
+            73 => [ // Ericson
+                'table' => 'ericson_network_hospitals',
+                'id_column' => 'id',
+                'name_column' => 'hospital_name',
+                'address1_column' => 'address_line_1',
+                'address2_column' => 'address_line_2',
+                'city_column' => 'city_name',
+                'state_column' => 'state_name',
+                'pincode_column' => 'pincode',
+                'phone_column' => 'phone_number',
+                'email_column' => 'email',
+                'type_column' => 'hospital_type',
+            ],
+        ];
+
+        return $tpaMapping[$tpaId] ?? null;
+    }
 
     /**
-     * Get search options (states/cities or pincodes) for network hospitals
-     * 
-     * @param Request $request
-     * @param int $policy_id
-     * @return \Illuminate\Http\JsonResponse
+     * Standardize network hospital response across different TPAs
+     */
+    private function standardizeNetworkHospitalResponse($hospitals, $tpaConfig)
+    {
+        $standardized = [];
+
+        foreach ($hospitals as $hospital) {
+            $hospitalData = (array) $hospital;
+            
+            $standardized[] = [
+                'hospital_id' => $hospitalData[$tpaConfig['id_column']] ?? null,
+                'hospital_name' => $hospitalData[$tpaConfig['name_column']] ?? '',
+                'address_line_1' => $hospitalData[$tpaConfig['address1_column'] ?? 'address_line_1'] ?? '',
+                'address_line_2' => $hospitalData[$tpaConfig['address2_column'] ?? 'address_line_2'] ?? '',
+                'city' => $hospitalData[$tpaConfig['city_column']] ?? '',
+                'state' => $hospitalData[$tpaConfig['state_column']] ?? '',
+                'pincode' => $hospitalData[$tpaConfig['pincode_column']] ?? '',
+                'phone' => $hospitalData[$tpaConfig['phone_column'] ?? 'phone'] ?? '',
+                'email' => $hospitalData[$tpaConfig['email_column'] ?? 'email'] ?? '',
+                'hospital_type' => $hospitalData[$tpaConfig['type_column'] ?? 'hospital_type'] ?? '',
+                'landmark' => $hospitalData[$tpaConfig['landmark1_column'] ?? 'landmark'] ?? '',
+                'location' => $hospitalData[$tpaConfig['location_column'] ?? 'location'] ?? '',
+            ];
+        }
+
+        return $standardized;
+    }
+
+    /**
+     * Get network hospital search options (states and cities) for a policy
      */
     public function getNetworkHospitalSearchOptions(Request $request, $policy_id)
     {
@@ -2173,6 +2313,17 @@ class ApiController extends Controller
             }
 
             $tpaId = $policy->tpa_id;
+
+            // Special handling for PHS (TPA ID 62) - requires pincode
+            if ($tpaId == 62) {
+                return ApiResponse::success([
+                    'policy_id' => $policy_id,
+                    'policy_number' => $policy->policy_number ?? null,
+                    'tpa_id' => $tpaId,
+                    'search_type' => 'pincode_only',
+                    'message' => 'Please enter pincode to search hospitals',
+                ], 'PHS TPA requires pincode for search');
+            }
 
             // Get TPA network hospital table configuration
             $tpaConfig = $this->getNetworkHospitalTableConfig($tpaId);
@@ -2225,6 +2376,7 @@ class ApiController extends Controller
                 'policy_id' => $policy_id,
                 'policy_number' => $policy->policy_number ?? null,
                 'tpa_id' => $tpaId,
+                'search_type' => 'state_city_or_pincode',
                 'search_options' => [
                     'states' => $formattedStates,
                 ],
@@ -2238,9 +2390,6 @@ class ApiController extends Controller
 
     /**
      * Get network hospital list based on policy and search criteria
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function getNetworkHospitalList(Request $request)
     {
@@ -2325,7 +2474,7 @@ class ApiController extends Controller
                 }
             }
 
-            $hospitals = $query->get();
+            $hospitals = $query->limit(500)->get();
 
             // Standardize response
             $standardizedHospitals = $this->standardizeNetworkHospitalResponse($hospitals, $tpaConfig);
@@ -2351,10 +2500,6 @@ class ApiController extends Controller
 
     /**
      * Get PHS network hospitals via external API
-     * 
-     * @param object $policy
-     * @param string|null $pincode
-     * @return \Illuminate\Http\JsonResponse
      */
     private function getPhsNetworkHospitals($policy, $pincode)
     {
@@ -2425,231 +2570,6 @@ class ApiController extends Controller
         }
 
         return ApiResponse::error('Failed to retrieve PHS network hospitals after multiple attempts', null, 500);
-    }
-
-    /**
-     * Standardize network hospital response across different TPAs
-     * 
-     * @param \Illuminate\Support\Collection $hospitals
-     * @param array $tpaConfig
-     * @return array
-     */
-    private function standardizeNetworkHospitalResponse($hospitals, $tpaConfig)
-    {
-        $standardized = [];
-
-        foreach ($hospitals as $hospital) {
-            $standardized[] = [
-                'id' => $hospital->{$tpaConfig['id_column'] ?? 'id'} ?? null,
-                'hospital_name' => $hospital->{$tpaConfig['name_column'] ?? 'hospital_name'} ?? null,
-                'address' => $hospital->{$tpaConfig['address_column'] ?? 'address'} ?? null,
-                'city' => $hospital->{$tpaConfig['city_column'] ?? 'city'} ?? null,
-                'state' => $hospital->{$tpaConfig['state_column'] ?? 'state'} ?? null,
-                'pincode' => $hospital->{$tpaConfig['pincode_column'] ?? 'pincode'} ?? null,
-                'contact_number' => $hospital->{$tpaConfig['contact_column'] ?? 'contact_number'} ?? $hospital->{$tpaConfig['phone_column'] ?? 'phone'} ?? null,
-                'email' => $hospital->{$tpaConfig['email_column'] ?? 'email'} ?? null,
-                'hospital_type' => $hospital->{$tpaConfig['type_column'] ?? 'hospital_type'} ?? null,
-                'speciality' => $hospital->{$tpaConfig['speciality_column'] ?? 'speciality'} ?? null,
-            ];
-        }
-
-        return $standardized;
-    }
-
-    /**
-     * Get network hospital table configuration for each TPA
-     * 
-     * @param int $tpaId
-     * @return array|null
-     */
-    private function getNetworkHospitalTableConfig($tpaId)
-    {
-        $tpaMapping = [
-            60 => [ // Demo
-                'table' => 'demo_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            63 => [ // ICICI
-                'table' => 'icici_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            65 => [ // Vidal
-                'table' => 'vidal_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            66 => [ // FHPL
-                'table' => 'fhpl_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            67 => [ // Mediassist
-                'table' => 'mediassist_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            68 => [ // Safeway
-                'table' => 'safeway_new_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            69 => [ // Care
-                'table' => 'care_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            70 => [ // Health India
-                'table' => 'health_india_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            71 => [ // EWA
-                'table' => 'ewa_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            72 => [ // SBI
-                'table' => 'sbi_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            73 => [ // Ericson
-                'table' => 'ericson_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            75 => [ // AB
-                'table' => 'ab_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-            76 => [ // IFFCO
-                'table' => 'iffco_network_hospitals',
-                'id_column' => 'id',
-                'name_column' => 'hospital_name',
-                'address_column' => 'address',
-                'city_column' => 'city',
-                'state_column' => 'state',
-                'pincode_column' => 'pincode',
-                'contact_column' => 'contact_number',
-                'phone_column' => 'phone',
-                'email_column' => 'email',
-                'type_column' => 'hospital_type',
-                'speciality_column' => 'speciality',
-            ],
-        ];
-
-        return $tpaMapping[$tpaId] ?? null;
     }
 
     // ============================================
