@@ -2061,7 +2061,7 @@ class SuperAdminController extends Controller
     {
         $policies = \App\Models\PolicyMaster::where('comp_id', $companyId)
             ->where('is_active', 1)
-            ->where('is_old', 0)
+            // ->where('is_old', 0)
             ->orderBy('policy_name')
             ->get(['id', 'policy_name']);
 
@@ -2080,7 +2080,11 @@ class SuperAdminController extends Controller
             return response()->json(['endorsements' => []]);
         }
 
-        $table_name = $policy->tpa->tpa_table_name;
+        if (isset($policy->is_old) && $policy->is_old == 2) {
+            $table_name = 'endorsement_data';
+        } else {
+            $table_name = $policy->tpa->tpa_table_name;
+        }
 
         // Basic validation for table name to avoid injection
         if (!preg_match('/^[A-Za-z0-9_]+$/', $table_name)) {
@@ -2106,8 +2110,33 @@ class SuperAdminController extends Controller
      */
     public function marketingWelcomeMailerStore(Request $request)
     {
+        $validated = $request->validate([
+            'cmp_id' => 'required|integer|exists:company_master,comp_id',
+            'policy_id' => 'required|integer|exists:policy_master,id',
+            'endorsement_id' => 'required|integer',
+            'template_id' => 'required|integer|exists:message_templates,id',
+            'subject' => 'required|string',
+        ]);
+
+        $mailer = new \App\Models\WelcomeMailer();
+        $mailer->cmp_id = $validated['cmp_id'];
+        $mailer->policy_id = $validated['policy_id'];
+        $mailer->endorsement_id = $validated['endorsement_id'];
+        $mailer->template_id = $validated['template_id'];
+        $mailer->subject = $validated['subject'];
+        $mailer->total_count = 0;
+        $mailer->sent_count = 0;
+        $mailer->not_sent_count = 0;
+        $mailer->status = 1;
+        $mailer->created_by = \Session::get('superadmin_user.id', 1);
+        $mailer->updated_by = \Session::get('superadmin_user.id', 1);
+        $mailer->save();
+
+        // Dispatch job to send welcome mails
+        \App\Jobs\SendWelcomeMailerJob::dispatch($mailer->id);
+
         return redirect()->route('superadmin.marketing.welcome-mailer.index')
-            ->with('success', 'Welcome mailer created successfully.');
+            ->with('success', 'Welcome mailer created and emails are being sent.');
     }
 
     /**
@@ -4436,7 +4465,7 @@ class SuperAdminController extends Controller
 
             // Get dependents array
             $dependents = $validated['dependents'] ?? [];
-            
+
             // Add employee as self if not already in dependents
             $hasSelf = false;
             foreach ($dependents as $dep) {
@@ -4445,7 +4474,7 @@ class SuperAdminController extends Controller
                     break;
                 }
             }
-            
+
             if (!$hasSelf) {
                 array_unshift($dependents, [
                     'id' => 'employee',
@@ -4478,7 +4507,7 @@ class SuperAdminController extends Controller
             foreach ($dependents as $dependent) {
                 $relation = strtolower($dependent['relation'] ?? '');
                 $isSelf = $relation === 'self';
-                
+
                 $data = [
                     'emp_id' => $employee->id,
                     'cmp_id' => $employee->company_id,
@@ -4497,20 +4526,20 @@ class SuperAdminController extends Controller
                     $data['gender'] = strtoupper($employee->gender);
                     $data['dob'] = $employee->date_of_birth;
                     $data['date_of_joining'] = $employee->date_of_joining;
-                    
+
                     // Base coverage and premium from frontend
                     $data['base_sum_insured'] = $validated['selectedPlans']['employee']['baseSumInsured'] ?? 0;
                     $data['base_plan_name'] = 'Base Plan';
                     $data['base_premium_on_employee'] = $basePremium;
                     $data['base_premium_on_company'] = $companyContribution;
-                    
+
                     // Extra coverage premium from frontend
                     if ($extraCoveragePremium > 0) {
                         $data['extra_coverage_plan_name'] = $extraCoveragePlanName ?? 'Extra Coverage';
                         $data['extra_coverage_premium_on_employee'] = $extraCoveragePremium;
                         $data['extra_coverage_premium_on_company'] = 0;
                     }
-                    
+
                     $data['is_delete'] = $dependent['is_delete'] ?? 0;
                 } else {
                     // Dependent record
@@ -4520,13 +4549,13 @@ class SuperAdminController extends Controller
                     $data['gender'] = strtoupper($dependent['gender'] ?? '');
                     $data['dob'] = isset($dependent['dob']) ? date('Y-m-d', strtotime($dependent['dob'])) : null;
                     $data['date_of_joining'] = $employee->date_of_joining;
-                    
+
                     // Dependents typically covered under family floater (no separate premium)
                     $data['base_sum_insured'] = 0;
                     $data['base_premium_on_company'] = 0;
                     $data['base_premium_on_employee'] = 0;
                     $data['base_plan_name'] = 'Base Plan (Covered under Family Floater)';
-                    
+
                     $data['is_delete'] = $dependent['is_delete'] ?? 0;
                 }
 
@@ -4552,7 +4581,7 @@ class SuperAdminController extends Controller
                         'edit_option' => 0,
                         'updated_at' => now()
                     ]);
-                
+
                 \Log::info('📝 Mapping status updated', [
                     'mapping_id' => $mappingId,
                     'rows_updated' => $updated
@@ -4573,10 +4602,10 @@ class SuperAdminController extends Controller
                     'company_contribution' => $companyContribution,
                     'total_premium' => $premiumCalc['employeePayable'] ?? 0,
                 ];
-                
+
                 // Queue email for async sending (recommended)
                 \App\Jobs\SendEnrollmentConfirmationJob::dispatch($employee, $enrollmentData);
-                
+
                 \Log::info('📧 Enrollment confirmation email queued');
             } catch (\Exception $e) {
                 \Log::warning('⚠️ Failed to queue enrollment confirmation email: ' . $e->getMessage());
@@ -4586,7 +4615,6 @@ class SuperAdminController extends Controller
             return redirect('/superadmin/policy/view-live-portal/' . $validated['enrollment_period_id'])
                 ->with('message', 'Enrollment Filled Successfully!')
                 ->with('messageType', 'success');
-                
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             \Log::error('❌ Validation failed for enrollment submission', [
