@@ -6,13 +6,13 @@ import { motion } from 'framer-motion';
 
 export default function Resources({ resources }) {
     const [selectedCategory, setSelectedCategory] = useState('all');
-    
+
     // Get unique categories
     const categories = ['all', ...new Set(resources.map(r => r.category).filter(Boolean))];
-    
+
     // Filter resources based on selected category
-    const filteredResources = selectedCategory === 'all' 
-        ? resources 
+    const filteredResources = selectedCategory === 'all'
+        ? resources
         : resources.filter(r => r.category === selectedCategory);
 
     const getCategoryColor = (category) => {
@@ -37,68 +37,60 @@ export default function Resources({ resources }) {
     return (
         <>
             <Header />
-            
-            {/* Hero Section styled like Group Medical Cover */}
-            <section className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#ffceea78] text-gray-900">
-                <div className="absolute inset-0 opacity-80 pointer-events-none">
+
+            {/* Hero Section - Minimal Design */}
+            <section className="w-full flex items-center justify-center relative overflow-hidden bg-[#ffceea78] pt-20 pb-8 md:py-32">
+                <div className="absolute inset-0 opacity-30 pointer-events-none">
                     <img
-                        src="/assets/images/wavy design-01.png"
+                        src="/assets/images/ribbon design-01.png"
                         alt="Background"
                         className="w-full h-full object-cover"
                     />
                 </div>
-                
-                {/* Gradient overlay from top */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#ffceea78] via-transparent to-white/30 pointer-events-none"></div>
 
-                <div className="max-w-7xl mx-auto px-8 pt-12 pb-4 grid grid-cols-1 md:grid-cols-2 gap-12 z-10 items-center">
-                    <div className="space-y-5">
-                        <h1 className="text-4xl md:text-5xl font-dmserif font-semibold leading-tight text-gray-800">
-                            Resources & <span className="text-[#FF0066]/80">Insights</span>
-                        </h1>
-                        <p className="text-sm md:text-base opacity-90">
-                            Guides, whitepapers, and practical materials to help you make informed decisions about employee benefits and wellness programs.
-                        </p>
-                        <div className="flex flex-wrap gap-4">
-                            <Link
-                                href="/book-demo"
-                                className="relative overflow-hidden bg-[#FF0066]/80 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-[#df0059cc] hover:text-white transition-all duration-500 group"
-                            >
-                                <span className="absolute left-1/2 bottom-0 w-0 h-0 bg-[#6A0066] rounded-full opacity-0 group-hover:w-[200%] group-hover:h-[400%] group-hover:opacity-100 transition-all duration-700 ease-out -translate-x-1/2 z-0"></span>
-                                <span className="relative z-10">Schedule a Call</span>
-                            </Link>
-                            <Link
-                                href="/contact"
-                                className="relative overflow-hidden border border-[#E8D4B7] bg-[#934790] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-[#6a0066] hover:text-white transition-all duration-500 group"
-                            >
-                                <span className="absolute left-1/2 bottom-0 w-0 h-0 bg-[#FF0066] rounded-full opacity-0 group-hover:w-[200%] group-hover:h-[400%] group-hover:opacity-100 transition-all duration-700 ease-out -translate-x-1/2 z-0"></span>
-                                <span className="relative z-10">Contact Us</span>
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="flex justify-center">
-                        <div className="relative overflow-hidden w-80 md:w-[350px] p-6">
-                            <img className="w-full h-full object-cover" src="/assets/images/gmc_groupmedical.png" alt="Resources hero section" />
-                        </div>
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/40 pointer-events-none"></div>
+
+                {/* Floating background elements */}
+                <div className="absolute top-10 left-10 w-40 h-40 bg-[#934790]/5 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-10 right-10 w-48 h-48 bg-[#FF0066]/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+
+                <div className="max-w-5xl mx-auto px-6 z-10 text-center">
+                    <div className="mb-8">
+                        <motion.h1
+                            className="text-xl md:text-5xl font-bold mb-4 drop-shadow-lg"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <span className="text-[#934790]">Resources</span>
+                        </motion.h1>
+                        <motion.p
+                            className="text-xs md:text-base text-gray-700 max-w-3xl mx-auto leading-snug"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                        >
+                            Discover expert-written blogs and curated resources to help you navigate employee benefits, wellness, and insurance. Stay informed and empowered with the latest insights from ZoomConnect.
+                        </motion.p>
                     </div>
                 </div>
             </section>
 
             {/* Category Filter */}
-            <section className="bg-gray-50 border-b border-gray-200 sticky top-0 z-30">
-                <div className="container mx-auto px-4 py-6">
-                    <div className="flex flex-wrap gap-3 justify-center">
+            <section className="relative z-20 bg-white border-b border-gray-200">
+                <div className="container mx-auto px-4 py-8">
+                    <div className="flex flex-wrap gap-4 md:gap-6 justify-center">
                         {categories.map((category) => (
                             <button
                                 key={category}
                                 onClick={() => setSelectedCategory(category)}
-                                className={`px-6 py-2 rounded-full font-medium text-sm transition-all duration-500 ${
-                                    selectedCategory === category
+                                className={`px-6 py-2 rounded-full font-medium text-xs md:text-sm transition-all duration-500 ${selectedCategory === category
                                         ? 'bg-[#934790] text-white shadow-lg scale-105'
-                                        : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm hover:shadow-md'
-                                }`}
+                                        : 'bg-white text-gray-700 hover:bg-gray-100 shadow-md hover:shadow-lg'
+                                    }`}
                             >
-                                {category === 'all' ? 'All Resources' : category}
+                                {category === 'all' ? '📚 All Resources' : category}
                             </button>
                         ))}
                     </div>
@@ -120,7 +112,7 @@ export default function Resources({ resources }) {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6, delay: index * 0.15 }}
                             >
-                                <Link 
+                                <Link
                                     href={`/resources/${resource.slug}`}
                                     className="group block h-full"
                                 >
@@ -128,7 +120,7 @@ export default function Resources({ resources }) {
                                         {/* Cover Image */}
                                         {resource.cover_image && (
                                             <div className="relative h-52 overflow-hidden bg-gray-100">
-                                                <img 
+                                                <img
                                                     src={getImageUrl(resource.cover_image)}
                                                     alt={resource.heading}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -142,7 +134,7 @@ export default function Resources({ resources }) {
                                                 )}
                                             </div>
                                         )}
-                                        
+
                                         {/* Content */}
                                         <div className="p-6 flex-1 flex flex-col">
                                             {/* Category Badge (if no image) */}
@@ -151,19 +143,19 @@ export default function Resources({ resources }) {
                                                     {resource.category}
                                                 </span>
                                             )}
-                                            
+
                                             {/* Title */}
-                                            <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-[#934790] transition-colors duration-500 line-clamp-2">
+                                            <h3 className="text-sm md:text-xl font-bold text-gray-800 mb-3 group-hover:text-[#934790] transition-colors duration-500 line-clamp-2">
                                                 {resource.heading}
                                             </h3>
-                                            
+
                                             {/* Excerpt from content */}
                                             {resource.content && (
-                                                <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-1 leading-relaxed">
+                                                <p className="text-gray-600 text-xs md:text-sm mb-4 line-clamp-3 flex-1 leading-relaxed">
                                                     {resource.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
                                                 </p>
                                             )}
-                                            
+
                                             {/* Meta Info */}
                                             <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
                                                 <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -178,15 +170,15 @@ export default function Resources({ resources }) {
                                                 </div>
                                                 {resource.published_at && (
                                                     <span className="text-xs text-gray-400">
-                                                        {new Date(resource.published_at).toLocaleDateString('en-US', { 
-                                                            year: 'numeric', 
-                                                            month: 'short', 
-                                                            day: 'numeric' 
+                                                        {new Date(resource.published_at).toLocaleDateString('en-US', {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric'
                                                         })}
                                                     </span>
                                                 )}
                                             </div>
-                                            
+
                                             {/* Read More Link */}
                                             <div className="mt-4">
                                                 <span className="inline-flex items-center text-[#934790] font-semibold text-sm group-hover:gap-2 transition-all duration-500">
@@ -197,13 +189,13 @@ export default function Resources({ resources }) {
                                                 </span>
                                             </div>
                                         </div>
-                                        
+
                                         {/* Tags */}
                                         {resource.tags && (
                                             <div className="px-6 pb-4">
                                                 <div className="flex flex-wrap gap-2">
                                                     {resource.tags.split(',').slice(0, 3).map((tag, idx) => (
-                                                        <span 
+                                                        <span
                                                             key={idx}
                                                             className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs hover:bg-[#934790]/10 hover:text-[#934790] transition-colors duration-300"
                                                         >
@@ -219,37 +211,6 @@ export default function Resources({ resources }) {
                         ))}
                     </div>
                 )}
-            </section>
-
-            {/* CTA Section */}
-            <section className="relative py-20 overflow-hidden">
-                {/* Background with gradient */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#934790] to-[#6A0066]"></div>
-                
-                {/* Decorative elements */}
-                <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#FF0066]/10 rounded-full blur-3xl"></div>
-                
-                <div className="container mx-auto px-4 relative z-10">
-                    <div className="max-w-3xl mx-auto text-center">
-                        <h2 className="text-3xl md:text-4xl font-dmserif font-bold text-white mb-4">
-                            Ready to Transform Your Employee Benefits?
-                        </h2>
-                        <p className="text-lg text-white/80 mb-8 max-w-xl mx-auto">
-                            Let's discuss how ZoomConnect can help streamline your benefits management and improve employee wellness.
-                        </p>
-                        <Link
-                            href="/book-demo"
-                            className="relative overflow-hidden inline-flex items-center gap-2 bg-white text-[#934790] font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 group"
-                        >
-                            <span className="absolute left-1/2 bottom-0 w-0 h-0 bg-[#FF0066] rounded-full opacity-0 group-hover:w-[200%] group-hover:h-[400%] group-hover:opacity-100 transition-all duration-700 ease-out -translate-x-1/2 z-0"></span>
-                            <span className="relative z-10 group-hover:text-white transition-colors duration-500">Book a Demo</span>
-                            <svg className="relative z-10 w-5 h-5 group-hover:translate-x-1 group-hover:text-white transition-all duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                        </Link>
-                    </div>
-                </div>
             </section>
 
             <Footer />

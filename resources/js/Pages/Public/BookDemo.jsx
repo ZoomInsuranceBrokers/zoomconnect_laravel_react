@@ -115,7 +115,7 @@ const BookDemo = () => {
         <>
             <Header />
             {/* Beautiful Request a Demo Section */}
-            <div className="min-h-screen bg-[#fafafa] relative overflow-hidden py-12 md:py-24">
+            <div className="min-h-screen bg-[#fafafa] relative overflow-hidden py-8 sm:py-12 md:py-24">
                 {/* Modern Mesh Gradient Background */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <motion.div
@@ -156,8 +156,8 @@ const BookDemo = () => {
                 ></div>
 
                 {/* Main Content */}
-                <div className="max-w-7xl mx-auto px-6 relative z-20">
-                    <div className="flex flex-col lg:flex-row items-start gap-16">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 md:py-0 relative z-20">
+                    <div className="flex flex-col lg:flex-row items-center md:items-start gap-8 md:gap-12 lg:gap-16">
                         {/* Left Column: Content & Steps */}
                         <div className="w-full lg:w-1/2">
                             <motion.div
@@ -167,7 +167,7 @@ const BookDemo = () => {
                                 transition={{ duration: 0.8 }}
                                 className="mb-12"
                             >
-                                <h2 className="text-5xl md:text-5xl font-dmserif font-bold text-gray-900 mb-6 leading-tight drop-shadow-lg">
+                                <h2 className="text-2xl sm:text-4xl md:text-5xl font-dmserif font-bold text-gray-900 mb-4 md:mb-6 leading-tight drop-shadow-lg">
                                     Book a <span className="text-[#FF0066] relative">
                                         Demo
                                         <motion.svg
@@ -193,20 +193,20 @@ const BookDemo = () => {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.2 }}
-                                    className="relative flex items-start gap-8 group h-32"
+                                    className="relative flex items-start gap-8 group h-24 md:h-32"
                                 >
-                                    <div className={`relative z-20 flex items-center justify-center w-14 h-14 rounded-2xl border-4 border-white shadow-xl transition-all duration-700 ${activeStep >= 1 ? 'bg-[#FF0066] scale-110 ring-4 ring-[#FF0066]/20' : 'bg-white'}`}>
+                                    <div className={`relative z-20 flex items-center justify-center w-10 h-10 md:w-14 md:h-14 rounded-2xl border-4 border-white shadow-xl transition-all duration-700 ${activeStep >= 1 ? 'bg-[#FF0066] scale-110 ring-4 ring-[#FF0066]/20' : 'bg-white'}`}>
                                         {/* Step Number Badge */}
-                                        <div className="absolute -top-2 -left-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100 z-30">
-                                            <span className="text-[10px] font-bold text-gray-500">1</span>
+                                        <div className="absolute -top-2 -left-2 w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100 z-30">
+                                            <span className="text-[8px] sm:text-[10px] font-bold text-gray-500">1</span>
                                         </div>
 
                                         {/* Icon */}
-                                        <FiCheckCircle className={`text-2xl transition-colors duration-500 ${activeStep >= 1 ? 'text-white' : 'text-gray-300'}`} />
+                                        <FiCheckCircle className={`text-lg sm:text-2xl transition-colors duration-500 ${activeStep >= 1 ? 'text-white' : 'text-gray-300'}`} />
                                     </div>
 
                                     {/* Line Segment 1: Step 1 to 2 */}
-                                    <div className="absolute left-[26px] top-7 w-1 h-32 bg-gray-200/50 rounded-full overflow-hidden z-10">
+                                    <div className="absolute left-[20px] sm:left-[26px] top-7 w-1 h-24 sm:h-32 bg-gray-200/50 rounded-full overflow-hidden z-10">
                                         <motion.div
                                             className="w-full bg-gradient-to-b from-[#FF0066] to-[#FF0066]/60 shadow-[0_0_15px_rgba(255,0,102,0.4)]"
                                             initial={{ height: 0 }}
@@ -219,8 +219,8 @@ const BookDemo = () => {
                                     </div>
 
                                     <div className="flex-1 pt-2">
-                                        <h3 className={`text-xl font-bold mb-1 transition-colors duration-500 ${activeStep >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>Fill the Form</h3>
-                                        <p className={`text-base transition-colors duration-500 ${activeStep >= 1 ? 'text-gray-600' : 'text-gray-400'}`}>Tell us a bit about your business needs.</p>
+                                        <h3 className={`text-sm sm:text-xl font-bold mb-1 transition-colors duration-500 ${activeStep >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>Fill the Form</h3>
+                                        <p className={`text-xs sm:text-base transition-colors duration-500 ${activeStep >= 1 ? 'text-gray-600' : 'text-gray-400'}`}>Tell us a bit about your business needs.</p>
                                     </div>
                                 </motion.div>
 
@@ -230,20 +230,20 @@ const BookDemo = () => {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.4 }}
-                                    className="relative flex items-start gap-8 group h-32"
+                                    className="relative flex items-start gap-6 sm:gap-8 group h-24 sm:h-32"
                                 >
-                                    <div className={`relative z-20 flex items-center justify-center w-14 h-14 rounded-2xl border-4 border-white shadow-xl transition-all duration-700 ${activeStep >= 2 ? 'bg-[#FF0066] scale-110 ring-4 ring-[#FF0066]/20' : 'bg-white'}`} style={{ transitionDelay: activeStep === 2 ? '0.7s' : '0s' }}>
+                                    <div className={`relative z-20 flex items-center justify-center w-10 h-10 md:w-14 md:h-14 rounded-2xl border-4 border-white shadow-xl transition-all duration-700 ${activeStep >= 2 ? 'bg-[#FF0066] scale-110 ring-4 ring-[#FF0066]/20' : 'bg-white'}`} style={{ transitionDelay: activeStep === 2 ? '0.7s' : '0s' }}>
                                         {/* Step Number Badge */}
-                                        <div className="absolute -top-2 -left-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100 z-30">
-                                            <span className="text-[10px] font-bold text-gray-500">2</span>
+                                        <div className="absolute -top-2 -left-2 w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100 z-30">
+                                            <span className="text-[8px] sm:text-[10px] font-bold text-gray-500">2</span>
                                         </div>
 
                                         {/* Icon */}
-                                        <FiPhoneCall className={`text-2xl transition-colors duration-500 ${activeStep >= 2 ? 'text-white' : 'text-gray-300'}`} style={{ transitionDelay: activeStep === 2 ? '0.7s' : '0s' }} />
+                                        <FiPhoneCall className={`text-lg sm:text-2xl transition-colors duration-500 ${activeStep >= 2 ? 'text-white' : 'text-gray-300'}`} style={{ transitionDelay: activeStep === 2 ? '0.7s' : '0s' }} />
                                     </div>
 
                                     {/* Line Segment 2: Step 2 to 3 */}
-                                    <div className="absolute left-[26px] top-7 w-1 h-32 bg-gray-200/50 rounded-full overflow-hidden z-10">
+                                    <div className="absolute left-[20px] sm:left-[26px] top-7 w-1 h-24 sm:h-32 bg-gray-200/50 rounded-full overflow-hidden z-10">
                                         <motion.div
                                             className="w-full bg-gradient-to-b from-[#FF0066] to-[#FF0066]/60 shadow-[0_0_15px_rgba(255,0,102,0.4)]"
                                             initial={{ height: 0 }}
@@ -256,8 +256,8 @@ const BookDemo = () => {
                                     </div>
 
                                     <div className="flex-1 pt-2">
-                                        <h3 className={`text-xl font-bold mb-1 transition-colors duration-500 ${activeStep >= 2 ? 'text-gray-900' : 'text-gray-400'}`} style={{ transitionDelay: activeStep === 2 ? '0.7s' : '0s' }}>Expert Consultation</h3>
-                                        <p className={`text-base transition-colors duration-500 ${activeStep >= 2 ? 'text-gray-600' : 'text-gray-400'}`} style={{ transitionDelay: activeStep === 2 ? '0.7s' : '0s' }}>Our team will reach out to schedule a personalized walkthrough.</p>
+                                        <h3 className={`text-sm sm:text-xl font-bold mb-1 transition-colors duration-500 ${activeStep >= 2 ? 'text-gray-900' : 'text-gray-400'}`} style={{ transitionDelay: activeStep === 2 ? '0.7s' : '0s' }}>Expert Consultation</h3>
+                                        <p className={`text-xs sm:text-base transition-colors duration-500 ${activeStep >= 2 ? 'text-gray-600' : 'text-gray-400'}`} style={{ transitionDelay: activeStep === 2 ? '0.7s' : '0s' }}>Our team will reach out to schedule a personalized walkthrough.</p>
                                     </div>
                                 </motion.div>
 
@@ -267,20 +267,20 @@ const BookDemo = () => {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.5 }}
-                                    className="relative flex items-start gap-8 group h-14"
+                                    className="relative flex items-start gap-6 sm:gap-8 group h-12 sm:h-14"
                                 >
-                                    <div className={`relative z-20 flex items-center justify-center w-14 h-14 rounded-2xl border-4 border-white shadow-xl transition-all duration-700 ${activeStep === 3 ? 'bg-[#FF0066] scale-110 ring-4 ring-[#FF0066]/20' : 'bg-white'}`} style={{ transitionDelay: activeStep === 3 ? '0.7s' : '0s' }}>
+                                    <div className={`relative z-20 flex items-center justify-center w-10 h-10 md:w-14 md:h-14 rounded-2xl border-4 border-white shadow-xl transition-all duration-700 ${activeStep === 3 ? 'bg-[#FF0066] scale-110 ring-4 ring-[#FF0066]/20' : 'bg-white'}`} style={{ transitionDelay: activeStep === 3 ? '0.7s' : '0s' }}>
                                         {/* Step Number Badge */}
-                                        <div className="absolute -top-2 -left-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100 z-30">
-                                            <span className="text-[10px] font-bold text-gray-500">3</span>
+                                        <div className="absolute -top-2 -left-2 w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100 z-30">
+                                            <span className="text-[8px] sm:text-[10px] font-bold text-gray-500">3</span>
                                         </div>
 
                                         {/* Icon */}
-                                        <FiCalendar className={`text-2xl transition-colors duration-500 ${activeStep === 3 ? 'text-white' : 'text-gray-300'}`} style={{ transitionDelay: activeStep === 3 ? '0.7s' : '0s' }} />
+                                        <FiCalendar className={`text-lg sm:text-2xl transition-colors duration-500 ${activeStep === 3 ? 'text-white' : 'text-gray-300'}`} style={{ transitionDelay: activeStep === 3 ? '0.7s' : '0s' }} />
                                     </div>
                                     <div className="flex-1 pt-2">
-                                        <h3 className={`text-xl font-bold mb-1 transition-colors duration-500 ${activeStep === 3 ? 'text-gray-900' : 'text-gray-400'}`} style={{ transitionDelay: activeStep === 3 ? '0.7s' : '0s' }}>Live Demo</h3>
-                                        <p className={`text-base transition-colors duration-500 ${activeStep === 3 ? 'text-gray-600' : 'text-gray-400'}`} style={{ transitionDelay: activeStep === 3 ? '0.7s' : '0s' }}>See the platform in action and get all your questions answered.</p>
+                                        <h3 className={`text-sm sm:text-xl font-bold mb-1 transition-colors duration-500 ${activeStep === 3 ? 'text-gray-900' : 'text-gray-400'}`} style={{ transitionDelay: activeStep === 3 ? '0.7s' : '0s' }}>Live Demo</h3>
+                                        <p className={`text-xs sm:text-base transition-colors duration-500 ${activeStep === 3 ? 'text-gray-600' : 'text-gray-400'}`} style={{ transitionDelay: activeStep === 3 ? '0.7s' : '0s' }}>See the platform in action and get all your questions answered.</p>
                                     </div>
                                 </motion.div>
                             </div>
@@ -294,13 +294,13 @@ const BookDemo = () => {
                             transition={{ duration: 0.6 }}
                             className="w-full lg:w-1/2"
                         >
-                            <div className="bg-white/80 backdrop-blur-xl rounded-[1.5rem] shadow-2xl p-4 md:p-8 border border-white/50 hover:shadow-[#FF0066]/10 transition-shadow duration-500">
-                                <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="bg-white/80 backdrop-blur-xl rounded-[1.5rem] shadow-2xl p-4 sm:p-6 md:p-8 border border-white/50 hover:shadow-[#FF0066]/10 transition-shadow duration-500">
+                                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
 
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
+                                            <label className="text-xs sm:text-sm font-bold text-gray-700 ml-1">Full Name</label>
                                             <input
                                                 type="text"
                                                 name="fullName"
@@ -311,7 +311,7 @@ const BookDemo = () => {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 ml-1">Business Email</label>
+                                            <label className="text-xs sm:text-sm font-bold text-gray-700 ml-1">Business Email</label>
                                             <input
                                                 type="email"
                                                 name="email"
@@ -323,10 +323,10 @@ const BookDemo = () => {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
 
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 ml-1">Company Name</label>
+                                            <label className="text-xs sm:text-sm font-bold text-gray-700 ml-1">Company Name</label>
                                             <input
                                                 type="text"
                                                 name="companyName"
@@ -337,7 +337,7 @@ const BookDemo = () => {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
+                                            <label className="text-xs sm:text-sm font-bold text-gray-700 ml-1">Phone Number</label>
                                             <input
                                                 type="tel"
                                                 name="phone"
@@ -350,9 +350,9 @@ const BookDemo = () => {
 
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
                                         <div className="space-y-2 relative designation-search-dropdown">
-                                            <label className="text-sm font-bold text-gray-700 ml-1">Designation</label>
+                                            <label className="text-xs sm:text-sm font-bold text-gray-700 ml-1">Designation</label>
                                             
                                             <input
                                                 type="text"
@@ -378,24 +378,24 @@ const BookDemo = () => {
                                                     }
                                                 }}
                                                 placeholder={form.jobTitle === 'others' ? "Enter your designation" : "Search or select designation"}
-                                                className={`w-full px-5 py-2 bg-[#e3edff80] border border-gray-200 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#FF0066]/10 focus:border-[#FF0066] transition-all duration-300 placeholder:text-gray-400 placeholder:text-sm ${
+                                                className={`w-full px-3 sm:px-5 py-2 bg-[#e3edff80] border border-gray-200 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#FF0066]/10 focus:border-[#FF0066] transition-all duration-300 placeholder:text-gray-400 placeholder:text-xs sm:placeholder:text-sm ${
                                                     form.jobTitle === 'others' ? 'border-[#FF0066] bg-white' : ''
                                                 }`}
                                             />
                                             
                                             {showDesignationDropdown && form.jobTitle !== 'others' && (
-                                                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-40 max-h-48 overflow-auto">
+                                                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-40 max-h-40 sm:max-h-48 overflow-auto">
                                                     {designationOptions.filter(opt =>
                                                         opt.label.toLowerCase().includes(designationSearch.toLowerCase())
                                                     ).length === 0 ? (
-                                                        <div className="px-4 py-2 text-gray-400 text-sm">No results</div>
+                                                        <div className="px-4 py-2 text-gray-400 text-xs sm:text-sm">No results</div>
                                                     ) : (
                                                         designationOptions.filter(opt =>
                                                             opt.label.toLowerCase().includes(designationSearch.toLowerCase())
                                                         ).map(opt => (
                                                             <div
                                                                 key={opt.value}
-                                                                className={`px-4 py-2 cursor-pointer text-gray-700 text-sm hover:bg-[#FF0066]/10 ${
+                                                                className={`px-4 py-2 cursor-pointer text-gray-700 text-xs sm:text-sm hover:bg-[#FF0066]/10 ${
                                                                     opt.value === 'others' ? 'border-t border-gray-100 font-medium text-[#FF0066]' : ''
                                                                 } ${form.jobTitle === opt.value ? 'bg-[#FF0066]/10 font-semibold' : ''}`}
                                                                 onClick={() => {
@@ -417,7 +417,7 @@ const BookDemo = () => {
                                             )}
                                         </div>
                                         <div className="space-y-2 relative service-search-dropdown">
-                                            <label className="text-sm font-bold text-gray-700 ml-1">Interested Services</label>
+                                            <label className="text-xs sm:text-sm font-bold text-gray-700 ml-1">Interested Services</label>
                                             
                                             {/* Selected Services Tags */}
                                             {form.service.length > 0 && (
@@ -425,7 +425,7 @@ const BookDemo = () => {
                                                     {form.service.map(serviceValue => {
                                                         const serviceLabel = serviceOptions.find(opt => opt.value === serviceValue)?.label;
                                                         return (
-                                                            <div key={serviceValue} className="flex items-center gap-1 bg-[#FF0066]/10 text-[#FF0066] px-3 py-1 rounded-full text-sm font-medium">
+                                                            <div key={serviceValue} className="flex items-center gap-1 bg-[#FF0066]/10 text-[#FF0066] px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                                                                 {serviceLabel}
                                                                 <button
                                                                     type="button"
@@ -456,15 +456,15 @@ const BookDemo = () => {
                                                 }}
                                                 onFocus={() => setShowServiceDropdown(true)}
                                                 placeholder="Search and select services"
-                                                className="w-full px-5 py-2 bg-[#e3edff80] border border-gray-200 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#FF0066]/10 focus:border-[#FF0066] transition-all duration-300 text-gray-700 placeholder:text-sm"
+                                                className="w-full px-3 sm:px-5 py-2 bg-[#e3edff80] border border-gray-200 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#FF0066]/10 focus:border-[#FF0066] transition-all duration-300 text-gray-700 placeholder:text-xs sm:placeholder:text-sm"
                                             />
                                             {showServiceDropdown && (
-                                                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-40 max-h-48 overflow-auto">
+                                                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-40 max-h-40 sm:max-h-48 overflow-auto">
                                                     {serviceOptions.filter(opt =>
                                                         opt.label.toLowerCase().includes(serviceSearch.toLowerCase()) &&
                                                         !form.service.includes(opt.value)
                                                     ).length === 0 ? (
-                                                        <div className="px-4 py-2 text-gray-400 text-sm">
+                                                        <div className="px-4 py-2 text-gray-400 text-xs sm:text-sm">
                                                             {form.service.length === serviceOptions.length ? 'All services selected' : 'No results'}
                                                         </div>
                                                     ) : (
@@ -494,16 +494,16 @@ const BookDemo = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-700 ml-1">Preferred Demo Date & Time</label>
+                                        <label className="text-xs sm:text-sm font-bold text-gray-700 ml-1">Preferred Demo Date & Time</label>
                                         <input
                                             type="datetime-local"
                                             name="demoDateTime"
                                             value={form.demoDateTime}
                                             onChange={handleDateTimeChange}
                                             min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16)}
-                                            className="w-full px-5 py-2 bg-blue-50/70 border border-gray-200 rounded-2xl focus:bg-blue-100/50 focus:outline-none focus:ring-4 focus:ring-[#FF0066]/10 focus:border-[#FF0066] transition-all duration-300 text-gray-700 placeholder:text-gray-400"
+                                            className="w-full px-3 sm:px-5 py-2 bg-blue-50/70 border border-gray-200 rounded-2xl focus:bg-blue-100/50 focus:outline-none focus:ring-4 focus:ring-[#FF0066]/10 focus:border-[#FF0066] transition-all duration-300 text-gray-700 placeholder:text-gray-400 text-sm"
                                         />
-                                        <p className="text-xs text-gray-500 ml-1">Note: Weekends are not available for demos</p>
+                                        <p className="text-[10px] sm:text-xs text-gray-500 ml-1">Note: Weekends are not available for demos</p>
                                     </div>
 
                                     {/* <div className="space-y-2">
@@ -518,15 +518,15 @@ const BookDemo = () => {
                                         />
                                     </div> */}
 
-                                    <div className="flex justify-center">
+                                    <div className="flex justify-center pt-2">
                                         <motion.button
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
                                             type="submit"
-                                            className="bg-[#FF0066] text-white font-semibold py-3 px-10 rounded-xl hover:bg-[#e6005c] shadow-lg shadow-[#FF0066]/20 transition-all duration-300 text-base flex items-center gap-2 group"
+                                            className="bg-[#FF0066] text-white font-semibold py-2 sm:py-3 px-6 sm:px-10 rounded-xl hover:bg-[#e6005c] shadow-lg shadow-[#FF0066]/20 transition-all duration-300 text-sm sm:text-base flex items-center gap-2 group"
                                         >
                                             Request Free Demo
-                                            <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                            <FiArrowRight className="group-hover:translate-x-1 transition-transform text-sm sm:text-base" />
                                         </motion.button>
                                     </div>
                                 </form>

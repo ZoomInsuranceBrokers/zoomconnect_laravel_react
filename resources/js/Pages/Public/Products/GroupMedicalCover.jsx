@@ -89,40 +89,40 @@ export default function GroupMedicalCover() {
                             className="w-full h-full object-cover"
                         />
                     </div>
-                    <div className="max-w-7xl px-8 pt-12 pb-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center z-10">
+                    <div className="max-w-7xl px-4 md:px-8 pt-20 md:pt-12 pb-4 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center z-10">
                         <div className="space-y-5">
-                            <h1 className="text-4xl md:text-5xl font-dmserif font-semibold leading-tight text-gray-800">
+                            <h1 className="text-2xl md:text-5xl font-dmserif font-semibold leading-tight text-gray-800">
                                 Empower Your Team with <span className="text-[#FF0066]/80">Group Medical Cover</span>
                             </h1>
                             <p className="text-sm md:text-base opacity-90">
                                 Protect your employees and their families with customized health insurance plans designed to fit your organization’s needs.
                             </p>
-                            <div className="flex flex-wrap gap-4">
+                            <div className="flex w-full gap-3 md:gap-4 md:flex-wrap">
                                 <Link
                                     href="/book-demo"
-                                    className="bg-[#FF0066]/80 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-[#df0059cc] hover:text-white transition"
+                                    className="flex-1 md:flex-none md:w-auto text-center bg-[#FF0066]/80 text-white px-3 md:px-5 py-2 rounded-lg text-xs md:text-sm font-semibold shadow hover:bg-[#df0059cc] hover:text-white transition"
                                 >
                                     Schedule a Call
                                 </Link>
                                 <Link
                                     href="/contact"
-                                    className="border border-[#E8D4B7] bg-[#934790] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-[#6a0066] hover:text-white transition"
+                                    className="flex-1 md:flex-none md:w-auto text-center border border-[#E8D4B7] bg-[#934790] text-white px-3 md:px-5 py-2 rounded-lg text-xs md:text-sm font-semibold hover:bg-[#6a0066] hover:text-white transition"
                                 >
                                     Contact Us
                                 </Link>
                             </div>
                         </div>
                         <div className="flex justify-center">
-                            <div className="relative overflow-hidden w-80 md:w-[350px] p-6">
+                            <div className="relative overflow-hidden w-40 md:w-80 md:w-[350px] p-4 md:p-6">
                                 <img className="w-full h-full object-cover" src="/assets/images/gmc_groupmedical.png" alt="GMC hero section" />
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section className="w-full relative  py-32">
+                <section className="w-full relative py-12 md:py-20 lg:py-32">
                     {/* Decorative SVG blob behind hero (non-interactive) */}
-                    <div className="pointer-events-none absolute inset-0 flex justify-center items-center -z-10 overflow-hidden w-full h-full">
+                    <div className="pointer-events-none absolute inset-0 flex justify-center items-normal md:items-center -z-10 overflow-hidden w-full h-full">
                         <svg className="img-blob-image w-full max-w-[1150px] h-auto md:h-[780px] opacity-80" xmlns="http://www.w3.org/2000/svg" width="1305" height="885" fill="none" viewBox="0 0 1305 885" preserveAspectRatio="xMidYMid slice">
                             <g className="blob-big-green-2">
                                 <path fill="#934790" d="M1194.91 807.728c-59.58 43.615-154.57 74.447-251.604 70.433-110.208-4.561-200.22-50.779-306.606-67.321-80.387-12.502-165.735-7.46-249.244-8.498-83.509-1.038-173.013-10.041-231.118-43.637-75.744-43.792-73.345-113.804-52.689-174.13 20.656-60.326 33.272-89.498 12.32-131.722-17.03-34.318-54.2-64.134-79.667-96.724C-15.64 289.674-3.416 160.931 47.212 93.75 79.462 50.957 142.63 9.596 224.868 7.421c93.534-2.472 165.88 45.138 255.614 59.815 124.891 20.43 230.038-12.669 360.327-13.684 142.17-1.11 271.461 53.674 341.191 123.21 69.73 69.537 102.74 231.726 102.74 231.726s74.84 286.016-89.83 399.24Z" className="blob"></path>
@@ -131,65 +131,65 @@ export default function GroupMedicalCover() {
                             </g>
                         </svg>
                     </div>
-                    <div className="max-w-6xl mx-auto text-center py-16 px-6 relative">
-                        <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-white mb-4">
+                    <div className="max-w-6xl mx-auto text-center py-8 md:py-12 lg:py-16 px-4 md:px-6 relative">
+                        <h2 className="text-lg md:text-3xl lg:text-5xl font-dmserif font-semibold text-gray-800 drop-shadow-md md:text-white mb-3 md:mb-4">
                             Features of Group Health Insurance
                         </h2>
-                        <p className="text-white/80 text-xs md:text-base mb-12 max-w-3xl mx-auto">
+                        <p className="text-white/80 text-xs md:text-base mb-6 md:mb-8 lg:mb-12 max-w-3xl mx-auto">
                             Comprehensive benefits designed specifically for corporate health coverage
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-left">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 text-left">
                             {/* Feature 1 */}
-                            <div className="group bg-white rounded-3xl p-6 transition-all duration-300 flex flex-col items-center text-center border-2 border-transparent hover:border-[#FF0066]/20" style={{ boxShadow: '0px 0.75rem 1.75rem #8b3786bd' }}>
-                                <div className="w-16 h-16 bg-gradient-to-br from-[#FF0066]/10 to-[#d40055]/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                    <svg className="w-10 h-10 text-[#FF0066]" fill="currentColor" viewBox="0 0 24 24">
+                            <div className="group bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 transition-all duration-300 flex flex-col items-center text-center border-2 border-transparent hover:border-[#FF0066]/20" style={{ boxShadow: '0px 0.75rem 1.75rem #8b3786bd' }}>
+                                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-[#FF0066]/10 to-[#d40055]/5 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-300">
+                                    <svg className="w-8 h-8 md:w-10 md:h-10 text-[#FF0066]" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-[#1a3a52] mb-3">Immediate Coverage</h3>
-                                <p className="text-gray-600 text-sm leading-relaxed">
+                                <h3 className="text-base md:text-lg lg:text-xl font-bold text-[#1a3a52] mb-2 md:mb-3">Immediate Coverage</h3>
+                                <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                                     Pre-existing conditions waived. Instant coverage for critical illness, maternity, and more.
                                 </p>
                             </div>
 
                             {/* Feature 2 */}
-                            <div className="group bg-white rounded-3xl p-6 transition-all duration-300 flex flex-col items-center text-center border-2 border-transparent hover:border-[#934790]/20" style={{ boxShadow: '0px 0.75rem 1.75rem #8b3786bd' }}>
-                                <div className="w-16 h-16 bg-gradient-to-br from-[#934790]/10 to-[#6a0066]/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                    <svg className="w-10 h-10 text-[#934790]" fill="currentColor" viewBox="0 0 24 24">
+                            <div className="group bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 transition-all duration-300 flex flex-col items-center text-center border-2 border-transparent hover:border-[#934790]/20" style={{ boxShadow: '0px 0.75rem 1.75rem #8b3786bd' }}>
+                                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-[#934790]/10 to-[#6a0066]/5 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-300">
+                                    <svg className="w-8 h-8 md:w-10 md:h-10 text-[#934790]" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-[#1a3a52] mb-3">Complete Reimbursement</h3>
-                                <p className="text-gray-600 text-sm leading-relaxed">
+                                <h3 className="text-base md:text-lg lg:text-xl font-bold text-[#1a3a52] mb-2 md:mb-3">Complete Reimbursement</h3>
+                                <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                                     Full reimbursement for hospital bills, pre and post-hospitalization expenses.
                                 </p>
                             </div>
 
                             {/* Feature 3 */}
-                            <div className="group bg-white rounded-3xl p-6 transition-all duration-300 flex flex-col items-center text-center border-2 border-transparent hover:border-[#FF0066]/20" style={{ boxShadow: '0px 0.75rem 1.75rem #8b3786bd' }}>
-                                <div className="w-16 h-16 bg-gradient-to-br from-[#FF0066]/10 to-[#934790]/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                    <svg className="w-10 h-10 text-[#FF0066]" fill="currentColor" viewBox="0 0 24 24">
+                            <div className="group bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 transition-all duration-300 flex flex-col items-center text-center border-2 border-transparent hover:border-[#FF0066]/20" style={{ boxShadow: '0px 0.75rem 1.75rem #8b3786bd' }}>
+                                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-[#FF0066]/10 to-[#934790]/5 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-300">
+                                    <svg className="w-8 h-8 md:w-10 md:h-10 text-[#FF0066]" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-[#1a3a52] mb-3">Cashless Experience</h3>
-                                <p className="text-gray-600 text-sm leading-relaxed">
+                                <h3 className="text-base md:text-lg lg:text-xl font-bold text-[#1a3a52] mb-2 md:mb-3">Cashless Experience</h3>
+                                <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                                     Seamless cashless treatment at network hospitals nationwide.
                                 </p>
                             </div>
 
                             {/* Card 4 - Simplified Claims Management */}
-                            <div className="group bg-white rounded-3xl p-6 transition-all duration-300 flex flex-col items-center text-center border-2 border-transparent hover:border-[#FF0066]/20" style={{ boxShadow: '0px 0.75rem 1.75rem #8b3786bd' }}>
-                                <div className="w-16 h-16 bg-gradient-to-br from-[#FF0066]/10 to-[#d40055]/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                    <svg className="w-10 h-12 text-[#934790]" fill="currentColor" viewBox="0 0 24 24">
+                            <div className="group bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 transition-all duration-300 flex flex-col items-center text-center border-2 border-transparent hover:border-[#FF0066]/20" style={{ boxShadow: '0px 0.75rem 1.75rem #8b3786bd' }}>
+                                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-[#FF0066]/10 to-[#d40055]/5 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-300">
+                                    <svg className="w-8 h-8 md:w-10 md:h-12 text-[#934790]" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
                                     </svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-[#1a3a52] mb-3">
+                                <h3 className="text-base md:text-lg lg:text-xl font-bold text-[#1a3a52] mb-2 md:mb-3">
                                     Simplified Claims
                                 </h3>
-                                <p className="text-gray-600 text-sm leading-relaxed">
+                                <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                                     Digital processing with real-time tracking, 24/7 support, and quick reimbursement.
                                 </p>
                             </div>
@@ -200,13 +200,13 @@ export default function GroupMedicalCover() {
 
 
                 {/* WHY BUY GMC SECTION */}
-                <section className="w-full flex flex-col items-center justify-center py-12  relative overflow-hidden">
+                <section className="w-full flex flex-col items-center justify-center py-8 md:py-12 relative overflow-hidden">
                     {/* Decorative Gradient Background */}
 
-                    <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
                         {/* Header */}
-                        <div className="text-center mb-16">
-                            <h2 className="text-xl md:text-4xl font-dmserif font-bold text-[#2d2d2d] mb-4">
+                        <div className="text-center mb-8 md:mb-12 lg:mb-16">
+                            <h2 className="text-lg md:text-2xl lg:text-4xl font-dmserif font-bold text-[#2d2d2d] mb-3 md:mb-4">
                                 Why Choose Group Medical Cover?
                             </h2>
                             <p className="text-xs md:text-base text-gray-600 max-w-3xl mx-auto">
@@ -215,17 +215,17 @@ export default function GroupMedicalCover() {
                         </div>
 
                         {/* Feature Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
                             {features.map((feature, i) => (
                                 <div
                                     key={i}
                                     onMouseEnter={() => setHoveredIndex(i)}
                                     onMouseLeave={() => setHoveredIndex(null)}
-                                    className="gmc-card group relative bg-[#f9f6fb] rounded-3xl p-8 flex flex-col items-center text-center border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
+                                    className="gmc-card group relative bg-[#f9f6fb] rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 flex flex-col items-center text-center border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
                                     style={{ ['--accent']: feature.iconBg }}
                                 >
                                     {/* Icon wrapper uses per-feature subtle bg; card uses same bg on hover */}
-                                    <div className="relative z-10 mb-6 w-20 h-20 mx-auto rounded-full flex items-center justify-center shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:shadow-none"
+                                    <div className="relative z-10 mb-4 md:mb-6 w-16 h-16 md:w-20 md:h-20 mx-auto rounded-full flex items-center justify-center shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:shadow-none"
                                         style={{ background: feature.iconBg }}>
                                         <div className="transform group-hover:rotate-6 transition-transform duration-500" style={{ color: feature.iconColor }}>
                                             {feature.icon}
@@ -233,12 +233,12 @@ export default function GroupMedicalCover() {
                                     </div>
 
                                     {/* Title */}
-                                    <h3 className="relative z-10 font-bold text-xl text-[#2d2d2d] mb-3 group-hover:text-[#934790] transition-colors">
+                                    <h3 className="relative z-10 font-bold text-base md:text-lg lg:text-xl text-[#2d2d2d] mb-2 md:mb-3 group-hover:text-[#934790] transition-colors">
                                         {feature.title}
                                     </h3>
 
                                     {/* Description */}
-                                    <p className="relative z-10 text-sm md:text-base text-gray-600 leading-relaxed group-hover:text-gray-900 group-hover:font-medium transition-colors">
+                                    <p className="relative z-10 text-xs md:text-sm lg:text-base text-gray-600 leading-relaxed group-hover:text-gray-900 group-hover:font-medium transition-colors">
                                         {feature.desc}
                                     </p>
                                 </div>
@@ -250,77 +250,77 @@ export default function GroupMedicalCover() {
 
                 {/* < GMCFAQDemo /> */}
 
-                <section className="w-full mt-8 flex flex-col items-center justify-center ">
-                    <div className="w-[95%] py-16 px-4 bg-[#f2d7b3]/70 rounded-3xl backdrop-blur-lg">
+                <section className="w-full mt-6 md:mt-8 flex flex-col items-center justify-center ">
+                    <div className="w-[95%] py-8 md:py-12 lg:py-16 px-3 md:px-4 bg-[#f2d7b3]/70 rounded-2xl md:rounded-3xl backdrop-blur-lg">
                         {/* Decorative Background Shapes */}
                         <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#FF0066]/10 opacity-20 rounded-full blur-3xl"></div>
                         <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#934790]/10 opacity-20 rounded-full blur-3xl"></div>
 
-                        <div className="max-w-7xl mx-auto w-full px-6 relative z-10">
+                        <div className="max-w-7xl mx-auto w-full px-3 md:px-6 relative z-10">
                             <div className="relative max-w-6xl mx-auto text-center">
                                 {/* Heading */}
-                                <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 font-dmserif">
+                                <h2 className="text-xl md:text-2xl lg:text-4xl font-bold text-gray-800 mb-4 md:mb-6 font-dmserif">
                                     Why Group Medical Cover is Essential for Employees
                                 </h2>
-                                <p className="text-gray-700 mb-8 max-w-3xl mx-auto text-xs md:text-base leading-snug">
+                                <p className="text-gray-700 mb-6 md:mb-8 max-w-3xl mx-auto text-xs md:text-base leading-snug">
                                     Offering group medical cover ensures employee well-being, financial security during emergencies, and strengthens loyalty and morale.
                                 </p>
 
                                 {/* Grid of benefit cards */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                                     {/* Card 1 */}
-                                    <div className="group relative bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
-                                        <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
-                                            <span className="text-[#934790] text-3xl">🎯</span>
+                                    <div className="group relative bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
+                                        <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl md:rounded-2xl mb-3 md:mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                                            <span className="text-[#934790] text-2xl md:text-3xl">🎯</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Attract & Retain Talent</h3>
-                                        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                                        <h3 className="text-sm md:text-base lg:text-lg font-bold text-gray-800 mb-2">Attract & Retain Talent</h3>
+                                        <p className="text-gray-600 text-xs md:text-sm mb-3 md:mb-4 leading-relaxed">
                                             Shows employees you care about their health, helping attract top talent and reduce turnover.
                                         </p>
-                                        <div className="pt-4 border-t border-gray-100">
-                                            <span className="text-[#934790] font-bold text-xl">+30% Retention</span>
+                                        <div className="pt-3 md:pt-4 border-t border-gray-100">
+                                            <span className="text-[#934790] font-bold text-base md:text-lg lg:text-xl">+30% Retention</span>
                                         </div>
                                     </div>
 
                                     {/* Card 2 */}
-                                    <div className="group relative bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
-                                        <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
-                                            <span className="text-[#FF0066] text-3xl">💖</span>
+                                    <div className="group relative bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
+                                        <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl md:rounded-2xl mb-3 md:mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                                            <span className="text-[#FF0066] text-2xl md:text-3xl">💖</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Ensure Well-being</h3>
-                                        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                                        <h3 className="text-sm md:text-base lg:text-lg font-bold text-gray-800 mb-2">Ensure Well-being</h3>
+                                        <p className="text-gray-600 text-xs md:text-sm mb-3 md:mb-4 leading-relaxed">
                                             Employees feel cared for when their health and families are protected, increasing satisfaction.
                                         </p>
-                                        <div className="pt-4 border-t border-gray-100">
-                                            <span className="text-[#FF0066] font-bold text-xl">+40% Productivity</span>
+                                        <div className="pt-3 md:pt-4 border-t border-gray-100">
+                                            <span className="text-[#FF0066] font-bold text-base md:text-lg lg:text-xl">+40% Productivity</span>
                                         </div>
                                     </div>
 
                                     {/* Card 3 */}
-                                    <div className="group relative bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
-                                        <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
-                                            <span className="text-amber-600 text-3xl">💰</span>
+                                    <div className="group relative bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
+                                        <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl md:rounded-2xl mb-3 md:mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                                            <span className="text-amber-600 text-2xl md:text-3xl">💰</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Financial Security</h3>
-                                        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                                        <h3 className="text-sm md:text-base lg:text-lg font-bold text-gray-800 mb-2">Financial Security</h3>
+                                        <p className="text-gray-600 text-xs md:text-sm mb-3 md:mb-4 leading-relaxed">
                                             Provides protection during medical emergencies so employees can focus on recovery.
                                         </p>
-                                        <div className="pt-4 border-t border-gray-100">
-                                            <span className="text-amber-600 font-bold text-xl">₹5L Coverage</span>
+                                        <div className="pt-3 md:pt-4 border-t border-gray-100">
+                                            <span className="text-amber-600 font-bold text-base md:text-lg lg:text-xl">₹5L Coverage</span>
                                         </div>
                                     </div>
 
                                     {/* Card 4 */}
-                                    <div className="group relative bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
-                                        <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
-                                            <span className="text-emerald-600 text-3xl">📜</span>
+                                    <div className="group relative bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#934790]/30 flex flex-col justify-between h-full">
+                                        <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl md:rounded-2xl mb-3 md:mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                                            <span className="text-emerald-600 text-2xl md:text-3xl">📜</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">Compliance & Morale</h3>
-                                        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                                        <h3 className="text-sm md:text-base lg:text-lg font-bold text-gray-800 mb-2">Compliance & Morale</h3>
+                                        <p className="text-gray-600 text-xs md:text-sm mb-3 md:mb-4 leading-relaxed">
                                             Fulfills statutory requirements and boosts employee confidence and loyalty.
                                         </p>
-                                        <div className="pt-4 border-t border-gray-100">
-                                            <span className="text-emerald-600 font-bold text-xl">100% Compliance</span>
+                                        <div className="pt-3 md:pt-4 border-t border-gray-100">
+                                            <span className="text-emerald-600 font-bold text-base md:text-lg lg:text-xl">100% Compliance</span>
                                         </div>
                                     </div>
                                 </div>
@@ -329,51 +329,51 @@ export default function GroupMedicalCover() {
                     </div>
                 </section>
 
-                <section className="py-20 px-6 ">
-                    <div className="max-w-6xl mx-auto bg-gradient-to-r from-[#441752] via-[#571754] to-[#934790]  rounded-3xl shadow-lg overflow-hidden flex flex-col md:flex-row items-center">
+                <section className="py-10 md:py-16 lg:py-20 px-4 md:px-6 ">
+                    <div className="max-w-6xl mx-auto bg-gradient-to-r from-[#441752] via-[#571754] to-[#934790] rounded-2xl md:rounded-3xl shadow-lg overflow-hidden flex flex-col md:flex-row items-center">
 
                         {/* Left Content */}
-                        <div className="md:w-1/2 px-8 py-8">
-                            <h2 className="text-3xl md:text-4xl font-normal text-white mb-6 leading-tight font-dmserif">
+                        <div className="md:w-1/2 px-4 md:px-6 lg:px-8 py-6 md:py-8">
+                            <h2 className="text-xl md:text-2xl lg:text-4xl font-normal text-white mb-4 md:mb-6 leading-tight font-dmserif">
                                 How We Support Your Team's Well-being
                             </h2>
-                            <p className="text-white/90 mb-4 text-sm md:text-base md:leading-tight">
-                                Safeguard your employees’ health with group medical cover tailored for your organization — ensuring productivity, loyalty, and peace of mind.
+                            <p className="text-white/90 mb-4 text-xs md:text-sm lg:text-base md:leading-tight">
+                                Safeguard your employees' health with group medical cover tailored for your organization — ensuring productivity, loyalty, and peace of mind.
                             </p>
 
-                            <div className="space-y-6">
+                            <div className="space-y-4 md:space-y-6">
                                 <div>
-                                    <h3 className="font-semibold text-white text-sm md:text-lg flex items-center gap-2 tracking-tight">
-                                        <span className="text-xl">💼</span> Superior Claims Experience
+                                    <h3 className="font-semibold text-white text-sm md:text-base lg:text-lg flex items-center gap-2 tracking-tight">
+                                        <span className="text-lg md:text-xl">💼</span> Superior Claims Experience
                                     </h3>
-                                    <p className="text-white/80 ml-8 text-xs md:text-sm">
+                                    <p className="text-white/80 ml-6 md:ml-8 text-xs md:text-sm">
                                         Quick, easy claim processing and dedicated 24/7 concierge support.
                                     </p>
                                 </div>
 
                                 <div>
-                                    <h3 className="font-semibold text-white text-sm md:text-lg flex items-center gap-2 tracking-tight">
-                                        <span className="text-xl">🧾</span> Self-Service Employee Portal
+                                    <h3 className="font-semibold text-white text-sm md:text-base lg:text-lg flex items-center gap-2 tracking-tight">
+                                        <span className="text-lg md:text-xl">🧾</span> Self-Service Employee Portal
                                     </h3>
-                                    <p className="text-white/80 ml-8 text-xs md:text-sm">
+                                    <p className="text-white/80 ml-6 md:ml-8 text-xs md:text-sm">
                                         Employees can access policy details, inclusions, exclusions, and top-up options anytime.
                                     </p>
                                 </div>
 
                                 <div>
-                                    <h3 className="font-semibold text-white text-lg md:text-lg flex items-center gap-2 tracking-tight">
-                                        <span className="text-xl">🏥</span> Not Your Regular Broker
+                                    <h3 className="font-semibold text-white text-sm md:text-base lg:text-lg flex items-center gap-2 tracking-tight">
+                                        <span className="text-lg md:text-xl">🏥</span> Not Your Regular Broker
                                     </h3>
-                                    <p className="text-white/80 ml-8 text-xs md:text-sm">
+                                    <p className="text-white/80 ml-6 md:ml-8 text-xs md:text-sm">
                                         Get teleconsultations, gym memberships, health check-ups, and more in one plan.
                                     </p>
                                 </div>
 
                                 <div>
-                                    <h3 className="font-semibold text-white text-lg md:text-lg flex items-center gap-2 tracking-tight">
-                                        <span className="text-xl">⚙️</span> Seamless Onboarding
+                                    <h3 className="font-semibold text-white text-sm md:text-base lg:text-lg flex items-center gap-2 tracking-tight">
+                                        <span className="text-lg md:text-xl">⚙️</span> Seamless Onboarding
                                     </h3>
-                                    <p className="text-white/80 ml-8 text-xs md:text-sm">
+                                    <p className="text-white/80 ml-6 md:ml-8 text-xs md:text-sm">
                                         Integrate easily with HRMS for automated employee additions and deletions.
                                     </p>
                                 </div>
@@ -381,11 +381,11 @@ export default function GroupMedicalCover() {
                         </div>
 
                         {/* Right Image */}
-                        <div className="md:w-1/2 flex justify-center items-center p-10">
+                        <div className="md:w-1/2 flex justify-center items-center p-6 md:p-8 lg:p-10">
                             <img
                                 src="/assets/images/products/Wellbeing_GMC_products_final.png"
                                 alt="Employee Well-being"
-                                className="w-full max-w-lg object-cover"
+                                className="w-full max-w-xs md:max-w-md lg:max-w-lg object-cover"
                             />
                         </div>
                     </div>
@@ -393,56 +393,56 @@ export default function GroupMedicalCover() {
 
 
                 {/* HOW IT WORKS SECTION */}
-                <section className="w-full py-16 relative overflow-hidden">
+                <section className="w-full py-8 md:py-12 lg:py-16 relative overflow-hidden">
                     {/* Animated gradient orbs */}
                     <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#934790] rounded-full blur-[120px] opacity-10 animate-pulse"></div>
                     <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#FF0066] rounded-full blur-[120px] opacity-10 animate-pulse" style={{ animationDelay: '1s' }}></div>
 
-                    <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
                         {/* Section Header */}
-                        <div className="text-center mb-20">
-                            <h2 className="text-xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-6 drop-shadow-lg">
+                        <div className="text-center mb-10 md:mb-16 lg:mb-20">
+                            <h2 className="text-lg md:text-3xl lg:text-5xl font-dmserif font-semibold text-gray-800 mb-4 md:mb-6 drop-shadow-lg">
                                 How We Simplify Group Medical Coverage
                             </h2>
-                            <p className="text-gray-800 text-sm md:text-base max-w-2xl mx-auto">
+                            <p className="text-gray-800 text-xs md:text-sm lg:text-base max-w-2xl mx-auto">
                                 Protect your team effortlessly—just four simple steps to complete coverage!
                             </p>
                         </div>
 
                         {/* Steps Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 relative">
                             {/* Connecting line for desktop */}
                             <div className="hidden lg:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#934790]/20 to-transparent"></div>
 
                             {/* Step 1 - Enrollment */}
                             <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                                <div className="relative bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 border-[#934790]/10 hover:border-[#934790]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
                                     {/* Step number badge */}
-                                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#934790] to-[#6a0066] rounded-full flex items-center justify-center shadow-xl shadow-[#934790]/30 group-hover:shadow-2xl group-hover:shadow-[#934790]/50 transition-all duration-300">
-                                            <span className="text-white font-bold text-lg">1</span>
+                                    <div className="absolute -top-5 md:-top-6 left-1/2 transform -translate-x-1/2">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#934790] to-[#6a0066] rounded-full flex items-center justify-center shadow-xl shadow-[#934790]/30 group-hover:shadow-2xl group-hover:shadow-[#934790]/50 transition-all duration-300">
+                                            <span className="text-white font-bold text-base md:text-lg">1</span>
                                         </div>
                                     </div>
 
                                     {/* Icon */}
-                                    <div className="mt-8 mb-6 flex justify-center">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#934790]/10 to-[#6a0066]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                            <svg className="w-8 h-8 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="mt-6 md:mt-8 mb-4 md:mb-6 flex justify-center">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#934790]/10 to-[#6a0066]/5 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-6 h-6 md:w-8 md:h-8 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </div>
                                     </div>
 
                                     {/* Content */}
-                                    <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
+                                    <h3 className="text-base md:text-lg font-bold text-[#1a3a52] mb-3 md:mb-4 text-center">
                                         Quick Enrollment
                                     </h3>
-                                    <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
+                                    <p className="text-gray-600 text-xs md:text-sm text-center leading-relaxed mb-4 md:mb-6">
                                         Simple online registration through HR portal. Digital forms completed in minutes.
                                     </p>
 
                                     {/* Feature tag */}
-                                    <div className="flex items-center justify-center gap-2 text-sm">
+                                    <div className="flex items-center justify-center gap-2 text-xs md:text-sm">
                                         <div className="w-2 h-2 bg-[#934790] rounded-full animate-pulse"></div>
                                         <span className="text-[#934790] font-semibold">5 Minutes Setup</span>
                                     </div>
@@ -451,33 +451,33 @@ export default function GroupMedicalCover() {
 
                             {/* Step 2 - Activation */}
                             <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                                <div className="relative bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
                                     {/* Step number badge */}
-                                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066] to-[#d40055] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group-hover:shadow-[#FF0066]/50 transition-all duration-300">
-                                            <span className="text-white font-bold text-lg">2</span>
+                                    <div className="absolute -top-5 md:-top-6 left-1/2 transform -translate-x-1/2">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#FF0066] to-[#d40055] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group-hover:shadow-[#FF0066]/50 transition-all duration-300">
+                                            <span className="text-white font-bold text-base md:text-lg">2</span>
                                         </div>
                                     </div>
 
                                     {/* Icon */}
-                                    <div className="mt-8 mb-6 flex justify-center">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066]/10 to-[#d40055]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                            <svg className="w-8 h-8 text-[#FF0066]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="mt-6 md:mt-8 mb-4 md:mb-6 flex justify-center">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#FF0066]/10 to-[#d40055]/5 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-6 h-6 md:w-8 md:h-8 text-[#FF0066]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                             </svg>
                                         </div>
                                     </div>
 
                                     {/* Content */}
-                                    <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
+                                    <h3 className="text-base md:text-lg font-bold text-[#1a3a52] mb-3 md:mb-4 text-center">
                                         Instant Activation
                                     </h3>
-                                    <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
+                                    <p className="text-gray-600 text-xs md:text-sm text-center leading-relaxed mb-4 md:mb-6">
                                         Coverage begins immediately with full benefits. No waiting periods for care.
                                     </p>
 
                                     {/* Feature tag */}
-                                    <div className="flex items-center justify-center gap-2 text-sm">
+                                    <div className="flex items-center justify-center gap-2 text-xs md:text-sm">
                                         <div className="w-2 h-2 bg-[#FF0066] rounded-full animate-pulse"></div>
                                         <span className="text-[#FF0066] font-semibold">Zero Wait Time</span>
                                     </div>
@@ -486,33 +486,33 @@ export default function GroupMedicalCover() {
 
                             {/* Step 3 - Support */}
                             <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#6a0066]/10 hover:border-[#6a0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                                <div className="relative bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 border-[#6a0066]/10 hover:border-[#6a0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
                                     {/* Step number badge */}
-                                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#6a0066] to-[#934790] rounded-full flex items-center justify-center shadow-xl shadow-[#6a0066]/30 group-hover:shadow-2xl group-hover:shadow-[#6a0066]/50 transition-all duration-300">
-                                            <span className="text-white font-bold text-lg">3</span>
+                                    <div className="absolute -top-5 md:-top-6 left-1/2 transform -translate-x-1/2">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#6a0066] to-[#934790] rounded-full flex items-center justify-center shadow-xl shadow-[#6a0066]/30 group-hover:shadow-2xl group-hover:shadow-[#6a0066]/50 transition-all duration-300">
+                                            <span className="text-white font-bold text-base md:text-lg">3</span>
                                         </div>
                                     </div>
 
                                     {/* Icon */}
-                                    <div className="mt-8 mb-6 flex justify-center">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#6a0066]/10 to-[#934790]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                            <svg className="w-8 h-8 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="mt-6 md:mt-8 mb-4 md:mb-6 flex justify-center">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#6a0066]/10 to-[#934790]/5 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-6 h-6 md:w-8 md:h-8 text-[#934790]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                             </svg>
                                         </div>
                                     </div>
 
                                     {/* Content */}
-                                    <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
+                                    <h3 className="text-base md:text-lg font-bold text-[#1a3a52] mb-3 md:mb-4 text-center">
                                         24/7 Care Support
                                     </h3>
-                                    <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
+                                    <p className="text-gray-600 text-xs md:text-sm text-center leading-relaxed mb-4 md:mb-6">
                                         Round-the-clock assistance with claims and cashless hospital access nationwide.
                                     </p>
 
                                     {/* Feature tag */}
-                                    <div className="flex items-center justify-center gap-2 text-sm">
+                                    <div className="flex items-center justify-center gap-2 text-xs md:text-sm">
                                         <div className="w-2 h-2 bg-[#934790] rounded-full animate-pulse"></div>
                                         <span className="text-[#934790] font-semibold">Always Available</span>
                                     </div>
@@ -521,33 +521,33 @@ export default function GroupMedicalCover() {
 
                             {/* Step 4 - Wellness */}
                             <div className="group relative">
-                                <div className="relative bg-white rounded-3xl p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
+                                <div className="relative bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 border-[#FF0066]/10 hover:border-[#FF0066]/30 shadow-lg hover:shadow-2xl transition-all duration-500 hover:transform hover:scale-105">
                                     {/* Step number badge */}
-                                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066] to-[#FF0066] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group-hover:shadow-[#FF0066]/50 transition-all duration-300">
-                                            <span className="text-white font-bold text-lg">4</span>
+                                    <div className="absolute -top-5 md:-top-6 left-1/2 transform -translate-x-1/2">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#FF0066] to-[#FF0066] rounded-full flex items-center justify-center shadow-xl shadow-[#FF0066]/30 group-hover:shadow-2xl group-hover:shadow-[#FF0066]/50 transition-all duration-300">
+                                            <span className="text-white font-bold text-base md:text-lg">4</span>
                                         </div>
                                     </div>
 
                                     {/* Icon */}
-                                    <div className="mt-8 mb-6 flex justify-center">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF0066]/10 to-[#FF0066]/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                            <svg className="w-8 h-8 text-[#FF0066]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="mt-6 md:mt-8 mb-4 md:mb-6 flex justify-center">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#FF0066]/10 to-[#FF0066]/5 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-6 h-6 md:w-8 md:h-8 text-[#FF0066]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </div>
                                     </div>
 
                                     {/* Content */}
-                                    <h3 className="text-lg font-bold text-[#1a3a52] mb-4 text-center">
+                                    <h3 className="text-base md:text-lg font-bold text-[#1a3a52] mb-3 md:mb-4 text-center">
                                         Ongoing Wellness
                                     </h3>
-                                    <p className="text-gray-600 text-sm text-center leading-relaxed mb-6">
+                                    <p className="text-gray-600 text-xs md:text-sm text-center leading-relaxed mb-4 md:mb-6">
                                         Regular health check-ups, preventive care programs, and wellness initiatives included.
                                     </p>
 
                                     {/* Feature tag */}
-                                    <div className="flex items-center justify-center gap-2 text-sm">
+                                    <div className="flex items-center justify-center gap-2 text-xs md:text-sm">
                                         <div className="w-2 h-2 bg-[#FF0066] rounded-full animate-pulse"></div>
                                         <span className="text-[#FF0066] font-semibold">Preventive Care</span>
                                     </div>

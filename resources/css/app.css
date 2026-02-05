@@ -156,6 +156,35 @@ html, body {
   animation: vertical-marquee-down 10s linear infinite;
 }
 
+/* Horizontal marquee for mobile benefits */
+@keyframes horizontal-marquee-right {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes horizontal-marquee-left {
+  0% {
+    transform: translateX(-50%);
+  }
+
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.horizontal-marquee-right {
+  animation: horizontal-marquee-right 8s linear infinite;
+}
+
+.horizontal-marquee-left {
+  animation: horizontal-marquee-left 8s linear infinite;
+}
+
 /* Card hover effects */
 .benefit-card {
   transition: transform 0.3s ease-in-out;

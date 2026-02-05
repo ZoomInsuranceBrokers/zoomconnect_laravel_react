@@ -53,26 +53,26 @@ export function FaqSection() {
 
     return (
         <section id="faq" className="w-full flex flex-col items-center justify-center">
-            <div className="w-[95%] max-w-5xl flex flex-col md:flex-row gap-8 px-8 items-center rounded-3xl bg-gradient-to-r from-[#b740b2] via-[#FF0066]/50 to-[#ffc03aa8] shadow-lg min-w-[280px] relative top-full -translate-y-1/2" >
-                <div className="flex-1 flex items-center   py-12 ">
+            <div className="w-[95%] max-w-5xl flex flex-col md:flex-row gap-4 px-4 md:px-8 items-center rounded-3xl bg-gradient-to-r from-[#b740b2] via-[#FF0066]/50 to-[#ffc03aa8] shadow-lg min-w-[280px] relative top-full md:-translate-y-1/2" >
+                <div className="flex-1 flex items-center py-6">
                     <div>
-                        <h3 className="text-white text-lg md:text-xl font-semibold mb-2">We take</h3>
-                        <div className="text-white text-3xl md:text-5xl font-bold leading-tight mb-2">customer<br className="hidden md:block" />satisfaction</div>
-                        <div className="text-white text-lg md:text-xl font-medium">Very seriously</div>
+                        <h3 className="text-white text-sm md:text-xl font-semibold mb-1">We take</h3>
+                        <div className="text-white text-2xl md:text-5xl font-bold leading-tight mb-1">customer<br className="hidden md:block" />satisfaction</div>
+                        <div className="text-white text-sm md:text-xl font-medium">Very seriously</div>
                     </div>
                 </div>
-                <div className="flex-[2] grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="bg-white rounded-3xl shadow-lg flex flex-col items-center justify-center px-10 py-4 min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
-                        <div className="text-[#3B0270] text-4xl font-bold mb-2">1100+</div>
-                        <div className="text-[#441752] text-base font-semibold mb-1 text-center leading-snug">Trusted Clients and Growing</div>
+                <div className="flex-[2] grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+                    <div className="bg-white rounded-3xl shadow-lg flex flex-col items-center justify-center px-6 py-3 min-w-[140px] md:min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
+                        <div className="text-[#3B0270] text-lg md:text-4xl font-bold mb-1">1100+</div>
+                        <div className="text-[#441752] text-xs md:text-base font-semibold mb-1 text-center leading-snug">Trusted Clients and Growing</div>
                     </div>
-                    <div className="bg-white rounded-3xl shadow-lg flex flex-col items-center justify-center px-10 py-4 min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
-                        <div className="text-[#3B0270] text-4xl font-bold mb-2">90,000+</div>
-                        <div className="text-[#441752] text-base font-semibold mb-1 text-center leading-snug">Claims Settled Seamlessly</div>
+                    <div className="bg-white rounded-3xl shadow-lg flex flex-col items-center justify-center px-6 py-3 min-w-[140px] md:min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
+                        <div className="text-[#3B0270] text-lg md:text-4xl font-bold mb-1">90,000+</div>
+                        <div className="text-[#441752] text-xs md:text-base font-semibold mb-1 text-center leading-snug">Claims Settled Seamlessly</div>
                     </div>
-                    <div className="bg-white rounded-3xl shadow-lg flex flex-col items-center justify-center px-10 py-4 min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
-                        <div className="text-[#3B0270] text-4xl font-bold mb-2">500,000+</div>
-                        <div className="text-[#441752] text-base font-semibold mb-1 text-center leading-snug">Lives Protected with Trust</div>
+                    <div className="bg-white rounded-3xl shadow-lg flex flex-col items-center justify-center px-6 py-3 min-w-[140px] md:min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
+                        <div className="text-[#3B0270] text-lg md:text-4xl font-bold mb-1">500,000+</div>
+                        <div className="text-[#441752] text-xs md:text-base font-semibold mb-1 text-center leading-snug">Lives Protected with Trust</div>
                     </div>
                 </div>
             </div>

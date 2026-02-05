@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\EmployeeAuthController;
 use Illuminate\Http\Request;
 use App\Models\UserMaster;
@@ -53,7 +54,11 @@ Route::prefix('solutions')->name('solutions.')->group(function () {
 // Explore
 Route::get('/resources', [App\Http\Controllers\ProductController::class, 'resources'])->name('resources');
 Route::get('/resources/{slug}', [App\Http\Controllers\ProductController::class, 'resourceShow'])->name('resources.show');
-Route::get('/blog', [App\Http\Controllers\ProductController::class, 'blog'])->name('blog');
+
+// Blog Routes
+Route::get('/blog', [BlogController::class, 'index'])->name('blog');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+
 Route::get('/faq', [App\Http\Controllers\ProductController::class, 'faq'])->name('faq');
 
 // Company
