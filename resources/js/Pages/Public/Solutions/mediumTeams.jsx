@@ -1,8 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { FaHeartbeat, FaUserShield, FaUserFriends, FaClinicMedical, FaChartLine, FaShieldAlt } from "react-icons/fa";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { FaGlobe, FaChartBar, FaPuzzlePiece } from "react-icons/fa";
-
 import { Link } from '@inertiajs/react';
 import { FaUsers, FaClock, FaCheck, FaDownload } from 'react-icons/fa';
 import Header from '../Layouts/Header';
@@ -55,7 +53,7 @@ function LargeBizSolutions() {
         <div className="relative w-full ">
             {/* Soft glow and overlay */}
 
-            <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="relative z-10 max-w-7xl mx-auto px-0 lg:px-8">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                     {offerings.map((item, idx) => (
@@ -63,14 +61,14 @@ function LargeBizSolutions() {
                             key={idx}
                             className="Largebiz-card relative group p-[2px] rounded-2xl bg-gradient-to-br from-[#FFB300]/30 via-[#934790]/20 to-transparent shadow-[0_0_40px_rgba(147,71,144,0.08)] group-hover:bg-[#934790] transition-all duration-300 h-70"
                         >
-                            <div className="bg-white/70 backdrop-blur-2xl p-7 rounded-2xl h-full shadow-[0_0_25px_rgba(255,255,255,0.10)] group-hover:shadow-[0_0_40px_rgba(255,179,0,0.18)] group-hover:bg-[#934790] transform group-hover:-translate-y-2 group-hover:scale-[1.05] transition-all duration-300 ease-out flex flex-col justify-between relative">
-                                <div className="absolute -top-5 -left-5 w-14 h-14 bg-[#934790] rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 group-hover:rotate-3 group-hover:bg-white group-hover:text-[#934790] transition-all duration-300 z-10">
+                            <div className="bg-white/70 backdrop-blur-2xl p-4 md:p-7 rounded-2xl h-full shadow-[0_0_25px_rgba(255,255,255,0.10)] group-hover:shadow-[0_0_40px_rgba(255,179,0,0.18)] group-hover:bg-[#934790] transform group-hover:-translate-y-2 group-hover:scale-[1.05] transition-all duration-300 ease-out flex flex-col justify-start relative">
+                                <div className="absolute -top-5 -left-5 w-12 h-12 md:w-14 md:h-14 bg-[#934790] rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 group-hover:rotate-3 group-hover:bg-white group-hover:text-[#934790] transition-all duration-300 z-10">
                                     {item.icon}
                                 </div>
                                 <div className="pt-2">
-                                    <h3 className="md:text-xl font-semibold mb-4 text-[#934790] drop-shadow-sm group-hover:text-white transition-all">{item.title}</h3>
+                                    <h3 className="text-base md:text-xl font-semibold mb-2 md:mb-4 text-[#934790] drop-shadow-sm group-hover:text-white transition-all">{item.title}</h3>
                                 </div>
-                                <p className="text-gray-700 md:text-sm leading-relaxed font-medium group-hover:text-white/90 transition-all">{item.desc}</p>
+                                <p className="text-gray-700 text-xs md:text-sm leading-tight md:leading-relaxed font-medium group-hover:text-white/90 transition-all">{item.desc}</p>
                             </div>
                         </div>
                     ))}
@@ -113,7 +111,7 @@ function WhyMediumTeamsLoveZoomConnect() {
 
 
     return (
-        <section className="w-full py-20 relative overflow-hidden">
+        <section className="w-full md:py-20 relative overflow-hidden">
             {/* Blob SVG Background */}
             <div className="pointer-events-none absolute inset-0 flex justify-center items-center -z-10 overflow-hidden w-full h-full">
                 <svg className="w-full max-w-4xl h-auto opacity-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1305 885" preserveAspectRatio="xMidYMid slice">
@@ -146,25 +144,25 @@ function WhyMediumTeamsLoveZoomConnect() {
             <div className="absolute top-10 right-10 w-72 h-72 bg-yellow-200/20 rounded-full blur-3xl animate-pulse" />
             <div className="absolute bottom-20 left-10 w-96 h-96 bg-pink-200/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
-            <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            <div className="max-w-7xl mx-auto px-4 lg:px-8 relative z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-start">
 
                     {/* Left Side - Heading & Subheading */}
-                    <div className="flex flex-col justify-start sticky top-20">
-                        <h2 className="text-2xl lg:text-5xl font-dmserif font-semibold text-gray-900 mb-6 leading-tight drop-shadow-lg">
+                    <div className="flex flex-col justify-start lg:sticky lg:top-20">
+                        <h2 className="text-xl md:text-3xl lg:text-5xl font-dmserif font-semibold text-gray-900 mb-4 md:mb-6 leading-tight drop-shadow-lg">
                             Why medium-sized companies love ZoomConnect
                         </h2>
-                        <p className="text-sm lg:text-base text-gray-700 font-medium leading-relaxed">
+                        <p className="text-xs md:text-sm lg:text-base text-gray-700 font-medium leading-relaxed">
                             Flexible, digital-first insurance and wellness benefits—built for growing teams that want to save time, control costs, and keep employees happy.
                         </p>
                     </div>
 
                     {/* Right Side - Pastel Animated Cards */}
-                    <div className="space-y-6">
+                    <div className="space-y-4 md:space-y-6">
                         {features.map((item, index) => (
                             <div
                                 key={index}
-                                className="group relative rounded-3xl p-6 backdrop-blur-md border-2 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer overflow-hidden"
+                                className="group relative rounded-xl md:rounded-3xl p-4 md:p-6 backdrop-blur-md border-2 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer overflow-hidden"
                                 style={{
                                     backgroundColor: item.bgColor,
                                     borderColor: item.borderColor,
@@ -175,19 +173,19 @@ function WhyMediumTeamsLoveZoomConnect() {
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                                 {/* Content */}
-                                <div className="relative z-10 flex gap-5 items-start">
+                                <div className="relative z-10 flex flex-col md:flex-row gap-3 md:gap-5 items-center md:items-start">
                                     {/* Icon Container */}
                                     <div
-                                        className="flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-6"
+                                        className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-3xl shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-6"
                                         style={{ backgroundColor: item.accentColor, animation: `float 3s ease-in-out ${index}s infinite` }}
                                     >
                                         {item.icon}
                                     </div>
 
                                     {/* Text Content */}
-                                    <div className="flex-1">
+                                    <div className="flex-1 text-center md:text-left">
                                         <h3
-                                            className="text-lg font-bold text-gray-900 mb-2 transition-colors duration-300"
+                                            className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2 transition-colors duration-300"
                                             style={{
                                                 color: undefined,
                                             }}
@@ -207,7 +205,7 @@ function WhyMediumTeamsLoveZoomConnect() {
                                                 color: ${item.borderColor} !important;
                                             }
                                         `}</style>
-                                        <p className="text-sm text-gray-700 leading-relaxed group-hover:text-gray-800 transition-colors duration-300">
+                                        <p className="text-xs md:text-sm text-gray-700 leading-tight md:leading-relaxed group-hover:text-gray-800 transition-colors duration-300">
                                             {item.desc}
                                         </p>
                                     </div>
@@ -256,6 +254,101 @@ function WhyMediumTeamsLoveZoomConnect() {
                 }
             `}</style>
         </section>
+    );
+}
+
+function LogoCarousel() {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const trustedLogos = [
+        { name: 'JAINA INDIA PRIVATE LIMITED', logo: '/assets/images/solutions/startups_logo/jaina.png' },
+        { name: 'Konica Minolta Healthcare', logo: '/assets/images/solutions/startups_logo/konika.png' },
+        { name: 'Trail Blazer Tours India Pvt Ltd', logo: '/assets/images/solutions/startups_logo/TBI.png' },
+        { name: 'GLOBALSTEP SERVICES PRIVATE LIMITED', logo: '/assets/images/solutions/startups_logo/Global.png' },
+        { name: 'BCH ELECTRIC LTD', logo: '/assets/images/solutions/startups_logo/BCH.png' }
+    ];
+
+    // Duplicate logos for infinite scroll effect
+    const duplicatedLogos = [...trustedLogos, ...trustedLogos];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => {
+                const nextIndex = prev + 1;
+                // Reset to 0 when reaching the middle to create seamless loop
+                if (nextIndex >= trustedLogos.length) {
+                    return 0;
+                }
+                return nextIndex;
+            });
+        }, 3000); // Change logo every 3 seconds
+        return () => clearInterval(interval);
+    }, [trustedLogos.length]);
+
+    return (
+        <div className="w-full">
+            {/* Mobile Carousel - Continuous scrolling */}
+            <div className="md:hidden flex justify-center items-center w-full overflow-hidden">
+                <motion.div
+                    className="flex gap-4"
+                    animate={{ x: -currentIndex * 110 }}
+                    transition={{ duration: 1, ease: 'easeInOut' }}
+                >
+                    {duplicatedLogos.map((logo, idx) => {
+                        const displayName = logo.name
+                            .toLowerCase()
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
+                        return (
+                            <div
+                                key={idx}
+                                className="flex items-center justify-center flex-shrink-0"
+                                style={{ width: '110px', minHeight: '80px' }}
+                            >
+                                {logo.logo ? (
+                                    <img
+                                        src={logo.logo}
+                                        alt={displayName + ' logo'}
+                                        className="w-16 h-16 object-contain"
+                                    />
+                                ) : (
+                                    <FaShieldAlt className="text-[#FFB300] w-10 h-10" />
+                                )}
+                            </div>
+                        );
+                    })}
+                </motion.div>
+            </div>
+
+            {/* Desktop Grid */}
+            <div className="hidden md:flex flex-row flex-nowrap justify-center items-center gap-6 overflow-x-auto scrollbar-hide">
+                {trustedLogos.map((logo, idx) => {
+                    const displayName = logo.name
+                        .toLowerCase()
+                        .split(' ')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+                    return (
+                        <div
+                            key={idx}
+                            className="flex items-center justify-center group mx-2"
+                            style={{ minHeight: '100px' }}
+                        >
+                            {logo.logo ? (
+                                <img
+                                    src={logo.logo}
+                                    alt={displayName + ' logo'}
+                                    className="w-36 h-36 object-contain"
+                                    style={{ maxWidth: '128px', maxHeight: '128px' }}
+                                />
+                            ) : (
+                                <FaShieldAlt className="text-[#FFB300] w-24 h-24" />
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
     );
 }
 
@@ -368,7 +461,7 @@ export default function MediumTeams() {
             <Header />
             <div className="min-h-screen flex flex-col items-center justify-center font-montserrat relative overflow-x-hidden bg-[#ffceea78] text-gray-900 ">
 
-                <section className="w-full relative  py-20 lg:py-28">
+                <section className="w-full relative pt-20 pb-10 lg:py-28">
                     <div className="absolute inset-0 opacity-70">
                         <img
                             src="/assets/images/wavy design-01.png"
@@ -378,29 +471,23 @@ export default function MediumTeams() {
                     </div>
                     <div className="max-w-7xl z-10 mx-auto px-6 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <div>
-                            <h1 className="text-4xl sm:text-5xl font-extrabold font-dmserif leading-tight mb-6">
-                                Benefits & Insurance Solutions for <span className="text-[#FF0066] ">Medium-Sized Teams</span>
-                            </h1>
-
-                            <p className="text-sm md:text-base text-gray-600 mb-8 max-w-xl">
-                                Flexible insurance and wellness benefits for medium teams—affordable, digital, and built to help you grow.
-                            </p>
-
-                            <div className="flex flex-wrap gap-4">
+                            <h1 className="text-2xl md:text-3xl lg:text-5xl font-extrabold font-dmserif leading-tight mb-2 md:mb-6">Benefits & Insurance Solutions for <span className="text-[#FF0066]/80">Medium-Sized Teams</span></h1>
+                            <p className="text-xs md:text-base text-gray-600 mb-4 md:mb-8 max-w-xl">Flexible insurance and wellness benefits for medium teams—affordable, digital, and built to help you grow.</p>
+                            <div className="flex w-full gap-3 md:gap-4 md:flex-wrap">
                                 <Link
                                     href="/book-demo"
-                                    className="bg-[#FF0066]/80 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-[#df0059cc] hover:text-white transition"
+                                    className="flex-1 md:flex-none md:w-auto text-center bg-[#FF0066]/80 text-white px-3 md:px-5 py-2 rounded-lg text-xs md:text-sm font-semibold shadow hover:bg-[#df0059cc] hover:text-white transition"
                                 >
                                     Schedule a Call
                                 </Link>
                                 <Link
                                     href="/contact"
-                                    className="border border-[#E8D4B7] bg-[#934790] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-[#6a0066] hover:text-white transition"
+                                    className="flex-1 md:flex-none md:w-auto text-center border border-[#E8D4B7] bg-[#934790] text-white px-3 md:px-5 py-2 rounded-lg text-xs md:text-sm font-semibold hover:bg-[#6a0066] hover:text-white transition"
                                 >
                                     Contact Us
                                 </Link>
                             </div>
-                            <div className="mt-8 flex items-center gap-6 text-sm text-gray-700">
+                            <div className="mt-8 flex items-center gap-2 md:gap-6 text-xs md:text-sm text-gray-700">
                                 <span>24×7 support</span>
                                 <span className="h-6 w-px bg-[#a0649f]" />
                                 <span>Flexible team sizes</span>
@@ -409,52 +496,28 @@ export default function MediumTeams() {
                             </div>
                         </div>
                         <div className="relative">
-                            <div className="">
-                                <img src="/assets/images/solutions/futuristic_corporate_ecosystem.png" alt="Team meeting" className="w-full h-[450px] object-contain" />
+                            <div className="flex justify-center align-items-center">
+                                <img src="/assets/images/solutions/futuristic_corporate_ecosystem.png" alt="Team meeting" className="w-[450px] " />
                             </div>
                         </div>
                     </div>
                 </section>
-                <section className="w-full py-12 bg-[#3d1139] text-white">
+                <section className="w-full py-8 md:py-12 bg-[#3d1139] text-white">
                     <div className="max-w-7xl mx-auto px-6 lg:px-8">
-                        <div className="text-center mb-10">
-                            <h2 className="text-4xl font-dmserif font-bold leading-tight mb-2">
+                        <div className="text-center mb-5">
+                            <h2 className="text-2xl md:text-4xl font-dmserif font-bold leading-tight mb-2">
                                 Trusted by Leading Medium Businesses
                             </h2>
-                            <div className="text-base text-white/80 font-medium mb-2">Empowering medium teams with trusted insurance, claims support, and employee health benefits.</div>
+                            <div className="text-xs md:text-base text-white/80 md:font-medium mb-2 ">
+                                Empowering medium teams with trusted insurance, claims support, and employee health benefits.
+                            </div>
+
                         </div>
-                        <div className="flex flex-row flex-nowrap justify-center items-center gap-6 overflow-x-auto scrollbar-hide">
-                            {trustedLogos.map((logo, idx) => {
-                                // Capitalize first letter of every word
-                                const displayName = logo.name
-                                    .toLowerCase()
-                                    .split(' ')
-                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                                    .join(' ');
-                                return (
-                                    <div
-                                        key={idx}
-                                        className="flex items-center justify-center group mx-2"
-                                        style={{ minHeight: '100px' }}
-                                    >
-                                        {logo.logo ? (
-                                            <img
-                                                src={logo.logo}
-                                                alt={displayName + ' logo'}
-                                                className="w-36 h-36 object-contain"
-                                                style={{ maxWidth: '110px', maxHeight: '110px' }}
-                                            />
-                                        ) : (
-                                            <FaShieldAlt className="text-[#FFB300] w-24 h-24" />
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                        <LogoCarousel />
                     </div>
                 </section>
                 {/* Why Startups Love Section */}
-                <section className=" w-full py-20  text-gray-900">
+                <section className=" w-full py-10 md:py-20  text-gray-900">
                     <div className="max-w-7xl mx-auto px-6 lg:px-8">
                         <WhyMediumTeamsLoveZoomConnect />
                     </div>
@@ -462,28 +525,28 @@ export default function MediumTeams() {
 
 
                 {/* Insights Section */}
-                <section className="w-[95%] px-4 py-16 bg-[#f2d7b3]/70 rounded-3xl  backdrop-blur-lg text-white ">
+                <section className="w-full md:w-[95%] px-4 md:px-6 py-12 md:py-16 bg-[#f2d7b3]/70 rounded-2xl md:rounded-3xl  backdrop-blur-lg text-white mx-auto">
                     {/* Soft ambient glow backdrop */}
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,179,0,0.12),transparent_60%)]"></div>
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(147,71,144,0.18),transparent_70%)]"></div>
 
-                    <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-                        <div className="mb-12 text-center">
-                            <h2 className="text-4xl md:text-5xl font-dmserif font-medium text-gray-800 drop-shadow-lg mb-4">
+                    <div className="max-w-7xl mx-auto px-2 lg:px-12 relative z-10">
+                        <div className="mb-8 md:mb-12 text-center">
+                            <h2 className="text-xl md:text-4xl lg:text-5xl font-dmserif font-semibold md:font-medium text-gray-800 drop-shadow-lg mb-3 md:mb-4 leading-tight md:leading-normal">
                                 What ZoomConnect provides to Medium-sized businesses
                             </h2>
-                            <p className="text-md md:text-base text-gray-800 font-medium max-w-2xl mx-auto">
+                            <p className="text-xs md:text-base text-gray-700 md:text-gray-800 font-medium max-w-2xl mx-auto">
                                 Premium, modern insurance & wellness solutions designed for medium-sized businesses that want enterprise-quality benefits.
                             </p>
                         </div>
-                        <div className="flex flex-row gap-12 items-center">
+                        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
 
                             {/* Solutions Grid First */}
-                            <div className="w-[60%]">
+                            <div className="w-full lg:w-[60%]">
                                 <LargeBizSolutions />
                             </div>
                             {/* Image Block Last */}
-                            <div className="relative group w-[40%]">
+                            <div className="relative group w-full lg:w-[40%]">
                                 <div className="rounded-3xl flex items-center justify-center ">
                                     <img
                                         src="/assets/images/products/zoomConnect_Business_Benefits.png"
@@ -499,13 +562,13 @@ export default function MediumTeams() {
 
 
                 {/* What Makes Perfect Section */}
-                <section className="w-full py-24">
+                <section className="w-full py-12 md:py-24">
                     <div className="max-w-7xl mx-auto px-6 lg:px-8">
-                        <div className="text-center mb-20">
+                        <div className="text-center mb-10 md:mb-20">
                             <h2 className="text-xl md:text-5xl font-dmserif font-semibold mb-4 text-gray-800">
-                                Why Choose ZoomConnect for Your Medium-Sized Business??
+                                Why Choose ZoomConnect for Your Medium-Sized Business?
                             </h2>
-                            <p className="text-sm md:text-base text-gray-700 font-medium mb-6 max-w-2xl mx-auto">
+                            <p className="text-xs md:text-base text-gray-700 font-medium mb-6 max-w-2xl mx-auto">
                                 Empower your team with flexible, digital-first insurance and wellness benefits—affordable, easy to manage, and built for modern, growing businesses.
                             </p>
                         </div>
@@ -514,18 +577,18 @@ export default function MediumTeams() {
                             {features.map((feature, i) => (
                                 <div
                                     key={i}
-                                    className="gmc-card group relative bg-[#f9f6fb] rounded-3xl p-8 flex flex-col items-center text-center border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
+                                    className="gmc-card group relative bg-[#f9f6fb] rounded-xl md:rounded-3xl p-4 md:p-8 flex flex-col items-center text-center border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
                                     style={{ ['--accent']: feature.iconBg }}
                                 >
                                     {/* Icon wrapper uses per-feature subtle bg; card uses same bg on hover */}
-                                    <div className="relative z-10 mb-6 w-20 h-20 mx-auto rounded-full flex items-center justify-center shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:shadow-none"
+                                    <div className="relative z-10 mb-4 md:mb-6 w-14 h-14 md:w-20 md:h-20 mx-auto rounded-full flex items-center justify-center shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:shadow-none"
                                         style={{ background: feature.iconBg }}>
                                         <div className="transform group-hover:rotate-6 transition-transform duration-500" style={{ color: feature.iconColor }}>
                                             {feature.icon}
                                         </div>
                                     </div>
                                     {/* Title */}
-                                    <h3 className="relative z-10 font-bold text-lg text-[#2d2d2d] mb-3 group-hover:text-[#934790] transition-colors">
+                                    <h3 className="relative z-10 font-bold text-base md:text-lg text-[#2d2d2d] mb-2 md:mb-3 group-hover:text-[#934790] transition-colors">
                                         {feature.title}
                                     </h3>
                                     {/* Description */}
@@ -539,27 +602,27 @@ export default function MediumTeams() {
                 </section>
 
                 {/* New Hero Section - Elevate Your Employee Healthcare */}
-                <section className="w-full py-24 bg-white flex flex-col items-center justify-center relative overflow-hidden">
-                    {/* Decorative SVGs and emoji icons - more added for visual richness, now larger */}
-                    <span className="absolute top-10 left-10 text-[#FF0066] text-7xl" style={{ transform: 'rotate(-8deg)' }}>💖</span>
-                    <span className="absolute top-10 right-10 text-[#934790] text-7xl" style={{ transform: 'rotate(8deg)' }}>🎯</span>
-                    <span className="absolute bottom-32 left-32 text-[#ffbf3f] text-6xl" style={{ transform: 'rotate(-6deg)' }}>🏥</span>
-                    <span className="absolute bottom-20 right-40 text-[#388E3C] text-6xl" style={{ transform: 'rotate(6deg)' }}>🩺</span>
-                    <span className="absolute bottom-10 right-10 text-[#6A0066] text-5xl" style={{ transform: 'rotate(-4deg)' }}>🧬</span>
-                    <span className="absolute top-1/2 left-20 text-[#FFB300] text-6xl" style={{ transform: 'rotate(-12deg)' }}>🌟</span>
-                    <span className="absolute top-1/3 right-32 text-[#934790] text-6xl" style={{ transform: 'rotate(10deg)' }}>🧑‍💼</span>
-                    <span className="absolute bottom-[20%] left-[45%] text-[#FF0066] text-5xl" style={{ transform: 'rotate(-7deg)' }}>📈</span>
-                    <span className="absolute bottom-1/3 right-1/4 text-[#388E3C] text-6xl" style={{ transform: 'rotate(7deg)' }}>💡</span>
-                    <span className="absolute top-1/4 right-1/2 text-[#FFB8E0] text-5xl" style={{ transform: 'rotate(-5deg)' }}>🛡️</span>
+                <section className="w-full py-8 md:py-24 bg-white flex flex-col items-center justify-center relative overflow-hidden">
+                    {/* Decorative SVGs and emoji icons - responsive sizes for mobile and desktop */}
+                    <span className="absolute top-4 md:top-10 left-4 md:left-10 text-[#FF0066] text-4xl md:text-7xl" style={{ transform: 'rotate(-8deg)' }}>💖</span>
+                    <span className="absolute top-4 md:top-10 right-4 md:right-10 text-[#934790] text-4xl md:text-7xl" style={{ transform: 'rotate(8deg)' }}>🎯</span>
+                    <span className="hidden md:block absolute bottom-32 left-32 text-[#ffbf3f] text-6xl" style={{ transform: 'rotate(-6deg)' }}>🏥</span>
+                    <span className="hidden md:block absolute bottom-20 right-40 text-[#388E3C] text-6xl" style={{ transform: 'rotate(6deg)' }}>🩺</span>
+                    <span className="absolute bottom-10 right-8 md:right-10 text-[#6A0066] text-3xl md:text-5xl" style={{ transform: 'rotate(-4deg)' }}>🧬</span>
+                    <span className="hidden md:block absolute top-1/2 left-20 text-[#FFB300] text-6xl" style={{ transform: 'rotate(-12deg)' }}>🌟</span>
+                    <span className="hidden md:block absolute top-1/3 right-32 text-[#934790] text-6xl" style={{ transform: 'rotate(10deg)' }}>🧑‍💼</span>
+                    <span className="absolute bottom-1/4 left-10 md:left-1/3 text-[#FF0066] text-3xl md:text-5xl" style={{ transform: 'rotate(-7deg)' }}>📈</span>
+                    <span className="hidden md:block absolute bottom-1/3 right-1/4 text-[#388E3C] text-6xl" style={{ transform: 'rotate(7deg)' }}>💡</span>
+                    <span className="hidden md:block absolute top-1/4 right-1/2 text-[#FFB8E0] text-5xl" style={{ transform: 'rotate(-5deg)' }}>🛡️</span>
 
-                    <div className="max-w-3xl mx-auto text-center py-24 relative z-10">
-                        <h1 className="text-4xl md:text-5xl font-dmserif font-semibold text-gray-800 mb-6">
+                    <div className="max-w-3xl mx-auto text-center py-12 md:py-24 relative z-10 px-4">
+                        <h1 className="text-xl md:text-4xl lg:text-5xl font-dmserif font-semibold text-gray-800 mb-4 md:mb-6">
                             Elevate Your Employee Healthcare <span className="italic font-dmserif text-[#934790]">with</span> ZoomConnect
                         </h1>
-                        <p className="text-md md:text-base text-gray-700 mb-8 font-medium">
-                            ZoomConnect is designed for SMBs that value their people and want benefits that grow with them. Let us help you build a healthier, happier workforce.
+                        <p className="text-xs md:text-base text-gray-700 mb-6 md:mb-8 font-medium">
+                            ZoomConnect is designed for Medium-Sized Businesses that value their people and want benefits that grow with them. Let us help you build a healthier, happier workforce.
                         </p>
-                        <a href="/contact" className="inline-block bg-[#FF0066] text-white px-8 py-2 rounded-lg font-semibold md:text-base shadow hover:bg-[#d40055] transition-all">
+                        <a href="/contact" className="inline-block bg-[#FF0066] text-white px-4 md:px-8 py-2 md:py-3 rounded-lg font-semibold text-xs  md:text-base shadow hover:bg-[#d40055] transition-all">
                             TALK TO SALES
                         </a>
                     </div>
