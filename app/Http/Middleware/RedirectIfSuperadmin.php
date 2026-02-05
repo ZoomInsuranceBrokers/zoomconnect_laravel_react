@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class RedirectIfSuperadmin
 {
@@ -13,13 +14,11 @@ class RedirectIfSuperadmin
      */
     public function handle(Request $request, Closure $next)
     {
-        // Only act on the login-related routes
-        if ($request->is('login') || $request->is('verify-otp')) {
-            $session = $request->session();
-            $loggedIn = $session->get('superadmin_authenticated') || $session->get('superadmin_logged_in');
-
-            if ($loggedIn) {
-                return redirect('/superadmin/dashboard');
+        // Check if superadmin is logged in
+        if (Session::has('superadmin_user')) {
+            // Don't redirect if already on superadmin routes to prevent loop
+            if (!$request->is('superadmin/*') && !$request->is('logout')) {
+                return redirect()->route('superadmin.dashboard');
             }
         }
 

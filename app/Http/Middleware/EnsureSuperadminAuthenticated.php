@@ -4,23 +4,19 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class EnsureSuperadminAuthenticated
 {
     /**
      * Handle an incoming request.
-     * Only enforce authentication for routes under the `superadmin` prefix.
+     * Ensure superadmin is authenticated before accessing protected routes.
      */
     public function handle(Request $request, Closure $next)
     {
-        // Only act on superadmin prefixed routes
-        if ($request->is('superadmin') || $request->is('superadmin/*')) {
-            $session = $request->session();
-            $loggedIn = $session->get('superadmin_authenticated') || $session->get('superadmin_logged_in');
-
-            if (! $loggedIn) {
-                return redirect('/login');
-            }
+        // Check if superadmin is logged in
+        if (!Session::has('superadmin_user')) {
+            return redirect()->route('login')->with('error', 'Please login to continue.');
         }
 
         return $next($request);

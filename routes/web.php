@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\EmployeeAuthController;
 use Illuminate\Http\Request;
 use App\Models\UserMaster;
 use App\Services\PermissionService;
@@ -71,7 +72,7 @@ Route::get('/contact-us', [ProductController::class, 'contactUs'])->name('contac
 ///////////////////////// --- SuperAdmin Login --- ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-Route::middleware([\App\Http\Middleware\RedirectIfSuperadmin::class])->group(function () {
+Route::middleware(['redirect.if.superadmin'])->group(function () {
     Route::get('/login', [AuthController::class, 'superadminLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'processLogin'])->name('login.process');
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify.otp');
@@ -81,12 +82,61 @@ Route::middleware([\App\Http\Middleware\RedirectIfSuperadmin::class])->group(fun
 ///////////////////////// --- SuperAdmin Login --- ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////// --- Employee Login --- ///////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+Route::middleware(['redirect.if.employee'])->group(function () {
+    Route::get('/employee-login', [EmployeeAuthController::class, 'employeeLogin'])->name('employee.login');
+    Route::post('/employee-login', [EmployeeAuthController::class, 'processLogin'])->name('employee.login.process');
+    Route::post('/employee-verify-otp', [EmployeeAuthController::class, 'verifyOtp'])->name('employee.verify.otp');
+});
+
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////// --- Employee Login --- ///////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+// Employee Authenticated Routes
+Route::middleware(['employee.auth'])->prefix('employee')->group(function () {
+    Route::get('/dashboard', [EmployeeAuthController::class, 'dashboard'])->name('employee.dashboard');
+    Route::get('/home', [EmployeeAuthController::class, 'home'])->name('employee.home');
+    Route::get('/wellness', [EmployeeAuthController::class, 'wellness'])->name('employee.wellness');
+    Route::get('/wellness/service/{wellnessId}', [EmployeeAuthController::class, 'openWellnessService'])->name('employee.wellness.service');
+    Route::get('/claims', [EmployeeAuthController::class, 'claims'])->name('employee.claims');
+    Route::get('/claims/initiate', [EmployeeAuthController::class, 'initiateClaim'])->name('employee.claims.initiate');
+    Route::get('/claims/active-policies', [EmployeeAuthController::class, 'getActivePolicies'])->name('employee.claims.active-policies');
+    Route::post('/claims/policy-dependents', [EmployeeAuthController::class, 'getPolicyDependents'])->name('employee.claims.policy-dependents');
+    Route::post('/claims/submit', [EmployeeAuthController::class, 'submitClaim'])->name('employee.claims.submit');
+    Route::get('/policy', [EmployeeAuthController::class, 'policy'])->name('employee.policy');
+    Route::get('/policy/{encodedPolicyId}', [EmployeeAuthController::class, 'policyDetails'])->name('employee.policy.details');
+    Route::get('/network-hospitals/{encodedPolicyId}', [EmployeeAuthController::class, 'networkHospitals'])->name('employee.network.hospitals');
+    Route::post('/network-hospitals/search', [EmployeeAuthController::class, 'networkHospitalsSearch'])->name('employee.network.hospitals.search');
+    Route::get('/help', [EmployeeAuthController::class, 'help'])->name('employee.help');
+    Route::get('/help/faqs', [EmployeeAuthController::class, 'getFaqs'])->name('employee.help.faqs');
+    Route::get('/help/tickets', [EmployeeAuthController::class, 'getTickets'])->name('employee.help.tickets');
+    Route::post('/help/tickets', [EmployeeAuthController::class, 'createTicket'])->name('employee.help.create-ticket');
+    Route::get('/help/tickets/{ticketId}', [EmployeeAuthController::class, 'getTicketDetails'])->name('employee.help.ticket-details');
+    Route::post('/help/tickets/{ticketId}/message', [EmployeeAuthController::class, 'addTicketMessage'])->name('employee.help.add-message');
+    
+    // Chatbot routes
+    Route::get('/help/chatbot/conversations', [EmployeeAuthController::class, 'getChatbotConversations'])->name('employee.help.chatbot.conversations');
+    Route::post('/help/chatbot/start', [EmployeeAuthController::class, 'startChatbot'])->name('employee.help.chatbot.start');
+    Route::post('/help/chatbot/respond', [EmployeeAuthController::class, 'chatbotRespond'])->name('employee.help.chatbot.respond');
+    Route::get('/help/chatbot/conversation/{conversationId}', [EmployeeAuthController::class, 'getChatbotConversation'])->name('employee.help.chatbot.conversation');
+    
+    // Policies route
+    Route::get('/policies', [EmployeeAuthController::class, 'getPolicies'])->name('employee.policies');
+    
+    Route::post('/logout', [EmployeeAuthController::class, 'logout'])->name('employee.logout');
+    Route::post('/download-ecard', [EmployeeAuthController::class, 'downloadECard'])->name('employee.download.ecard');
+});
+
 // Route::middleware(['auth.session'])->group(function () {
 // Logout route without prefix
 Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');
 
 // SuperAdmin routes with prefix
-Route::middleware([\App\Http\Middleware\EnsureSuperadminAuthenticated::class, 'permission'])->prefix('superadmin')->group(function () {
+Route::middleware(['superadmin.auth', 'permission'])->prefix('superadmin')->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
 
     // Debug route: return session superadmin_user, resolved roleId and userId

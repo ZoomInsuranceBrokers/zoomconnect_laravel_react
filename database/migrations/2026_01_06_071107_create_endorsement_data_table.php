@@ -25,7 +25,7 @@ return new class extends Migration
 
             $table->string('remarks')->nullable();
             $table->string('insurer_code')->nullable();
-            $table->string('uhid_id')->nullable();
+            $table->string('uhid')->nullable();
 
             $table->string('insured_name')->nullable();
             $table->string('gender')->nullable();
