@@ -540,6 +540,74 @@ class EmployeeAuthController extends Controller
     }
 
     /**
+     * Get Care TPA Token
+     */
+    public function care_token2()
+    {
+        $curl = curl_init();
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL => 'https://api.careinsurance.com/relinterfacerestful/religare/secure/restful/generatePartnerToken',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => '{
+                                            "partnerTokenGeneratorInputIO": {
+                                                "partnerId": "95161",
+                                                "securityKey": "dkpBQ0Q3cGVGb1NXVnNsWW1EaERWb0ErQVFyTGFhSytNZCtrVzdzRGtrOW1DWktaTDdwWHRWdVZoYnpyV1JseA=="
+                                            }
+                                        }',
+                CURLOPT_HTTPHEADER => array(
+                    'appId: 95161',
+                    'Signature:jfcHY9AUIxhEQSN/hWPUe1CMLxmwOB+yj8VdXGNGrm8=',
+                    'TimeStamp: 1636707591485',
+                    'applicationCD: PARTNERAPP',
+                    'Content-Type: application/json'
+                ),
+            )
+        );
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $data = json_decode($response, true);
+
+        if (isset($data['responseData']['status']) && $data['responseData']['status'] === "1" && isset($data['responseData']['message']) && $data['responseData']['message'] === "Success") {
+
+            $tokenKey = $data['partnerTokenGeneratorInputIO']['listOfToken'][0]['tokenKey'] ?? '';
+            $tokenValue = $data['partnerTokenGeneratorInputIO']['listOfToken'][0]['tokenValue'] ?? '';
+            $sessionId = $data['partnerTokenGeneratorInputIO']['sessionId'] ?? '';
+
+            $final_token = $this->encryptToken($tokenKey, $tokenValue);
+
+            $final_result = array(
+                'token' => $final_token,
+                'session_id' => $sessionId,
+            );
+
+            return $final_result;
+        }
+
+        return null;
+    }
+
+    /**
+     * Encrypt Care token (AES-256-CBC + base64)
+     */
+    private function encryptToken($tokenKey, $tokenValue, $aesSecretKey = 'z5yK1lw7XYt6YKdP7Pne2Jw3zRkMAziH', $aesInitVector = 'i0kbCAlFTlDXshYV')
+    {
+        $token = $tokenKey . '|' . $tokenValue;
+        $encryptedToken = openssl_encrypt($token, 'aes-256-cbc', $aesSecretKey, 0, $aesInitVector);
+        $base64EncodedToken = base64_encode($encryptedToken);
+        return $base64EncodedToken;
+    }
+
+ 
+    /**
      * Employee Claims
      */
     public function claims()
@@ -551,6 +619,807 @@ class EmployeeAuthController extends Controller
         ]);
     }
 
+    /**
+     * Render Initiate Claim Page
+     */
+    public function initiateClaim()
+    {
+        return Inertia::render('Employee/InitiateClaim');
+    }
+
+    /**
+     * Get Active GMI Policies for Claims
+     */
+    public function getActivePolicies()
+    {
+        $employee = Session::get('employee_user');
+
+        if (!$employee) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $employeeId = $employee['id'];
+
+        // Get active GMI policies
+        $policies = \DB::select("
+            SELECT DISTINCT 
+                policy_master.*, 
+                policy_mapping_master.id AS mapping_id,
+                insurance_master.insurance_company_name, 
+                insurance_master.insurance_comp_icon_url, 
+                tpa_master.tpa_company_name,
+                tpa_master.id as tpa_id
+            FROM policy_mapping_master 
+            INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id 
+            INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id 
+            INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id 
+            INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id 
+            WHERE policy_mapping_master.status = 1 
+            AND policy_endorsements.status = 1 
+            AND policy_master.is_old = 0 
+            AND policy_master.policy_type = 'gmi'
+            AND policy_master.policy_end_date >= CURRENT_TIMESTAMP 
+            AND policy_mapping_master.emp_id = ?
+        ", [$employeeId]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $policies
+        ]);
+    }
+
+    /**
+     * Get Policy Dependents for Claims
+     */
+    public function getPolicyDependents(Request $request)
+    {
+        $employee = Session::get('employee_user');
+
+        if (!$employee) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'policy_id' => 'required|integer'
+        ]);
+
+        $policyId = $request->policy_id;
+        $employeeId = $employee['id'];
+
+        // Get policy details to determine TPA table
+        $policy = \DB::table('policy_master')
+            ->where('id', $policyId)
+            ->first();
+
+        if (!$policy) {
+            return response()->json(['success' => false, 'message' => 'Policy not found'], 404);
+        }
+
+        // Get TPA configuration
+        $tpaConfig = $this->getTpaTableConfig($policy->tpa_id);
+        $tableName = $tpaConfig['table'] ?? null;
+        $primaryKey = $tpaConfig['primary_key'] ?? null;
+
+        if (!$tableName) {
+            return response()->json(['success' => false, 'message' => 'TPA configuration not found'], 404);
+        }
+
+        try {
+            // Get dependents with more flexible column selection
+            $query = \DB::table($tableName)
+                ->where('emp_id', $employeeId)
+                ->where('policy_id', $policyId);
+            
+            // Check if endorsement columns exist
+            $columns = \Schema::getColumnListing($tableName);
+            if (in_array('addition_endorsement_id', $columns)) {
+                $query->whereNotNull('addition_endorsement_id')
+                      ->where('addition_endorsement_id', '!=', 0);
+            }
+            if (in_array('deletion_endorsement_id', $columns)) {
+                $query->whereNull('deletion_endorsement_id');
+            }
+            
+            // Select columns dynamically
+            $selectColumns = [$primaryKey . ' as uhid'];
+            if (in_array('insured_name', $columns)) $selectColumns[] = 'insured_name';
+            if (in_array('dob', $columns)) $selectColumns[] = 'dob';
+            if (in_array('gender', $columns)) $selectColumns[] = 'gender';
+            if (in_array('relation', $columns)) $selectColumns[] = 'relation';
+            if (in_array('policy_number', $columns)) $selectColumns[] = 'policy_number';
+            
+            $dependents = $query->select($selectColumns)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $dependents
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching dependents: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false, 
+                'message' => 'Failed to fetch dependents: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Submit Claim
+     */
+    public function submitClaim(Request $request)
+    {
+        $employee = Session::get('employee_user');
+
+        if (!$employee) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'policy_id' => 'required|integer',
+            'relation_name' => 'required|string',
+            'policy_number' => 'required|string',
+            'uhid_member_id' => 'required|string',
+            'claim_type' => 'required|in:intimation,reimbursement',
+            'date_of_admission' => 'required|date',
+            'hospital_name' => 'required|string',
+            'hospital_state' => 'required|string',
+            'hospital_city' => 'required|string',
+            'hospital_pin_code' => 'required|string',
+            'diagnosis' => 'required|string',
+            'claim_amount' => 'required|numeric',
+            'relation_with_patient' => 'required|string',
+            'mobile_no' => 'required|string',
+            'email' => 'required|email',
+            'date_of_discharge' => 'nullable|date',
+            'emergency_contact_name' => 'nullable|string',
+            'category' => 'nullable|string',
+            'file_url' => 'nullable|string',
+        ]);
+
+        try {
+            // Get policy details
+            $policy = \DB::table('policy_master')
+                ->where('id', $request->policy_id)
+                ->first();
+
+            if (!$policy) {
+                return response()->json(['success' => false, 'message' => 'Policy not found'], 404);
+            }
+
+            // Save to ClaimData
+            $claimData = new \App\Models\ClaimData();
+            $claimData->emp_id = $employee['id'];
+            $claimData->cmp_id = $employee['company_id'];
+            $claimData->policy_id = $request->policy_id;
+            $claimData->relation_name = $request->relation_name;
+            $claimData->policy_number = $request->policy_number;
+            $claimData->uhid_member_id = $request->uhid_member_id;
+            $claimData->date_of_admission = $request->date_of_admission;
+            $claimData->date_of_discharge = $request->date_of_discharge;
+            $claimData->hospital_name = $request->hospital_name;
+            $claimData->hospital_state = $request->hospital_state;
+            $claimData->hospital_city = $request->hospital_city;
+            $claimData->hospital_pin_code = $request->hospital_pin_code;
+            $claimData->diagnosis = $request->diagnosis;
+            $claimData->claim_amount = $request->claim_amount;
+            $claimData->relation_with_patient = $request->relation_with_patient;
+            $claimData->mobile_no = $request->mobile_no;
+            $claimData->email = $request->email;
+            $claimData->claim_type = $request->claim_type;
+            $claimData->emergency_contact_name = $request->emergency_contact_name;
+            $claimData->category = $request->category;
+            $claimData->file_url = $request->file_url;
+            $claimData->status = 'pending';
+            $claimData->save();
+
+            // Call TPA API based on TPA ID (only for intimation)
+            if ($request->claim_type === 'intimation') {
+                $tpaResponse = $this->initiateTpaClaim($policy, $request, $employee);
+                
+                if ($tpaResponse['success']) {
+                    // Update claim data with TPA reference
+                    $claimData->tpa_reference_number = $tpaResponse['reference_number'];
+                    $claimData->status = 'submitted';
+                    $claimData->save();
+
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Claim intimated successfully! Reference No: ' . $tpaResponse['reference_number'],
+                        'reference_number' => $tpaResponse['reference_number']
+                    ]);
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $tpaResponse['message']
+                    ], 400);
+                }
+            } else {
+                // For reimbursement, just save the data
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Reimbursement claim submitted successfully! Your claim will be processed shortly.'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Claim submission error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to submit claim: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Initiate TPA Claim based on TPA ID
+     */
+    private function initiateTpaClaim($policy, $request, $employee)
+    {
+        $tpaId = $policy->tpa_id;
+
+        switch ($tpaId) {
+            case 62: // PHS
+                return $this->initiatePHSClaim($policy, $request, $employee);
+            
+            case 69: // Care
+                return $this->initiateCareClaim($policy, $request, $employee);
+            
+            case 70: // Health India
+                return $this->initiateHealthIndiaClaim($policy, $request, $employee);
+            
+            case 64: // Go Digit
+                return $this->initiateGoDigitClaim($policy, $request, $employee);
+            
+            case 71: // EWA
+                return $this->initiateEWAClaim($policy, $request, $employee);
+            
+            case 73: // Ericson
+                return $this->initiateEricsonClaim($policy, $request, $employee);
+            
+            case 63: // ICICI
+                return $this->initiateICICIClaim($policy, $request, $employee);
+            
+            case 66: // FHPL
+                return $this->initiateFHPLClaim($policy, $request, $employee);
+            
+            case 68: // Safeway
+                return $this->initiateSafewayClaim($policy, $request, $employee);
+            
+            default:
+                return [
+                    'success' => false,
+                    'message' => 'TPA not supported for online claim intimation. Please contact support.'
+                ];
+        }
+    }
+
+    /**
+     * PHS Claim Intimation
+     */
+    private function initiatePHSClaim($policy, $request, $employee)
+    {
+        $maxAttempts = 10;
+        $attempt = 0;
+
+        do {
+            $curl = curl_init();
+
+            $data = json_encode([
+                "USERNAME" => "ZOOM-ADMIN",
+                "PASSWORD" => "ADMIN-USER@389",
+                "PHM" => $request->uhid_member_id,
+                "POLICY_NO" => $request->policy_number,
+                "RELATION" => $request->relation_name,
+                "NAME" => $request->relation_with_patient,
+                "AILMENT" => $request->diagnosis,
+                "CLAIM_AMOUNT" => $request->claim_amount,
+                "DATE_OF_ADMISSION" => date('d M Y', strtotime($request->date_of_admission)),
+                "NAME_OF_HOSPITAL" => $request->hospital_name,
+                "NAME_OF_DOCTOR" => $request->emergency_contact_name ?? 'N/A',
+                "MOBILE_NO" => $request->mobile_no,
+                "EMAIL_ID" => $request->email,
+                "CLAIM_TYPE" => "Cashless"
+            ]);
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://webintegrations.paramounttpa.com/ZoomBrokerAPI/Service1.svc/INTIMATE_CLAIM',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $data,
+                CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            ]);
+
+            $response = curl_exec($curl);
+            curl_close($curl);
+
+            $decoded = json_decode($response, true);
+            
+            if (isset($decoded['INTIMATE_CLAIMResult'][0])) {
+                $result = $decoded['INTIMATE_CLAIMResult'][0];
+                if ($result['STATUS'] === 'SUCCESS') {
+                    return [
+                        'success' => true,
+                        'reference_number' => $result['CLAIM_INTIMATION_NUMBER']
+                    ];
+                }
+            }
+
+            $attempt++;
+        } while ($attempt < $maxAttempts);
+
+        return [
+            'success' => false,
+            'message' => 'Failed to connect to PHS server. Please try again later.'
+        ];
+    }
+
+    /**
+     * Care Claim Intimation
+     */
+    private function initiateCareClaim($policy, $request, $employee)
+    {
+        $tokenData = $this->care_token2();
+
+        $postData = json_encode([
+            'claimIntimationGenieIO' => [
+                'caseID' => '1',
+                'uhid' => $request->uhid_member_id,
+                'providerID' => '51066825',
+                'policyNumber' => $request->policy_number,
+                'claimType' => '2',
+                'patientName' => $request->relation_with_patient,
+                'relationshipWithPatient' => $request->relation_name,
+                'relationshipWithProposer' => $request->relation_name,
+                'emergencyContactNo' => $request->mobile_no,
+                'emergencyContactName' => $request->emergency_contact_name ?? 'N/A',
+                'emergencyMailId' => $request->email,
+                'firstReportedDate' => $request->date_of_admission,
+                'initialDiagnosis' => $request->diagnosis,
+                'doa' => $request->date_of_admission,
+                'expectedDateOfDischarge' => $request->date_of_discharge ?? $request->date_of_admission,
+                'estimatedAmount' => $request->claim_amount,
+                'claimedAmount' => $request->claim_amount,
+                'providerName' => $request->hospital_name,
+                'address1' => "NA",
+                'address2' => "NA",
+                'state' => $request->hospital_state,
+                'city' => $request->hospital_city,
+                'pinCode' => $request->hospital_pin_code,
+                'treatmentTypeID' => 19,
+                'roomDetails' => [[
+                    'fromDate' => "",
+                    'toDate' => "",
+                    'roomTypeID' => ""
+                ]],
+            ]
+        ]);
+
+        $apiHeader = [
+            'appId: 95161',
+            'signature: jfcHY9AUIxhEQSN/hWPUe1CMLxmwOB+yj8VdXGNGrm8=',
+            'timestamp: 1636707591485',
+            'sessionId:' . $tokenData['session_id'],
+            'tokenId: ' . $tokenData['token'],
+            'Content-Type: application/json',
+            'applicationCD: PARTNERAPP'
+        ];
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://api.careinsurance.com/relinterfacerestful/religare/secure/restful/preIntimateClaimGenie',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $postData,
+            CURLOPT_HTTPHEADER => $apiHeader
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $decoded = json_decode($response, true);
+
+        if (isset($decoded['claimIntimationGenieIO']['claimIntimationGenieResponse']['data']['intimationNumber'])) {
+            return [
+                'success' => true,
+                'reference_number' => $decoded['claimIntimationGenieIO']['claimIntimationGenieResponse']['data']['intimationNumber']
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to connect to Care server. Please try again later.'
+        ];
+    }
+
+    /**
+     * Health India Claim Intimation
+     */
+    private function initiateHealthIndiaClaim($policy, $request, $employee)
+    {
+        $authToken = $this->health_india_auth_token();
+
+        $data = json_encode([
+            "ACCESS_TOKEN" => $authToken,
+            "AilmentDescription" => $request->diagnosis,
+            "ContactNo" => $request->mobile_no,
+            "DateOfAdmission" => $request->date_of_admission,
+            "HospName" => $request->hospital_name,
+            "HospAddress" => $request->hospital_city . ', ' . $request->hospital_state,
+            "MEMBER_ID" => $request->uhid_member_id,
+            "POLICY_NUMBER" => $request->policy_number
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://software.healthindiatpa.com/HiWebApi/ZOOM/IntimateClaimRequest',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json']
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $decoded = json_decode($response, true);
+
+        if (isset($decoded['RESULT'][0]['CCN'])) {
+            return [
+                'success' => true,
+                'reference_number' => $decoded['RESULT'][0]['CCN']
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to connect to Health India server. Please try again later.'
+        ];
+    }
+
+    /**
+     * Go Digit Claim Intimation
+     */
+    private function initiateGoDigitClaim($policy, $request, $employee)
+    {
+        $authToken = $this->go_digit_auth_token();
+
+        $nameParts = explode(' ', $request->relation_with_patient, 2);
+        $firstName = $nameParts[0];
+        $lastName = $nameParts[1] ?? '';
+
+        $data = json_encode([
+            "healthClaimsGMCClaimIntimation" => [
+                "masterPolicyNumber" => $policy->policy_number,
+                "policyNumber" => $request->policy_number,
+                "claimType" => "Reimbursement",
+                "sickPerson" => $request->uhid_member_id,
+                "person" => [
+                    "firstName" => $firstName,
+                    "lastName" => $lastName,
+                    "relationWithPH" => $request->relation_name,
+                ],
+                "typeOfTreatment" => "Already discharged",
+                "callerDetails" => [
+                    "callerEmailAddress" => $request->email,
+                    "contactNumber" => $request->mobile_no,
+                    "callerName" => $employee['full_name'],
+                ],
+                "hospitalizationDetails" => [
+                    "dateOfAdmission" => date('d-m-Y H:i:s', strtotime($request->date_of_admission)),
+                    "dateOfDischarge" => date('d-m-Y H:i:s', strtotime($request->date_of_discharge ?? $request->date_of_admission)),
+                ],
+                "hospitalDetails" => [
+                    "pincode" => $request->hospital_pin_code,
+                    "city" => $request->hospital_city,
+                    "hospitalAddress" => $request->hospital_name,
+                    "hospitalName" => $request->hospital_name,
+                    "state" => $request->hospital_state,
+                ],
+                "claimDetails" => [
+                    "incurredAmount" => $request->claim_amount,
+                ],
+            ]
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://oneapi.godigit.com/OneAPI/v1/executor',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'integrationId: 22507-0100',
+                'Authorization: Bearer ' . $authToken,
+                'Content-Type: application/json'
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $decoded = json_decode($response, true);
+
+        if (isset($decoded['ListOfClaims'][0]['claimNumber'])) {
+            return [
+                'success' => true,
+                'reference_number' => $decoded['ListOfClaims'][0]['claimNumber']
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to connect to Go Digit server. Please try again later.'
+        ];
+    }
+
+    /**
+     * EWA Claim Intimation
+     */
+    private function initiateEWAClaim($policy, $request, $employee)
+    {
+        $data = json_encode([
+            "userName" => "nipun.bansal@zoominsurancebrokers.com",
+            "password" => "Test@123",
+            "tpaReferenceId" => $request->uhid_member_id,
+            "policyNo" => $request->policy_number,
+            "relation" => $request->relation_name,
+            "name" => $request->relation_with_patient,
+            "ailment" => $request->diagnosis,
+            "claimAmount" => $request->claim_amount,
+            "dateOfAdmission" => date('d-M-Y', strtotime($request->date_of_admission)),
+            "nameOfhospital" => $request->hospital_name,
+            "nameOfDoctor" => $request->emergency_contact_name ?? 'N/A',
+            "mobile" => $request->mobile_no,
+            "eMail" => $request->email,
+            "claimType" => "Cashless"
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://apiadmin.ewatpa.com/zoom/claimintimtion',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $cleaned = preg_replace('/^\)\]\}\',\s*/', '', $response);
+        $decoded = json_decode($cleaned);
+
+        if (isset($decoded->body->claim_INTIMATION_NUMBER)) {
+            return [
+                'success' => true,
+                'reference_number' => $decoded->body->claim_INTIMATION_NUMBER
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to connect to EWA server. Please try again later.'
+        ];
+    }
+
+    /**
+     * Ericson Claim Intimation
+     */
+    private function initiateEricsonClaim($policy, $request, $employee)
+    {
+        $postData = http_build_query([
+            "Username" => "ZOOM INSURANCE BROKERS PVT LTD",
+            "Password" => "384",
+            "CardId" => $request->uhid_member_id,
+            "ClaimType_1ForCashless_2ForReImbursement" => "1",
+            "Categry1ForMainClaim_2ForPrePostClaim" => "1",
+            "AdmissionDate_DDMMYYYY" => date('dmY', strtotime($request->date_of_admission)),
+            "DischargeDate_DDMMYYYY" => date('dmY', strtotime($request->date_of_discharge ?? $request->date_of_admission)),
+            "LengthOfStay" => "1",
+            "ClaimAmount" => $request->claim_amount,
+            "Disease" => $request->diagnosis,
+            "HospitalName" => $request->hospital_name,
+            "HospitalAddress" => $request->hospital_city . ', ' . $request->hospital_state,
+            "IntimationGivenBy" => $employee['full_name'],
+            "ReltionWithPatient" => $request->relation_name,
+            "ContactNo" => $request->mobile_no,
+            "EmailId" => $request->email,
+            "Remarks" => "NA"
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://sata.ericsontpa.com/SataServices/EricsonTpaServices.asmx/ClaimIntimation',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $postData,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded'],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $decoded = json_decode($response);
+
+        if (isset($decoded->data[0]->Msg)) {
+            return [
+                'success' => true,
+                'reference_number' => $decoded->data[0]->Msg
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to connect to Ericson server. Please try again later.'
+        ];
+    }
+
+    /**
+     * ICICI Claim Intimation
+     */
+    private function initiateICICIClaim($policy, $request, $employee)
+    {
+        $authToken = $this->icici_auth_token('esbfetchclaimintimation');
+
+        $postData = json_encode([
+            "PolicyNumber" => $request->policy_number,
+            "UHID" => $request->uhid_member_id,
+            "DateOfAdmission" => $request->date_of_admission . 'T00:00:00',
+            "DateOfDischarge" => ($request->date_of_discharge ?? $request->date_of_admission) . 'T00:00:00',
+            "HospitalName" => $request->hospital_name,
+            "HospitalState" => $request->hospital_state,
+            "HospitalCity" => $request->hospital_city,
+            "HospitalPinCode" => $request->hospital_pin_code,
+            "IsNetworkHospital" => "No",
+            "ReasonForAdmission" => $request->diagnosis,
+            "Diagnosis" => $request->diagnosis,
+            "TypeOfClaim" => "Member Reimbursement",
+            "ClaimAmount" => $request->claim_amount,
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://janus.icicilombard.com/claims/ilservices/misc2/v1/claims/fetchclaimintimation',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $postData,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $authToken
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $decoded = json_decode($response);
+
+        if (isset($decoded->claimIntimationNumber)) {
+            return [
+                'success' => true,
+                'reference_number' => $decoded->claimIntimationNumber
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to connect to ICICI server. Please try again later.'
+        ];
+    }
+
+    /**
+     * FHPL Claim Intimation
+     */
+    private function initiateFHPLClaim($policy, $request, $employee)
+    {
+        $authToken = $this->fhpl_new_authentication_api();
+
+        $data = json_encode([
+            "Member_UHID" => $request->uhid_member_id,
+            "Date_of_Admission" => date('d M Y', strtotime($request->date_of_admission)),
+            "Policy_Number" => $request->policy_number,
+            "Type_of_Claim" => 2,
+            "Diagnosis" => $request->diagnosis,
+            "Mobile_number" => $request->mobile_no,
+            "Email_id" => $request->email,
+            "Name_of_hospital" => $request->hospital_name,
+            "Hospital_address" => $request->hospital_city . ', ' . $request->hospital_state,
+            "HospitalID" => 0,
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://bconnect-api.fhpl.net/api/ClaimIntimation',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: bearer ' . $authToken,
+                'Content-Type: application/json'
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $decoded = json_decode($response);
+
+        if (isset($decoded->IntimationID)) {
+            return [
+                'success' => true,
+                'reference_number' => $decoded->IntimationID
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to connect to FHPL server. Please try again later.'
+        ];
+    }
+
+    /**
+     * Safeway Claim Intimation
+     */
+    private function initiateSafewayClaim($policy, $request, $employee)
+    {
+        $data = json_encode([
+            "Username" => "AGSW4",
+            "Password" => "AGSW@4",
+            "MemebercardID" => $request->uhid_member_id,
+            "Ailment" => $request->diagnosis,
+            "CliamAmount" => $request->claim_amount,
+            "DOA" => $request->date_of_admission,
+            "Hospitalname" => $request->hospital_name,
+            "Mobileno" => $request->mobile_no,
+            "Emailid" => $request->email,
+            "Hospitaladdress" => $request->hospital_city . ', ' . $request->hospital_state,
+            "Claimtype" => "cashless",
+            "Hospitalcity" => $request->hospital_city,
+            "Hospitalstate" => $request->hospital_state
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'http://brokerapi.safewaytpa.in/api/Claimintimation',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $decoded = json_decode($response);
+
+        if (isset($decoded->Refno)) {
+            return [
+                'success' => true,
+                'reference_number' => $decoded->Refno
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to connect to Safeway server. Please try again later.'
+        ];
+    }
+
+  
     /**
      * Employee Policy
      */

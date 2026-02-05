@@ -98,6 +98,10 @@ Route::middleware(['employee.auth'])->prefix('employee')->group(function () {
     Route::get('/wellness', [EmployeeAuthController::class, 'wellness'])->name('employee.wellness');
     Route::get('/wellness/service/{wellnessId}', [EmployeeAuthController::class, 'openWellnessService'])->name('employee.wellness.service');
     Route::get('/claims', [EmployeeAuthController::class, 'claims'])->name('employee.claims');
+    Route::get('/claims/initiate', [EmployeeAuthController::class, 'initiateClaim'])->name('employee.claims.initiate');
+    Route::get('/claims/active-policies', [EmployeeAuthController::class, 'getActivePolicies'])->name('employee.claims.active-policies');
+    Route::post('/claims/policy-dependents', [EmployeeAuthController::class, 'getPolicyDependents'])->name('employee.claims.policy-dependents');
+    Route::post('/claims/submit', [EmployeeAuthController::class, 'submitClaim'])->name('employee.claims.submit');
     Route::get('/policy', [EmployeeAuthController::class, 'policy'])->name('employee.policy');
     Route::get('/policy/{encodedPolicyId}', [EmployeeAuthController::class, 'policyDetails'])->name('employee.policy.details');
     Route::get('/network-hospitals/{encodedPolicyId}', [EmployeeAuthController::class, 'networkHospitals'])->name('employee.network.hospitals');
