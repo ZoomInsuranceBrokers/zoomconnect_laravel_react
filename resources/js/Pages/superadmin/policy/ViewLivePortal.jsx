@@ -249,9 +249,8 @@ export default function ViewLivePortal({
                                 <div>
                                     <dt className="text-xs font-medium text-gray-500">Status</dt>
                                     <dd className="mt-1">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                            enrollmentPeriod.creation_status >= 2 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                        }`}>
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${enrollmentPeriod.creation_status >= 2 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
                                             {enrollmentPeriod.creation_status >= 2 ? 'Live' : 'Setting Up'}
                                         </span>
                                     </dd>
@@ -402,8 +401,19 @@ export default function ViewLivePortal({
                                                                     </Link>
                                                                     {employee.submit_status == 1 && (
                                                                         <button
-                                                                            onClick={() => handleEditEnrolment(employee)}
+                                                                            type="button"
                                                                             className="w-full block text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                                                                            onClick={() => {
+                                                                                setOpenDropdown(null);
+                                                                                const url = `/superadmin/fill-enrollment/${enrollmentPeriod.id}/employee/${employee.id}?edit=1`;
+                                                                                try {
+                                                                                    console.log('Attempting Inertia navigation:', url);
+                                                                                    router.visit(url);
+                                                                                } catch (e) {
+                                                                                    console.warn('Inertia navigation failed, falling back to window.location.href', e);
+                                                                                    window.location.href = url;
+                                                                                }
+                                                                            }}
                                                                         >
                                                                             <div className="flex items-center">
                                                                                 <svg className="w-3 h-3 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -512,11 +522,10 @@ export default function ViewLivePortal({
                                                             <button
                                                                 key={i}
                                                                 onClick={() => handlePageChange(i)}
-                                                                className={`relative inline-flex items-center px-4 py-2 border text-xs font-medium ${
-                                                                    i === currentPage
-                                                                        ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                                                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                                                }`}
+                                                                className={`relative inline-flex items-center px-4 py-2 border text-xs font-medium ${i === currentPage
+                                                                    ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                                    }`}
                                                             >
                                                                 {i}
                                                             </button>

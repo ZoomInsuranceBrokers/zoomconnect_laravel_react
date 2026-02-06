@@ -4231,7 +4231,6 @@ class SuperAdminController extends Controller
     public function fillEnrollment($enrollmentPeriodId, $employeeId)
     {
         try {
-
             // Get the enrollment period with related data
             $enrollmentPeriod = \App\Models\EnrollmentPeriod::with([
                 'enrollmentDetail',
@@ -4386,6 +4385,59 @@ class SuperAdminController extends Controller
                 : $enrollmentDetail->enrollment_statements;
 
             $enrollmentStatements = is_array($enrollmentStatementsJson) ? $enrollmentStatementsJson : [];
+
+            // --- FETCH EXISTING ENROLLMENT DATA FOR EDIT MODE ---
+            $enrollmentData = null;
+            $mapping = \DB::table('enrolment_mapping_master')
+                ->where('emp_id', $employeeId)
+                ->where('enrolment_period_id', $enrollmentPeriodId)
+                ->where('enrolment_id', $enrollmentDetail->id)
+                ->where('status', 1)
+                ->first();
+            if ($mapping) {
+                $enrollmentRows = \DB::table('new_enrolment_data')
+                    ->where('enrolment_mapping_id', $mapping->id)
+                    ->where('is_delete', 0)
+                    ->get();
+                if ($enrollmentRows->count() > 0) {
+                    // Build dependents array
+                    $dependents = [];
+                    foreach ($enrollmentRows as $row) {
+                        $dependents[] = [
+                            'id' => $row->id,
+                            'insured_name' => $row->insured_name,
+                            'relation' => $row->relation,
+                            'detailed_relation' => $row->detailed_relation,
+                            'gender' => $row->gender,
+                            'dob' => $row->dob,
+                            'age' => isset($row->age) ? $row->age : (isset($row->dob) ? \Carbon\Carbon::parse($row->dob)->age : null),
+                        ];
+                    }
+                    // Try to get selected plans and extra coverage from the first row (assuming same for all)
+                    $first = $enrollmentRows[0];
+                    $selectedPlans = [];
+                    // Use base_plan_name if available
+                    if (isset($first->base_plan_name) && $first->base_plan_name) {
+                        $selectedPlans['base_plan_name'] = $first->base_plan_name;
+                    }
+                    $extraCoverage = null;
+                    // Use extra_coverage_plan_name if available
+                    if (isset($first->extra_coverage_plan_name) && $first->extra_coverage_plan_name) {
+                        $extraCoverage['extra_coverage_plan_name'] = $first->extra_coverage_plan_name;
+                    }
+                    $premiumCalculations = null;
+                    if (isset($first->premium_calculations) && $first->premium_calculations) {
+                        $premiumCalculations = json_decode($first->premium_calculations, true);
+                    }
+                    $enrollmentData = [
+                        'dependents' => $dependents,
+                        'selectedPlans' => $selectedPlans,
+                        'extraCoverage' => $extraCoverage,
+                        'premiumCalculations' => $premiumCalculations,
+                    ];
+                }
+            }
+
             return Inertia::render('superadmin/policy/FillEnrollment', [
                 'enrollmentPeriod' => $enrollmentPeriod,
                 'enrollmentDetail' => $enrollmentDetail,
@@ -4393,13 +4445,23 @@ class SuperAdminController extends Controller
                 'familyDefinition' => $familyDefinition,
                 'availablePlans' => $availablePlans,
                 'extraCoveragePlans' => $extraCoveragePlans,
-                'enrollmentStatements' => $enrollmentStatements
+                'enrollmentStatements' => $enrollmentStatements,
+                'enrollmentData' => $enrollmentData,
             ]);
         } catch (\Exception $e) {
             Log::error('Fill enrollment page failed: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('message', 'Failed to load enrollment form. Please try again.')
-                ->with('messageType', 'error');
+            // Always return the Inertia page with an error message so the frontend can display it
+            return Inertia::render('superadmin/policy/FillEnrollment', [
+                'enrollmentPeriod' => null,
+                'enrollmentDetail' => null,
+                'employee' => null,
+                'familyDefinition' => null,
+                'availablePlans' => null,
+                'extraCoveragePlans' => null,
+                'enrollmentStatements' => null,
+                'enrollmentData' => null,
+                'error' => 'Failed to load enrollment form: ' . $e->getMessage(),
+            ]);
         }
     }
 
@@ -4408,6 +4470,19 @@ class SuperAdminController extends Controller
      */
     public function submitEnrollment(Request $request)
     {
+        // If enrolment_mapping_id is not present, fetch it using emp_id, enrolment_id, and enrolment_portal_id
+        $input = $request->all();
+        if (empty($input['enrolment_mapping_id']) && !empty($input['employee_id']) && !empty($input['enrollment_detail_id']) && !empty($input['enrollment_period_id'])) {
+            $mapping = \DB::table('enrolment_mapping_master')
+                ->where('emp_id', $input['employee_id'])
+                ->where('enrolment_id', $input['enrollment_detail_id'])
+                ->where('enrolment_period_id', $input['enrollment_period_id'])
+                ->where('status', 1)
+                ->first();
+            if ($mapping) {
+                $request->merge(['enrolment_mapping_id' => $mapping->id]);
+            }
+        }
         try {
             // Validate the request
             $validated = $request->validate([
@@ -4434,9 +4509,17 @@ class SuperAdminController extends Controller
             $enrollmentPeriod = \App\Models\EnrollmentPeriod::findOrFail($validated['enrollment_period_id']);
             $enrollmentDetail = \App\Models\EnrollmentDetail::findOrFail($validated['enrollment_detail_id']);
 
-            dd( $validated['enrolment_mapping_id']);
+            // Remove debug statement
             // Get mapping details if provided
             $mappingId = $validated['enrolment_mapping_id'] ?? null;
+            if (!$mappingId) {
+                \Log::error('❌ enrolment_mapping_id missing in request', [
+                    'employee_id' => $validated['employee_id'],
+                    'enrollment_period_id' => $validated['enrollment_period_id'],
+                    'enrollment_detail_id' => $validated['enrollment_detail_id'],
+                    'request_data' => $validated
+                ]);
+            }
 
             // Check if already submitted
             if ($mappingId) {
@@ -4483,7 +4566,7 @@ class SuperAdminController extends Controller
                     'insured_name' => $employee->full_name,
                     'name' => $employee->full_name,
                     'gender' => $employee->gender,
-                    'dob' => $employee->date_of_birth,
+                    'dob' => $employee->dob,
                     'age' => $employee->age ?? 0,
                     'is_delete' => 0
                 ]);
@@ -4508,6 +4591,21 @@ class SuperAdminController extends Controller
                 $relation = strtolower($dependent['relation'] ?? '');
                 $isSelf = $relation === 'self';
 
+                // Determine detailed_relation logic
+                $detailedRelation = null;
+                if ($relation === 'spouse') {
+                    $gender = strtolower($dependent['gender'] ?? '');
+                    if ($gender === 'male') {
+                        $detailedRelation = 'husband';
+                    } elseif ($gender === 'female') {
+                        $detailedRelation = 'wife';
+                    } else {
+                        $detailedRelation = 'spouse';
+                    }
+                } else {
+                    $detailedRelation = isset($dependent['detailed_relation']) ? strtolower($dependent['detailed_relation']) : ($relation ?: null);
+                }
+
                 $data = [
                     'emp_id' => $employee->id,
                     'cmp_id' => $employee->company_id,
@@ -4516,50 +4614,63 @@ class SuperAdminController extends Controller
                     'enrolment_mapping_id' => $mappingId,
                     'created_by' => $createdBy,
                     'updated_by' => $updatedBy,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    'is_edit' => 0,
+                    'is_delete' => $dependent['is_delete'] ?? 0,
                 ];
 
                 if ($isSelf) {
-                    // Employee/Self record
-                    $data['relation'] = 'self';
-                    $data['detailed_relation'] = 'Self';
-                    $data['insured_name'] = strtoupper($employee->full_name);
-                    $data['gender'] = strtoupper($employee->gender);
-                    $data['dob'] = $employee->date_of_birth;
+                    $data['relation'] = strtolower('SELF');
+                    $data['detailed_relation'] = strtolower('Self');
+                    $data['insured_name'] = $employee->full_name;
+                    $data['gender'] = strtolower($employee->gender);
+                    $data['dob'] = $employee->dob;
                     $data['date_of_joining'] = $employee->date_of_joining;
-
-                    // Base coverage and premium from frontend
-                    $data['base_sum_insured'] = $validated['selectedPlans']['employee']['baseSumInsured'] ?? 0;
-                    $data['base_plan_name'] = 'Base Plan';
+                    $data['base_sum_insured'] = 0;
+                    if (isset($validated['selectedPlans']['employee']['baseSumInsured'])) {
+                        $data['base_sum_insured'] = $validated['selectedPlans']['employee']['baseSumInsured'];
+                    } elseif (isset($validated['selectedPlans']['baseSumInsured'])) {
+                        $data['base_sum_insured'] = $validated['selectedPlans']['baseSumInsured'];
+                    } elseif (isset($validated['selectedPlans']['sumInsured'])) {
+                        $data['base_sum_insured'] = $validated['selectedPlans']['sumInsured'];
+                    } elseif (isset($validated['premiumCalculations']['sumInsured'])) {
+                        $data['base_sum_insured'] = $validated['premiumCalculations']['sumInsured'];
+                    }
+                    // Use selected plan name if available
+                    $data['base_plan_name'] = $validated['selectedPlans']['selectedPlanName'] ?? 'Base Plan';
                     $data['base_premium_on_employee'] = $basePremium;
                     $data['base_premium_on_company'] = $companyContribution;
-
-                    // Extra coverage premium from frontend
-                    if ($extraCoveragePremium > 0) {
-                        $data['extra_coverage_plan_name'] = $extraCoveragePlanName ?? 'Extra Coverage';
-                        $data['extra_coverage_premium_on_employee'] = $extraCoveragePremium;
-                        $data['extra_coverage_premium_on_company'] = 0;
+                    // Use extra coverage plan names if available (comma separated)
+                    if (!empty($validated['selectedPlans']['extraCoverageSelectedNames']) && is_array($validated['selectedPlans']['extraCoverageSelectedNames'])) {
+                        $data['extra_coverage_plan_name'] = implode(', ', $validated['selectedPlans']['extraCoverageSelectedNames']);
+                    } else {
+                        $data['extra_coverage_plan_name'] = $extraCoveragePlanName ?? null;
                     }
-
-                    $data['is_delete'] = $dependent['is_delete'] ?? 0;
+                    $data['extra_coverage_premium_on_employee'] = $extraCoveragePremium;
+                    $data['extra_coverage_premium_on_company'] = 0;
                 } else {
-                    // Dependent record
-                    $data['relation'] = $dependent['relation'];
-                    $data['detailed_relation'] = $dependent['detailed_relation'] ?? $dependent['relation'];
-                    $data['insured_name'] = strtoupper($dependent['name'] ?? $dependent['insured_name'] ?? '');
-                    $data['gender'] = strtoupper($dependent['gender'] ?? '');
+                    $data['relation'] = isset($dependent['relation']) ? strtolower($dependent['relation']) : null;
+                    $data['detailed_relation'] = $detailedRelation;
+                    $data['insured_name'] = $dependent['name'] ?? $dependent['insured_name'] ?? null;
+                    $data['gender'] = isset($dependent['gender']) ? strtolower($dependent['gender']) : null;
                     $data['dob'] = isset($dependent['dob']) ? date('Y-m-d', strtotime($dependent['dob'])) : null;
                     $data['date_of_joining'] = $employee->date_of_joining;
-
-                    // Dependents typically covered under family floater (no separate premium)
                     $data['base_sum_insured'] = 0;
                     $data['base_premium_on_company'] = 0;
                     $data['base_premium_on_employee'] = 0;
-                    $data['base_plan_name'] = 'Base Plan (Covered under Family Floater)';
-
-                    $data['is_delete'] = $dependent['is_delete'] ?? 0;
+                    $data['base_plan_name'] = $validated['selectedPlans']['selectedPlanName'] ?? 'Base Plan (Covered under Family Floater)';
+                    // Use extra coverage plan names if available (comma separated)
+                    if (!empty($validated['selectedPlans']['extraCoverageSelectedNames']) && is_array($validated['selectedPlans']['extraCoverageSelectedNames'])) {
+                        $data['extra_coverage_plan_name'] = implode(', ', $validated['selectedPlans']['extraCoverageSelectedNames']);
+                    } else {
+                        $data['extra_coverage_plan_name'] = null;
+                    }
+                    $data['extra_coverage_premium_on_employee'] = 0;
+                    $data['extra_coverage_premium_on_company'] = 0;
                 }
 
-                // Save to new_enrolment_data table
+                // Save to new_enrolment_data tablex`
                 \App\Models\NewEnrolmentData::create($data);
 
                 \Log::info('✅ Enrollment data saved', [
@@ -4576,15 +4687,25 @@ class SuperAdminController extends Controller
                     ->where('emp_id', $employee->id)
                     ->update([
                         'submit_status' => 1,
-                        'use_status' => 1,
-                        'view_status' => 1,
-                        'edit_option' => 0,
                         'updated_at' => now()
                     ]);
 
-                \Log::info('📝 Mapping status updated', [
+                if ($updated > 0) {
+                    \Log::info('📝 Mapping status updated', [
+                        'mapping_id' => $mappingId,
+                        'rows_updated' => $updated
+                    ]);
+                } else {
+                    \Log::error('❌ Mapping status NOT updated', [
+                        'mapping_id' => $mappingId,
+                        'emp_id' => $employee->id,
+                        'rows_updated' => $updated
+                    ]);
+                }
+            } else {
+                \Log::error('❌ No mappingId provided for mapping master update', [
                     'mapping_id' => $mappingId,
-                    'rows_updated' => $updated
+                    'emp_id' => $employee->id
                 ]);
             }
 
@@ -4612,7 +4733,7 @@ class SuperAdminController extends Controller
             }
 
             // Redirect to live portal view
-            return redirect('/superadmin/policy/view-live-portal/' . $validated['enrollment_period_id'])
+            return redirect('/superadmin/view-live-portal/' . $validated['enrollment_period_id'])
                 ->with('message', 'Enrollment Filled Successfully!')
                 ->with('messageType', 'success');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -4630,6 +4751,164 @@ class SuperAdminController extends Controller
             ]);
             return back()
                 ->with('message', 'Failed to submit enrollment. Please try again.')
+                ->with('messageType', 'error')
+                ->withInput();
+        }
+    }
+
+    /**
+     * Update enrollment data for edit mode
+     */
+    public function updateEnrollment(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'employee_id' => 'required|integer',
+                'enrollment_period_id' => 'required|integer',
+                'enrollment_detail_id' => 'required|integer',
+                'dependents' => 'nullable|array',
+                'selectedPlans' => 'nullable|array',
+                'extraCoverage' => 'nullable',
+                'premiumCalculations' => 'nullable|array',
+            ]);
+
+            \DB::beginTransaction();
+
+            // Remove previous enrollment data for this employee and period
+            \App\Models\NewEnrolmentData::where('emp_id', $validated['employee_id'])
+                ->where('enrolment_portal_id', $validated['enrollment_period_id'])
+                ->delete();
+
+            // Reuse logic from submitEnrollment to insert new data
+            $employee = \App\Models\CompanyEmployee::findOrFail($validated['employee_id']);
+            $enrollmentPeriod = \App\Models\EnrollmentPeriod::findOrFail($validated['enrollment_period_id']);
+            $enrollmentDetail = \App\Models\EnrollmentDetail::findOrFail($validated['enrollment_detail_id']);
+
+            $premiumCalc = $validated['premiumCalculations'] ?? [];
+            $basePremium = $premiumCalc['basePremium'] ?? $premiumCalc['grossPremium'] ?? 0;
+            $extraCoveragePremium = $premiumCalc['extraCoveragePremium'] ?? 0;
+            $companyContribution = $premiumCalc['companyContributionAmount'] ?? 0;
+
+            $dependents = $validated['dependents'] ?? [];
+            $hasSelf = false;
+            foreach ($dependents as $dep) {
+                if (isset($dep['relation']) && strtolower($dep['relation']) === 'self') {
+                    $hasSelf = true;
+                    break;
+                }
+            }
+            if (!$hasSelf) {
+                array_unshift($dependents, [
+                    'id' => 'employee',
+                    'relation' => 'SELF',
+                    'detailed_relation' => 'Self',
+                    'insured_name' => $employee->full_name,
+                    'name' => $employee->full_name,
+                    'gender' => $employee->gender,
+                    'dob' => $employee->dob,
+                    'age' => $employee->age ?? 0,
+                    'is_delete' => 0
+                ]);
+            }
+
+            $extraCoverage = $validated['extraCoverage'] ?? null;
+            $extraCoveragePlanName = null;
+            if ($extraCoverage && is_array($extraCoverage)) {
+                $extraCoveragePlanName = $extraCoverage['plan_name'] ?? 'Extra Coverage';
+            }
+
+            foreach ($dependents as $dependent) {
+                $relation = strtolower($dependent['relation'] ?? '');
+                $isSelf = $relation === 'self';
+                $detailedRelation = null;
+                if ($relation === 'spouse') {
+                    $gender = strtolower($dependent['gender'] ?? '');
+                    if ($gender === 'male') {
+                        $detailedRelation = 'husband';
+                    } elseif ($gender === 'female') {
+                        $detailedRelation = 'wife';
+                    } else {
+                        $detailedRelation = 'spouse';
+                    }
+                } else {
+                    $detailedRelation = isset($dependent['detailed_relation']) ? strtolower($dependent['detailed_relation']) : ($relation ?: null);
+                }
+
+                $data = [
+                    'emp_id' => $employee->id,
+                    'cmp_id' => $employee->company_id,
+                    'enrolment_id' => $enrollmentDetail->id,
+                    'enrolment_portal_id' => $enrollmentPeriod->id,
+                    'created_by' => 'SA-' . (auth()->id() ?? 'SYSTEM'),
+                    'updated_by' => 'SA-' . (auth()->id() ?? 'SYSTEM'),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    'is_edit' => 1,
+                    'is_delete' => $dependent['is_delete'] ?? 0,
+                ];
+
+                if ($isSelf) {
+                    $data['relation'] = strtolower('SELF');
+                    $data['detailed_relation'] = strtolower('Self');
+                    $data['insured_name'] = $employee->full_name;
+                    $data['gender'] = strtolower($employee->gender);
+                    $data['dob'] = $employee->dob;
+                    $data['date_of_joining'] = $employee->date_of_joining;
+                    $data['base_sum_insured'] = 0;
+                    if (isset($validated['selectedPlans']['employee']['baseSumInsured'])) {
+                        $data['base_sum_insured'] = $validated['selectedPlans']['employee']['baseSumInsured'];
+                    } elseif (isset($validated['selectedPlans']['baseSumInsured'])) {
+                        $data['base_sum_insured'] = $validated['selectedPlans']['baseSumInsured'];
+                    } elseif (isset($validated['selectedPlans']['sumInsured'])) {
+                        $data['base_sum_insured'] = $validated['selectedPlans']['sumInsured'];
+                    } elseif (isset($validated['premiumCalculations']['sumInsured'])) {
+                        $data['base_sum_insured'] = $validated['premiumCalculations']['sumInsured'];
+                    }
+                    $data['base_plan_name'] = $validated['selectedPlans']['selectedPlanName'] ?? 'Base Plan';
+                    $data['base_premium_on_employee'] = $basePremium;
+                    $data['base_premium_on_company'] = $companyContribution;
+                    if (!empty($validated['selectedPlans']['extraCoverageSelectedNames']) && is_array($validated['selectedPlans']['extraCoverageSelectedNames'])) {
+                        $data['extra_coverage_plan_name'] = implode(', ', $validated['selectedPlans']['extraCoverageSelectedNames']);
+                    } else {
+                        $data['extra_coverage_plan_name'] = $extraCoveragePlanName ?? null;
+                    }
+                    $data['extra_coverage_premium_on_employee'] = $extraCoveragePremium;
+                    $data['extra_coverage_premium_on_company'] = 0;
+                } else {
+                    $data['relation'] = isset($dependent['relation']) ? strtolower($dependent['relation']) : null;
+                    $data['detailed_relation'] = $detailedRelation;
+                    $data['insured_name'] = $dependent['name'] ?? $dependent['insured_name'] ?? null;
+                    $data['gender'] = isset($dependent['gender']) ? strtolower($dependent['gender']) : null;
+                    $data['dob'] = isset($dependent['dob']) ? date('Y-m-d', strtotime($dependent['dob'])) : null;
+                    $data['date_of_joining'] = $employee->date_of_joining;
+                    $data['base_sum_insured'] = 0;
+                    $data['base_premium_on_company'] = 0;
+                    $data['base_premium_on_employee'] = 0;
+                    $data['base_plan_name'] = $validated['selectedPlans']['selectedPlanName'] ?? 'Base Plan (Covered under Family Floater)';
+                    if (!empty($validated['selectedPlans']['extraCoverageSelectedNames']) && is_array($validated['selectedPlans']['extraCoverageSelectedNames'])) {
+                        $data['extra_coverage_plan_name'] = implode(', ', $validated['selectedPlans']['extraCoverageSelectedNames']);
+                    } else {
+                        $data['extra_coverage_plan_name'] = null;
+                    }
+                    $data['extra_coverage_premium_on_employee'] = 0;
+                    $data['extra_coverage_premium_on_company'] = 0;
+                }
+
+                \App\Models\NewEnrolmentData::create($data);
+            }
+
+            \DB::commit();
+
+            return redirect('/superadmin/view-live-portal/' . $validated['enrollment_period_id'])
+                ->with('message', 'Enrollment Updated Successfully!')
+                ->with('messageType', 'success');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \DB::rollBack();
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return back()
+                ->with('message', 'Failed to update enrollment. Please try again.')
                 ->with('messageType', 'error')
                 ->withInput();
         }

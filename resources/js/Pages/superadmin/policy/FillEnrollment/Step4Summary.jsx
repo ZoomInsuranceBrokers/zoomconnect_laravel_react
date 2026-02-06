@@ -226,7 +226,7 @@ export default function Step4Summary({ employee, enrollmentDetail, availablePlan
                             <p className="text-xs font-semibold text-yellow-800">Pro-rata Applied (Mid-year Joining)</p>
                         </div>
                         <p className="text-xs text-yellow-700">
-                            Premium calculated for {formData.premiumCalculations.remainingDays || 0} days out of {formData.premiumCalculations.totalPolicyDays || 0} days 
+                            Premium calculated for {formData.premiumCalculations.remainingDays || 0} days out of {formData.premiumCalculations.totalPolicyDays || 0} days
                             ({Math.round((formData.premiumCalculations.prorationFactor || 0) * 100)}% of annual premium)
                         </p>
                     </div>
@@ -265,8 +265,8 @@ export default function Step4Summary({ employee, enrollmentDetail, availablePlan
                             <span className="text-green-700">Company Contribution ({companyPerc}%)</span>
                             <span className="font-semibold text-green-600">-{formatCurrency(
                                 formData.premiumCalculations?.companyContributionAmount != null
-                                  ? formData.premiumCalculations.companyContributionAmount
-                                  : Math.round((formData.premiumCalculations?.grossPlusGst || 0) * (companyPerc / 100))
+                                    ? formData.premiumCalculations.companyContributionAmount
+                                    : Math.round((formData.premiumCalculations?.grossPlusGst || 0) * (companyPerc / 100))
                             )}</span>
                         </div>
                     )}
@@ -274,15 +274,15 @@ export default function Step4Summary({ employee, enrollmentDetail, availablePlan
                         <div className="flex items-center justify-between">
                             <span className="text-lg font-medium text-green-900">Employee Annual Payable</span>
                             <span className="text-2xl font-bold text-green-900">
-                              {formatCurrency(
-                                formData.premiumCalculations?.employeePayable != null
-                                  ? formData.premiumCalculations.employeePayable
-                                  : (Number(formData.premiumCalculations?.grossPlusGst || 0) - (
-                                      formData.premiumCalculations?.companyContributionAmount != null
-                                        ? formData.premiumCalculations.companyContributionAmount
-                                        : Math.round((formData.premiumCalculations?.grossPlusGst || 0) * (companyPerc / 100))
-                                    ))
-                              )}
+                                {formatCurrency(
+                                    formData.premiumCalculations?.employeePayable != null
+                                        ? formData.premiumCalculations.employeePayable
+                                        : (Number(formData.premiumCalculations?.grossPlusGst || 0) - (
+                                            formData.premiumCalculations?.companyContributionAmount != null
+                                                ? formData.premiumCalculations.companyContributionAmount
+                                                : Math.round((formData.premiumCalculations?.grossPlusGst || 0) * (companyPerc / 100))
+                                        ))
+                                )}
                             </span>
                         </div>
                     </div>

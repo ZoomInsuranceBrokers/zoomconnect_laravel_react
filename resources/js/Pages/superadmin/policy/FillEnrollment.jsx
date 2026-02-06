@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 import { Link, router } from '@inertiajs/react';
 import SuperAdminLayout from '../../../Layouts/SuperAdmin/Layout';
 import Step1AddDependents from './FillEnrollment/Step1AddDependents';
@@ -14,25 +15,57 @@ export default function FillEnrollment({
     familyDefinition,
     availablePlans,
     extraCoveragePlans,
+    enrollmentData = null,
     message,
-    messageType
+    messageType,
+    error // <-- add error prop
 }) {
+    // Show error if present
+    if (error) {
+        return (
+            <div className="p-8 text-center text-red-600 font-bold">
+                {error}
+            </div>
+        );
+    }
+    // Show loading or not found if critical data is missing
+    if (!enrollmentPeriod || !employee) {
+        return (
+            <div className="p-8 text-center text-gray-500">
+                Loading or data not found.
+            </div>
+        );
+    }
+
     const [currentStep, setCurrentStep] = useState(1);
     const [showMessage, setShowMessage] = useState(null);
-    const [formData, setFormData] = useState({
-        employee_id: employee.id,
-        enrollment_period_id: enrollmentPeriod.id,
-        enrollment_detail_id: enrollmentDetail.id,
-        enrollment_config_id: enrollmentConfig?.id,
-        dependents: [],
-        selectedPlans: {},
-        extraCoverage: null,
-        premiumCalculations: {
-            basePremium: 0,
-            topupPremium: 0,
-            extraCoveragePremium: 0,
-            totalPremium: 0
+    // Detect edit mode from query param
+    const isEdit = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('edit') === '1';
+    const [formData, setFormData] = useState(() => {
+        if (isEdit && enrollmentData) {
+            return {
+                ...enrollmentData,
+                employee_id: employee.id,
+                enrollment_period_id: enrollmentPeriod.id,
+                enrollment_detail_id: enrollmentDetail.id,
+                enrollment_config_id: enrollmentConfig?.id
+            };
         }
+        return {
+            employee_id: employee.id,
+            enrollment_period_id: enrollmentPeriod.id,
+            enrollment_detail_id: enrollmentDetail.id,
+            enrollment_config_id: enrollmentConfig?.id,
+            dependents: [],
+            selectedPlans: {},
+            extraCoverage: null,
+            premiumCalculations: {
+                basePremium: 0,
+                topupPremium: 0,
+                extraCoveragePremium: 0,
+                totalPremium: 0
+            }
+        };
     });
 
     const steps = [
@@ -78,19 +111,33 @@ export default function FillEnrollment({
 
     const handleSubmit = async () => {
         try {
-            router.post('/superadmin/fill-enrollment/submit', formData, {
-                onSuccess: () => {
-                    setShowMessage({ type: 'success', text: 'Enrollment submitted successfully!' });
-                    // Redirect back to live portal after successful submission
-                    setTimeout(() => {
-                        router.visit(`/superadmin/policy/view-live-portal/${enrollmentPeriod.id}`);
-                    }, 2000);
-                },
-                onError: (errors) => {
-                    setShowMessage({ type: 'error', text: 'Failed to submit enrollment. Please try again.' });
-                    console.error('Submission errors:', errors);
-                }
-            });
+            if (isEdit) {
+                router.put(`/superadmin/fill-enrollment/update`, formData, {
+                    onSuccess: () => {
+                        setShowMessage({ type: 'success', text: 'Enrollment updated successfully!' });
+                        setTimeout(() => {
+                            router.visit(`/superadmin/policy/view-live-portal/${enrollmentPeriod.id}`);
+                        }, 2000);
+                    },
+                    onError: (errors) => {
+                        setShowMessage({ type: 'error', text: 'Failed to update enrollment. Please try again.' });
+                        console.error('Update errors:', errors);
+                    }
+                });
+            } else {
+                router.post('/superadmin/fill-enrollment/submit', formData, {
+                    onSuccess: () => {
+                        setShowMessage({ type: 'success', text: 'Enrollment submitted successfully!' });
+                        setTimeout(() => {
+                            router.visit(`/superadmin/policy/view-live-portal/${enrollmentPeriod.id}`);
+                        }, 2000);
+                    },
+                    onError: (errors) => {
+                        setShowMessage({ type: 'error', text: 'Failed to submit enrollment. Please try again.' });
+                        console.error('Submission errors:', errors);
+                    }
+                });
+            }
         } catch (error) {
             setShowMessage({ type: 'error', text: 'An error occurred. Please try again.' });
             console.error('Submit error:', error);
@@ -191,13 +238,12 @@ export default function FillEnrollment({
                                                 <div className="absolute top-5 left-full w-full h-1 flex items-center" style={{ left: '50%' }}>
                                                     <div className="h-full w-full bg-gray-200 rounded-full relative">
                                                         <div
-                                                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-out ${
-                                                                currentStep > step.id
+                                                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-out ${currentStep > step.id
                                                                     ? 'w-full bg-gradient-to-r from-[#934790] to-[#b967b5]'
                                                                     : currentStep === step.id + 1
                                                                         ? 'w-1/2 bg-gradient-to-r from-[#934790] to-[#b967b5]'
                                                                         : 'w-0 bg-gray-200'
-                                                            }`}
+                                                                }`}
                                                         ></div>
                                                     </div>
                                                 </div>
@@ -206,13 +252,12 @@ export default function FillEnrollment({
                                             {/* Step circle */}
                                             <button
                                                 onClick={() => handleStepChange(step.id)}
-                                                className={`relative w-10 h-10 flex items-center justify-center rounded-full border-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#934790]/20 z-10 bg-white ${
-                                                    currentStep === step.id
+                                                className={`relative w-10 h-10 flex items-center justify-center rounded-full border-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#934790]/20 z-10 bg-white ${currentStep === step.id
                                                         ? 'border-[#934790] bg-gradient-to-br from-[#934790] to-[#7a3d7a] text-white shadow-lg scale-110'
                                                         : currentStep > step.id
-                                                        ? 'border-[#934790] bg-gradient-to-br from-[#934790] to-[#7a3d7a] text-white shadow-md'
-                                                        : 'border-gray-300 bg-white text-gray-500 hover:border-gray-400'
-                                                }`}
+                                                            ? 'border-[#934790] bg-gradient-to-br from-[#934790] to-[#7a3d7a] text-white shadow-md'
+                                                            : 'border-gray-300 bg-white text-gray-500 hover:border-gray-400'
+                                                    }`}
                                             >
                                                 {currentStep > step.id ? (
                                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -225,9 +270,8 @@ export default function FillEnrollment({
 
                                             {/* Step labels - properly centered below circles */}
                                             <div className="mt-4 text-center min-w-0 max-w-32">
-                                                <p className={`text-sm font-semibold transition-colors duration-300 ${
-                                                    currentStep >= step.id ? 'text-[#934790]' : 'text-gray-500'
-                                                }`}>
+                                                <p className={`text-sm font-semibold transition-colors duration-300 ${currentStep >= step.id ? 'text-[#934790]' : 'text-gray-500'
+                                                    }`}>
                                                     {step.name}
                                                 </p>
                                                 <p className="text-xs text-gray-500 mt-1">{step.description}</p>
@@ -248,9 +292,8 @@ export default function FillEnrollment({
 
             {/* Success/Error Message */}
             {showMessage && (
-                <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3 text-sm ${
-                    showMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
+                <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3 text-sm ${showMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         {showMessage.type === 'success' ? (
                             <path d="M9 12l2 2l4-4" />

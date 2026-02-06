@@ -949,7 +949,7 @@ export default function Step1AddDependents({
 
           <button type="button" onClick={availableRelationsForAdd.length > 0 ? openAddModal : undefined} className={`inline-flex items-center px-6 py-3 font-semibold rounded-xl focus:outline-none focus:ring-4 transition-all shadow-lg ${availableRelationsForAdd.length > 0 ? "bg-gradient-to-r from-[#934790] to-[#7a3d7a] text-white hover:from-[#7a3d7a] hover:to-[#934790]" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`} disabled={availableRelationsForAdd.length === 0} title={availableRelationsForAdd.length === 0 ? "All relationship limits reached. You cannot add more members." : ""}>
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-            Add Family Member
+            Add Family Membe
           </button>
         </div>
 

@@ -80,7 +80,7 @@ export default function Step3ExtraCoverage({
             console.log('📊 Step3ExtraCoverage - employee:', employee);
             console.log('📊 Step3ExtraCoverage - enrollmentDetail:', enrollmentDetail);
             console.log('📊 Step3ExtraCoverage - selectedExtraIds:', selectedExtraIds);
-            
+
             if (employee?.date_of_joining && enrollmentDetail?.policy_start_date) {
                 const prorationInfo = calculateProrationFactor(employee, enrollmentDetail);
                 console.log('📊 Step3 Proration Info:', {
@@ -155,7 +155,7 @@ export default function Step3ExtraCoverage({
         const total = basePremium + topupPremium + extraPremium;
         const gst = Math.round(total * 0.18) || 0;
         const grossPlusGst = total + gst;
-    // ...existing code...
+        // ...existing code...
         let companyPerc = 0;
         if (typeof cfg.company_contribution_percentage !== 'undefined' && cfg.company_contribution_percentage !== null) {
             companyPerc = Number(cfg.company_contribution_percentage) || 0;
@@ -169,10 +169,10 @@ export default function Step3ExtraCoverage({
         if (!companyPerc && typeof pc.company_contribution_percent !== 'undefined') {
             companyPerc = Number(pc.company_contribution_percent) || 0;
         }
-    // ...existing code...
+        // ...existing code...
         const companyContributionAmount = companyPerc > 0 ? Math.round(grossPlusGst * (companyPerc / 100)) : 0;
         const employeePayable = Math.max(0, grossPlusGst - companyContributionAmount);
-    // ...existing code...
+        // ...existing code...
         return {
             ...pc,
             totalPremium: total,
@@ -226,7 +226,7 @@ export default function Step3ExtraCoverage({
         const pc = formData?.premiumCalculations || {};
         const basePremium = Number(pc.basePremium || pc.grossPremium || 0) || 0;
         const topupPremium = Number(pc.topupPremium || 0) || 0;
-        
+
         // Apply pro-rata to extra coverage premiums
         const prorationData = calculateProrationFactor(employee, enrollmentDetail);
         const extraTotal = ids.reduce((sum, id) => {
@@ -268,10 +268,17 @@ export default function Step3ExtraCoverage({
     }, [selectedExtraIds]);
 
     const handleNext = () => {
+        // Map selectedExtraIds to plan names
+        const selectedExtraNames = (selectedExtraIds || []).map(id => {
+            const plan = (extraCoveragePlans || []).find(p => String(p.id) === String(id));
+            return plan ? plan.plan_name : null;
+        }).filter(Boolean);
+
         updateFormData({
             selectedPlans: {
                 ...(fd.selectedPlans || {}),
                 extraCoverageSelected: selectedExtraIds || [],
+                extraCoverageSelectedNames: selectedExtraNames,
             },
             premiumCalculations,
         });
@@ -294,8 +301,8 @@ export default function Step3ExtraCoverage({
     }
     const selectedPlanObj = fd.selectedPlans?.selectedPlanId
         ? (sourcePlans?.basePlans || []).find(
-              (p) => String(p.id) === String(fd.selectedPlans.selectedPlanId)
-          ) || null
+            (p) => String(p.id) === String(fd.selectedPlans.selectedPlanId)
+        ) || null
         : null;
     const baseSI = ratingConfig?.base_sum_insured || null;
 
@@ -341,7 +348,7 @@ export default function Step3ExtraCoverage({
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                            <p className="text-xl font-bold text-green-600">
+                                        <p className="text-xl font-bold text-green-600">
                                             ₹0
                                         </p>
                                         <p className="text-xs text-gray-500">
@@ -358,114 +365,113 @@ export default function Step3ExtraCoverage({
                             const shouldProrate = prorationData.prorationFactor < 1 && prorationData.prorationFactor > 0;
                             const originalPremium = Number(plan.employee_contribution ?? plan.premium ?? plan.premium_amount ?? 0);
                             const proratedPremium = Math.round(originalPremium * prorationData.prorationFactor);
-                            
+
                             return (
-                            <label
-                                key={plan.id}
-                    className={`flex items-start p-4 border-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${
-                        selectedExtraIds.map(String).includes(String(plan.id))
-                        ? "border-[#934790] bg-purple-50"
-                        : "border-gray-200"
-                    }`}
-                            >
-                                <input
-                                    type="checkbox"
-                                    name="extraCoverage"
-                                    value={plan.id}
-                                    checked={selectedExtraIds.map(String).includes(String(plan.id))}
-                                    onChange={() => handleExtraCoverageToggle(plan.id)}
-                                    className="mt-1 mr-4 text-[#934790] focus:ring-[#934790]"
-                                />
-                                <div className="flex-1">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 pr-4">
-                                            <p className="text-lg font-medium text-gray-900">
-                                                {plan.plan_name}
-                                            </p>
-                                            {plan.description && (
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    {plan.description}
+                                <label
+                                    key={plan.id}
+                                    className={`flex items-start p-4 border-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${selectedExtraIds.map(String).includes(String(plan.id))
+                                            ? "border-[#934790] bg-purple-50"
+                                            : "border-gray-200"
+                                        }`}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        name="extraCoverage"
+                                        value={plan.id}
+                                        checked={selectedExtraIds.map(String).includes(String(plan.id))}
+                                        onChange={() => handleExtraCoverageToggle(plan.id)}
+                                        className="mt-1 mr-4 text-[#934790] focus:ring-[#934790]"
+                                    />
+                                    <div className="flex-1">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1 pr-4">
+                                                <p className="text-lg font-medium text-gray-900">
+                                                    {plan.plan_name}
                                                 </p>
-                                            )}
-                                            {/* Coverage Details */}
-                                            <div className="mt-3 space-y-2">
-                                                {plan.features &&
-                                                    Array.isArray(
-                                                        plan.features
-                                                    ) && (
-                                                        <div className="space-y-1">
-                                                            {plan.features
-                                                                .slice(0, 3)
-                                                                .map(
-                                                                    (
-                                                                        feature,
-                                                                        idx
-                                                                    ) => (
-                                                                        <div
-                                                                            key={
-                                                                                idx
-                                                                            }
-                                                                            className="flex items-center text-sm"
-                                                                        >
-                                                                            <svg
-                                                                                className="w-4 h-4 text-green-500 mr-2"
-                                                                                fill="none"
-                                                                                stroke="currentColor"
-                                                                                viewBox="0 0 24 24"
-                                                                            >
-                                                                                <path
-                                                                                    strokeLinecap="round"
-                                                                                    strokeLinejoin="round"
-                                                                                    strokeWidth="2"
-                                                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                                />
-                                                                            </svg>
-                                                                            <span className="text-gray-700">
-                                                                                {
-                                                                                    feature
+                                                {plan.description && (
+                                                    <p className="text-sm text-gray-600 mt-1">
+                                                        {plan.description}
+                                                    </p>
+                                                )}
+                                                {/* Coverage Details */}
+                                                <div className="mt-3 space-y-2">
+                                                    {plan.features &&
+                                                        Array.isArray(
+                                                            plan.features
+                                                        ) && (
+                                                            <div className="space-y-1">
+                                                                {plan.features
+                                                                    .slice(0, 3)
+                                                                    .map(
+                                                                        (
+                                                                            feature,
+                                                                            idx
+                                                                        ) => (
+                                                                            <div
+                                                                                key={
+                                                                                    idx
                                                                                 }
-                                                                            </span>
-                                                                        </div>
-                                                                    )
-                                                                )}
-                                                            {plan.features
-                                                                .length > 3 && (
-                                                                <p className="text-xs text-gray-500 ml-6">
-                                                                    +
-                                                                    {plan
-                                                                        .features
-                                                                        .length -
-                                                                        3}{" "}
-                                                                    more
-                                                                    features
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    )}
+                                                                                className="flex items-center text-sm"
+                                                                            >
+                                                                                <svg
+                                                                                    className="w-4 h-4 text-green-500 mr-2"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                                    />
+                                                                                </svg>
+                                                                                <span className="text-gray-700">
+                                                                                    {
+                                                                                        feature
+                                                                                    }
+                                                                                </span>
+                                                                            </div>
+                                                                        )
+                                                                    )}
+                                                                {plan.features
+                                                                    .length > 3 && (
+                                                                        <p className="text-xs text-gray-500 ml-6">
+                                                                            +
+                                                                            {plan
+                                                                                .features
+                                                                                .length -
+                                                                                3}{" "}
+                                                                            more
+                                                                            features
+                                                                        </p>
+                                                                    )}
+                                                            </div>
+                                                        )}
+                                                </div>
+                                            </div>
+
+                                            <div className="text-right">
+                                                <p className="text-xl font-bold text-[#934790]">
+                                                    {formatCurrency(proratedPremium)}
+                                                </p>
+                                                {shouldProrate && (
+                                                    <p className="text-xs text-amber-600 mt-0.5">
+                                                        (Original: {formatCurrency(originalPremium)})
+                                                    </p>
+                                                )}
+                                                <p className="text-xs text-gray-500">
+                                                    per year
+                                                </p>
+                                                {shouldProrate && (
+                                                    <p className="text-xs text-amber-600 font-medium mt-1">
+                                                        ⏱️ Pro-rated: {(prorationData.prorationFactor * 100).toFixed(1)}%
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
-
-                                        <div className="text-right">
-                                            <p className="text-xl font-bold text-[#934790]">
-                                                {formatCurrency(proratedPremium)}
-                                            </p>
-                                            {shouldProrate && (
-                                                <p className="text-xs text-amber-600 mt-0.5">
-                                                    (Original: {formatCurrency(originalPremium)})
-                                                </p>
-                                            )}
-                                            <p className="text-xs text-gray-500">
-                                                per year
-                                            </p>
-                                            {shouldProrate && (
-                                                <p className="text-xs text-amber-600 font-medium mt-1">
-                                                    ⏱️ Pro-rated: {(prorationData.prorationFactor * 100).toFixed(1)}%
-                                                </p>
-                                            )}
-                                        </div>
                                     </div>
-                                </div>
-                            </label>
+                                </label>
                             );
                         })}
                     </>
