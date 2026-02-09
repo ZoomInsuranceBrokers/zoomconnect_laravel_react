@@ -105,5 +105,12 @@ Route::prefix('v1')->group(function () {
             Route::post('/list', [App\Http\Controllers\ApiController::class, 'naturalAdditionList'])
                 ->name('api.natural.addition.list');
         });
+
+        // ============================================
+        // Claim Details API Route
+        // ============================================
+        // Get all claims for authenticated employee
+        Route::post('/claim-details', [App\Http\Controllers\ApiController::class, 'claimDetails'])
+            ->name('api.claim.details');
     });
 });

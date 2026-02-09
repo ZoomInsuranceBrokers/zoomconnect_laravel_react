@@ -2995,4 +2995,603 @@ class ApiController extends Controller
 
         return ApiResponse::success(['data' => $natural], 'Natural addition list fetched successfully', 200);
     }
+
+    /**
+     * Claim Details - Get all claims for employee across all policies
+     */
+    public function claimDetails(Request $request)
+    {
+        $employeeId = $request->employee_id;
+        $employee = CompanyEmployee::find($employeeId);
+
+        if (!$employee) {
+            return ApiResponse::error('Employee Not Found', null, 404);
+        }
+
+        // Get UHID data
+        $uhidData = DB::table('icici_endorsement_data')->where('emp_id', $employeeId)->get();
+
+        // Get all active policies for this employee
+        $allPolicies = DB::select(
+            "SELECT policy_mapping_master.policy_id, policy_master.policy_name, policy_master.policy_start_date, 
+            policy_master.policy_end_date, policy_master.policy_number, policy_master.policy_type, policy_master.tpa_id, 
+            insurance_master.insurance_company_name, insurance_master.insurance_comp_icon_url, tpa_master.tpa_table_name AS tpa_table 
+            FROM policy_mapping_master 
+            INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id 
+            INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id 
+            INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id 
+            INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id 
+            WHERE policy_mapping_master.emp_id = ? 
+            AND policy_mapping_master.status = 1 
+            AND policy_master.policy_status = 1 
+            AND policy_endorsements.status = 1 
+            AND policy_mapping_master.addition_endorsement_id IS NOT NULL 
+            AND policy_master.is_active = 1",
+            [$employee->id]
+        );
+
+        $claims = [];
+
+        foreach ($allPolicies as $policy) {
+            // TPA ID 63 - ICICI Lombard
+            if ($policy->tpa_id == 63) {
+                foreach ($uhidData as $uhid) {
+                    $iciciClaims = $this->getIciciClaims($policy, $employee, $uhid);
+                    $claims = array_merge($claims, $iciciClaims);
+                }
+            }
+
+            // TPA ID 62 - Paramount (PHS)
+            if ($policy->tpa_id == 62) {
+                $phsClaims = $this->getPhsClaims($policy, $employee);
+                $claims = array_merge($claims, $phsClaims);
+            }
+
+            // TPA ID 66 - FHPL
+            if ($policy->tpa_id == 66) {
+                $fhplClaims = $this->getFhplClaims($policy, $employee);
+                $claims = array_merge($claims, $fhplClaims);
+            }
+
+            // TPA ID 67 - Mediassist
+            if ($policy->tpa_id == 67) {
+                $mediClaims = $this->getMediassistClaims($policy, $employee);
+                $claims = array_merge($claims, $mediClaims);
+            }
+
+            // TPA ID 68 - Safeway
+            if ($policy->tpa_id == 68) {
+                $safewayClaims = $this->getSafewayClaims($policy, $employee);
+                $claims = array_merge($claims, $safewayClaims);
+            }
+
+            // TPA ID 70 - Health India
+            if ($policy->tpa_id == 70) {
+                $healthIndiaClaims = $this->getHealthIndiaClaims($policy, $employee);
+                $claims = array_merge($claims, $healthIndiaClaims);
+            }
+
+            // TPA ID 71 - EWA
+            if ($policy->tpa_id == 71) {
+                $ewaClaims = $this->getEwaClaims($policy, $employee);
+                $claims = array_merge($claims, $ewaClaims);
+            }
+        }
+
+        return ApiResponse::success(['claims' => $claims], 'Claim Data Sent Successfully', 200);
+    }
+
+    /**
+     * Get ICICI Lombard claims
+     */
+    private function getIciciClaims($policy, $employee, $uhid)
+    {
+        $claims = [];
+        $iciciId = $uhid->icici_id;
+        $dob = $uhid->dob;
+        $scope = "esb-healthclaimlist";
+
+        $authToken = $this->getIciciAuthToken($scope);
+        if (!$authToken) {
+            return $claims;
+        }
+
+        $jsonData = json_encode([
+            'DOB' => $dob . 'T00:00:00',
+            'MobileNumber' => '',
+            'PolicyNumber' => $policy->policy_number,
+            'UHID' => $iciciId,
+            'EmployeeID' => '',
+            'CorrelationId' => 'd9217d8b-a8ac-46ac-a9c1-91d7d84c7db4'
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://janus.icicilombard.com/claims/ilservices/misc2/v1/claims/health/list',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $jsonData,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $authToken,
+                'Content-Type: application/json'
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::info('ICICI Claim API', ['request' => $jsonData, 'response' => $response]);
+
+        $response = json_decode($response);
+        if (isset($response->status) && $response->status == 1 && $response->statusMessage == "SUCCESS") {
+            foreach ($response->claimList as $iciciClaim) {
+                $claims[] = [
+                    'policy' => $policy,
+                    'insurance_company' => $policy->insurance_company_name,
+                    'tpa_company' => 'ICICI',
+                    'policy_number' => $policy->policy_number,
+                    'policy_name' => $policy->policy_name,
+                    'employee_name' => $employee->full_name,
+                    'employee_id' => $employee->employees_code,
+                    'patient_name' => $uhid->insured_name,
+                    'patient_relation' => $uhid->relation,
+                    'date_of_birth' => $uhid->dob,
+                    'hospital_name' => $iciciClaim->hospitalName,
+                    'ailment' => '',
+                    'date_of_admission' => date('M d, Y', strtotime($iciciClaim->dateofAdmission)),
+                    'date_of_discharge' => date('M d, Y', strtotime($iciciClaim->dateOfDischarge)),
+                    'claim_amount' => $iciciClaim->claimAmount,
+                    'claim_document' => '',
+                    'last_query_reason' => '',
+                    'query_letter' => '',
+                    'paid_amt' => $iciciClaim->claimAmount,
+                    'deduction_reasons' => '',
+                    'settlment_letter' => '',
+                    'tpa_claim_id' => $iciciClaim->claimNumber,
+                    'claim_intimation_no' => '',
+                    'type_of_claim' => $iciciClaim->claimType,
+                    'claim_mode' => $iciciClaim->categoryOfClaim,
+                    'rejection_date' => '',
+                    'rejection_reason' => '',
+                    'claim_status' => $iciciClaim->claimStatus,
+                ];
+            }
+        }
+
+        return $claims;
+    }
+
+    /**
+     * Get Paramount (PHS) claims
+     */
+    private function getPhsClaims($policy, $employee)
+    {
+        $claims = [];
+        $data2 = json_encode([
+            'USERNAME' => 'ZOOM-ADMIN',
+            'PASSWORD' => 'ADMIN-USER@389',
+            'POLICY_NO' => $policy->policy_number,
+            'EMPLOYEE_NO' => $employee->employees_code
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://webintegrations.paramounttpa.com/ZoomBrokerAPI/Service1.svc/GetClaimMISDetails',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $data2,
+            CURLOPT_HTTPHEADER => ['Content-Type:application/json'],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::info('PHS Claim API', ['request' => $data2, 'response' => $response]);
+
+        $response = json_decode($response);
+        if (isset($response->GetClaimMISDetailsResult) &&
+            trim($response->GetClaimMISDetailsResult[0]->MESSAGE ?? '') != 'Invalid Policy Number' &&
+            trim($response->GetClaimMISDetailsResult[0]->MESSAGE ?? '') != 'No data Found') {
+
+            foreach ($response->GetClaimMISDetailsResult as $phsClaim) {
+                if (isset($phsClaim->UNIQUE_CLAIM_NO)) {
+                    $claims[] = [
+                        'policy' => $policy,
+                        'insurance_company' => $policy->insurance_company_name,
+                        'tpa_company' => 'PHS',
+                        'policy_number' => $policy->policy_number,
+                        'policy_name' => $policy->policy_name,
+                        'employee_name' => $employee->full_name,
+                        'employee_id' => $employee->employees_code,
+                        'patient_name' => $phsClaim->MEMBER_NAME ?? '',
+                        'patient_relation' => $phsClaim->RELATION ?? '',
+                        'date_of_birth' => '',
+                        'hospital_name' => $phsClaim->NAME_OF_HOSPITAL ?? '',
+                        'ailment' => '',
+                        'date_of_admission' => $phsClaim->Date_of_Admission ?? '',
+                        'date_of_discharge' => $phsClaim->Date_of_Discharge ?? '',
+                        'claim_amount' => $phsClaim->TOTAL_AMOUNT_CLAIMED ?? '',
+                        'claim_document' => $phsClaim->CLAIM_DOCUMENTS ?? '',
+                        'last_query_reason' => '',
+                        'query_letter' => '',
+                        'paid_amt' => $phsClaim->Amount_Cleared ?? '',
+                        'deduction_reasons' => '',
+                        'settlment_letter' => $phsClaim->SETTLEMENT_LETTER ?? '',
+                        'tpa_claim_id' => $phsClaim->UNIQUE_CLAIM_NO,
+                        'claim_intimation_no' => '',
+                        'type_of_claim' => $phsClaim->TYPE_OF_CLAIM ?? '',
+                        'claim_mode' => $phsClaim->TYPE_OF_CLAIM ?? '',
+                        'rejection_date' => '',
+                        'rejection_reason' => '',
+                        'claim_status' => $phsClaim->CLAIM_STATUS ?? '',
+                    ];
+                }
+            }
+        }
+
+        return $claims;
+    }
+
+    /**
+     * Get FHPL claims
+     */
+    private function getFhplClaims($policy, $employee)
+    {
+        $claims = [];
+        $authToken = $this->getFhplAuthToken();
+        if (!$authToken) {
+            return $claims;
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://m.fhpl.net/BcServiceAPI/api/GetClaimsDetails_Employee',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => 'UserName=ZoomInsurance&Password=fhla209oz&EmployeeID=' . $employee->employees_code . '&PolicyNumber=' . $policy->policy_number,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: bearer ' . $authToken,
+                'Content-Type: application/x-www-form-urlencoded'
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::info('FHPL Claim API', ['response' => $response]);
+
+        $fhplClaims = json_decode($response, true);
+        if ($fhplClaims) {
+            foreach ($fhplClaims as $fhplClaim) {
+                $claimData = [
+                    'policy' => $policy,
+                    'insurance_company' => $policy->insurance_company_name,
+                    'tpa_company' => 'FHPL',
+                    'policy_number' => $policy->policy_number,
+                    'policy_name' => $policy->policy_name,
+                    'employee_name' => $employee->full_name,
+                    'employee_id' => $employee->employees_code,
+                    'patient_name' => $fhplClaim['patient_name'] ?? '',
+                    'patient_relation' => $fhplClaim['patient_relation'] ?? '',
+                    'date_of_birth' => $fhplClaim['DATE_OF_BIRTH'] ?? '',
+                    'hospital_name' => $fhplClaim['hospital_name'] ?? '',
+                    'ailment' => $fhplClaim['AILMENT'] ?? '',
+                    'date_of_admission' => $fhplClaim['date_of_admission'] ?? '',
+                    'date_of_discharge' => $fhplClaim['DATE_OF_DISCHARGE'] ?? '',
+                    'claim_document' => '',
+                    'claim_amount' => $fhplClaim['claim_amount'] ?? '',
+                ];
+
+                $status = $fhplClaim['claim_status'] ?? '';
+                if (in_array($status, ['Cashless Approved', 'Settled'])) {
+                    $claimData['paid_amt'] = $fhplClaim['APPROVED_AMOUNT'] ?? '';
+                    $claimData['deduction_reasons'] = $fhplClaim['DEDUCTION_REASONS'] ?? '';
+                    $claimData['settlment_letter'] = $fhplClaim['Final Settlement Letter'] ?? '';
+                    $claimData['claim_status'] = $status;
+                } elseif ($status == 'Under Query') {
+                    $claimData['last_query_reason'] = $fhplClaim['Deficiency Reason'] ?? '';
+                    $claimData['query_letter'] = $fhplClaim['Query Letter'] ?? '';
+                    $claimData['claim_status'] = 'Under Query';
+                } elseif ($status == 'Repudiated') {
+                    $claimData['rejection_date'] = $fhplClaim['CLAIM_REJECTION_DATE'] ?? '';
+                    $claimData['rejection_reason'] = $fhplClaim['Reject Reason'] ?? '';
+                    $claimData['claim_status'] = 'Rejected';
+                }
+
+                $claimData['tpa_claim_id'] = $fhplClaim['CLAIM_ID'] ?? '';
+                $claimData['type_of_claim'] = $fhplClaim['TYPE_OF_CLAIM'] ?? '';
+                $claimData['claim_mode'] = $fhplClaim['claim_type'] ?? '';
+
+                $claims[] = $claimData;
+            }
+        }
+
+        return $claims;
+    }
+
+    /**
+     * Get Mediassist claims
+     */
+    private function getMediassistClaims($policy, $employee)
+    {
+        $claims = [];
+        $data2 = json_encode([
+            'policyNo' => $policy->policy_number,
+            'employeeCode' => $employee->employees_code
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://apiintegration.mediassist.in/ClaimAPIServiceV2/ClaimService/ClaimDetail',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $data2,
+            CURLOPT_HTTPHEADER => [
+                'Username: zoombroker',
+                'Password: Zoom18Mx1IHgRdd90WQ',
+                'Content-Type: application/json'
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::info('Mediassist Claim API', ['request' => $data2, 'response' => $response]);
+
+        $response = json_decode($response);
+        if (isset($response->isSuccess) && $response->isSuccess) {
+            foreach ($response->claimsData as $mediClaim) {
+                $downloadLetters = [];
+                foreach ($mediClaim->documentdetails ?? [] as $doc) {
+                    $downloadLetters[$doc->documentName] = $doc->documentdownloadURL;
+                }
+
+                $claims[] = [
+                    'policy' => $policy,
+                    'insurance_company' => $policy->insurance_company_name,
+                    'tpa_company' => 'Mediassist',
+                    'policy_number' => $mediClaim->policY_NUMBER ?? '',
+                    'policy_name' => $policy->policy_name,
+                    'employee_name' => $mediClaim->employeE_NAME ?? '',
+                    'employee_id' => $employee->employees_code,
+                    'patient_name' => $mediClaim->beneficiarY_NAME ?? '',
+                    'patient_relation' => $mediClaim->relation ?? '',
+                    'date_of_birth' => '',
+                    'hospital_name' => $mediClaim->hospitaL_NAME ?? '',
+                    'ailment' => '',
+                    'date_of_admission' => $mediClaim->datE_OF_ADMISSION ?? '',
+                    'date_of_discharge' => $mediClaim->datE_OF_DISCHARGE ?? '',
+                    'claim_amount' => $mediClaim->finaL_BILL_AMOUNT ?? '',
+                    'claim_document' => '',
+                    'paid_amt' => $mediClaim->paiD_AMOUNT ?? '',
+                    'deduction_reasons' => $mediClaim->deductioN_REASONS ?? '',
+                    'query_letter' => $mediClaim->query_letterLink ?? '',
+                    'settlment_letter' => $mediClaim->settlement_LetterLink ?? '',
+                    'tpa_claim_id' => $mediClaim->tpA_HEALTH_ID ?? '',
+                    'type_of_claim' => $mediClaim->typE_OF_CLAIM ?? '',
+                    'claim_mode' => $mediClaim->typE_OF_CLAIM ?? '',
+                    'claim_status' => $mediClaim->claim_Current_Status ?? '',
+                    'download_letters' => $downloadLetters,
+                ];
+            }
+        }
+
+        return $claims;
+    }
+
+    /**
+     * Get Safeway claims
+     */
+    private function getSafewayClaims($policy, $employee)
+    {
+        $claims = [];
+        $data2 = json_encode([
+            'Username' => 'AGSW4',
+            'Password' => 'AGSW@4',
+            'PolicyNo' => $policy->policy_number,
+            'FromDate' => $policy->policy_start_date,
+            'ToDate' => $policy->policy_end_date,
+            'Empcode' => $employee->employees_code
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'http://brokerapi.safewaytpa.in/API/claimdata_employeewise',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $data2,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::info('Safeway Claim API', ['request' => $data2, 'response' => $response]);
+
+        $response = json_decode($response);
+        if (isset($response->Data)) {
+            foreach ($response->Data as $safeClaim) {
+                $claims[] = [
+                    'policy' => $policy,
+                    'insurance_company' => $policy->insurance_company_name,
+                    'tpa_company' => 'Safeway',
+                    'policy_number' => $safeClaim->POLICY_NO ?? '',
+                    'policy_name' => $policy->policy_name,
+                    'employee_name' => $employee->full_name,
+                    'employee_id' => $employee->employees_code,
+                    'patient_name' => $safeClaim->PATIENT_NAME ?? '',
+                    'patient_relation' => $safeClaim->PATIENT_RELATION ?? '',
+                    'date_of_birth' => $safeClaim->PATIENT_DOB ?? '',
+                    'hospital_name' => $safeClaim->HOSPITAL_NAME ?? '',
+                    'ailment' => $safeClaim->AILMENT ?? '',
+                    'date_of_admission' => $safeClaim->DATE_OF_ADMISSION ?? '',
+                    'date_of_discharge' => $safeClaim->DATE_OF_DISCHARGE ?? '',
+                    'claim_amount' => $safeClaim->CLAIM_AMOUNT ?? '',
+                    'claim_document' => $safeClaim->Document ?? '',
+                    'tpa_claim_id' => $safeClaim->CLAIM_ID ?? '',
+                    'type_of_claim' => $safeClaim->CLAIM_TYPE ?? '',
+                    'claim_status' => $safeClaim->CLAIM_STATUS ?? '',
+                ];
+            }
+        }
+
+        return $claims;
+    }
+
+    /**
+     * Get Health India claims
+     */
+    private function getHealthIndiaClaims($policy, $employee)
+    {
+        $claims = [];
+        $authToken = $this->getHealthIndiaAuthToken();
+        if (!$authToken) {
+            return $claims;
+        }
+
+        $postdata = json_encode([
+            'ACCESS_TOKEN' => $authToken,
+            'POLICY_NUMBER' => $policy->policy_number,
+            'EMPLOYEE_NUMBER' => $employee->employees_code,
+        ]);
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://software.healthindiatpa.com/HiWebApi/ZOOM/GetClaimStatus',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $postdata,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::info('Health India Claim API', ['request' => $postdata, 'response' => $response]);
+
+        $response = json_decode($response, true);
+        if (isset($response['STATUS']) && $response['STATUS'] == "1" && $response['MESSAGE'] == "SUCCESS") {
+            foreach ($response['RESULT'] as $healthIndiaClaim) {
+                if (isset($healthIndiaClaim['FIR_Number'])) {
+                    $claims[] = [
+                        'policy' => $policy,
+                        'insurance_company' => $policy->insurance_company_name,
+                        'tpa_company' => 'Health India',
+                        'policy_number' => $policy->policy_number,
+                        'policy_name' => $policy->policy_name,
+                        'employee_name' => $employee->full_name,
+                        'employee_id' => $employee->employees_code,
+                        'patient_name' => $healthIndiaClaim['Patient_Name'] ?? '',
+                        'patient_relation' => $healthIndiaClaim['Relationship'] ?? '',
+                        'date_of_birth' => '',
+                        'hospital_name' => $healthIndiaClaim['Name_of_Hospital'] ?? '',
+                        'ailment' => '',
+                        'date_of_admission' => $healthIndiaClaim['Date_of_Admission_Probable_Date_of_Admission'] ?? '',
+                        'date_of_discharge' => $healthIndiaClaim['Date_of_Discharge_Probable_Date_of_Discharge'] ?? '',
+                        'claim_amount' => $healthIndiaClaim['Total_Amount_Claimed'] ?? '',
+                        'claim_document' => $healthIndiaClaim['Claim_Document'] ?? '',
+                        'query_letter' => $healthIndiaClaim['Query_Letter'] ?? '',
+                        'paid_amt' => $healthIndiaClaim['Amount_Cleared'] ?? '',
+                        'deduction_reasons' => $healthIndiaClaim['Deduction_Reasons'] ?? '',
+                        'settlment_letter' => $healthIndiaClaim['Settlement_Letter'] ?? '',
+                        'tpa_claim_id' => $healthIndiaClaim['FIR_Number'],
+                        'type_of_claim' => $healthIndiaClaim['TYPE_OF_CLAIM'] ?? '',
+                        'claim_mode' => $healthIndiaClaim['TYPE_OF_CLAIM'] ?? '',
+                        'claim_status' => $healthIndiaClaim['CLAIM_STATUS'] ?? '',
+                    ];
+                }
+            }
+        }
+
+        return $claims;
+    }
+
+    /**
+     * Get EWA claims
+     */
+    private function getEwaClaims($policy, $employee)
+    {
+        $claims = [];
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://apiadmin.ewatpa.com/zoom/getClaimDetails',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode([
+                'userName' => 'nipun.bansal@zoominsurancebrokers.com',
+                'password' => 'Test@123',
+                'policyNo' => $policy->policy_number,
+                'empCode' => $employee->employees_code
+            ]),
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $cleanedResponse = preg_replace('/^\)\]\}\',\s*/', '', $response);
+        \Log::info('EWA Claim API', ['response' => $cleanedResponse]);
+
+        $responseData = json_decode($cleanedResponse, true);
+        if (isset($responseData['status']) && $responseData['status'] == 200 && !empty($responseData['body'])) {
+            foreach ($responseData['body'] as $claimData) {
+                $claims[] = [
+                    'policy' => $policy,
+                    'insurance_company' => $policy->insurance_company_name,
+                    'tpa_company' => 'EWA',
+                    'policy_number' => $policy->policy_number,
+                    'policy_name' => $policy->policy_name,
+                    'employee_name' => $employee->full_name,
+                    'employee_id' => $employee->employees_code,
+                    'patient_name' => $claimData['patient_name'] ?? '',
+                    'patient_relation' => $claimData['patient_relation'] ?? '',
+                    'date_of_birth' => '',
+                    'hospital_name' => $claimData['hospital_name'] ?? '',
+                    'ailment' => '',
+                    'date_of_admission' => $claimData['date_of_admission'] ?? '',
+                    'date_of_discharge' => $claimData['date_of_discharge'] ?? '',
+                    'claim_amount' => $claimData['claim_amount'] ?? '',
+                    'claim_document' => '',
+                    'last_query_reason' => $claimData['last_query_reason'] ?? '',
+                    'query_letter' => $claimData['query_letter'] ?? '',
+                    'deduction_reasons' => $claimData['deduction_reasons'] ?? '',
+                    'settlment_letter' => $claimData['settlment_letter'] ?? '',
+                    'tpa_claim_id' => $claimData['tpa_claim_id'] ?? '',
+                    'type_of_claim' => $claimData['type_of_claim'] ?? '',
+                    'claim_mode' => $claimData['claim_mode'] ?? '',
+                    'rejection_date' => $claimData['rejection_date'] ?? '',
+                    'rejection_reason' => $claimData['rejection_reason'] ?? '',
+                    'claim_status' => $claimData['claim_status'] ?? '',
+                ];
+            }
+        }
+
+        return $claims;
+    }
+
+    // Helper methods for auth tokens
+    private function getIciciAuthToken($scope)
+    {
+        // Implement ICICI auth token logic
+        return env('ICICI_AUTH_TOKEN', '');
+    }
+
+    private function getFhplAuthToken()
+    {
+        // Implement FHPL auth token logic
+        return env('FHPL_AUTH_TOKEN', '');
+    }
+
+    private function getHealthIndiaAuthToken()
+    {
+        // Implement Health India auth token logic
+        return env('HEALTH_INDIA_AUTH_TOKEN', '');
+    }
 }
