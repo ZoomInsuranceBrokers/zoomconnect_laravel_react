@@ -2776,4 +2776,223 @@ class ApiController extends Controller
             return ApiResponse::error('Failed to save survey responses', $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Natural Addition - Store new dependent
+     */
+    public function naturalAdditionStore(Request $request)
+    {
+        $employeeId = $request->employee_id;
+        $employee = CompanyEmployee::find($employeeId);
+
+        if (!$employee) {
+            return ApiResponse::error('Employee Not Found', null, 404);
+        }
+
+        $payload = $request->only([
+            'dependent_name',
+            'dependent_relation',
+            'dependent_gender',
+            'dependent_dob',
+            'date_of_event',
+            'document',
+            'policy_id'
+        ]);
+
+        $validator = Validator::make($payload, [
+            'dependent_name' => 'required|string',
+            'dependent_relation' => 'required|in:SPOUSE,CHILD',
+            'dependent_gender' => 'required|in:MALE,FEMALE',
+            'dependent_dob' => 'required|date',
+            'document' => 'required|string',
+            'policy_id' => 'nullable|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::error('Validation error', $validator->errors()->first(), 400);
+        }
+
+        $dependent_relation = $payload['dependent_relation'];
+        $date_of_event = $payload['date_of_event'] ?? null;
+        $dependent_dob = $payload['dependent_dob'];
+
+        if ($dependent_relation === 'SPOUSE' && empty($date_of_event)) {
+            return ApiResponse::error('Date of Event is required for Spouse.', null, 400);
+        }
+
+        $now = now();
+        $limitDate = $now->copy()->subDays(30)->startOfDay();
+
+        if ($dependent_relation === 'SPOUSE') {
+            if (\Carbon\Carbon::parse($date_of_event)->lt($limitDate)) {
+                return ApiResponse::error('Date of Event for Spouse cannot be more than 30 days in the past.', null, 400);
+            }
+        }
+
+        if ($dependent_relation === 'CHILD') {
+            if (\Carbon\Carbon::parse($dependent_dob)->lt($limitDate)) {
+                return ApiResponse::error('Date of Birth for Child cannot be more than 30 days in the past.', null, 400);
+            }
+        }
+
+        $entryCount = DB::table('natural_addition')->where('emp_id', $employeeId)->where('relation', $dependent_relation)->count();
+
+        if ($dependent_relation === 'SPOUSE' && $entryCount >= 1) {
+            return ApiResponse::error('You can only add 1 spouse.', null, 400);
+        }
+
+        if ($dependent_relation === 'CHILD' && $entryCount >= 2) {
+            return ApiResponse::error('You can only add 2 children.', null, 400);
+        }
+
+        // Save document (base64 PDF)
+        $documentBase64 = $payload['document'];
+        $imageData = base64_decode($documentBase64);
+        $dir = public_path('uploads/natural_addition');
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $fileName = 'uploads/natural_addition/' . time() . '_' . rand(1000, 9999) . '.pdf';
+        file_put_contents(public_path($fileName), $imageData);
+
+        $insert = [
+            'emp_id' => $employeeId,
+            'emp_code' => $employee->employees_code ?? null,
+            'policy_id' => $payload['policy_id'] ?? 1,
+            'cmp_id' => $employee->company_id ?? null,
+            'insured_name' => $payload['dependent_name'],
+            'gender' => $payload['dependent_gender'],
+            'relation' => $payload['dependent_relation'],
+            'dob' => $payload['dependent_dob'],
+            'date_of_event' => $date_of_event,
+            'document' => $fileName,
+            'status' => 0,
+            'created_at' => $now->toDateTimeString(),
+            'updated_at' => $now->toDateTimeString(),
+        ];
+
+        $id = DB::table('natural_addition')->insertGetId($insert);
+
+        return ApiResponse::success(['id' => $id], 'Data Sent to the HR For the Review', 200);
+    }
+
+    /**
+     * Natural Addition - Update existing dependent
+     */
+    public function naturalAdditionUpdate(Request $request)
+    {
+        $id = $request->input('id');
+        $employeeId = $request->employee_id;
+
+        if (empty($id)) {
+            return ApiResponse::error('ID Not Found', null, 404);
+        }
+
+        $employee = CompanyEmployee::find($employeeId);
+        if (!$employee) {
+            return ApiResponse::error('Employee Not Found', null, 404);
+        }
+
+        $payload = $request->only([
+            'dependent_name',
+            'dependent_relation',
+            'dependent_gender',
+            'dependent_dob',
+            'date_of_event',
+            'document',
+            'policy_id'
+        ]);
+
+        $rules = [
+            'dependent_name' => 'required|string',
+            'dependent_relation' => 'required|in:SPOUSE,CHILD',
+            'dependent_gender' => 'required|in:MALE,FEMALE',
+            'dependent_dob' => 'required|date',
+            'policy_id' => 'nullable|integer'
+        ];
+
+        if ($request->filled('document')) {
+            $rules['document'] = 'string';
+        }
+
+        $validator = Validator::make($payload, $rules);
+        if ($validator->fails()) {
+            return ApiResponse::error('Validation error', $validator->errors()->first(), 400);
+        }
+
+        $dependent_relation = $payload['dependent_relation'];
+        $date_of_event = $payload['date_of_event'] ?? null;
+        $dependent_dob = $payload['dependent_dob'];
+
+        if ($dependent_relation === 'SPOUSE' && empty($date_of_event)) {
+            return ApiResponse::error('Date of Event is required for Spouse.', null, 400);
+        }
+
+        $now = now();
+        $limitDate = $now->copy()->subDays(30)->startOfDay();
+
+        if ($dependent_relation === 'SPOUSE') {
+            if (\Carbon\Carbon::parse($date_of_event)->lt($limitDate)) {
+                return ApiResponse::error('Date of Event for Spouse cannot be more than 30 days in the past.', null, 400);
+            }
+        }
+
+        if ($dependent_relation === 'CHILD') {
+            if (\Carbon\Carbon::parse($dependent_dob)->lt($limitDate)) {
+                return ApiResponse::error('Date of Birth for Child cannot be more than 30 days in the past.', null, 400);
+            }
+        }
+
+        $entryCount = DB::table('natural_addition')->where('emp_id', $employeeId)->where('relation', $dependent_relation)->count();
+
+        if ($dependent_relation === 'SPOUSE' && $entryCount > 1) {
+            return ApiResponse::error('You can only add 1 spouse.', null, 400);
+        }
+
+        if ($dependent_relation === 'CHILD' && $entryCount > 2) {
+            return ApiResponse::error('You can only add 2 children.', null, 400);
+        }
+
+        $update = [
+            'emp_id' => $employeeId,
+            'emp_code' => $employee->employees_code ?? null,
+            'policy_id' => $payload['policy_id'] ?? 1,
+            'cmp_id' => $employee->company_id ?? null,
+            'insured_name' => $payload['dependent_name'],
+            'gender' => $payload['dependent_gender'],
+            'relation' => $payload['dependent_relation'],
+            'dob' => $payload['dependent_dob'],
+            'date_of_event' => $date_of_event,
+            'status' => 0,
+            'updated_at' => $now->toDateTimeString(),
+        ];
+
+        if ($request->filled('document')) {
+            $documentBase64 = $payload['document'];
+            $imageData = base64_decode($documentBase64);
+            $dir = public_path('uploads/natural_addition');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+            $fileName = 'uploads/natural_addition/' . time() . '_' . rand(1000, 9999) . '.pdf';
+            file_put_contents(public_path($fileName), $imageData);
+            $update['document'] = $fileName;
+        }
+
+        DB::table('natural_addition')->where('id', $id)->update($update);
+
+        return ApiResponse::success([], 'Data Sent to the HR For the Review', 200);
+    }
+
+    /**
+     * Natural Addition - List all dependents for employee
+     */
+    public function naturalAdditionList(Request $request)
+    {
+        $employeeId = $request->employee_id;
+
+        $natural = DB::table('natural_addition')->where('emp_id', $employeeId)->get();
+
+        return ApiResponse::success(['data' => $natural], 'Natural addition list fetched successfully', 200);
+    }
 }

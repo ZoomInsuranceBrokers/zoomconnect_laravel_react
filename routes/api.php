@@ -88,5 +88,22 @@ Route::prefix('v1')->group(function () {
             Route::post('/submit', [App\Http\Controllers\ApiController::class, 'submitSurveyResponse'])
                 ->name('api.surveys.submit');
         });
+
+        // ============================================
+        // Natural Addition API Routes
+        // ============================================
+        Route::prefix('natural-addition')->group(function () {
+            // Add new dependent (spouse/child)
+            Route::post('/', [App\Http\Controllers\ApiController::class, 'naturalAdditionStore'])
+                ->name('api.natural.addition.store');
+            
+            // Update existing dependent
+            Route::post('/edit', [App\Http\Controllers\ApiController::class, 'naturalAdditionUpdate'])
+                ->name('api.natural.addition.update');
+            
+            // List all dependents for employee
+            Route::post('/list', [App\Http\Controllers\ApiController::class, 'naturalAdditionList'])
+                ->name('api.natural.addition.list');
+        });
     });
 });
