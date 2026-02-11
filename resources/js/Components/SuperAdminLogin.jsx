@@ -161,7 +161,7 @@ export default function SuperAdminLogin() {
                                                 <input
                                                     type="email"
                                                     placeholder="example@zoominsurancebrokers.com"
-                                                    className="w-full px-4 py-2 border bg-transparent border-gray-500 rounded-2xl placeholder:font-medium placeholder:text-gray-500 placeholder:text-sm md:placeholder:text-md focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all peer"
+                                                    className="w-full px-4 py-2 border bg-transparent border-gray-500 rounded-2xl placeholder:font-medium placeholder:text-gray-500 placeholder:text-lg md:placeholder:text-md focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all peer"
                                                     value={emailOrPhone}
                                                     onChange={(e) => setEmailOrPhone(e.target.value)}     
                                                     disabled={isLoading}
@@ -172,7 +172,10 @@ export default function SuperAdminLogin() {
                                             </div>
 
                                             {message && (
-                                                <div className="p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg text-xs md:text-sm">
+                                                <div className="flex items-start text-[10px] font-bold text-green-700 mt-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                    </svg>
                                                     {message}
                                                 </div>
                                             )}
@@ -257,20 +260,24 @@ export default function SuperAdminLogin() {
                                                 <input
                                                     type="text"
                                                     placeholder="000000"
-                                                    className="w-full px-4 py-2 md:py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all text-center text-xl md:text-2xl font-mono tracking-widest peer"
+                                                    className="w-full px-4 py-1 md:py-1 border bg-transparent border-gray-500 rounded-2xl placeholder:font-medium placeholder:text-gray-500 placeholder:text-lg  md:placeholder:text-md focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all text-center text-xl md:text-xl font-mono tracking-widest peer"
                                                     value={otp}
                                                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                                     required
                                                     disabled={isLoading}
                                                     maxLength={6}
                                                 />
-                                                <label className="absolute left-3 -top-2.5 bg-white px-2 text-sm font-medium text-gray-600 rounded-lg">
+                                                <label className="absolute left-3 -top-2.5 bg-[#f2d7b3] px-2 text-xs md:text-sm font-semibold text-gray-600 rounded-xl">
                                                     Enter OTP
                                                 </label>
                                             </div>
 
-                                            {message && (
-                                                <div className="p-2 md:p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg text-[10px] md:text-sm">
+                                          {message && (
+                                                <div className="flex items-start text-[10px] font-bold text-green-700 mt-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                        <circle cx="12" cy="12" r="11" fill="none" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" style={{ transform: 'scale(0.75)', transformOrigin: '12px 12px' }} />
+                                                    </svg>
                                                     {message}
                                                 </div>
                                             )}
@@ -286,20 +293,12 @@ export default function SuperAdminLogin() {
 
                                             <button
                                                 type="submit"
-                                                className="w-full bg-[#6A0066] text-white py-2 md:py-2.5 text-sm md:text-lg rounded-lg hover:bg-[#934790] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                                                className="w-full bg-[#6A0066] text-white py-2 md:py-2.5 text-sm md:text-base rounded-2xl hover:bg-[#934790] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                                                 disabled={isLoading || otp.length !== 6}
                                             >
                                                 {isLoading ? 'Verifying...' : 'Verify OTP'}
                                             </button>
 
-                                            <button
-                                                type="button"
-                                                onClick={handleBackToEmail}
-                                                className="w-full bg-gray-200 text-gray-700 py-2 md:py-2.5 text-sm md:text-lg rounded-lg hover:bg-gray-300 transition-colors"
-                                                disabled={isLoading}
-                                            >
-                                                Back to Email
-                                            </button>
                                         </form>
                                     )}
 
