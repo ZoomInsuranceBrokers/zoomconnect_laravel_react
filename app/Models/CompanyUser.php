@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\CompanyMaster;
 
 class CompanyUser extends Authenticatable
 {
@@ -39,5 +40,13 @@ class CompanyUser extends Authenticatable
     public function getAuthPassword()
     {
         return $this->pwd;
+    }
+
+    /**
+     * Get the company that owns the user.
+     */
+    public function company()
+    {
+        return $this->belongsTo(CompanyMaster::class, 'company_id', 'comp_id');
     }
 }

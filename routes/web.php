@@ -131,6 +131,30 @@ Route::middleware(['employee.auth'])->prefix('employee')->group(function () {
     Route::post('/download-ecard', [EmployeeAuthController::class, 'downloadECard'])->name('employee.download.ecard');
 });
 
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////// --- Company User Login --- ///////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+Route::middleware(['redirect.if.companyuser'])->group(function () {
+    Route::get('/company-user-login', [App\Http\Controllers\CompanyUserAuthController::class, 'companyUserLogin'])->name('company.user.login');
+    Route::post('/company-user-login', [App\Http\Controllers\CompanyUserAuthController::class, 'processLogin'])->name('company.user.login.process');
+    Route::post('/company-user-verify-otp', [App\Http\Controllers\CompanyUserAuthController::class, 'verifyOtp'])->name('company.user.verify.otp');
+});
+
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////// --- Company User Login --- ///////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+// Company User Authenticated Routes
+Route::middleware(['companyuser.auth'])->prefix('company-user')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\CompanyUserController::class, 'dashboard'])->name('company.user.dashboard');
+    Route::get('/employees', [App\Http\Controllers\CompanyUserController::class, 'employees'])->name('company.user.employees');
+    Route::get('/policies', [App\Http\Controllers\CompanyUserController::class, 'policies'])->name('company.user.policies');
+    Route::get('/enrollments', [App\Http\Controllers\CompanyUserController::class, 'enrollments'])->name('company.user.enrollments');
+    Route::get('/survey', [App\Http\Controllers\CompanyUserController::class, 'survey'])->name('company.user.survey');
+    Route::post('/logout', [App\Http\Controllers\CompanyUserAuthController::class, 'logout'])->name('company.user.logout');
+});
+
 // Route::middleware(['auth.session'])->group(function () {
 // Logout route without prefix
 Route::post('/logout', [SuperAdminController::class, 'logout'])->name('logout');

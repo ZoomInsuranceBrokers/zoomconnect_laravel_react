@@ -23,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 'superadmin.auth' => \App\Http\Middleware\EnsureSuperadminAuthenticated::class,
                 'redirect.if.employee' => \App\Http\Middleware\RedirectIfEmployee::class,
                 'employee.auth' => \App\Http\Middleware\EnsureEmployeeAuthenticated::class,
+                'redirect.if.companyuser' => \App\Http\Middleware\RedirectIfCompanyUser::class,
+                'companyuser.auth' => \App\Http\Middleware\EnsureCompanyUserAuthenticated::class,
             ]);
 
         //

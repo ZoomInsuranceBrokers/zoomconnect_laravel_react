@@ -2782,11 +2782,24 @@ class ApiController extends Controller
      */
     public function naturalAdditionStore(Request $request)
     {
-        $employeeId = $request->employee_id;
-        $employee = CompanyEmployee::find($employeeId);
+        $token = $request->bearerToken();
 
-        if (!$employee) {
-            return ApiResponse::error('Employee Not Found', null, 404);
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('Employee Not Found', null, 404);
+            }
+
+            $employeeId = $employee->id;
+        } catch (\Exception $e) {
+            return ApiResponse::error('Invalid token', $e->getMessage(), 401);
         }
 
         $payload = $request->only([
@@ -2881,16 +2894,30 @@ class ApiController extends Controller
      */
     public function naturalAdditionUpdate(Request $request)
     {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
         $id = $request->input('id');
-        $employeeId = $request->employee_id;
 
         if (empty($id)) {
             return ApiResponse::error('ID Not Found', null, 404);
         }
 
-        $employee = CompanyEmployee::find($employeeId);
-        if (!$employee) {
-            return ApiResponse::error('Employee Not Found', null, 404);
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('Employee Not Found', null, 404);
+            }
+
+            $employeeId = $employee->id;
+        } catch (\Exception $e) {
+            return ApiResponse::error('Invalid token', $e->getMessage(), 401);
         }
 
         $payload = $request->only([
@@ -2989,9 +3016,34 @@ class ApiController extends Controller
      */
     public function naturalAdditionList(Request $request)
     {
-        $employeeId = $request->employee_id;
+        $token = $request->bearerToken();
 
-        $natural = DB::table('natural_addition')->where('emp_id', $employeeId)->get();
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('Employee Not Found', null, 404);
+            }
+
+            $employeeId = $employee->id;
+        } catch (\Exception $e) {
+            return ApiResponse::error('Invalid token', $e->getMessage(), 401);
+        }
+
+        $query = DB::table('natural_addition')->where('emp_id', $employeeId);
+
+        // Add policy_id filter if provided
+        if ($request->filled('policy_id')) {
+            $query->where('policy_id', $request->policy_id);
+        }
+
+        $natural = $query->get();
 
         return ApiResponse::success(['data' => $natural], 'Natural addition list fetched successfully', 200);
     }
@@ -3001,11 +3053,24 @@ class ApiController extends Controller
      */
     public function claimDetails(Request $request)
     {
-        $employeeId = $request->employee_id;
-        $employee = CompanyEmployee::find($employeeId);
+        $token = $request->bearerToken();
 
-        if (!$employee) {
-            return ApiResponse::error('Employee Not Found', null, 404);
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('Employee Not Found', null, 404);
+            }
+
+            $employeeId = $employee->id;
+        } catch (\Exception $e) {
+            return ApiResponse::error('Invalid token', $e->getMessage(), 401);
         }
 
         // Get UHID data
