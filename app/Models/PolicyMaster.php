@@ -82,4 +82,9 @@ class PolicyMaster extends Model
     {
         return $this->belongsTo(TpaMaster::class, 'tpa_id', 'id');
     }
+
+    public function cdAcMaster()
+    {
+        return $this->belongsTo(CdMaster::class, 'cd_ac_id', 'id');
+    }
 }

@@ -12,7 +12,7 @@ export default function CompanyUserLayout({ children, user }) {
     const menuItems = [
         { name: 'Dashboard', path: '/company-user/dashboard', active: currentPath === '/company-user/dashboard' },
         { name: 'Employees', path: '/company-user/employees', active: currentPath === '/company-user/employees' },
-        { name: 'Policies', path: '/company-user/policies', active: currentPath === '/company-user/policies' },
+        { name: 'Policies', path: '/company-user/policies', active: currentPath.startsWith('/company-user/policies') },
         { name: 'Enrollments', path: '/company-user/enrollments', active: currentPath === '/company-user/enrollments' },
         { name: 'Survey', path: '/company-user/survey', active: currentPath === '/company-user/survey' },
     ];
@@ -35,9 +35,9 @@ export default function CompanyUserLayout({ children, user }) {
             <header className="pt-6 px-8 flex items-center justify-between relative z-50">
                 <Link href="/company-user/dashboard" className="flex items-center gap-3 px-2 py-0">
                     <img
-                        src="/assets/logo/zoom_connect_logo.png"
+                        src="/assets/logo/ZoomConnect-logo.png"
                         alt="Zoom Connect"
-                        className="h-12 w-auto"
+                        className="h-18 w-56 object-contain"
                         style={{ background: 'transparent' }}
                         onError={(e) => {
                             e.target.onerror = null;

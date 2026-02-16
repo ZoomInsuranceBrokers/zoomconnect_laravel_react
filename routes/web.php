@@ -149,8 +149,14 @@ Route::middleware(['redirect.if.companyuser'])->group(function () {
 Route::middleware(['companyuser.auth'])->prefix('company-user')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\CompanyUserController::class, 'dashboard'])->name('company.user.dashboard');
     Route::get('/employees', [App\Http\Controllers\CompanyUserController::class, 'employees'])->name('company.user.employees');
-    Route::get('/policies', [App\Http\Controllers\CompanyUserController::class, 'policies'])->name('company.user.policies');
+    Route::get('/policies', [App\Http\Controllers\CompanyUserController::class, 'policies'])->name('company-user.policies');
+    Route::get('/policies/{policyId}/details', [App\Http\Controllers\CompanyUserController::class, 'policyDetails'])->name('company-user.policy.details');
+    Route::get('/policies/{policyId}/endorsements', [App\Http\Controllers\CompanyUserController::class, 'policyEndorsements'])->name('company-user.policy.endorsements');
+    Route::get('/endorsements/{endorsementId}/details', [App\Http\Controllers\CompanyUserController::class, 'endorsementDetailsPage'])->name('company-user.endorsement.details');
+    Route::get('/api/endorsements/{endorsementId}/details', [App\Http\Controllers\CompanyUserController::class, 'endorsementDetails'])->name('company-user.endorsement.api-details');
     Route::get('/enrollments', [App\Http\Controllers\CompanyUserController::class, 'enrollments'])->name('company.user.enrollments');
+    Route::get('/enrollments/{id}/details', [App\Http\Controllers\CompanyUserController::class, 'enrollmentDetails'])->name('company-user.enrollment.details');
+    Route::get('/enrollments/portal/{periodId}', [App\Http\Controllers\CompanyUserController::class, 'enrollmentPortal'])->name('company-user.enrollment.portal');
     Route::get('/survey', [App\Http\Controllers\CompanyUserController::class, 'survey'])->name('company.user.survey');
     Route::post('/logout', [App\Http\Controllers\CompanyUserAuthController::class, 'logout'])->name('company.user.logout');
 });
