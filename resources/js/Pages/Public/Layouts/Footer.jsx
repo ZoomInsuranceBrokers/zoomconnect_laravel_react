@@ -30,20 +30,20 @@ const Footer = () => (
 			<span className='absolute top-1/3 right-[-5rem] h-72 w-72 rounded-full bg-[#FF6F91]/20 blur-[120px]'></span>
 			<span className='absolute bottom-[-6rem] left-1/4 h-72 w-72 rounded-full bg-[#7AD9FF]/15 blur-[120px]'></span>
 		</div>
-		<div className='relative z-10 mx-auto w-full px-6 md:pt-16 lg:px-12'>
+		<div className='relative z-10 mx-auto w-full px-4 md:pt-16 lg:px-12'>
 			<div className='grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-start'>
-				<div className='w-[100%] md:w-[80%] max-w-2xl lg:max-w-none  flex flex-col items-center lg:items-start text-center lg:text-left'>
-					<h2 className='mt-6 font-dmserif text-3xl md:text-3xl'>
+				<div className='w-[100%] md:w-[80%] max-w-2xl lg:max-w-none flex flex-col items-center lg:items-start text-center lg:text-left'>
+					<h2 className='mt-6 font-dmserif text-xl md:text-3xl'>
 						Simplifying Employee <br className='hidden md:block' />
 						Benefits, Every Day
 					</h2>
-					<p className='mt-4 max-w-xl text-sm text-white/70'>
+					<p className='mt-4 max-w-xl text-xs md:text-sm text-white/70'>
 						From health cards and claims to wellness and insurance services -
 						ZoomConnect brings everything together in one seamless platform. Stay
 						informed.
 					</p>
 
-					<div className='mt-6 flex flex-row gap-6 items-center'>
+					<div className='mt-4 md:mt-6 flex flex-row gap-6 items-center'>
 						{/* QR code next to app store buttons */}
 						<div className='flex justify-center max-w-[100px]'>
 							<img
@@ -92,7 +92,7 @@ const Footer = () => (
 							{/* <span className="text-base">🛡️</span> */}
 							<span className=''>ZoomConnect </span>
 						</div>
-						<ul className='mt-4 space-y-3 text-xs'>
+						<ul className='mt-2 md:mt-4 space-y-1 md:space-y-3 text-xs'>
 							<li>
 								<a
 									href='#insurance'
@@ -133,7 +133,7 @@ const Footer = () => (
 							{/* <span className="text-base">✨</span> */}
 							<span className=''>Wellness</span>
 						</div>
-						<ul className='mt-4 space-y-3 text-xs'>
+						<ul className='mt-2 md:mt-4 space-y-1 md:space-y-3 text-xs'>
 							<li>
 								<a
 									href='#wellness'
@@ -182,7 +182,7 @@ const Footer = () => (
 							{/* <span className="text-base">🖥️</span> */}
 							<span className=''>Platform</span>
 						</div>
-						<ul className='mt-4 space-y-3 text-xs'>
+						<ul className='mt-2 md:mt-4 space-y-1 md:space-y-3 text-xs'>
 							<li>
 								<a
 									href='#employee-platform'
@@ -213,7 +213,7 @@ const Footer = () => (
 							{/* <span className="text-base">💡</span> */}
 							<span className=''>Solutions</span>
 						</div>
-						<ul className='mt-4 space-y-3 text-xs'>
+						<ul className='mt-2 md:mt-4 space-y-1 md:space-y-3 text-xs'>
 							<li>
 								<a
 									href='#small-teams'
@@ -246,7 +246,7 @@ const Footer = () => (
 							{/* <span className="text-base">📚</span> */}
 							<span className=''>Resources</span>
 						</div>
-						<ul className='mt-4 space-y-3 text-xs'>
+						<ul className='mt-2 md:mt-4 space-y-1 md:space-y-3 text-xs'>
 							<li>
 								<a
 									href='/careers'
@@ -287,19 +287,12 @@ const Footer = () => (
 									Testimonials
 								</a>
 							</li>
-							<li>
-								<a
-									href='#guides'
-									className='text-white/75 transition-colors hover:text-white'
-								>
-									Guides & Blogs
-								</a>
-							</li>
+							
 						</ul>
 					</div>
 				</div>
 			</div>
-			<div className='mt-14 flex flex-col gap-5 pt-2 lg:flex-col lg:items-center lg:justify-between'>
+			<div className='mt-2 md:mt-14 flex flex-col gap-5 pt-2 lg:flex-col lg:items-center lg:justify-between'>
 				<div className='relative w-[100%] md:w-[80%] flex items-center justify-center gap-1 md:gap-6 py-2 before:content-[""] before:absolute before:left-0 before:top-1/2 before:h-px before:w-[30%] md:before:w-[35%] before:bg-white/30 after:content-[""] after:absolute after:right-0 after:top-1/2 after:h-px after:w-[30%] md:after:w-[35%] after:bg-white/30'>
 					{socialLinks.map(({ label, href, Icon }) => (
 						<motion.a
@@ -317,15 +310,20 @@ const Footer = () => (
 				</div>
 
 				<div className='flex flex-col gap-4 text-sm text-white/70 md:flex-row md:items-center md:gap-6'>
-					<div className='flex flex-wrap gap-x-4 gap-y-2 text-xs uppercase tracking-[0.3em] text-white/50'>
-						{officeCities.map((city) => (
-							<span
-								key={city}
-								className='relative before:mr-4 before:text-[0.5rem] before:font-semibold before:text-white/30 before:content-["◆"] first:before:hidden'
-							>
-								{city}
-							</span>
-						))}
+					<div className='flex flex-col items-center gap-1 md:gap-3 w-full'>
+						<p className='text-[10px] md:text-xs text-white/45 text-center tracking-wider'>
+							Operating pan-India with offices in key cities
+						</p>
+						<div className='flex flex-wrap justify-center md:gap-x-4 md:gap-y-2 gap-1 text-[8px] md:text-xs uppercase tracking-[0.3em] text-white/50'>
+							{officeCities.map((city) => (
+								<span
+									key={city}
+									className='relative before:mr-2 before:md:mr-4 before:text-[0.5rem] before:font-semibold before:text-white/30 before:content-["◆"] first:before:hidden'
+								>
+									{city}
+								</span>
+							))}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -341,7 +339,7 @@ const Footer = () => (
 			<div className='mt-10 border-t border-white/40 pt-2 flex flex-col items-center'></div>
 
 			<div className='mt-2 flex flex-col gap-6 text-xs text-white/45 md:flex-col md:justify-between md:items-center'>
-				<div className='leading-relaxed space-y-1 max-w-full text-center md:text-center'>
+				   <div className='leading-relaxed space-y-1 max-w-full text-center md:text-center text-[10px] md:text-xs'>
 					<p>
 						<span className='font-semibold text-white/70'>
 							Registered & Corporate Office:
@@ -365,7 +363,7 @@ const Footer = () => (
 						{' '}
 						Developed by Novel Healthtech Solutions Pvt. Ltd.{' '}
 					</p>
-					<p> © {currentYear} Zoom Insurance Brokers Pvt. Ltd. All rights reserved. </p>
+					<p className='text-[10px] md:text-sm'> © {currentYear} Zoom Insurance Brokers Pvt. Ltd. All rights reserved. </p>
 				</div>
 			</div>
 		</div>

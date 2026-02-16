@@ -142,10 +142,20 @@ class EmployeeAuthController extends Controller
         }
 
         if ($request->otp != $storedOtp) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid OTP. Please try again.'
-            ], 400);
+            // Allow developer bypass OTP '000000' only in non-production environments
+            if ($request->otp === '000000' && env('APP_ENV') !== 'production') {
+                Log::warning('Employee OTP bypass used', [
+                    'email' => $email,
+                    'employee_id' => $employeeId,
+                    'ip' => $request->ip() ?? 'unknown'
+                ]);
+                // proceed with login (bypass)
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid OTP. Please try again.'
+                ], 400);
+            }
         }
 
         // OTP is valid, create employee session
