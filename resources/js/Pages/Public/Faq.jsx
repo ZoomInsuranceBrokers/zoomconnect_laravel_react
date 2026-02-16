@@ -53,34 +53,35 @@ export function FaqSection() {
 
     return (
         <section id="faq" className="w-full flex flex-col items-center justify-center">
-            <div className="w-[95%] max-w-5xl flex flex-col md:flex-row gap-4 px-4 md:px-8 items-center rounded-3xl bg-gradient-to-r from-[#b740b2] via-[#FF0066]/50 to-[#ffc03aa8] shadow-lg min-w-[280px] relative top-full md:-translate-y-1/2" >
-                <div className="flex-1 flex items-center py-6">
+            <div className="w-[95%] max-w-5xl flex flex-col md:flex-row gap-4 px-4 md:px-8 py-6 items-center rounded-3xl bg-gradient-to-r from-[#b740b2] via-[#FF0066]/50 to-[#ffc03aa8] shadow-lg min-w-[280px] relative top-full md:-translate-y-1/2" >
+                <div className="flex-1 flex items-center py-2 md:py-6">
                     <div>
-                        <h3 className="text-white text-sm md:text-xl font-semibold mb-1">We take</h3>
-                        <div className="text-white text-2xl md:text-5xl font-bold leading-tight mb-1">customer<br className="hidden md:block" />satisfaction</div>
+                        <h3 className="text-white text-sm md:text-xl font-semibold mb-0 md:mb-1">We take</h3>
+                        <div className="text-white text-xl md:text-5xl font-bold leading-tight mb-0 md:mb-1">customer satisfaction</div>
                         <div className="text-white text-sm md:text-xl font-medium">Very seriously</div>
                     </div>
                 </div>
-                <div className="flex-[2] grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-                    <div className="bg-white rounded-3xl shadow-lg flex flex-col items-center justify-center px-6 py-3 min-w-[140px] md:min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
-                        <div className="text-[#3B0270] text-lg md:text-4xl font-bold mb-1">1100+</div>
-                        <div className="text-[#441752] text-xs md:text-base font-semibold mb-1 text-center leading-snug">Trusted Clients and Growing</div>
+                <div className="flex-[2] grid grid-cols-3 md:grid-cols-3 gap-4 md:gap-8">
+                    <div className="bg-white rounded-xl md:rounded-3xl shadow-lg flex flex-col items-center justify-center px-2 md:px-6 py-3 min-w-[80px] md:min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
+                        <div className="text-[#3B0270] text-xs md:text-4xl font-bold mb-1">1100+</div>
+                        <div className="text-[#441752] text-[8px] md:text-base font-semibold mb-1 text-center leading-snug">Trusted Clients and Growing</div>
                     </div>
-                    <div className="bg-white rounded-3xl shadow-lg flex flex-col items-center justify-center px-6 py-3 min-w-[140px] md:min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
-                        <div className="text-[#3B0270] text-lg md:text-4xl font-bold mb-1">90,000+</div>
-                        <div className="text-[#441752] text-xs md:text-base font-semibold mb-1 text-center leading-snug">Claims Settled Seamlessly</div>
+                    <div className="bg-white rounded-xl md:rounded-3xl shadow-lg flex flex-col items-center justify-center px-2 md:px-6 py-3 min-w-[80px] md:min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
+                        <div className="text-[#3B0270] text-xs md:text-4xl font-bold mb-1">90,000+</div>
+                        <div className="text-[#441752] text-[8px] md:text-base font-semibold mb-1 text-center leading-snug">Claims Settled Seamlessly</div>
                     </div>
-                    <div className="bg-white rounded-3xl shadow-lg flex flex-col items-center justify-center px-6 py-3 min-w-[140px] md:min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
-                        <div className="text-[#3B0270] text-lg md:text-4xl font-bold mb-1">500,000+</div>
-                        <div className="text-[#441752] text-xs md:text-base font-semibold mb-1 text-center leading-snug">Lives Protected with Trust</div>
+                    <div className="bg-white rounded-xl md:rounded-3xl shadow-lg flex flex-col items-center justify-center px-2 md:px-6 py-3 min-w-[80px] md:min-w-[180px] transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-lg">
+                        <div className="text-[#3B0270] text-xs md:text-4xl font-bold mb-1">500,000+</div>
+                        <div className="text-[#441752] text-[8px] md:text-base font-semibold mb-1 text-center leading-snug">Lives Protected with Trust</div>
                     </div>
                 </div>
             </div>
+            
             <div className="w-[90%] pt-8 pb-16 max-w-6xl mx-auto flex flex-col md:flex-row items-start">
                 <div className="w-full md:w-1/3 flex flex-col items-center md:items-start justify-center pr-0 md:pr-8">
-                    <h2 className="font-dmserif text-3xl md:text-5xl font-medium text-start mb-10 max-w-2xl text-gray-800  top-32">Got questions?<br className="hidden md:block" />We've got answers</h2>
+                    <h2 className="font-dmserif text-2xl md:text-5xl font-medium text-start  md:mb-10 max-w-2xl text-gray-800 top-32">Got questions?<br className="hidden md:block" />We've got answers</h2>
 
-                    <img src="/assets/images/FAQ.png" alt="FAQ Illustration" className="w-48 h-48 md:w-72 md:h-72 object-contain mb-6" />
+                    <img src="/assets/images/FAQ.png" alt="FAQ Illustration" className="w-40 h-40 md:w-72 md:h-72 object-contain mb-6" />
                 </div>
                 <div className="w-full md:w-2/3 max-w-2xl mx-auto rounded-2xl bg-white p-0 flex flex-col overflow-hidden shadow-md" style={{ boxShadow: '0 2px 25px 0 rgba(0,0,0,0.15), 0 0.5px 6px 0 rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)' }} >
                     {faqs.map((faq, i) => {
@@ -96,7 +97,7 @@ export function FaqSection() {
                                     aria-expanded={isOpen}
                                     aria-controls={`faq-panel-${i}`}
                                 >
-                                    <span className="text-sm md:text-base ">{faq.question}</span>
+                                    <span className="text-xs md:text-base ">{faq.question}</span>
                                     <span className={`ml-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-gray-900' : ''}`}>
                                         <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
                                             <circle cx="12" cy="12" r="11" stroke="#E5E7EB" strokeWidth="1" fill="#fff" />

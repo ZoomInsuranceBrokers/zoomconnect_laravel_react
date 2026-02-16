@@ -51,11 +51,11 @@ const CertificationCarousel = () => {
                 {/* Left: Compliance & Certification Heading */}
                 <div className="flex-1 flex items-center mb-6 md:mb-0">
                     <div>
-                        <div className="text-white text-xl md:text-3xl font-bold leading-tight mb-2">
+                        <div className="text-white text-lg md:text-3xl font-bold leading-tight mb-2">
                             Awarded for Innovation.<br />
                             Certified for Trust.
                         </div>
-                        <div className="text-white text-lg md:text-base font-extralight max-w-xl">
+                        <div className="text-white text-xs md:text-base font-extralight max-w-xl">
                             Every accolade we receive and every certification we earn reflects our commitment to secure technology, exceptional service, and uncompromised compliance for organizations and their employees.
                         </div>
                     </div>
@@ -68,11 +68,17 @@ const CertificationCarousel = () => {
                             0% { transform: translateX(0); }
                             100% { transform: translateX(-33.333%); }
                         }
-                        .animate-scroll { animation: scroll-left 10s linear infinite; }
-                        .animate-scroll:hover { animation-play-state: paused; }
                     `}</style>
 
-                    <div className="flex gap-4 md:gap-8 md:animate-scroll overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none px-4 md:px-0">
+                    <div 
+                        className="flex gap-4 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none px-4 md:px-0"
+                        style={{
+                            animation: 'scroll-left 10s linear infinite',
+                            WebkitAnimation: 'scroll-left 10s linear infinite'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.animationPlayState = 'paused'}
+                        onMouseLeave={(e) => e.currentTarget.style.animationPlayState = 'running'}
+                    >
                         {/* Render certifications 3 times for seamless loop */}
                         {[...certifications, ...certifications, ...certifications].map((cert, index) => (
                             <div
@@ -97,14 +103,14 @@ const CertificationCarousel = () => {
                                             />
                                         </div>
                                     )}
-                                    <div className="text-white text-base md:text-lg font-bold mb-1 text-center">
+                                    <div className="text-white text-sm md:text-lg font-bold mb-1 text-center">
                                         {cert.title === 'ISO 27001:2022'
                                             ? cert.title
                                             : cert.title.split(' ').length > 1
                                                 ? <>{cert.title.split(' ').slice(0, Math.ceil(cert.title.split(' ').length / 2)).join(' ')}<br />{cert.title.split(' ').slice(Math.ceil(cert.title.split(' ').length / 2)).join(' ')}</>
                                                 : cert.title}
                                     </div>
-                                    <div className="text-white text-sm md:text-base font-medium text-center">{cert.subtitle}</div>
+                                    <div className="text-white text-xs md:text-base font-medium text-center">{cert.subtitle}</div>
                                 </div>
                             </div>
                         ))}
@@ -186,14 +192,15 @@ export default function Home() {
         },
     ];
 
-    // Animation state
-    const [activeIdx, setActiveIdx] = useState(0);
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setActiveIdx(idx => (idx + 1) % testimonials.length);
-        }, 3500);
-        return () => clearInterval(interval);
-    }, [testimonials.length]);
+    // Animation state - cycle through testimonials without repetition using localStorage
+    const [activeIdx] = useState(() => {
+        // Get the last testimonial index from localStorage
+        const lastIdx = localStorage.getItem('lastTestimonialIdx');
+        const nextIdx = lastIdx === null ? 0 : (parseInt(lastIdx) + 1) % testimonials.length;
+        // Save the new index for next time
+        localStorage.setItem('lastTestimonialIdx', nextIdx.toString());
+        return nextIdx;
+    });
 
     // Scroll-triggered pinning and card reveals for the Beyond section
     useEffect(() => {
@@ -343,7 +350,7 @@ export default function Home() {
                 {/* Health Benefits Section */}
                 <section className="w-full py-4 md:py-8 flex flex-col items-center justify-center">
                     <div className="w-[95%] px-4 bg-[#f2d7b3]/70 rounded-3xl backdrop-blur-lg">
-                        
+
                         {/* Mobile View */}
                         <div className="md:hidden py-8">
                             {/* Heading First on Mobile */}
@@ -359,7 +366,7 @@ export default function Home() {
                                 {/* Gradient Overlays for Horizontal Scroll */}
                                 <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#f2d7b3]/70 to-transparent z-10 pointer-events-none"></div>
                                 <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#f2d7b3]/70 to-transparent z-10 pointer-events-none"></div>
-                                
+
                                 {/* Row 1: Left to Right */}
                                 <div className="mb-6 overflow-hidden">
                                     <div className="horizontal-marquee-right flex gap-3 whitespace-nowrap">
@@ -646,8 +653,7 @@ export default function Home() {
                             <div className="flex flex-col items-start justify-center h-full w-full py-12 px-4 md:py-16 md:px-0">
                                 <h2 className="text-xl md:text-5xl font-dmserif font-medium text-[#2D1836] mb-4 md:mb-6 leading-tight text-left">Health Benefits<br />Simplified</h2>
                                 <p className="text-gray-700 text-xs md:text-base mb-8 max-w-lg text-left">
-                                    At <span className="text-[#934790] font-bold">ZoomConnect</span>, we provide a curated suite of wellness and value-added services—<span className=" font-bold">at exclusive discounted rates</span>.
-                                </p>
+                                    At <span className="text-[#934790] font-bold">ZoomConnect</span>, we recognize the vital importance of <span className=" font-semibold">wellness</span> for both individuals and organizations. That’s why we provide a <span className=" font-semibold">comprehensive suite</span> of wellness and value-added services, thoughtfully designed to tackle today’s global health challenges—<span className=" font-bold">all at exclusive discounted rates</span>.                                </p>
 
                             </div>
                         </div>
@@ -657,11 +663,11 @@ export default function Home() {
                 {/* Testimonials Section */}
                 <section className="w-full pb-16 flex flex-col items-center justify-center pt-12 ">
                     <h2 className="font-dmserif text-2xl md:text-5xl font-medium text-center mb-4 md:mb-8 max-w-3xl text-gray-800">What Our Clients Say</h2>
-                    <div className="w-[90%] max-w-6xl mx-auto rounded-3xl bg-white-300 flex flex-col md:flex-row items-stretch overflow-hidden" style={{ boxShadow: '0 10px 32px 0 rgba(0,0,0,0.15), 0 1.5px 6px 0 rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)' }}>
-                        {/* Left: Semicircle Testimonial List */}
-                        <div className="md:w-1/2 w-full relative flex items-center justify-center min-h-[420px] bg-white/30 ">
+                    <div className="w-[90%] max-w-6xl mx-auto rounded-3xl bg-white-800 flex flex-col md:flex-row items-stretch overflow-hidden" style={{ boxShadow: '0 10px 32px 0 rgba(0,0,0,0.15), 0 1.5px 6px 0 rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)' }}>
+                        {/* Left: Semicircle Testimonial List - Desktop */}
+                        <div className="md:w-1/2 w-full relative flex items-center justify-center min-h-[420px] bg-white/30 hidden md:flex">
                             {/* Semicircle SVG Path */}
-                            <svg width="120" height="360" viewBox="0 0 120 360" className="absolute left-8 top-8 hidden md:block" style={{ zIndex: 1 }}>
+                            <svg width="120" height="360" viewBox="0 0 120 360" className="absolute left-8 top-8" style={{ zIndex: 1 }}>
                                 <path d="M10 40 Q120 180 10 320" stroke="#D1D5DB" strokeWidth="3" fill="none" />
                             </svg>
                             {/* Avatars and Info on Path */}
@@ -696,9 +702,23 @@ export default function Home() {
                                 ))}
                             </div>
                         </div>
+                        {/* Left: Mobile view - Current Testimonial Info */}
+                        <div className="md:hidden w-full flex items-center justify-start min-h-[100px] bg-white/30 p-6 gap-4">
+                            <img
+                                src={testimonials[activeIdx].img}
+                                alt={testimonials[activeIdx].name}
+                                className="w-12 h-12 rounded-full border-2 bg-gray-100 border-gray-500 shadow"
+                            />
+                            <div className="text-left">
+                                <div className="text-black font-semibold font-montserrat text-sm">{testimonials[activeIdx].name}</div>
+                                <div className="flex items-center gap-1 text-green-500 text-xs font-semibold">
+                                    {testimonials[activeIdx].rating}
+                                </div>
+                            </div>
+                        </div>
                         {/* Right: Large Quote */}
-                        <div className="md:w-1/2 w-full flex flex-col justify-center items-center p-10 bg-[#934790]">
-                            <blockquote className="text-md md:text-lg font-montserrat italic text-white/80  text-center max-w-xl mx-auto transition-all duration-700" key={activeIdx}>
+                        <div className="md:w-1/2 w-full flex flex-col justify-center items-center p-4 md:p-10 bg-[#934790]">
+                            <blockquote className="text-xs md:text-lg font-montserrat italic text-white/80  text-center max-w-xl mx-auto transition-all duration-700" key={activeIdx}>
                                 “<span style={{ fontWeight: 'bold', fontSize: '1.5em', lineHeight: '1', display: 'inline-block' }}>{testimonials[activeIdx].quote.charAt(0)}</span>{testimonials[activeIdx].quote.slice(1)}”
                             </blockquote>
                         </div>
@@ -726,18 +746,18 @@ export default function Home() {
                                 </div>
 
                                 {/* Right column cards */}
-                                <div className="right-content space-y-10 pb-8 px-0 md:px-0 md:pb-8 md:p-10">
+                                <div className="right-content space-y-6 md:space-y-10 pb-8 px-0 md:px-0 md:pb-8 md:p-10">
                                     {/* Row 1 - First 2 cards */}
                                     <div className="grid grid-cols-2 gap-3 md:gap-8">
                                         <div className="card bg-white rounded-2xl p-4 md:p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
                                             <div className="flex flex-col items-center text-center">
-                                                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
-                                                    <img src="/assets/icons/ship-solid-full.svg" alt="Marine Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-3 md:mb-6">
+                                                    <img src="/assets/icons/ship-solid-full.svg" alt="Marine Insurance" className="w-6 h-6 md:w-8 md:h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
                                                 </div>
                                                 <h3 className="text-sm md:text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-2 md:mb-4">
                                                     Marine Insurance
                                                 </h3>
-                                                <p className="text-xs md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-relaxed">
+                                                <p className="text-[10px] md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-tight md:leading-relaxed">
                                                     Protect your marine assets with our tailored marine insurance policies, covering both hull and cargo risks.
                                                 </p>
                                             </div>
@@ -745,13 +765,13 @@ export default function Home() {
 
                                         <div className="card bg-white rounded-2xl p-4 md:p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
                                             <div className="flex flex-col items-center text-center">
-                                                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
-                                                    <img src="/assets/icons/gears-solid-full.svg" alt="Specialty Lines" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-3 md:mb-6">
+                                                    <img src="/assets/icons/gears-solid-full.svg" alt="Specialty Lines" className="w-6 h-6 md:w-8 md:h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
                                                 </div>
                                                 <h3 className="text-sm md:text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-2 md:mb-4">
                                                     Specialty Lines
                                                 </h3>
-                                                <p className="text-xs md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-relaxed">
+                                                <p className="text-[10px] md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-tight md:leading-relaxed">
                                                     Explore our specialized insurance offerings, including aviation, construction, energy, and more.
                                                 </p>
                                             </div>
@@ -762,13 +782,13 @@ export default function Home() {
                                     <div className="grid grid-cols-2 gap-3 md:gap-8">
                                         <div className="card bg-white rounded-2xl p-4 md:p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
                                             <div className="flex flex-col items-center text-center">
-                                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-6">
-                                                    <img src="/assets/icons/credit-card-regular-full.svg" alt="Trade Credit Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                <div className="w-12 h-12 md:w-16 md:h-16 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors duration-300 mb-3 md:mb-6">
+                                                    <img src="/assets/icons/credit-card-regular-full.svg" alt="Trade Credit Insurance" className="w-6 h-6 md:w-8 md:h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
                                                 </div>
                                                 <h3 className="text-sm md:text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-2 md:mb-4">
                                                     Trade Credit Insurance
                                                 </h3>
-                                                <p className="text-xs md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-relaxed">
+                                                <p className="text-[10px] md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-tight md:leading-relaxed">
                                                     Mitigate the risk of non-payment from your customers with our trade credit insurance solutions.
                                                 </p>
                                             </div>
@@ -776,13 +796,13 @@ export default function Home() {
 
                                         <div className="card bg-white rounded-2xl p-4 md:p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
                                             <div className="flex flex-col items-center text-center">
-                                                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-                                                    <img src="/assets/icons/shield-virus-solid-full.svg" alt="Cyber Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                <div className="w-12 h-12 md:w-16 md:h-16 bg-orange-100 rounded-full flex items-center justify-center mb-3 md:mb-6">
+                                                    <img src="/assets/icons/shield-virus-solid-full.svg" alt="Cyber Insurance" className="w-6 h-6 md:w-8 md:h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
                                                 </div>
                                                 <h3 className="text-sm md:text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-2 md:mb-4">
                                                     Cyber Insurance
                                                 </h3>
-                                                <p className="text-xs md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-relaxed">
+                                                <p className="text-[10px] md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-tight md:leading-relaxed">
                                                     Safeguard your digital assets and protect against cyber threats with our comprehensive cyber insurance coverage.
                                                 </p>
                                             </div>
@@ -793,13 +813,13 @@ export default function Home() {
                                     <div className="grid grid-cols-2 gap-3 md:gap-8">
                                         <div className="card bg-white rounded-2xl p-4 md:p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
                                             <div className="flex flex-col items-center text-center">
-                                                <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
-                                                    <img src="/assets/icons/handshake-regular-full.svg" alt="Reinsurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                <div className="w-12 h-12 md:w-16 md:h-16 bg-pink-100 rounded-full flex items-center justify-center mb-3 md:mb-6">
+                                                    <img src="/assets/icons/handshake-regular-full.svg" alt="Reinsurance" className="w-6 h-6 md:w-8 md:h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
                                                 </div>
                                                 <h3 className="text-sm md:text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-2 md:mb-4">
                                                     Reinsurance
                                                 </h3>
-                                                <p className="text-xs md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-relaxed">
+                                                <p className="text-[10px] md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-tight md:leading-relaxed">
                                                     Access specialized reinsurance coverage to manage your risk exposure effectively.
                                                 </p>
                                             </div>
@@ -807,13 +827,13 @@ export default function Home() {
 
                                         <div className="card bg-white rounded-2xl p-4 md:p-12 shadow-lg hover:shadow-2xl hover:bg-[#934790] group cursor-pointer transition-all duration-700 ease-out transform hover:-translate-y-2">
                                             <div className="flex flex-col items-center text-center">
-                                                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-                                                    <img src="/assets/icons/leaf-solid-full.svg" alt="Agriculture Insurance" className="w-8 h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
+                                                <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-3 md:mb-6">
+                                                    <img src="/assets/icons/leaf-solid-full.svg" alt="Agriculture Insurance" className="w-6 h-6 md:w-8 md:h-8 object-contain group-hover:filter group-hover:brightness-0 group-hover:invert transition-all duration-300" />
                                                 </div>
                                                 <h3 className="text-sm md:text-xl font-bold text-gray-800 group-hover:text-white transition-colors duration-300 mb-2 md:mb-4">
                                                     Agriculture Insurance
                                                 </h3>
-                                                <p className="text-xs md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-relaxed">
+                                                <p className="text-[10px] md:text-sm text-gray-600 group-hover:text-white/90 transition-colors duration-300 leading-tight md:leading-relaxed">
                                                     Protect your agricultural operations against various risks with our tailored agriculture insurance solutions.
                                                 </p>
                                             </div>
@@ -846,24 +866,23 @@ export default function Home() {
                                         <span className="inline-block h-2 w-2 rounded-full bg-white/70"></span>
                                         Ready when you are
                                     </span>
-                                    <h2 className="font-dmserif text-2xl md:text-5xl text-white leading-snug">
+                                    <h2 className="font-dmserif text-xl md:text-4xl text-white leading-tight md:leading-tight">
                                         Unlock bespoke Group Benefits<br className="hidden md:block" /> for your teams
                                     </h2>
-                                    <p className="text-white/80 text-sm md:text-base max-w-xl">
+                                    <p className="text-white/80 text-xs md:text-base max-w-xl">
                                         Schedule a quick conversation with our benefits specialists or jump straight into a tailored demo. We’ll craft a plan that mirrors your company culture and protects every employee.
                                     </p>
                                     <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                                         <Link
                                             href="/book-demo"
-                                            className="px-6 md:px-8 py-2 md:py-3 rounded-xl bg-white text-[#571754] font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-center inline-block text-sm md:text-base"
+                                            className="px-6 md:px-8 py-2 md:py-3 rounded-xl bg-white text-[#571754] font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-center w-fit mx-auto sm:mx-0 text-xs md:text-base"
                                         >
                                             Book a Demo
                                         </Link>
-
                                     </div>
                                 </div>
 
-                                <div className="relative flex justify-center lg:justify-end mt-6 md:mt-0">
+                                <div className="relative flex justify-center lg:justify-end mt-6 md:mt-0 hidden md:flex">
                                     <motion.div
                                         initial={{ opacity: 0, y: 30 }}
                                         whileInView={{ opacity: 1, y: 0 }}
@@ -873,7 +892,8 @@ export default function Home() {
                                     >
                                         <div className="absolute -top-8 -left-4 h-20 w-20 md:h-24 md:w-24 rounded-full bg-white/10 blur-2xl"></div>
                                         <div className="absolute -bottom-10 -right-6 h-20 w-20 md:h-28 md:w-28 rounded-full bg-[#FF0066]/30 blur-3xl"></div>
-                                        <div className="relative rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 md:p-6 shadow-xl">
+                                        <div className="relative rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl p-4 md:px-5 py-3 md:py-4 text-white/90 text-xs md:text-sm"
+                                            style={{ boxShadow: '0 10px 32px 0 rgba(0,0,0,0.15), 0 1.5px 6px 0 rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03)' }}>
                                             <div className="flex items-center justify-between mb-4 md:mb-6">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-10 md:h-12 w-10 md:w-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">

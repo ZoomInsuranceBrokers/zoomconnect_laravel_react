@@ -170,7 +170,7 @@ export default function EmployeeLayout({ children, employee }) {
                 </div>
 
                 {/* Bottom Navigation Bar - Mobile Only */}
-                <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-20 safe-area-bottom">
+                <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 safe-area-bottom">
                     <div className="flex items-center justify-around px-2 py-2">
                         {menuItems.map((item) => {
                             const Icon = item.icon;
@@ -186,7 +186,7 @@ export default function EmployeeLayout({ children, employee }) {
                                     }`}
                                 >
                                     <Icon className={`w-6 h-6 mb-1 ${active ? 'text-[rgb(147,71,144)]' : ''}`} />
-                                    <span className={`text-xs font-medium truncate ${
+                                    <span className={`text-[9px] font-medium truncate ${
                                         active ? 'text-[rgb(147,71,144)]' : 'text-gray-600'
                                     }`}>
                                         {item.label}

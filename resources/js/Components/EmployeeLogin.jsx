@@ -24,8 +24,8 @@ export default function EmployeeLogin() {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                 },
-                body: JSON.stringify({ 
-                    login_type: loginType, 
+                body: JSON.stringify({
+                    login_type: loginType,
                     email: loginType === 'email' ? emailOrPhone : null,
                     mobile: loginType === 'mobile' ? emailOrPhone : null,
                     employee_code: loginType === 'employee_code' ? emailOrPhone : null,
@@ -108,61 +108,52 @@ export default function EmployeeLogin() {
 
     return (
         <>
+            <div
+                className="min-h-screen flex relative font-montserrat overflow-hidden bg-[#f2d7b3]/70"
+            >
+                <div className="flex flex-col md:flex-row w-full max-w-7xl mx-auto">
 
-            <div className="min-h-screen flex flex-col md:flex-row relative font-montserrat overflow-hidden bg-[#E8D4B7]">
-                {/* SVG Wave Background */}
-                <svg
-                    className="absolute inset-0 w-full h-full z-0"
-                    viewBox="0 0 1440 900"
-                    xmlns="http://www.w3.org/2000/svg"
-                    preserveAspectRatio="none"
-                >
-                    <defs>
-                        <linearGradient id="bgGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#934790" />
-                            <stop offset="50%" stopColor="#b97ab0" />
-                            <stop offset="100%" stopColor="#e5c6e0" />
-                        </linearGradient>
-                    </defs>
-                    <rect width="1440" height="900" fill="url(#bgGradient)" />
-                    <path
-                        d="M0,900 C120,900 180,820 240,780 C300,740 360,620 480,680 C600,740 660,580 720,520 C780,460 840,380 960,420 C1080,460 1140,300 1200,260 C1260,220 1320,140 1440,100 L1440,0 L1440,900 Z"
-                        fill="white"
-                        opacity="0.98"
-                    />
-                    <path
-                        d="M1440,900 C1320,840 1260,760 1200,720 C1140,680 1080,600 960,640 C840,680 780,520 720,480 C660,440 600,360 480,400 C360,440 300,280 240,240 C180,200 120,120 0,80 L0,0 L0,900 Z"
-                        fill="#934790"
-                        opacity="0.25"
-                    />
-                </svg>
+                    {/* Left Side - Login Form */}
+                    <div className="w-full md:w-1/2 flex flex-col items-center justify-start md:justify-center md:px-16 py-0 md:py-12">
 
-                <div className="flex flex-col md:flex-row w-full relative z-10">
-                    {/* Left Side - Branding & Illustration */}
-                    <div className="w-full md:w-1/2 flex flex-col items-center justify-center px-4 py-8 sm:px-6 md:p-12">
-                        <motion.h1
-                            className="text-5xl md:text-6xl font-bold text-white mb-8 drop-shadow-lg"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8 }}
-                        >
-                        </motion.h1>
-                        <motion.img
-                            src="/assets/images/loginVector.png"
-                            alt="Login Illustration"
-                            className="w-full max-w-sm drop-shadow-xl"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.8, delay: 0.2 }}
-                        />
-                    </div>
+                        {/* Mobile Illustration Section - Above Form */}
+                        <div className="md:hidden w-full mb-6 relative">
+                            {/* Semicircle Background */}
+                            <div className="absolute top-0 left-0 right-0 h-[240px] overflow-hidden">
+                                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[320px] h-[240px] bg-[#f2d7b3] rounded-b-full"></div>
+                            </div>
 
-                    {/* Right Side - Login Form */}
-                    <div className="w-full md:w-1/2 flex flex-col items-center justify-center px-4 py-8 sm:px-4 md:p-20">
+                            {/* Character Image on Top of Semicircle */}
+                            <div className="relative z-10 flex flex-col items-center justify-center pt-10 pb-4">
+                                {/* ZoomConnect Logo Behind Character - Peeking Out */}
+                                <motion.img
+                                    src="/assets/logo/ZoomConnect-logo.png"
+                                    alt="ZoomConnect Logo Background"
+                                    className="absolute top-6 left-[15%] w-[220px]"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                />
+
+                                <motion.img
+                                    src="/assets/images/girl-with-laptop.png"
+                                    alt="Login Illustration"
+                                    className="relative w-[180px] top-4 drop-shadow-2xl"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.8, ease: "easeOut" }}
+                                />
+
+
+                            </div>
+                        </div>
+
                         <div className="w-full max-w-md">
-                            <div className="bg-white rounded-3xl p-8 md:px-10 md:py-6 shadow-2xl">
+
+                            <div className="rounded-3xl p-6 md:px-10 md:py-8 w-full max-w-md">
+                                {/* Logo - Hidden on Mobile, Shown on Desktop */}
                                 <motion.div
-                                    className="mb-6 flex justify-center"
+                                    className="mb-6 hidden md:flex justify-center"
                                     initial={{ x: -100, opacity: 0 }}
                                     animate={{ x: 0, opacity: 1 }}
                                     transition={{ duration: 1, ease: "easeOut" }}
@@ -170,45 +161,36 @@ export default function EmployeeLogin() {
                                     <img
                                         src="/assets/logo/ZoomConnect-logo.png"
                                         alt="ZoomConnect Logo"
-                                        className="h-10 w-auto"
+                                        className="h-10 w-auto z-10"
                                     />
                                 </motion.div>
-
-                                <div className="text-center mb-6">
-                                    <h2 className="text-2xl font-bold text-gray-800">Employee Login</h2>
-                                    <p className="text-sm text-gray-600 mt-1">Access your benefits portal</p>
-                                </div>
 
                                 <div className="space-y-4">
                                     {!showOtpScreen ? (
                                         <form onSubmit={handleLoginSubmit} className="space-y-4">
                                             {/* Login Tab Toggle */}
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                {/* <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     Sign in with
-                                                </label>
-                                                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                                                </label> */}
+                                                <div className="flex items-center gap-2 bg-[#f2d7b3] rounded-2xl p-1">
                                                     <button
                                                         type="button"
                                                         onClick={() => { setLoginType('email'); setEmailOrPhone(''); setError(''); }}
-                                                        className={`flex-1 text-sm px-4 py-2 rounded-lg transition-all font-medium ${
-                                                            loginType === 'email'
+                                                        className={`flex-1 text-sm px-4 py-2 rounded-2xl transition-all font-medium ${loginType === 'email'
                                                                 ? 'bg-[#934790] text-white shadow'
-                                                                : 'bg-white text-gray-600'
-                                                        }`}
+                                                                : 'bg-[#f2d7b3] text-gray-600'
+                                                            }`}
                                                     >
                                                         Email
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={() => { setLoginType('mobile'); setEmailOrPhone(''); setError(''); }}
-                                                        className={`flex-1 text-sm px-4 py-2 rounded-lg transition-all font-medium ${
-                                                            loginType === 'mobile'
+                                                        className={`flex-1 text-sm px-4 py-2 rounded-2xl transition-all font-medium ${loginType === 'mobile'
                                                                 ? 'bg-[#934790] text-white shadow'
-                                                                : 'bg-white text-gray-600'
-                                                        }`}
-                                                        disabled
-                                                        title="Mobile login coming soon"
+                                                                : 'bg-[#f2d7b3] text-gray-600'
+                                                            }`}
                                                     >
                                                         Mobile
                                                     </button>
@@ -216,52 +198,50 @@ export default function EmployeeLogin() {
                                             </div>
 
                                             {/* Input Field */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    {getInputPlaceholder()} <span className="text-red-500">*</span>
-                                                </label>
+                                            <div className="relative">
                                                 <input
                                                     type={getInputType()}
-                                                    placeholder={getInputPlaceholder()}
-                                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all"
+                                                    placeholder={loginType === 'email' ? 'example@company.com' : (loginType === 'mobile' ? '10-digit mobile number' : 'Enter employee code')}
+                                                    className="w-full px-4 py-2 border bg-transparent border-gray-500 rounded-2xl placeholder:font-medium placeholder:text-gray-500 placeholder:text-sm md:placeholder:text-md focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all peer"
                                                     value={emailOrPhone}
-                                                    onChange={(e) => setEmailOrPhone(e.target.value)}
+                                                    onChange={(e) => {
+                                                        const value = loginType === 'mobile' 
+                                                            ? e.target.value.replace(/\D/g, '').slice(0, 10) 
+                                                            : e.target.value;
+                                                        setEmailOrPhone(value);
+                                                    }}
                                                     required
-                                                    disabled={isLoading || (loginType !== 'email' && loginType !== 'mobile')}
+                                                    disabled={isLoading || loginType === 'employee_code'}
+                                                    maxLength={loginType === 'mobile' ? 10 : undefined}
+                                                    inputMode={loginType === 'mobile' ? 'numeric' : undefined}
                                                 />
-                                                {loginType === 'mobile' && (
-                                                    <p className="text-xs text-gray-500 mt-1">Mobile login will be available soon. For now, use Email.</p>
-                                                )}
-                                            </div>
-
-                                            {/* Employee Code CTA */}
-                                            <div className="mt-2 flex items-center justify-between">
-                                                <div className="text-sm text-gray-600">Having trouble?</div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { setLoginType('employee_code'); setEmailOrPhone(''); setError(''); }}
-                                                    className={`text-sm bg-[#934790] text-white px-3 py-1.5 rounded-lg shadow hover:bg-[#6A0066] transition-colors`}
-                                                >
-                                                    Use Employee Code
-                                                </button>
+                                                <label className="absolute left-3 -top-2.5 bg-[#f2d7b3] px-2 text-xs md:text-sm font-semibold text-gray-600 rounded-xl">
+                                                    {getInputPlaceholder()}
+                                                </label>
                                             </div>
 
                                             {message && (
-                                                <div className="p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg text-sm">
+                                                <div className="flex items-start text-[10px] font-bold text-green-700 mt-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
                                                     {message}
                                                 </div>
                                             )}
 
                                             {error && (
-                                                <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+                                                <div className="flex items-start text-[10px] font-bold text-red-700 mt-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                                    </svg>
                                                     {error}
                                                 </div>
                                             )}
 
                                             <button
                                                 type="submit"
-                                                className="w-full bg-[#934790] text-white py-2.5 rounded-lg hover:bg-[#6A0066] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                disabled={isLoading || loginType !== 'email'}
+                                                className="w-full bg-[#f2d7b3] text-[#6A0066]/70 text-sm md:text-base py-2 font-semibold rounded-2xl hover:bg-[#934790] hover:text-[#f2d7b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                disabled={isLoading || loginType === 'employee_code' || (loginType === 'mobile' && emailOrPhone.length !== 10)}
                                             >
                                                 {isLoading ? 'Sending OTP...' : 'Send OTP'}
                                             </button>
@@ -276,8 +256,8 @@ export default function EmployeeLogin() {
                                                     checked
                                                     readOnly
                                                 />
-                                                <label htmlFor="terms" className="text-sm text-gray-600">
-                                                    By signing in you agree with{' '}
+                                                <label htmlFor="terms" className="text-xs text-gray-600">
+                                                    By signing in to Zoom Connect you agree with{' '}
                                                     <a href="#" className="text-[#6A0066]">
                                                         Privacy policy
                                                     </a>{' '}
@@ -287,67 +267,85 @@ export default function EmployeeLogin() {
                                                     </a>
                                                 </label>
                                             </div>
+
+                                            {/* Employee Code CTA */}
+                                            <div className="mt-2 flex justify-end text-xs text-gray-600">
+                                                Having trouble? 
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setLoginType('employee_code'); setEmailOrPhone(''); setError(''); }}
+                                                    className="text-[#6A0066] underline hover:text-[#934790] transition-colors ml-1 cursor-pointer bg-none border-none p-0 font-medium"
+                                                >
+                                                    Use Employee Code
+                                                </button>
+                                            </div>
                                         </form>
                                     ) : (
                                         <form onSubmit={handleOtpSubmit} className="space-y-4">
                                             <div className="text-center mb-4">
-                                                <h3 className="text-lg font-semibold text-gray-800">Verify OTP</h3>
-                                                <p className="text-sm text-gray-600 mt-1">
+                                                <h3 className="text-base md:text-lg font-semibold text-gray-800">Verify OTP</h3>
+                                                <p className="text-xs md:text-sm text-gray-600 mt-1">
                                                     We've sent a 6-digit code to {emailOrPhone}
                                                 </p>
                                             </div>
 
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Enter OTP <span className="text-red-500">*</span>
-                                                </label>
+                                            <div className="relative">
                                                 <input
                                                     type="text"
                                                     placeholder="000000"
-                                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-100 focus:border-red-400 transition-all text-center text-2xl font-mono tracking-widest"
+                                                    className="w-full px-4 py-2 md:py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all text-center text-xl md:text-2xl font-mono tracking-widest peer"
                                                     value={otp}
                                                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                                     required
                                                     disabled={isLoading}
                                                     maxLength={6}
                                                 />
+                                                <label className="absolute left-3 -top-2.5 bg-[#f2d7b3] px-2 text-sm font-medium text-gray-600 rounded-lg">
+                                                    Enter OTP
+                                                </label>
                                             </div>
 
                                             {message && (
-                                                <div className="p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg text-sm">
+                                                <div className="flex items-start text-[10px] font-bold text-green-700 mt-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
                                                     {message}
                                                 </div>
                                             )}
 
                                             {error && (
-                                                <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+                                                <div className="flex items-center text-[10px] font-bold text-red-700 mt-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                                    </svg>
                                                     {error}
                                                 </div>
                                             )}
 
                                             <button
                                                 type="submit"
-                                                className="w-full bg-[#934790] text-white py-2.5 rounded-lg hover:bg-[#6A0066] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="w-full bg-[#6A0066] text-white py-2 md:py-2.5 text-sm md:text-lg rounded-lg hover:bg-[#934790] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                                                 disabled={isLoading || otp.length !== 6}
                                             >
                                                 {isLoading ? 'Verifying...' : 'Verify OTP'}
                                             </button>
 
-                                            <button
+                                            {/* <button
                                                 type="button"
                                                 onClick={handleBackToLogin}
-                                                className="w-full bg-gray-200 text-gray-700 py-2.5 rounded-lg hover:bg-gray-300 transition-colors"
+                                                className="w-full bg-gray-200 text-gray-700 py-2 md:py-2.5 text-sm md:text-lg rounded-lg hover:bg-gray-300 transition-colors"
                                                 disabled={isLoading}
                                             >
                                                 Back to Login
-                                            </button>
+                                            </button> */}
                                         </form>
                                     )}
 
                                     {/* Download App Section */}
-                                    <div className="mt-8 flex border-t border-gray-200 pt-2">
+                                    <div className="mt-8 flex border-t border-gray-300 pt-2">
                                         <div className="w-full text-left flex flex-col justify-center">
-                                            <h3 className="text-xl md:text-2xl font-semibold text-gray-800">Download the app</h3>
+                                            <h3 className="text-lg md:text-2xl font-semibold text-gray-800">Download the app</h3>
                                             <p className="text-xs md:text-sm text-gray-600 mt-1 leading-tight">Access healthcare at your fingertips!</p>
                                         </div>
                                         <img
@@ -356,14 +354,47 @@ export default function EmployeeLogin() {
                                             className="w-20 h-20 mx-auto"
                                         />
                                     </div>
+
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Right Side - Illustration */}
+                    <div className="hidden md:flex w-full md:w-1/2 items-center justify-center relative px-8 py-12">
+                        {/* Circular Background */}
+                        <motion.div
+                            className="absolute bottom-0 right-34 w-[350px] h-[520px] rounded-tl-[250px] rounded-tr-[250px] bg-[#f2d7b3] pointer-events-none z-0"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                        ></motion.div>
+
+                        {/* Animated Character */}
+                        <div className="relative z-10 flex flex-col items-center">
+                            <motion.img
+                                src="/assets/images/girl-with-laptop.png"
+                                alt="Login Illustration"
+                                className="w-[320px] max-w-full drop-shadow-2xl"
+                                initial={{ scale: 1, y: 0 }}
+                                animate={{ scale: 1, y: [0, -15, 0, 15, 0] }}
+                            />
+                            <motion.img
+                                src="/assets/images/Shadow.png"
+                                alt="shadow"
+                                className="w-[200px] -mt-4"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8, delay: 0.3 }}
+                            />
+                        </div>
+                    </div>
+
                 </div>
+
             </div>
 
-            <Footer />
+
         </>
     );
 }
