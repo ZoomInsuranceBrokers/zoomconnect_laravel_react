@@ -4,7 +4,7 @@ import PremiumSummary from './PremiumSummary';
 export default function Step3ExtraCoverage({
     employee,
     enrollmentDetail,
-    extraCoveragePlans = [],
+    extraCoveragePlans: propExtraCoveragePlans = [],
     availablePlans = null,
     formData,
     updateFormData,
@@ -14,12 +14,30 @@ export default function Step3ExtraCoverage({
     // defensive: ensure we don't read properties from undefined formData
     const fd = formData || {};
 
+    // Support both extraCoveragePlans and extra_coverage_plans (from backend)
+    const extraCoveragePlans = Array.isArray(fd.extra_coverage_plans) && fd.extra_coverage_plans.length > 0
+        ? fd.extra_coverage_plans
+        : propExtraCoveragePlans;
+
     // normalize initial selected extra coverage into an array of ids for the UI (match Step2)
     const initSelectedIds = (() => {
+        // If extraCoverageSelected is present, use it (normal flow)
         const sel = fd.selectedPlans?.extraCoverageSelected;
         if (Array.isArray(sel)) return sel.map(String);
         if (sel && typeof sel === 'string') return [sel];
         if (sel && typeof sel === 'object' && sel.id) return [String(sel.id)];
+
+        // If in edit mode and extra_coverage_plan_name is present, map names to IDs
+        const extraNames = fd.selectedPlans?.extra_coverage_plan_name;
+        if (extraNames) {
+            // Can be string or array
+            const namesArr = Array.isArray(extraNames) ? extraNames : [extraNames];
+            // Map plan names to IDs from extraCoveragePlans
+            const ids = (extraCoveragePlans || [])
+                .filter(plan => namesArr.some(name => String(plan.plan_name).trim().toLowerCase() === String(name).trim().toLowerCase()))
+                .map(plan => String(plan.id));
+            if (ids.length > 0) return ids;
+        }
         return [];
     })();
 
@@ -370,8 +388,8 @@ export default function Step3ExtraCoverage({
                                 <label
                                     key={plan.id}
                                     className={`flex items-start p-4 border-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${selectedExtraIds.map(String).includes(String(plan.id))
-                                            ? "border-[#934790] bg-purple-50"
-                                            : "border-gray-200"
+                                        ? "border-[#934790] bg-purple-50"
+                                        : "border-gray-200"
                                         }`}
                                 >
                                     <input

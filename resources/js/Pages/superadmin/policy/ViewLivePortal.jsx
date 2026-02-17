@@ -261,11 +261,46 @@ export default function ViewLivePortal({
 
                     {/* Employee List */}
                     <div className="bg-white shadow rounded-lg">
-                        <div className="px-4 py-3 border-b border-gray-200">
-                            <h2 className="text-sm font-medium text-gray-900">Selected Employees</h2>
-                            <p className="mt-1 text-xs text-gray-600">
-                                Employees selected for this enrollment portal and their current status
-                            </p>
+                        <div className="px-4 py-3 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <h2 className="text-sm font-medium text-gray-900">Selected Employees</h2>
+                                <p className="mt-1 text-xs text-gray-600">
+                                    Employees selected for this enrollment portal and their current status
+                                </p>
+                            </div>
+                            <div className="flex gap-2 mt-2 sm:mt-0">
+                                <button
+                                    className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                    onClick={() => {
+                                        window.location.href = `/superadmin/policy/download-enrolled-data/${enrollmentPeriod.id}`;
+                                    }}
+                                >
+                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                                    </svg>
+                                    Download Enrolled Data
+                                </button>
+                                <button
+                                    className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                    onClick={() => {
+                                        window.location.href = `/superadmin/policy/download-unenrolled-data/${enrollmentPeriod.id}`;
+                                    }}
+                                >
+                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                                    </svg>
+                                    Download Unenrolled Data
+                                </button>
+                                <Link
+                                    href={`/superadmin/policy/enrollment-bulk-actions/${enrollmentPeriod.id}`}
+                                    className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                                >
+                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v16m16-8H8m8 0V4m0 8v8" />
+                                    </svg>
+                                    Enrollment Bulk Actions
+                                </Link>
+                            </div>
                         </div>
 
                         {/* Search and Controls */}
