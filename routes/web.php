@@ -90,6 +90,7 @@ Route::middleware(['redirect.if.employee'])->group(function () {
     Route::get('/employee-login', [EmployeeAuthController::class, 'employeeLogin'])->name('employee.login');
     Route::post('/employee-login', [EmployeeAuthController::class, 'processLogin'])->name('employee.login.process');
     Route::post('/employee-verify-otp', [EmployeeAuthController::class, 'verifyOtp'])->name('employee.verify.otp');
+    Route::get('/employee-companies', [EmployeeAuthController::class, 'getCompanies'])->name('employee.companies');
 });
 
 ////////////////////////////////////////////////////////////////////////////////

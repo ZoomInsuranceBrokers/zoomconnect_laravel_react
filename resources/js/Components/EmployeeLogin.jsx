@@ -5,11 +5,40 @@ import { motion } from "framer-motion";
 export default function EmployeeLogin() {
     const [loginType, setLoginType] = useState('email'); // 'email', 'mobile', 'employee_code'
     const [emailOrPhone, setEmailOrPhone] = useState('');
+    const [employeeCode, setEmployeeCode] = useState('');
+    const [password, setPassword] = useState('');
+    const [selectedCompany, setSelectedCompany] = useState('');
+    const [companies, setCompanies] = useState([]);
+    const [loadingCompanies, setLoadingCompanies] = useState(false);
     const [otp, setOtp] = useState('');
     const [showOtpScreen, setShowOtpScreen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+
+    // Load companies when employee_code login type is selected
+    React.useEffect(() => {
+        if (loginType === 'employee_code') {
+            loadCompanies();
+        }
+    }, [loginType]);
+
+    const loadCompanies = async () => {
+        setLoadingCompanies(true);
+        try {
+            const response = await fetch('/employee-companies');
+            const data = await response.json();
+            if (data.success) {
+                setCompanies(data.companies);
+            } else {
+                setError('Failed to load companies');
+            }
+        } catch (error) {
+            setError('Failed to load companies');
+        } finally {
+            setLoadingCompanies(false);
+        }
+    };
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
@@ -18,18 +47,24 @@ export default function EmployeeLogin() {
         setMessage('');
 
         try {
+            const requestBody = {
+                login_type: loginType,
+                ...(loginType === 'email' && { email: emailOrPhone }),
+                ...(loginType === 'mobile' && { mobile: emailOrPhone }),
+                ...(loginType === 'employee_code' && { 
+                    employee_code: employeeCode, 
+                    company_id: selectedCompany, 
+                    password: password 
+                })
+            };
+
             const response = await fetch('/employee-login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                 },
-                body: JSON.stringify({
-                    login_type: loginType,
-                    email: loginType === 'email' ? emailOrPhone : null,
-                    mobile: loginType === 'mobile' ? emailOrPhone : null,
-                    employee_code: loginType === 'employee_code' ? emailOrPhone : null,
-                }),
+                body: JSON.stringify(requestBody),
             });
 
             const data = await response.json();
@@ -85,6 +120,10 @@ export default function EmployeeLogin() {
     const handleBackToLogin = () => {
         setShowOtpScreen(false);
         setOtp('');
+        setEmailOrPhone('');
+        setEmployeeCode('');
+        setPassword('');
+        setSelectedCompany('');
         setError('');
         setMessage('');
     };
@@ -197,27 +236,95 @@ export default function EmployeeLogin() {
                                                 </div>
                                             </div>
 
-                                            {/* Input Field */}
-                                            <div className="relative">
-                                                <input
-                                                    type={getInputType()}
-                                                    placeholder={loginType === 'email' ? 'example@company.com' : (loginType === 'mobile' ? '10-digit mobile number' : 'Enter employee code')}
-                                                    className="w-full px-4 py-2 border bg-transparent border-gray-500 rounded-2xl placeholder:font-medium placeholder:text-gray-500 placeholder:text-sm md:placeholder:text-md focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all peer"
-                                                    value={emailOrPhone}
-                                                    onChange={(e) => {
-                                                        const value = loginType === 'mobile' 
-                                                            ? e.target.value.replace(/\D/g, '').slice(0, 10) 
-                                                            : e.target.value;
-                                                        setEmailOrPhone(value);
-                                                    }}
-                                                    required
-                                                    disabled={isLoading || loginType === 'employee_code'}
-                                                    maxLength={loginType === 'mobile' ? 10 : undefined}
-                                                    inputMode={loginType === 'mobile' ? 'numeric' : undefined}
-                                                />
-                                                <label className="absolute left-3 -top-2.5 bg-[#f2d7b3] px-2 text-xs md:text-sm font-semibold text-gray-600 rounded-xl">
-                                                    {getInputPlaceholder()}
-                                                </label>
+                                            {/* Input Fields */}
+                                            <div className="space-y-4">
+                                                {(loginType === 'email' || loginType === 'mobile') && (
+                                                    <div className="relative">
+                                                        <input
+                                                            type={getInputType()}
+                                                            placeholder={loginType === 'email' ? 'example@company.com' : '10-digit mobile number'}
+                                                            className="w-full px-4 py-2 border bg-transparent border-gray-500 rounded-2xl placeholder:font-medium placeholder:text-gray-500 placeholder:text-sm md:placeholder:text-md focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all peer"
+                                                            value={emailOrPhone}
+                                                            onChange={(e) => {
+                                                                const value = loginType === 'mobile' 
+                                                                    ? e.target.value.replace(/\D/g, '').slice(0, 10) 
+                                                                    : e.target.value;
+                                                                setEmailOrPhone(value);
+                                                            }}
+                                                            required
+                                                            disabled={isLoading}
+                                                            maxLength={loginType === 'mobile' ? 10 : undefined}
+                                                            inputMode={loginType === 'mobile' ? 'numeric' : undefined}
+                                                        />
+                                                        <label className="absolute left-3 -top-2.5 bg-[#f2d7b3] px-2 text-xs md:text-sm font-semibold text-gray-600 rounded-xl">
+                                                            {getInputPlaceholder()}
+                                                        </label>
+                                                    </div>
+                                                )}
+
+                                                {loginType === 'employee_code' && (
+                                                    <>
+                                                        {/* Company Dropdown */}
+                                                        <div className="relative">
+                                                            <select
+                                                                className="w-full px-4 py-2 border bg-transparent border-gray-500 rounded-2xl text-gray-700 text-sm md:text-md focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all peer appearance-none"
+                                                                value={selectedCompany}
+                                                                onChange={(e) => setSelectedCompany(e.target.value)}
+                                                                required
+                                                                disabled={isLoading || loadingCompanies}
+                                                            >
+                                                                <option value="">
+                                                                    {loadingCompanies ? 'Loading companies...' : 'Select your company'}
+                                                                </option>
+                                                                {companies.map((company) => (
+                                                                    <option key={company.id} value={company.id}>
+                                                                        {company.name}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            <label className="absolute left-3 -top-2.5 bg-[#f2d7b3] px-2 text-xs md:text-sm font-semibold text-gray-600 rounded-xl">
+                                                                Company
+                                                            </label>
+                                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Employee Code */}
+                                                        <div className="relative">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Enter your employee code"
+                                                                className="w-full px-4 py-2 border bg-transparent border-gray-500 rounded-2xl placeholder:font-medium placeholder:text-gray-500 placeholder:text-sm md:placeholder:text-md focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all peer"
+                                                                value={employeeCode}
+                                                                onChange={(e) => setEmployeeCode(e.target.value)}
+                                                                required
+                                                                disabled={isLoading}
+                                                            />
+                                                            <label className="absolute left-3 -top-2.5 bg-[#f2d7b3] px-2 text-xs md:text-sm font-semibold text-gray-600 rounded-xl">
+                                                                Employee Code
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Password */}
+                                                        <div className="relative">
+                                                            <input
+                                                                type="password"
+                                                                placeholder="Enter your password"
+                                                                className="w-full px-4 py-2 border bg-transparent border-gray-500 rounded-2xl placeholder:font-medium placeholder:text-gray-500 placeholder:text-sm md:placeholder:text-md focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all peer"
+                                                                value={password}
+                                                                onChange={(e) => setPassword(e.target.value)}
+                                                                required
+                                                                disabled={isLoading}
+                                                            />
+                                                            <label className="absolute left-3 -top-2.5 bg-[#f2d7b3] px-2 text-xs md:text-sm font-semibold text-gray-600 rounded-xl">
+                                                                Password
+                                                            </label>
+                                                        </div>
+                                                    </>
+                                                )}
                                             </div>
 
                                             {message && (
@@ -241,9 +348,15 @@ export default function EmployeeLogin() {
                                             <button
                                                 type="submit"
                                                 className="w-full bg-[#f2d7b3] text-[#6A0066]/70 text-sm md:text-base py-2 font-semibold rounded-2xl hover:bg-[#934790] hover:text-[#f2d7b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                disabled={isLoading || loginType === 'employee_code' || (loginType === 'mobile' && emailOrPhone.length !== 10)}
+                                                disabled={isLoading || 
+                                                    (loginType === 'mobile' && emailOrPhone.length !== 10) ||
+                                                    (loginType === 'employee_code' && (!selectedCompany || !employeeCode || !password))
+                                                }
                                             >
-                                                {isLoading ? 'Sending OTP...' : 'Send OTP'}
+                                                {isLoading ? 
+                                                    (loginType === 'employee_code' ? 'Signing In...' : 'Sending OTP...') : 
+                                                    (loginType === 'employee_code' ? 'Sign In' : 'Send OTP')
+                                                }
                                             </button>
 
                                             {/* Terms and Privacy */}
@@ -268,37 +381,64 @@ export default function EmployeeLogin() {
                                                 </label>
                                             </div>
 
-                                            {/* Employee Code CTA */}
-                                            <div className="mt-2 flex justify-end text-xs text-gray-600">
-                                                Having trouble? 
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { setLoginType('employee_code'); setEmailOrPhone(''); setError(''); }}
-                                                    className="text-[#6A0066] underline hover:text-[#934790] transition-colors ml-1 cursor-pointer bg-none border-none p-0 font-medium"
-                                                >
-                                                    Use Employee Code
-                                                </button>
-                                            </div>
+                                            {/* Alternative Login Options */}
+                                            {loginType !== 'employee_code' ? (
+                                                <div className="mt-2 flex justify-end text-xs text-gray-600">
+                                                    Having trouble? 
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { 
+                                                            setLoginType('employee_code'); 
+                                                            setEmailOrPhone(''); 
+                                                            setEmployeeCode('');
+                                                            setPassword('');
+                                                            setSelectedCompany('');
+                                                            setError(''); 
+                                                        }}
+                                                        className="text-[#6A0066] underline hover:text-[#934790] transition-colors ml-1 cursor-pointer bg-none border-none p-0 font-medium"
+                                                    >
+                                                        Use Employee Code
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="mt-2 flex justify-center text-xs text-gray-600">
+                                                    Want to use OTP instead?
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { 
+                                                            setLoginType('email'); 
+                                                            setEmailOrPhone(''); 
+                                                            setEmployeeCode('');
+                                                            setPassword('');
+                                                            setSelectedCompany('');
+                                                            setError(''); 
+                                                        }}
+                                                        className="text-[#6A0066] underline hover:text-[#934790] transition-colors ml-1 cursor-pointer bg-none border-none p-0 font-medium"
+                                                    >
+                                                        Use Email/Mobile
+                                                    </button>
+                                                </div>
+                                            )}
                                         </form>
                                     ) : (
                                         <form onSubmit={handleOtpSubmit} className="space-y-4">
                                             <div className="text-center mb-4">
                                                 <h3 className="text-base md:text-lg font-semibold text-gray-800">Verify OTP</h3>
                                                 <p className="text-xs md:text-sm text-gray-600 mt-1">
-                                                    We've sent a 6-digit code to {emailOrPhone}
+                                                    We've sent a {loginType === 'mobile' ? '4' : '6'}-digit code to {emailOrPhone}
                                                 </p>
                                             </div>
 
                                             <div className="relative">
                                                 <input
                                                     type="text"
-                                                    placeholder="000000"
+                                                    placeholder={loginType === 'mobile' ? '0000' : '000000'}
                                                     className="w-full px-4 py-2 md:py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all text-center text-xl md:text-2xl font-mono tracking-widest peer"
                                                     value={otp}
-                                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, (loginType === 'mobile' ? 4 : 6)))}
                                                     required
                                                     disabled={isLoading}
-                                                    maxLength={6}
+                                                    maxLength={loginType === 'mobile' ? 4 : 6}
                                                 />
                                                 <label className="absolute left-3 -top-2.5 bg-[#f2d7b3] px-2 text-sm font-medium text-gray-600 rounded-lg">
                                                     Enter OTP
@@ -326,7 +466,7 @@ export default function EmployeeLogin() {
                                             <button
                                                 type="submit"
                                                 className="w-full bg-[#6A0066] text-white py-2 md:py-2.5 text-sm md:text-lg rounded-lg hover:bg-[#934790] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                                                disabled={isLoading || otp.length !== 6}
+                                                disabled={isLoading || otp.length !== (loginType === 'mobile' ? 4 : 6)}
                                             >
                                                 {isLoading ? 'Verifying...' : 'Verify OTP'}
                                             </button>

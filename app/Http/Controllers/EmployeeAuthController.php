@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\CompanyEmployee;
+use App\Models\CompanyMaster;
 use App\Models\UserMaster;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use App\Mail\SendMailJob;
+use App\Mail\EmployeeOtpMail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class EmployeeAuthController extends Controller
 {
@@ -22,153 +26,195 @@ class EmployeeAuthController extends Controller
     }
 
     /**
-     * Process employee login (send OTP to email)
+     * Process employee login (send OTP to email/mobile or authenticate with employee code)
      */
     public function processLogin(Request $request)
     {
         $request->validate([
             'login_type' => 'required|in:email,mobile,employee_code',
             'email' => 'required_if:login_type,email|email',
+            'mobile' => 'required_if:login_type,mobile|string|size:10',
+            'employee_code' => 'required_if:login_type,employee_code|string',
+            'company_id' => 'required_if:login_type,employee_code|integer',
+            'password' => 'required_if:login_type,employee_code|string',
         ]);
 
         if ($request->login_type === 'email') {
-            // Find employee by email with company details
-            $employee = CompanyEmployee::with('company')
-                ->where('email', $request->email)
-                ->first();
-
-            if (!$employee) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Employee not found. Please contact your administrator.'
-                ], 404);
-            }
-
-            // Check if employee is deleted
-            if ($employee->is_delete == 1) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Your account is deleted. You cannot log in.'
-                ], 403);
-            }
-
-            // Check if employee is active
-            if ($employee->is_active == 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Your account is inactive. You cannot log in.'
-                ], 403);
-            }
-
-            // Check if company exists
-            if (!$employee->company) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Company not found. Please contact your administrator.'
-                ], 404);
-            }
-
-            // Check if company is active
-            if ($employee->company->status == 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Your Company is now Inactive. You cannot log in.'
-                ], 403);
-            }
-
-            // Generate 6-digit OTP
-            $otp = sprintf("%06d", rand(0, 999999));
-            
-            // Store OTP in session with 10 minute expiry
-            Session::put('employee_otp', $otp);
-            Session::put('employee_otp_expires', now()->addMinutes(10));
-            Session::put('employee_login_email', $request->email);
-            Session::put('employee_id', $employee->id);
-
-            // Send OTP via email
-            try {
-                Mail::raw("Your OTP for ZoomConnect Employee Portal is: {$otp}\n\nThis OTP will expire in 10 minutes.", function ($message) use ($request) {
-                    $message->to($request->email)
-                        ->subject('ZoomConnect Employee Portal - OTP Verification');
-                });
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'OTP sent successfully to your email.',
-                    'require_otp' => true
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Failed to send employee OTP email: ' . $e->getMessage());
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to send OTP. Please try again.'
-                ], 500);
-            }
+            return $this->handleEmailLogin($request);
+        } elseif ($request->login_type === 'mobile') {
+            return $this->handleMobileLogin($request);
+        } elseif ($request->login_type === 'employee_code') {
+            return $this->handleEmployeeCodeLogin($request);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'This login method is not yet implemented.'
+            'message' => 'Invalid login method.'
         ], 400);
     }
 
     /**
-     * Verify OTP and complete login
+     * Handle email login - send OTP to email
      */
-    public function verifyOtp(Request $request)
+    private function handleEmailLogin(Request $request)
     {
-        $request->validate([
-            'otp' => 'required|digits:6'
-        ]);
+        // Find employee by email with company details
+        $employee = CompanyEmployee::with('company')
+            ->where('email', $request->email)
+            ->first();
 
-        $storedOtp = Session::get('employee_otp');
-        $otpExpires = Session::get('employee_otp_expires');
-        $email = Session::get('employee_login_email');
-        $employeeId = Session::get('employee_id');
-
-        if (!$storedOtp || !$otpExpires || !$email || !$employeeId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Session expired. Please request a new OTP.'
-            ], 400);
-        }
-
-        if (now()->greaterThan($otpExpires)) {
-            Session::forget(['employee_otp', 'employee_otp_expires', 'employee_login_email', 'employee_id']);
-            return response()->json([
-                'success' => false,
-                'message' => 'OTP has expired. Please request a new one.'
-            ], 400);
-        }
-
-        if ($request->otp != $storedOtp) {
-            // Allow developer bypass OTP '000000' only in non-production environments
-            if ($request->otp === '000000' && env('APP_ENV') !== 'production') {
-                Log::warning('Employee OTP bypass used', [
-                    'email' => $email,
-                    'employee_id' => $employeeId,
-                    'ip' => $request->ip() ?? 'unknown'
-                ]);
-                // proceed with login (bypass)
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid OTP. Please try again.'
-                ], 400);
-            }
-        }
-
-        // OTP is valid, create employee session
-        $employee = CompanyEmployee::with(['company', 'location'])->find($employeeId);
-        
         if (!$employee) {
             return response()->json([
                 'success' => false,
-                'message' => 'Employee not found.'
+                'message' => 'Employee not found. Please contact your administrator.'
             ], 404);
         }
 
-        // Double-check employee is still active and not deleted
+        // Validate employee status
+        $statusCheck = $this->validateEmployeeStatus($employee);
+        if ($statusCheck) {
+            return $statusCheck;
+        }
+
+        // Generate 6-digit OTP
+        $otp = sprintf("%06d", rand(0, 999999));
+        
+        // Store OTP in session with 10 minute expiry
+        Session::put('employee_otp', $otp);
+        Session::put('employee_otp_expires', now()->addMinutes(10));
+        Session::put('employee_login_email', $request->email);
+        Session::put('employee_id', $employee->id);
+        Session::put('employee_login_type', 'email');
+
+        // Send OTP via email using proper Mail class
+        try {
+            Mail::to($request->email)->send(new EmployeeOtpMail($otp, $request->email, $employee->full_name));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'OTP sent successfully to your email.',
+                'require_otp' => true
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send employee OTP email: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send OTP. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Handle mobile login - send OTP via SMS
+     */
+    private function handleMobileLogin(Request $request)
+    {
+        // Find employee by mobile with company details
+        $employee = CompanyEmployee::with('company')
+            ->where('mobile', $request->mobile)
+            ->first();
+
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Employee not found with this mobile number. Please contact your administrator.'
+            ], 404);
+        }
+
+        // Validate employee status
+        $statusCheck = $this->validateEmployeeStatus($employee);
+        if ($statusCheck) {
+            return $statusCheck;
+        }
+
+        // Generate 4-digit OTP for SMS
+        $otp = rand(1000, 9999);
+        
+        // Store OTP in session with 15 minute expiry
+        Session::put('employee_otp', $otp);
+        Session::put('employee_otp_expires', now()->addMinutes(15));
+        Session::put('employee_login_mobile', $request->mobile);
+        Session::put('employee_id', $employee->id);
+        Session::put('employee_login_type', 'mobile');
+
+        // Send OTP via SMS API
+        try {
+            $smsMessage = urlencode("The OTP to verify your mobile number for Zoom Connect is {$otp}. Do not share this OTP with anyone for security reasons. Valid for 15 minutes.");
+            $apiUrl = "https://sms.staticking.com/index.php/smsapi/httpapi/?secret=u3ybdkzT4mOsUyPLDFG5&sender=Zoomco&tempid=1707165043797041448&receiver={$request->mobile}&route=TA&msgtype=1&sms={$smsMessage}";
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $apiUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            // Log the API call
+            Log::info('Mobile OTP API Call', [
+                'mobile' => $request->mobile,
+                'otp' => $otp,
+                'response' => $response,
+                'http_code' => $httpCode
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'OTP sent successfully to your mobile number.',
+                'require_otp' => true
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send mobile OTP: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send OTP. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Handle employee code login - authenticate directly with password
+     */
+    private function handleEmployeeCodeLogin(Request $request)
+    {
+        // Find employee by employee code and company ID
+        $employee = CompanyEmployee::with('company')
+            ->where('employees_code', $request->employee_code)
+            ->where('company_id', $request->company_id)
+            ->first();
+
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid employee code or company. Please check your credentials.'
+            ], 404);
+        }
+
+        // Validate employee status
+        $statusCheck = $this->validateEmployeeStatus($employee);
+        if ($statusCheck) {
+            return $statusCheck;
+        }
+
+        // Check password
+        if ($employee->pwd !== $request->password) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid password. Please try again.'
+            ], 401);
+        }
+
+        // Login successful - authenticate user
+        return $this->authenticateEmployee($employee);
+    }
+
+    /**
+     * Validate employee and company status
+     */
+    private function validateEmployeeStatus($employee)
+    {
+        // Check if employee is deleted
         if ($employee->is_delete == 1) {
             return response()->json([
                 'success' => false,
@@ -176,6 +222,7 @@ class EmployeeAuthController extends Controller
             ], 403);
         }
 
+        // Check if employee is active
         if ($employee->is_active == 0) {
             return response()->json([
                 'success' => false,
@@ -183,17 +230,33 @@ class EmployeeAuthController extends Controller
             ], 403);
         }
 
-        // Check company status again
-        if ($employee->company && $employee->company->status == 0) {
+        // Check if company exists
+        if (!$employee->company) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Company not found. Please contact your administrator.'
+            ], 404);
+        }
+
+        // Check if company is active
+        if ($employee->company->status == 0) {
             return response()->json([
                 'success' => false,
                 'message' => 'Your Company is now Inactive. You cannot log in.'
             ], 403);
         }
 
+        return null; // No validation errors
+    }
+
+    /**
+     * Authenticate employee and create session
+     */
+    private function authenticateEmployee($employee)
+    {
         // Log the login attempt
         try {
-            \DB::table('login_logs')->insert([
+            DB::table('login_logs')->insert([
                 'emp_id' => $employee->id,
                 'comp_id' => $employee->company_id,
                 'source' => 'WEB PORTAL',
@@ -202,9 +265,6 @@ class EmployeeAuthController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to log employee login: ' . $e->getMessage());
         }
-
-        // Clear OTP session data
-        Session::forget(['employee_otp', 'employee_otp_expires', 'employee_login_email', 'employee_id']);
 
         // Set comprehensive employee session
         Session::put('employee_user', [
@@ -236,6 +296,118 @@ class EmployeeAuthController extends Controller
             'message' => 'Login successful!',
             'redirect' => route('employee.dashboard')
         ]);
+    }
+
+    /**
+     * Get companies for employee code login dropdown
+     */
+    public function getCompanies()
+    {
+        try {
+            $companies = CompanyMaster::select('comp_id', 'comp_name', 'comp_code')
+                ->where('status', 1)
+                ->orderBy('comp_name')
+                ->get()
+                ->map(function($company) {
+                    return [
+                        'id' => $company->comp_id,
+                        'name' => $company->comp_name,
+                        'code' => $company->comp_code
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'companies' => $companies
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch companies: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load companies.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Verify OTP and complete login
+     */
+    public function verifyOtp(Request $request)
+    {
+        $loginType = Session::get('employee_login_type');
+        
+        // Validate OTP length based on login type
+        if ($loginType === 'mobile') {
+            $request->validate([
+                'otp' => 'required|digits:4'
+            ]);
+        } else {
+            $request->validate([
+                'otp' => 'required|digits:6'
+            ]);
+        }
+
+        $storedOtp = Session::get('employee_otp');
+        $otpExpires = Session::get('employee_otp_expires');
+        $email = Session::get('employee_login_email');
+        $mobile = Session::get('employee_login_mobile');
+        $employeeId = Session::get('employee_id');
+
+        if (!$storedOtp || !$otpExpires || !$employeeId || !$loginType) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expired. Please request a new OTP.'
+            ], 400);
+        }
+
+        if (now()->greaterThan($otpExpires)) {
+            Session::forget(['employee_otp', 'employee_otp_expires', 'employee_login_email', 'employee_login_mobile', 'employee_id', 'employee_login_type']);
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP has expired. Please request a new one.'
+            ], 400);
+        }
+
+        if ($request->otp != $storedOtp) {
+            // Allow developer bypass OTP '000000' only in non-production environments
+            if ($request->otp === '000000' && env('APP_ENV') !== 'production') {
+                Log::warning('Employee OTP bypass used', [
+                    'email' => $email,
+                    'mobile' => $mobile,
+                    'employee_id' => $employeeId,
+                    'ip' => $request->ip() ?? 'unknown'
+                ]);
+                // proceed with login (bypass)
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid OTP. Please try again.'
+                ], 400);
+            }
+        }
+
+        // Get employee details
+        $employee = CompanyEmployee::with(['company', 'location'])->find($employeeId);
+
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Employee not found.'
+            ], 404);
+        }
+
+        // Final status check
+        $statusCheck = $this->validateEmployeeStatus($employee);
+        if ($statusCheck) {
+            Session::forget(['employee_otp', 'employee_otp_expires', 'employee_login_email', 'employee_login_mobile', 'employee_id', 'employee_login_type']);
+            return $statusCheck;
+        }
+
+        // Clear OTP session data
+        Session::forget(['employee_otp', 'employee_otp_expires', 'employee_login_email', 'employee_login_mobile', 'employee_login_type']);
+
+        // Authenticate employee
+        return $this->authenticateEmployee($employee);
     }
 
     /**
