@@ -106,21 +106,35 @@ export default function Step2ChoosePlans({
         return (availablePlans && availablePlans.extraCoveragePlans) || [];
     }, [availablePlans]);
 
-    // selection state from formData only — normalize incoming to ensure keys and string IDs
-    const defaultPremiumCalc = {
-        grossPremium: 0,
-        extraCoveragePremium: 0,
-        totalPremium: 0,
-        gst: 0,
-        grossPlusGst: 0,
-        companyContributionAmount: 0,
-        employeePayable: 0,
-    };
+    // Detect edit mode and preselect plan from database
+    const isEditMode = !!formData?.editMode || !!formData?.enrollmentData || !!formData?.selectedPlans?.base_plan_name;
+    // Define dbSelectedPlanId safely for edit mode
+    let dbSelectedPlanId = null;
+    if (isEditMode && formData?.selectedPlans?.base_plan_name) {
+        // Try to match plan by name in availablePlans
+        const allPlans = (availablePlans?.basePlans || []).concat(availablePlans?.extraCoveragePlans || []);
+        const matchedPlan = allPlans.find(
+            p => String(p.plan_name).trim().toLowerCase() === String(formData.selectedPlans.base_plan_name).trim().toLowerCase()
+        );
+        if (matchedPlan) {
+            dbSelectedPlanId = String(matchedPlan.id);
+        }
+    }
+    // Define dbPremiumCalculations safely for edit mode
+    let dbPremiumCalculations = null;
+    if (isEditMode && formData?.selectedPlans?.premiumCalculations) {
+        dbPremiumCalculations = formData.selectedPlans.premiumCalculations;
+    }
 
-    const [selection, setSelection] = useState({
-        selectedPlanId: 'base_sum_insured',
-        extraCoverageSelected: [],
-        premiumCalculations: null,
+    const [selection, setSelection] = useState(() => {
+        const selectedPlanId = formData?.selectedPlans?.selectedPlanId
+            ? String(formData.selectedPlans.selectedPlanId)
+            : (dbSelectedPlanId ? dbSelectedPlanId : 'base_sum_insured');
+        return {
+            selectedPlanId,
+            extraCoverageSelected: formData?.selectedPlans?.extraCoverageSelected || [],
+            premiumCalculations: formData?.selectedPlans?.premiumCalculations || null,
+        };
     });
 
     const [errors, setErrors] = useState({});
@@ -837,6 +851,7 @@ export default function Step2ChoosePlans({
                 ...formData,
                 selectedPlans: selectionWithName,
                 premiumCalculations: selection.premiumCalculations,
+                is_wallet: selection.wallet ? 1 : 0
             });
         }
         if (typeof onNext === "function") onNext();
@@ -1018,7 +1033,9 @@ export default function Step2ChoosePlans({
     };
 
     // compute current breakdown to show in UI (calc)
-    const calc = selection.premiumCalculations || computePremiums(ratingConfig, selection, allMembers);
+    const calc = isEditMode && dbPremiumCalculations
+        ? dbPremiumCalculations
+        : selection.premiumCalculations || computePremiums(ratingConfig, selection, allMembers);
 
     // Calculate proration factor based on joining date
     function calculateProrationFactor(emp, enrollmentDetail) {
@@ -1112,6 +1129,20 @@ export default function Step2ChoosePlans({
                     </div>
                 </div>
             )}
+
+            {/* Wallet option checkbox */}
+            <div className="space-y-2 mt-4">
+                <label className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={!!selection.wallet}
+                        onChange={() => setSelection(prev => ({ ...prev, wallet: !prev.wallet }))}
+                        className="mr-2"
+                    />
+                    <span className="text-sm font-medium">Use Wallet</span>
+                    <span className="text-xs text-gray-500">If checked, wallet will be used for payment.</span>
+                </label>
+            </div>
 
             {/* Validation errors */}
             {errors.plan && <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-600">{errors.plan}</div>}

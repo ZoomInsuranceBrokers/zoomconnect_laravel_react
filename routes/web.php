@@ -117,16 +117,16 @@ Route::middleware(['employee.auth'])->prefix('employee')->group(function () {
     Route::post('/help/tickets', [EmployeeAuthController::class, 'createTicket'])->name('employee.help.create-ticket');
     Route::get('/help/tickets/{ticketId}', [EmployeeAuthController::class, 'getTicketDetails'])->name('employee.help.ticket-details');
     Route::post('/help/tickets/{ticketId}/message', [EmployeeAuthController::class, 'addTicketMessage'])->name('employee.help.add-message');
-    
+
     // Chatbot routes
     Route::get('/help/chatbot/conversations', [EmployeeAuthController::class, 'getChatbotConversations'])->name('employee.help.chatbot.conversations');
     Route::post('/help/chatbot/start', [EmployeeAuthController::class, 'startChatbot'])->name('employee.help.chatbot.start');
     Route::post('/help/chatbot/respond', [EmployeeAuthController::class, 'chatbotRespond'])->name('employee.help.chatbot.respond');
     Route::get('/help/chatbot/conversation/{conversationId}', [EmployeeAuthController::class, 'getChatbotConversation'])->name('employee.help.chatbot.conversation');
-    
+
     // Policies route
     Route::get('/policies', [EmployeeAuthController::class, 'getPolicies'])->name('employee.policies');
-    
+
     Route::post('/logout', [EmployeeAuthController::class, 'logout'])->name('employee.logout');
     Route::post('/download-ecard', [EmployeeAuthController::class, 'downloadECard'])->name('employee.download.ecard');
 });
@@ -348,6 +348,10 @@ Route::middleware(['superadmin.auth', 'permission'])->prefix('superadmin')->grou
     Route::get('/enrollment-period-details/{enrollmentPeriod}', [SuperAdminController::class, 'enrollmentPeriodDetails'])->name('superadmin.enrollment-period-details');
     Route::get('/policy/edit-enrollment-period/{enrollmentPeriod}', [SuperAdminController::class, 'editEnrollmentPeriod'])->name('superadmin.edit-enrollment-period');
     Route::put('/update-enrollment-period/{enrollmentPeriod}', [SuperAdminController::class, 'updateEnrollmentPeriod'])->name('superadmin.update-enrollment-period');
+    Route::post('/policy/upload-enrollment-data/{enrollmentPeriod}', [SuperAdminController::class, 'uploadEnrollmentData'])->name('superadmin.policy.upload-enrollment-data');
+    Route::get('/download-enrolment-sample-csv', [SuperAdminController::class, 'downloadEnrolmentSampleCSV'])->name('download-enrolment-sample-csv');
+    Route::post('/policy/process-enrollment-bulk/{enrollmentPeriod}', [SuperAdminController::class, 'processEnrollmentBulk'])->name('superadmin.policy.process-enrollment-bulk');
+    Route::get('/policy/enrollment-bulk-actions/{enrollmentPeriod}', [SuperAdminController::class, 'enrollmentBulkActions'])->name('superadmin.policy.enrollment-bulk-actions');
 
     // Policy Users Routes
     Route::get('/policy/policy-users', [SuperAdminController::class, 'policyUsers'])->name('superadmin.policy.policy-users.index');
@@ -385,6 +389,18 @@ Route::middleware(['superadmin.auth', 'permission'])->prefix('superadmin')->grou
     Route::get('/policy/policies/{policy}/edit', [SuperAdminController::class, 'editPolicy'])->name('superadmin.policy.policies.edit');
     Route::put('/policy/policies/{policy}', [SuperAdminController::class, 'updatePolicy'])->name('superadmin.policy.policies.update');
     Route::delete('/policy/policies/{policy}', [SuperAdminController::class, 'destroyPolicy'])->name('superadmin.policy.policies.destroy');
+
+
+    // Download Enrolled/Unenrolled Data
+    Route::get('/policy/download-enrolled-data/{enrollmentPeriod}', [SuperAdminController::class, 'downloadEnrolledData'])->name('superadmin.policy.download-enrolled-data');
+    Route::get('/policy/download-unenrolled-data/{enrollmentPeriod}', [SuperAdminController::class, 'downloadUnenrolledData'])->name('superadmin.policy.download-unenrolled-data');
+
+    // Enrollment Portal Bulk Upload Page
+    Route::get('/policy/upload-enrollment-data/{enrollmentPeriod}', function ($enrollmentPeriod) {
+        return Inertia::render('superadmin/policy/UploadEnrollmentData', [
+            'enrollmentPeriodId' => $enrollmentPeriod
+        ]);
+    })->name('superadmin.policy.upload-enrollment-data.page');
 
     // Fill Enrollment Routes
     Route::get('/fill-enrollment/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'fillEnrollment'])->name('superadmin.fill-enrollment');

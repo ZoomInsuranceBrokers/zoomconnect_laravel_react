@@ -4914,6 +4914,347 @@ class SuperAdminController extends Controller
         }
     }
 
+
+    /**
+     * Download new Enrollment Sample CSV (custom columns for enrollment upload)
+     */
+    public function downloadEnrolmentSampleCSV()
+    {
+        $filename = 'Sample_Enrollment_Bulk_Upload.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $columns = [
+            's_no',
+            'employee_code',
+            'insured_name',
+            'gender',
+            'relation',
+            'dob',
+            'base_sum_insured',
+            'base_premium_on_company',
+            'base_premium_on_employee',
+            'base_plan_name',
+            'extra_coverage_plan_name',
+            'extra_coverage_premium_on_company',
+            'extra_coverage_premium_on_employee',
+        ];
+
+        $sample = [
+            ['1', 'EMP001', 'John Doe', 'Male', 'Self', '1990-01-01', '500000', '10000', '0', 'Base Plan A', 'Critical Illness', '2000', '500'],
+            ['2', 'EMP002', 'Jane Smith', 'Female', 'Spouse', '1992-05-10', '500000', '10000', '0', 'Base Plan A', 'Accident Cover', '1500', '300'],
+            ['3', 'EMP003', 'Sam Brown', 'Male', 'Child', '2015-09-15', '250000', '5000', '0', 'Base Plan B', '', '0', '0'],
+        ];
+
+        $callback = function () use ($columns, $sample) {
+            $file = fopen('php://output', 'w');
+            if ($file === false) return;
+            fputcsv($file, $columns);
+            foreach ($sample as $row) {
+                fputcsv($file, $row);
+            }
+            fflush($file);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+
+    public function uploadEnrollmentData(Request $request, $enrollmentPeriodId)
+    {
+        return $this->uploadEnrollmentCsv($request, $enrollmentPeriodId);
+    }
+
+
+    /**
+     * Enrollment Bulk Upload Flow
+     */
+    public function uploadEnrollmentCsv(Request $request, $enrollmentPeriodId)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240',
+        ]);
+        $file = $request->file('csv_file');
+        $csv = array_map('str_getcsv', file($file->getRealPath()));
+        $headers = array_shift($csv);
+        $requiredHeaders = [
+            's_no',
+            'employee_code',
+            'insured_name',
+            'gender',
+            'relation',
+            'dob',
+            'base_sum_insured',
+            'base_premium_on_company',
+            'base_premium_on_employee',
+            'base_plan_name',
+            'extra_coverage_plan_name',
+            'extra_coverage_premium_on_company',
+            'extra_coverage_premium_on_employee'
+        ];
+        foreach ($requiredHeaders as $requiredHeader) {
+            if (!in_array($requiredHeader, $headers)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Missing required column: {$requiredHeader}"
+                ], 422);
+            }
+        }
+        $validRows = [];
+        $invalidRows = [];
+        $rowNumber = 2;
+        foreach ($csv as $row) {
+            if (count($row) !== count($headers)) {
+                continue;
+            }
+            $data = array_combine($headers, $row);
+            $validation = $this->validateEnrollmentRow($data, $rowNumber);
+            if ($validation['valid']) {
+                $validRows[] = $data;
+            } else {
+                $data['_error'] = $validation['message'];
+                $invalidRows[] = $data;
+            }
+            $rowNumber++;
+        }
+        $uploadedFilePath = $file->store('bulk_enrollment_uploads', 'public');
+        return response()->json([
+            'success' => true,
+            'preview' => [
+                'total' => count($csv),
+                'valid' => count($validRows),
+                'invalid' => count($invalidRows),
+                'valid_rows' => array_slice($validRows, 0, 10),
+                'invalid_rows' => $invalidRows,
+                'uploaded_file_path' => $uploadedFilePath,
+                'headers' => $headers,
+            ]
+        ]);
+    }
+
+    private function validateEnrollmentRow($data, $rowNumber)
+    {
+        // Basic validation for required fields
+        $required = [
+            'employee_code',
+            'insured_name',
+            'gender',
+            'relation',
+            'dob',
+            'base_sum_insured',
+            'base_premium_on_company',
+            'base_premium_on_employee',
+            'base_plan_name'
+        ];
+        foreach ($required as $field) {
+            // Treat '0' and numeric zero as valid
+            if (!isset($data[$field]) || ($data[$field] === '' || ($field !== 'base_plan_name' && $data[$field] === null))) {
+                return ['valid' => false, 'message' => "Row {$rowNumber}: {$field} is missing"];
+            }
+        }
+        // Gender validation
+        $gender = strtolower($data['gender']);
+        if (!in_array($gender, ['male', 'female', 'other'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: gender must be male, female, or other"];
+        }
+        // DOB format
+        if (!preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $data['dob'])) {
+            return ['valid' => false, 'message' => "Row {$rowNumber}: dob must be in dd/mm/yyyy format"];
+        }
+        // Numeric fields
+        foreach (['base_sum_insured', 'base_premium_on_company', 'base_premium_on_employee', 'extra_coverage_premium_on_company', 'extra_coverage_premium_on_employee'] as $numField) {
+            if (isset($data[$numField]) && $data[$numField] !== '' && !is_numeric($data[$numField])) {
+                return ['valid' => false, 'message' => "Row {$rowNumber}: {$numField} must be numeric"];
+            }
+        }
+        return ['valid' => true];
+    }
+
+    public function processEnrollmentBulk(Request $request, $enrollmentPeriodId)
+    {
+        $request->validate([
+            'uploaded_file_path' => 'required|string',
+        ]);
+        $userId = auth()->user()->user_id ?? 1;
+        $bulkAction = \App\Models\BulkEnrollmentAction::create([
+            'enrollment_period_id' => $enrollmentPeriodId,
+            'uploaded_file' => $request->input('uploaded_file_path'),
+            'status' => 'pending',
+            'created_by' => $userId,
+        ]);
+        \App\Jobs\ProcessBulkEnrollmentJob::dispatch($bulkAction);
+
+        $msg = 'Bulk enrollment upload submitted! Processing in background.';
+
+        if ($request->hasHeader('X-Inertia')) {
+            return redirect()
+                ->route('superadmin.policy.enrollment-bulk-actions', $enrollmentPeriodId)
+                ->with('success', $msg);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $msg
+        ]);
+    }
+
+    /**
+     * Show enrollment bulk actions (job list) for an enrollment period
+     */
+    public function enrollmentBulkActions($enrollmentPeriodId)
+    {
+        $enrollmentPeriod = \App\Models\EnrollmentPeriod::findOrFail($enrollmentPeriodId);
+        $actions = \App\Models\BulkEnrollmentAction::where('enrollment_period_id', $enrollmentPeriodId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return \Inertia\Inertia::render('superadmin/policy/EnrollmentBulkActions', [
+            'enrollmentPeriod' => $enrollmentPeriod,
+            'actions' => $actions,
+        ]);
+    }
+
+
+
+    /**
+     * Download enrolled employee data as CSV for a given enrollment period
+     */
+    public function downloadEnrolledData($enrollmentPeriodId)
+    {
+        try {
+            $enrollmentPeriod = \DB::table('enrolment_period')->where('id', $enrollmentPeriodId)->first();
+            if (!$enrollmentPeriod) {
+                return redirect()->back()->with('message', 'Enrollment portal not found.')->with('messageType', 'error');
+            }
+            $enrollmentDetail = \DB::table('enrolment_details')->where('id', $enrollmentPeriod->enrolment_id)->first();
+            // Get all mappings with submit_status = 1
+            $mappings = \DB::table('enrolment_mapping_master')
+                ->where('enrolment_id', $enrollmentDetail->id)
+                ->where('enrolment_period_id', $enrollmentPeriod->id)
+                ->where('status', 1)
+                ->where('submit_status', 1)
+                ->get();
+            $rows = [];
+            $serial = 1;
+            foreach ($mappings as $mapping) {
+                // Get employee code from company_employees
+                $employee = \DB::table('company_employees')->where('id', $mapping->emp_id)->first();
+                $employeeCode = $employee ? $employee->employees_code : '';
+                // Find all new_enrolment_data for this mapping
+                $enrolmentData = \App\Models\NewEnrolmentData::where('emp_id', $mapping->emp_id)
+                    ->where('enrolment_mapping_id', $mapping->id)
+                    ->where('enrolment_portal_id', $enrollmentPeriod->id)
+                    ->where('enrolment_id', $enrollmentDetail->id)
+                    ->get();
+                foreach ($enrolmentData as $data) {
+                    $rows[] = [
+                        'S.No' => $serial++,
+                        'Employee Code' => $employeeCode,
+                        'Enrolment Mapping ID' => $data->enrolment_mapping_id,
+                        'Portal ID' => $data->enrolment_portal_id,
+                        'Enrolment ID' => $data->enrolment_id,
+                        'Insured Name' => $data->insured_name,
+                        'Gender' => $data->gender,
+                        'Relation' => $data->relation,
+                        'DOB' => $data->dob,
+                        'Base Sum Insured' => $data->base_sum_insured,
+                        'Base Premium (Company)' => $data->base_premium_on_company,
+                        'Base Premium (Employee)' => $data->base_premium_on_employee,
+                        'Base Plan Name' => $data->base_plan_name,
+                        'Extra Coverage Plan Name' => $data->extra_coverage_plan_name,
+                        'Extra Coverage Premium (Company)' => $data->extra_coverage_premium_on_company,
+                        'Extra Coverage Premium (Employee)' => $data->extra_coverage_premium_on_employee,
+                        'Created At' => $data->created_at,
+                        'Updated At' => $data->updated_at,
+                    ];
+                }
+            }
+            $filename = 'enrolled_data_portal_' . $enrollmentPeriod->id . '.csv';
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ];
+            $callback = function () use ($rows) {
+                $output = fopen('php://output', 'w');
+                if (!empty($rows)) {
+                    fputcsv($output, array_keys($rows[0]));
+                    foreach ($rows as $row) {
+                        fputcsv($output, $row);
+                    }
+                } else {
+                    fputcsv($output, ['No enrolled data found.']);
+                }
+                fclose($output);
+            };
+            return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            \Log::error('Download enrolled data failed: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Failed to download enrolled data.')->with('messageType', 'error');
+        }
+    }
+
+    /**
+     * Download unenrolled employee data as CSV for a given enrollment period
+     */
+    public function downloadUnenrolledData($enrollmentPeriodId)
+    {
+        try {
+            $enrollmentPeriod = \DB::table('enrolment_period')->where('id', $enrollmentPeriodId)->first();
+            if (!$enrollmentPeriod) {
+                return redirect()->back()->with('message', 'Enrollment portal not found.')->with('messageType', 'error');
+            }
+            $enrollmentDetail = \DB::table('enrolment_details')->where('id', $enrollmentPeriod->enrolment_id)->first();
+            // Get all mappings with submit_status = 0
+            $mappings = \DB::table('enrolment_mapping_master')
+                ->where('enrolment_id', $enrollmentDetail->id)
+                ->where('enrolment_period_id', $enrollmentPeriod->id)
+                ->where('status', 1)
+                ->where('submit_status', 0)
+                ->get();
+            $rows = [];
+            $serial = 1;
+            foreach ($mappings as $mapping) {
+                // Get employee code from company_employees
+                $employee = \DB::table('company_employees')->where('id', $mapping->emp_id)->first();
+                $employeeCode = $employee ? $employee->employees_code : '';
+                $rows[] = [
+                    'S.No' => $serial++,
+                    'Employee Code' => $employeeCode,
+                    'Enrolment Mapping ID' => $mapping->id,
+                    'Portal ID' => $mapping->enrolment_period_id,
+                    'Enrolment ID' => $mapping->enrolment_id,
+                    'Submit Status' => $mapping->submit_status,
+                    'View Status' => $mapping->view_status,
+                    'Created At' => $mapping->created_at,
+                    'Updated At' => $mapping->updated_at,
+                ];
+            }
+            $filename = 'unenrolled_data_portal_' . $enrollmentPeriod->id . '.csv';
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ];
+            $callback = function () use ($rows) {
+                $output = fopen('php://output', 'w');
+                if (!empty($rows)) {
+                    fputcsv($output, array_keys($rows[0]));
+                    foreach ($rows as $row) {
+                        fputcsv($output, $row);
+                    }
+                } else {
+                    fputcsv($output, ['No unenrolled data found.']);
+                }
+                fclose($output);
+            };
+            return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            \Log::error('Download unenrolled data failed: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Failed to download unenrolled data.')->with('messageType', 'error');
+        }
+    }
+
     /**
      * Save enrollment data for a member (Legacy method - kept for backward compatibility)
      */
