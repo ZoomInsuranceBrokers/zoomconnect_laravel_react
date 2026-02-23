@@ -36,7 +36,7 @@ export default function Wellness({
             <Head title="Wellness & Care" />
 
             {/* ================= GRADIENT PAGE WITH WAVES ================= */}
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 relative overflow-hidden">
+            <div className="min-h-screen  py-4 sm:py-8 px-0 sm:px-0 relative overflow-hidden">
                 {/* Wave SVG Background */}
                 <div className="absolute inset-0 opacity-30">
                     <svg
@@ -62,22 +62,22 @@ export default function Wellness({
                 </div>
 
                 {/* ================= GREY 80% CONTAINER ================= */}
-                <div className="max-w-[80%] mx-auto bg-gray-100 rounded-3xl px-8 py-6 relative z-10">
+                <div className="w-full md:max-w-[80%] mx-auto bg-gray-100 rounded-2xl md:rounded-3xl px-3 sm:px-6 md:px-8 py-4 sm:py-6 relative z-10">
 
                     {/* ================= HEADER ================= */}
-                    <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
                         <button
                             onClick={() => window.history.back()}
-                            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center"
+                            className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-white shadow flex items-center justify-center flex-shrink-0"
                         >
-                            <ArrowLeftIcon className="w-5 h-5 text-gray-700" />
+                            <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
                         </button>
 
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">
+                            <h1 className="text-base sm:text-2xl font-bold text-gray-900">
                                 Wellness & Care
                             </h1>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-xs sm:text-xs text-gray-500">
                                 What services do you need?
                             </p>
                         </div>
@@ -85,16 +85,16 @@ export default function Wellness({
 
                     {/* ================= BANNER ================= */}
                     {teleConsultationService && (
-                        <div className="mb-8">
+                        <div className="mb-6 sm:mb-8">
                             <div 
                                 onClick={() => handleServiceClick(teleConsultationService.id)}
-                                className="bg-gradient-to-r from-orange-400 to-pink-500 rounded-3xl p-6 flex items-center justify-between text-white cursor-pointer hover:shadow-xl transition-shadow"
+                                className="bg-gradient-to-r from-orange-400 to-pink-500 rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between text-white cursor-pointer hover:shadow-xl transition-shadow gap-3 sm:gap-0"
                             >
-                                <div>
-                                    <h2 className="text-xl font-bold">
+                                <div className="flex-1">
+                                    <h2 className="text-base sm:text-xl font-bold">
                                         Free Tele-Consultation
                                     </h2>
-                                    <p className="text-sm opacity-90 mt-1">
+                                    <p className="text-xs sm:text-sm opacity-90 mt-1">
                                         Talk to expert doctors anytime
                                     </p>
 
@@ -103,7 +103,7 @@ export default function Wellness({
                                             e.stopPropagation();
                                             handleServiceClick(teleConsultationService.id);
                                         }}
-                                        className="mt-4 bg-white text-orange-500 font-semibold text-sm px-5 py-2 rounded-full hover:bg-gray-100 transition"
+                                        className="mt-3 sm:mt-4 bg-white text-orange-500 font-semibold text-xs sm:text-sm px-4 sm:px-5 py-1.5 sm:py-2 rounded-full hover:bg-gray-100 transition"
                                     >
                                         Get Started
                                     </button>
@@ -116,23 +116,23 @@ export default function Wellness({
                                         '/images/teleconsult.png'
                                     }
                                     alt="Teleconsultation"
-                                    className="w-40 hidden md:block"
+                                    className="w-24 sm:w-40 h-24 sm:h-auto object-contain"
                                 />
                             </div>
                         </div>
                     )}
 
                     {/* ================= CATEGORY ================= */}
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-gray-800">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-800">
                             Category
                         </h3>
                     </div>
 
-                    <div className="flex gap-3 mb-8 overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-2 sm:gap-3 mb-6 sm:mb-8 overflow-x-auto scrollbar-hide">
                         <button
                             onClick={() => setActiveTab('all')}
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold ${
+                            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap ${
                                 activeTab === 'all'
                                     ? 'bg-orange-500 text-white'
                                     : 'bg-white text-gray-600'
@@ -145,7 +145,7 @@ export default function Wellness({
                             <button
                                 key={cat.id}
                                 onClick={() => setActiveTab(cat.id)}
-                                className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap ${
+                                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap ${
                                     String(activeTab) === String(cat.id)
                                         ? 'bg-orange-500 text-white'
                                         : 'bg-white text-gray-600'
@@ -157,22 +157,22 @@ export default function Wellness({
                     </div>
 
                     {/* ================= RECOMMENDED ================= */}
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-gray-800">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-800">
                             Recommended
                         </h3>
                     </div>
 
                     {/* ================= SERVICES ================= */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-2 md:grid-cols-2 gap-3 sm:gap-5">
                         {filteredServices.map(service => (
                             <div
                                 key={service.id}
                                 onClick={() => handleServiceClick(service.id)}
-                                className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all cursor-pointer flex items-center gap-4 p-4 group"
+                                className="bg-white rounded-xl sm:rounded-2xl shadow-sm hover:shadow-lg transition-all cursor-pointer flex flex-col sm:flex-row items-center gap-3 sm:gap-4 p-3 sm:p-4 group"
                             >
                                 {/* IMAGE LEFT */}
-                                <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 group-hover:scale-105 transition-transform">
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 group-hover:scale-105 transition-transform">
                                     <img
                                         src={
                                             service.icon_url ||
@@ -185,26 +185,26 @@ export default function Wellness({
                                 </div>
 
                                 {/* CONTENT */}
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
+                                <div className="flex-1 text-center sm:text-left">
+                                    <h4 className="font-semibold text-sm sm:text-base text-gray-900 group-hover:text-orange-600 transition-colors">
                                         {service.wellness_name}
                                     </h4>
 
                                     {service.vendor && (
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-gray-500 mt-0.5">
                                             by {service.vendor.vendor_name}
                                         </p>
                                     )}
 
-                                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                                    <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
                                         <span>⭐⭐⭐⭐⭐ </span>
-                                        <span>Verified Partner</span>
+                                        <span className="hidden sm:inline">Verified Partner</span>
                                     </div>
                                 </div>
 
                                 {/* OFFER */}
                                 {service.description && (
-                                    <span className="text-xs font-semibold text-orange-500 group-hover:scale-110 transition-transform">
+                                    <span className="text-xs font-semibold text-orange-500 group-hover:scale-110 transition-transform flex-shrink-0">
                                         {service.description}
                                     </span>
                                 )}

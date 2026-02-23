@@ -5,6 +5,7 @@ import {
     DocumentTextIcon,
     ClockIcon,
     UserCircleIcon,
+    ArrowLeftIcon,
     ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 
@@ -40,49 +41,52 @@ export default function Claims({ employee }) {
             <Head title="My Claims" />
 
             {/* Page wrapper */}
-            <div className="flex-1 overflow-y-auto px-6 py-8 scrollbar-hide rounded-[32px] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 p-10 mt-4">
-                <div className="max-w-7xl mx-auto ">
+            <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-8 py-4 sm:py-8 scrollbar-hide rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 mt-2 sm:mt-4">
+                <div className="max-w-7xl mx-auto">
 
                     {/* Header with top-right button */}
-                    <div className="flex items-center justify-between gap-3 mb-6">
-                        <div className="flex items-center gap-3">
-                            <button className="text-gray-600 hover:text-gray-900 text-sm">
-                                ←
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <button
+                                onClick={() => window.history.back()}
+                                className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-white shadow flex items-center justify-center flex-shrink-0"
+                            >
+                                <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
                             </button>
                             <div>
-                                <h1 className="text-xl font-semibold text-gray-900">
-                                    My claims
+                                <h1 className="text-base sm:text-2xl font-bold text-gray-900">
+                                    My Claims
                                 </h1>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs sm:text-xs text-gray-500">
                                     File claims and track your existing ones
                                 </p>
                             </div>
                         </div>
                         <Link
                             href="/employee/claims/initiate"
-                            className="px-5 py-2 rounded-lg bg-purple-600 text-white font-medium shadow hover:bg-purple-700 transition"
+                            className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg bg-purple-600 text-white font-medium text-xs sm:text-sm shadow hover:bg-purple-700 transition whitespace-nowrap"
                         >
                             Initiate Claim
                         </Link>
                     </div>
 
                     {/* Gradient background container */}
-                    <div id="claims-section" className="claims-section bg-gray-50">
+                    <div id="claims-section" className="claims-section ">
 
                             {/* Inner white card */}
-                            <div className="bg-white rounded-[28px] p-10 flex gap-10 min-h-[560px]">
+                            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 flex flex-col md:flex-row gap-6 md:gap-10 min-h-[auto] md:min-h-[470px]">
 
                             {/* Left section */}
-                            <div className="w-3/5 flex items-center justify-center">
+                            <div className="w-full md:w-3/5 flex items-center justify-center">
                                 {claims.length === 0 && (
-                                    <div className="bg-gray-50 rounded-2xl w-full h-full flex flex-col items-center justify-center text-center px-6">
+                                    <div className="bg-gray-50 rounded-xl sm:rounded-2xl w-full h-full flex flex-col items-center justify-center text-center px-3 sm:px-6 py-6 sm:py-10">
 
                                         {/* Illustration image */}
-                                        <div className="w-64 h-64 flex items-center justify-center mb-4">
-                                            <img src="/assets/images/claimNotFound.png" alt="No claims" className="w-40 h-56 object-contain" />
+                                        <div className="w-40 h-28 sm:w-56 sm:h-56 md:w-64 md:h-40 flex items-center justify-center mb-3 sm:mb-4">
+                                            <img src="/assets/images/claimNotFound.png" alt="No claims" className="w-32 h-44 sm:w-40 sm:h-56 object-contain" />
                                         </div>
 
-                                        <h2 className="text-xl font-semibold text-gray-900">
+                                        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900">
                                             No claims yet
                                         </h2>
                                             <p className="text-xs text-gray-500 mt-2 max-w-xs">
@@ -93,48 +97,48 @@ export default function Claims({ employee }) {
                             </div>
 
                             {/* Right section */}
-                            <div className="w-2/5">
-                                <h3 className="text-base font-semibold text-gray-900 mb-6">
+                            <div className="w-full md:w-2/5">
+                                <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-3 sm:mb-6">
                                     Need help?
                                 </h3>
 
-                                <div className="space-y-4">
+                                <div className="space-y-2 sm:space-y-4">
 
                                     {/* Help item */}
-                                    <button onClick={() => openDrawer('file')} className="w-full flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3 hover:shadow-md transition bg-white">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
-                                                <DocumentTextIcon className="w-5 h-5 text-purple-600" />
+                                    <button onClick={() => openDrawer('file')} className="w-full flex items-center justify-between rounded-lg sm:rounded-xl border border-gray-100 px-3 sm:px-4 py-2 sm:py-3 hover:shadow-md transition bg-white">
+                                        <div className="flex items-center gap-2 sm:gap-4">
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0">
+                                                <DocumentTextIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                                             </div>
-                                            <p className="font-medium text-sm text-gray-800">
+                                            <p className="font-medium text-xs sm:text-sm text-gray-800">
                                                 How to file a claim?
                                             </p>
                                         </div>
-                                        <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                                        <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
                                     </button>
 
-                                    <button onClick={() => openDrawer('process')} className="w-full flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3 hover:shadow-md transition bg-white">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
-                                                <ClockIcon className="w-5 h-5 text-purple-600" />
+                                    <button onClick={() => openDrawer('process')} className="w-full flex items-center justify-between rounded-lg sm:rounded-xl border border-gray-100 px-3 sm:px-4 py-2 sm:py-3 hover:shadow-md transition bg-white">
+                                        <div className="flex items-center gap-2 sm:gap-4">
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0">
+                                                <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                                             </div>
-                                            <p className="font-medium text-sm text-gray-800">
+                                            <p className="font-medium text-xs sm:text-sm text-gray-800">
                                                 Know about claim process
                                             </p>
                                         </div>
-                                        <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                                        <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
                                     </button>
 
-                                    <button onClick={() => openDrawer('connect')} className="w-full flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3 hover:shadow-md transition bg-white">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
-                                                <UserCircleIcon className="w-5 h-5 text-purple-600" />
+                                    <button onClick={() => openDrawer('connect')} className="w-full flex items-center justify-between rounded-lg sm:rounded-xl border border-gray-100 px-3 sm:px-4 py-2 sm:py-3 hover:shadow-md transition bg-white">
+                                        <div className="flex items-center gap-2 sm:gap-4">
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0">
+                                                <UserCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                                             </div>
-                                            <p className="font-medium text-sm text-gray-800">
+                                            <p className="font-medium text-xs sm:text-sm text-gray-800 text-left">
                                                 Connect with claim representative
                                             </p>
                                         </div>
-                                        <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                                        <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
                                     </button>
 
                                 </div>
@@ -149,24 +153,24 @@ export default function Claims({ employee }) {
                     {/* backdrop */}
                     <div onClick={closeDrawer} className="absolute inset-0 bg-black transition-opacity opacity-30" />
 
-                    <aside className="absolute right-0 top-0 h-full bg-white shadow-xl transform transition-transform duration-300 translate-x-0" style={{ width: 420 }}>
+                    <aside className="fixed bottom-16 sm:bottom-auto left-0 right-0 sm:absolute sm:left-auto sm:right-0 sm:top-0 h-3/4 sm:h-full bg-white shadow-xl transform transition-transform duration-300 translate-x-0 rounded-t-3xl sm:rounded-none" style={{ width: 'auto', maxWidth: 420 }}>
                         <style>{`.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .hide-scrollbar::-webkit-scrollbar { display: none; }`}</style>
-                        <div className="p-6 h-full flex flex-col text-sm">
-                            <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-semibold text-gray-900">{drawerMode === 'process' ? 'Claim process' : drawerMode === 'file' ? 'File a claim' : 'Connect with representative'}</h4>
-                                <button onClick={closeDrawer} className="text-gray-500 hover:text-gray-800">✕</button>
+                        <div className="p-4 sm:p-6 h-full flex flex-col text-xs sm:text-sm">
+                            <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                <h4 className="font-semibold text-sm sm:text-base text-gray-900">{drawerMode === 'process' ? 'Claim process' : drawerMode === 'file' ? 'File a claim' : 'Connect with representative'}</h4>
+                                <button onClick={closeDrawer} className="text-gray-500 hover:text-gray-800 font-bold text-lg">✕</button>
                             </div>
 
                             {drawerMode === 'process' && (
                                 <div className="flex-1 overflow-y-auto pr-2 hide-scrollbar">
-                                    <div className="flex gap-2 mb-4">
-                                        <button onClick={() => setProcessTab('intimation')} className={`px-3 py-1 rounded-full ${processTab==='intimation' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Intimation</button>
-                                        <button onClick={() => setProcessTab('reimbursement')} className={`px-3 py-1 rounded-full ${processTab==='reimbursement' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Reimbursement</button>
+                                    <div className="flex gap-2 mb-4 flex-wrap">
+                                        <button onClick={() => setProcessTab('intimation')} className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm whitespace-nowrap ${processTab==='intimation' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Intimation</button>
+                                        <button onClick={() => setProcessTab('reimbursement')} className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm whitespace-nowrap ${processTab==='reimbursement' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Reimbursement</button>
                                     </div>
 
                                     {processTab === 'intimation' && (
-                                        <div className="space-y-3 text-xs text-gray-700 leading-relaxed">
-                                            <h5 className="font-semibold text-sm">What are Cashless Claims ?</h5>
+                                        <div className="space-y-2 sm:space-y-3 text-xs text-gray-700 leading-snug md:leading-relaxed">
+                                            <h5 className="font-semibold text-xs sm:text-sm">What are Cashless Claims ?</h5>
                                             <p>Cashless claims facility assures that hospitalisation expenses are borne by insurers. It is a specialized service provided by an insurance company or a third-party administrator (TPA), where the payment for the cost of treatment undergone by the policyholder is directly made by the insurer to the network provider in accordance with the policy terms and conditions.</p>
                                             <p>If an insured person undergoes treatment at any of the network hospitals, there is no need for the person to pay the hospital bills. Please check your network hospitals here.</p>
 
@@ -190,8 +194,8 @@ export default function Claims({ employee }) {
                                     )}
 
                                     {processTab === 'reimbursement' && (
-                                        <div className="space-y-3 text-xs text-gray-700 leading-relaxed">
-                                            <h5 className="font-semibold text-sm">Reimbursement</h5>
+                                        <div className="space-y-2 sm:space-y-3 text-xs text-gray-700 leading-snug md:leading-relaxed">
+                                            <h5 className="font-semibold text-xs sm:text-sm">Reimbursement</h5>
                                             <p>A reimbursement claim means settling the hospital bill out-of-pocket and then applying for reimbursement from the insurance company.</p>
                                             <h6 className="font-semibold mt-2">How to claim ?</h6>
                                             <ol className="list-decimal ml-5 space-y-2">
@@ -221,8 +225,8 @@ export default function Claims({ employee }) {
 
                             {drawerMode === 'file' && (
                                 <div className="flex-1 overflow-y-auto pr-2 hide-scrollbar">
-                                    <div className="space-y-3 text-xs text-gray-700 leading-relaxed">
-                                        <h5 className="font-semibold text-lg text-purple-700 mb-2">How to file a claim</h5>
+                                    <div className="space-y-2 sm:space-y-3 text-xs text-gray-700 leading-snug md:leading-relaxed">
+                                        <h5 className="font-semibold text-base sm:text-lg text-purple-700 mb-2">How to file a claim</h5>
                                         <ol className="list-decimal ml-5 space-y-2">
                                             <li>Contact your TPA or insurance provider as soon as possible after hospitalization.</li>
                                             <li>Collect and fill out the claim form provided by your insurer.</li>
@@ -232,7 +236,7 @@ export default function Claims({ employee }) {
                                             <li>Once approved, the claim amount will be processed and paid as per policy terms.</li>
                                         </ol>
                                         <div className="mt-4 text-center">
-                                            <button onClick={closeDrawer} className="px-4 py-2 bg-purple-600 text-white rounded">Close</button>
+                                            <button onClick={closeDrawer} className="px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-600 text-white rounded text-xs sm:text-sm font-medium">Close</button>
                                         </div>
                                     </div>
                                 </div>
@@ -240,10 +244,10 @@ export default function Claims({ employee }) {
 
                             {drawerMode === 'connect' && (
                                 <div className="flex-1 flex items-center justify-center">
-                                    <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm text-sm text-gray-700 border border-gray-100">
-                                        <h5 className="font-semibold text-lg text-center mb-4 text-purple-700">Connect with Claim Representative</h5>
-                                        <p className="mb-4 text-center">To connect with a claim representative, open your policy details and click <span className="font-medium">Connect</span>.</p>
-                                        <button onClick={() => window.location.href = '/employee/policy'} className="w-full px-4 py-2 bg-purple-600 text-white rounded text-sm font-semibold shadow">Go to Policy Details</button>
+                                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-8 w-full max-w-sm text-xs sm:text-sm text-gray-700 border border-gray-100">
+                                        <h5 className="font-semibold text-sm sm:text-lg text-center mb-3 sm:mb-4 text-purple-700">Connect with Claim Representative</h5>
+                                        <p className="mb-3 sm:mb-4 text-center text-xs sm:text-sm">To connect with a claim representative, open your policy details and click <span className="font-medium">Connect</span>.</p>
+                                        <button onClick={() => window.location.href = '/employee/policy'} className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-600 text-white rounded text-xs sm:text-sm font-semibold shadow">Go to Policy Details</button>
                                     </div>
                                 </div>
                             )}
