@@ -22,10 +22,26 @@ const cities = [
 	{
 		key: 'mumbai',
 		name: 'Mumbai',
-		address: 'Awfis, 4th Floor, Skyline Icon, Marol, Andheri Kurla Road, Mittal Industrial Estate, Andheri East, Mumbai 400059',
+		address: 'INNOV8 Coworking, 4th Floor, RCity Offices, Lal Bahadur Shastri Marg, adjoining RCity Mall, Amruti Nagar, Ghatkopar West, Mumbai, Maharashtra – 400086',
 		mapSrc:
-			'https://www.google.com/maps?q=Awfis,+4th+Floor,+Skyline+Icon,+Marol,+Andheri+Kurla+Road,+Mittal+Industrial+Estate,+Andheri+East,+Mumbai+400059&output=embed',
+			'https://www.google.com/maps?q=Mumbai+Office+-+INNOV8+Coworking,+4th+Floor,+RCity+Offices,+Lal+Bahadur+Shastri+Marg,+adjoining+RCity+Mall,+Amruti+Nagar,+Ghatkopar+West,+Mumbai,+Maharashtra+–+400086&output=embed',
 		icon: <img src="/assets/logo/contact Us logo/Gateway-of-india.png" alt="Mumbai" width="96" height="96" />,
+	},
+	{
+		key: 'hyderabad',
+		name: 'Hyderabad',
+		address: 'DBS Workspace, DBS House, 1-7-43-46, Sardar Patel Road, Secunderabad - 500003',
+		mapSrc:
+			'https://www.google.com/maps?q=DBS+Workspace,+DBS+House,+1-7-43-46,+Sardar+Patel+Road,+Secunderabad+-+500003&output=embed',
+		icon: <img src="/assets/logo/contact Us logo/hyderabad.png" alt="Hyderabad" width="96" height="96" />,
+	},
+	{
+		key: 'chennai',
+		name: 'Chennai',
+		address: '435, 4th Floor, Workafella Histreet, No. 431, Anna Salai, Teynampet, Chennai, Tamilnadu- 600018',
+		mapSrc:
+			'https://www.google.com/maps?q=435,+4th+Floor,+Workafella+Histreet,+No.+431,+Anna+Salai,+Teynampet,+Chennai,+Tamilnadu-+600018&output=embed',
+		icon: <img src="/assets/logo/contact Us logo/chennai.png" alt="Chennai" width="96" height="96" />,
 	},
 	{
 		key: 'pune',
@@ -34,15 +50,7 @@ const cities = [
 		mapSrc:
 			'https://www.google.com/maps?q=Unit+No.+307,+3rd+floor,+Koncord+Tower,+S.No.+364+CTS+No.+1/1+F.P.+No.+256,+Pune+City,+Pune+411001&output=embed',
 		icon: <img src="/assets/logo/contact Us logo/pune.png" alt="Pune" width="96" height="96" />,
-	},
-	{
-		key: 'chennai',
-		name: 'Chennai',
-		address: 'Flat No. 1, Basement Door New No. 2 (Old No 37) Conron Smith road, Gopalapuram, Chennai - 600 086',
-		mapSrc:
-			'https://www.google.com/maps?q=Flat+No.+1,+Basement+Door+New+No.+2+(Old+No+37)+Conron+Smith+road,+Gopalapuram,+Chennai+-+600+086&output=embed',
-		icon: <img src="/assets/logo/contact Us logo/chennai.png" alt="Chennai" width="96" height="96" />,
-	},
+	}
 ];
 
 export default function Contact() {
@@ -131,7 +139,7 @@ export default function Contact() {
 									<div className="flex justify-center mb-3 md:mb-4">
 										<div className="w-12 h-12 rounded-full bg-[#FFF4E6] flex items-center justify-center">
 											<svg className="w-6 h-6 text-[#dd4b63]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+												<path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
 											</svg>
 										</div>
 									</div>
@@ -144,7 +152,7 @@ export default function Contact() {
 									<div className="flex justify-center mb-3 md:mb-4">
 										<div className="w-12 h-12 rounded-full bg-[#E6F7F5] flex items-center justify-center">
 											<svg className="w-6 h-6 text-[#00b37e]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+												<path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
 											</svg>
 										</div>
 									</div>
@@ -157,7 +165,7 @@ export default function Contact() {
 									<div className="flex justify-center mb-3 md:mb-4">
 										<div className="w-12 h-12 rounded-full bg-[#E6F2FF] flex items-center justify-center">
 											<svg className="w-6 h-6 text-[#0066ff]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+												<path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
 											</svg>
 										</div>
 									</div>
@@ -258,78 +266,78 @@ export default function Contact() {
 										</div>
 									</div>
 									{success && <div className="text-green-600 font-medium mb-3 text-sm md:text-base">Thanks — your message has been sent.</div>}
-								<div className="md:flex md:justify-center">
-									<button type="submit" disabled={submitting} className={`w-full md:w-auto ${submitting ? 'bg-gray-400' : 'bg-[#ff3052] hover:bg-[#ff5470]'} text-white py-2 md:py-2 px-6 text-sm md:text-base rounded-lg font-semibold transition flex items-center justify-center group`}>
-										{submitting ? 'Sending...' : 'Submit'}
-										<span className="ml-2 transition-transform transform group-hover:translate-x-1">➔</span>
-									</button>
-								</div>
+									<div className="md:flex md:justify-center">
+										<button type="submit" disabled={submitting} className={`w-full md:w-auto ${submitting ? 'bg-gray-400' : 'bg-[#ff3052] hover:bg-[#ff5470]'} text-white py-2 md:py-2 px-6 text-sm md:text-base rounded-lg font-semibold transition flex items-center justify-center group`}>
+											{submitting ? 'Sending...' : 'Submit'}
+											<span className="ml-2 transition-transform transform group-hover:translate-x-1">➔</span>
+										</button>
+									</div>
 								</form>
 							</div>
 						</div>
 					</div>
 
-			</section>
-			<section className="py-8 md:py-16 px-4 md:px-12">
-				<div className="md:w-[95%] mx-auto py-4 md:py-12">
-					<div className="container mx-auto px-4 md:px-6 lg:px-12">
-						<h2 className="text-2xl md:text-3xl lg:text-5xl font-medium font-dmserif text-gray-800 mb-6 md:mb-8 text-center lg:text-left">We are present at</h2>
-						<div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-							{/* Left Section: City Tabs */}
-							<div className="lg:col-span-6">
-								<ul className="space-y-4 md:space-y-6 lg:space-y-8">
-									{cities.map(city => (
-										<li key={city.key}>
-											{/* If this city is not active show the clickable header (arrow + name). */}
-											{activeCity !== city.key && (
-												<button
-													type="button"
-													className="w-full flex items-center justify-between text-base md:text-lg font-semibold text-gray-800 cursor-pointer group hover:text-gray-600"
-													onClick={() => setActiveCity(city.key)}
-													aria-expanded={activeCity === city.key}
-												>
-													<span className="flex items-center gap-3 text-gray-500">
-														<span className="transition-transform duration-200" style={{ transform: activeCity === city.key ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-															<svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+				</section>
+				<section className="py-8 md:py-16 px-4 md:px-12">
+					<div className="md:w-[95%] mx-auto py-4 md:py-12">
+						<div className="container mx-auto px-4 md:px-6 lg:px-12">
+							<h2 className="text-2xl md:text-3xl lg:text-5xl font-medium font-dmserif text-gray-800 mb-6 md:mb-8 text-center lg:text-left">We are present at</h2>
+							<div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+								{/* Left Section: City Tabs */}
+								<div className="lg:col-span-6">
+									<ul className="space-y-4 md:space-y-6 lg:space-y-8">
+										{cities.map(city => (
+											<li key={city.key}>
+												{/* If this city is not active show the clickable header (arrow + name). */}
+												{activeCity !== city.key && (
+													<button
+														type="button"
+														className="w-full flex items-center justify-between text-base md:text-lg font-semibold text-gray-800 cursor-pointer group hover:text-gray-600"
+														onClick={() => setActiveCity(city.key)}
+														aria-expanded={activeCity === city.key}
+													>
+														<span className="flex items-center gap-3 text-gray-500">
+															<span className="transition-transform duration-200" style={{ transform: activeCity === city.key ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+																<svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+															</span>
+															{city.name}
 														</span>
-														{city.name}
-													</span>
 													</button>
 												)}
 
-											{/* When the city is active show only the expanded container (no header). */}
-											{activeCity === city.key && (
-												<div className="mt-3">
-													{/* Fixed height for active city card; content scrolls if it overflows */}
-													<div className="bg-white rounded-xl shadow-lg flex flex-col sm:flex-row items-start gap-4 p-4 md:p-5">
-														<div className="flex-shrink-0 mx-auto sm:mx-0">{city.icon}</div>
-														<div className="text-center sm:text-left w-full">
-															<h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">{city.name}</h3>
-															<p className="text-xs md:text-sm text-gray-700 leading-relaxed">{city.address}</p>
+												{/* When the city is active show only the expanded container (no header). */}
+												{activeCity === city.key && (
+													<div className="mt-3">
+														{/* Fixed height for active city card; content scrolls if it overflows */}
+														<div className="bg-white rounded-xl shadow-lg flex flex-col sm:flex-row items-start gap-4 p-4 md:p-5">
+															<div className="flex-shrink-0 mx-auto sm:mx-0">{city.icon}</div>
+															<div className="text-center sm:text-left w-full">
+																<h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">{city.name}</h3>
+																<p className="text-xs md:text-sm text-gray-700 leading-relaxed">{city.address}</p>
+															</div>
 														</div>
 													</div>
-												</div>
-											)}
-										</li>
-									))}
-								</ul>
-							</div>
-							{/* Right Section: Address and Map */}
-							<div className="lg:col-span-6 mt-6 lg:mt-0">
-								<div className="bg-white rounded-lg shadow-lg p-3 md:p-4">
-									<div className="overflow-hidden rounded-lg">
-										<iframe
-											src={cities.find(c => c.key === activeCity)?.mapSrc}
-											width="100%"
-											height="300"
-											className="md:h-[350px] lg:h-[400px]"
-											style={{ border: 0 }}
-											allowFullScreen=""
-											loading="lazy"
-										></iframe>
+												)}
+											</li>
+										))}
+									</ul>
+								</div>
+								{/* Right Section: Address and Map */}
+								<div className="lg:col-span-6 mt-6 lg:mt-0">
+									<div className="bg-white rounded-lg shadow-lg p-3 md:p-4">
+										<div className="overflow-hidden rounded-lg">
+											<iframe
+												src={cities.find(c => c.key === activeCity)?.mapSrc}
+												width="100%"
+												height="300"
+												className="md:h-[350px] lg:h-[400px]"
+												style={{ border: 0 }}
+												allowFullScreen=""
+												loading="lazy"
+											></iframe>
+										</div>
 									</div>
 								</div>
-							</div>
 							</div>
 						</div>
 					</div>

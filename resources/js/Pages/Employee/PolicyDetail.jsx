@@ -132,44 +132,48 @@ export default function PolicyDetail({ employee, policyDetails }) {
                 <div className="max-w-7xl mx-auto px-4 py-6">
                     
                     {/* HEADER NAVIGATION */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6">
                         <button
                             onClick={() => router.visit("/employee/policy")}
-                            className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-all"
+                            className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-all w-fit"
                         >
-                            <ArrowLeftIcon className="w-5 h-5" />
-                            <span className="font-semibold text-base">Corporate Health Insurance</span>
+                            <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 bg-white rounded-full shadow-lg " />
+                            <span className="font-semibold text-xs sm:text-base">Corporate Health Insurance</span>
                         </button>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-col sm:flex-row w-full sm:w-auto">
                             {/* Escalation Button */}
                             <button
                                 onClick={() => setShowEscalationDrawer(true)}
-                                className="relative flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+                                className="relative flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm w-full sm:w-auto"
                             >
-                                <PhoneIcon className="w-4 h-4" />
-                                Connect with claim representative
+                                <PhoneIcon className="w-4 h-4 flex-shrink-0" />
+                                <span className="hidden sm:inline">Connect with claim representative</span>
+                                <span className="sm:hidden">Connect</span>
                                 {escalation_matrix && escalation_matrix.length > 0 && (
                                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{escalation_matrix.length}</span>
                                 )}
                             </button>
 
                             {/* Network Hospitals Button */}
-                            <button
-                                onClick={() => router.visit(`/employee/network-hospitals/${btoa(policy.id)}`)}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
-                            >
-                                <GlobeAltIcon className="w-4 h-4" />
-                                Find Network Hospitals
-                            </button>
+                            {policy.policy_type === 'gmi' && (
+                                <button
+                                    onClick={() => router.visit(`/employee/network-hospitals/${btoa(policy.id)}`)}
+                                    className="flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm w-full sm:w-auto"
+                                >
+                                    <GlobeAltIcon className="w-4 h-4 flex-shrink-0" />
+                                    <span className="hidden sm:inline">Find Network Hospitals</span>
+                                    <span className="sm:hidden">Hospitals</span>
+                                </button>
+                            )}
 
                             {/* Tab Buttons */}
-                            <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-200">
+                            <div className="flex bg-white p-1 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 w-full sm:w-auto">
                                 {["details", "coverages"].map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
-                                        className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+                                        className={`flex-1 sm:flex-none px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-xs font-bold transition-all ${
                                             activeTab === tab
                                                 ? "bg-purple-600 text-white shadow-md"
                                                 : "text-gray-600 hover:bg-gray-50"
@@ -182,25 +186,25 @@ export default function PolicyDetail({ employee, policyDetails }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
                         
                         {/* LEFT SIDE: MAIN CONTENT */}
-                        <div className="lg:col-span-8 space-y-6">
+                        <div className="lg:col-span-8 space-y-4 sm:space-y-6 lg:space-y-6">
                             
                             {/* POLICY CARD - Blue gradient style (sticky on large screens). Show only on Details tab */}
                             {activeTab === 'details' && (
-                                <div className="relative overflow-hidden bg-gradient-to-br from-blue-100 via-blue-50 to-blue-100 rounded-3xl p-6 shadow-xl border border-blue-200 lg:sticky lg:top-6 lg:z-20">
+                                <div className="relative overflow-hidden bg-gradient-to-br from-blue-100 via-blue-50 to-blue-100 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-6 shadow-xl border border-blue-200  lg:z-20">
                                 {/* Decorative SVG patterns */}
-                                <svg className="absolute top-0 right-0 w-64 h-64 -mr-32 -mt-32 text-blue-200 opacity-30" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                <svg className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 -mr-20 sm:-mr-32 -mt-20 sm:-mt-32 text-blue-200 opacity-30" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                                     <path fill="currentColor" d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.6,90,-16.3,88.5,-0.9C87,14.6,81.4,29.2,73.1,42.8C64.8,56.4,53.8,69,39.9,76.8C26,84.6,9.2,87.6,-6.5,86.8C-22.2,86,-37.8,81.4,-51.2,73.4C-64.6,65.4,-75.8,54,-82.6,40.2C-89.4,26.4,-91.8,10.2,-89.7,-4.9C-87.6,-20,-81,-34,-71.8,-46.2C-62.6,-58.4,-50.8,-68.8,-37.4,-76.4C-24,-84,-12,-88.8,1.6,-91.5C15.2,-94.2,30.6,-83.6,44.7,-76.4Z" transform="translate(100 100)" />
                                 </svg>
-                                <svg className="absolute bottom-0 left-0 w-48 h-48 -ml-24 -mb-24 text-blue-300 opacity-20" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                <svg className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 -ml-16 sm:-ml-24 -mb-16 sm:-mb-24 text-blue-300 opacity-20" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                                     <path fill="currentColor" d="M39.5,-66.3C51.4,-58.5,61.4,-48.3,68.2,-36.2C75,-24.1,78.6,-10.1,77.8,3.5C77,17.1,71.8,30.3,63.9,41.8C56,53.3,45.4,63.1,33.1,68.6C20.8,74.1,6.8,75.3,-6.9,74.4C-20.6,73.5,-34,70.5,-46.3,64.8C-58.6,59.1,-69.8,50.7,-76.6,39.4C-83.4,28.1,-85.8,14,-84.1,0.7C-82.4,-12.6,-76.6,-25.2,-68.5,-36.2C-60.4,-47.2,-50,-56.6,-38.1,-64.4C-26.2,-72.2,-13.1,-78.4,0.3,-78.9C13.7,-79.4,27.6,-74.1,39.5,-66.3Z" transform="translate(100 100)" />
                                 </svg>
                                 
                                 <div className="relative z-10">
-                                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
-                                        <div className="space-y-3">
+                                    <div className="flex flex-col justify-between items-start gap-3 mb-4 sm:mb-6">
+                                        <div className="space-y-2 sm:space-y-3 w-full">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <span className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[9px] uppercase tracking-wider font-bold shadow-sm flex items-center gap-1.5">
                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -215,36 +219,118 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                                     Active
                                                 </span>
                                             </div>
-                                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                                            <h2 className="text-lg sm:text-2xl font-bold text-gray-900 break-words">
                                                 {policy.policy_name || policy.corporate_policy_name}
                                             </h2>
-                                            <p className="text-blue-700 flex items-center gap-2 text-sm font-semibold">
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                </svg>
-                                                {insurance_company.name}
-                                            </p>
-                                        </div>
-                                        {insurance_company.logo && (
-                                            <div className="bg-white p-3 rounded-xl shadow-lg border border-blue-200">
-                                                <img
-                                                    src={`/${insurance_company.logo}`}
-                                                    className="h-8 w-auto object-contain"
-                                                    alt="Provider"
-                                                />
+                                            <div className="flex items-center justify-between gap-2 w-full">
+                                                <p className="text-blue-700 flex items-center gap-1.5 text-xs md:text-sm font-semibold leading-tight md:leading-relaxed">
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                    </svg>
+                                                    {insurance_company.name}
+                                                </p>
+                                                {insurance_company.logo && (
+                                                    <div className="bg-white p-1.5 sm:p-2 rounded-lg shadow-lg border border-blue-200 flex-shrink-0">
+                                                        <img
+                                                            src={`/${insurance_company.logo}`}
+                                                            className="h-5 sm:h-6 w-auto object-contain"
+                                                            alt="Provider"
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-blue-200">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 pt-3 sm:pt-4 border-t border-blue-200">
                                         <StatBlock label="Sum Insured" value={cover_summary} isHtml />
-                                        <StatBlock label="Start Date" value={formatDate(policy.policy_start_date)} />
+                                        {/* <StatBlock label="Start Date" value={formatDate(policy.policy_start_date)} /> */}
                                         <StatBlock label="Expiry Date" value={formatDate(policy.policy_end_date)} />
                                         <div className="col-span-2 sm:col-span-4">
                                             <StatBlock label="Policy No." value={policy.policy_number} />
                                         </div>
                                     </div>
                                 </div>
+                                </div>
+                            )}
+
+                            {/* MOBILE BENEFICIARIES - Show only on mobile, after policy card */}
+                            {activeTab === 'details' && (
+                                <div className="lg:hidden">
+                                    <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-gray-200">
+                                        <div className="flex items-center gap-2 mb-4 pb-3 sm:mb-5 sm:pb-4 border-b border-gray-100">
+                                            <UserGroupIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                            <h3 className="font-bold text-gray-900 text-sm sm:text-base">Beneficiaries</h3>
+                                        </div>
+
+                                        <div className="space-y-1.5 sm:space-y-2 mb-4 sm:mb-5 max-h-[200px] sm:max-h-none overflow-auto scrollbar-hide">
+                                            {dependents?.map((member, index) => {
+                                                const isActive = activeMember?.uhid === member.uhid;
+                                                return (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => setActiveMember(member)}
+                                                        className={`w-full flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all ${
+                                                            isActive ? 
+                                                                "bg-gradient-to-br from-purple-500 to-pink-500 text-white hover:from-purple-100/40 hover:to-pink-100/40 border border-purple-100/20" : 
+                                                                "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                                                        }`}
+                                                    >
+                                                        <div className={`w-7 sm:w-9 h-7 sm:h-9 rounded-lg flex items-center justify-center text-base sm:text-lg flex-shrink-0 ${
+                                                            isActive ? "bg-white/20" : "bg-white shadow-sm"
+                                                        }`}>
+                                                            {getRelationIcon(member.relation)}
+                                                        </div>
+                                                        <div className="flex-1 text-left min-w-0">
+                                                            <p className="font-bold text-xs leading-tight line-clamp-1">{member.insured_name}</p>
+                                                            <p className={`text-[8px] sm:text-[9px] uppercase font-medium tracking-wider line-clamp-1 ${
+                                                                isActive ? "text-white/80" : "text-gray-500"
+                                                            }`}>
+                                                                {member.relation}
+                                                            </p>
+                                                        </div>
+                                                        {isActive && <CheckBadgeIcon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {activeMember && (
+                                            <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl sm:rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden mt-4 sm:mt-5">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
+                                                <div className="relative z-10">
+                                                    <h4 className="font-bold text-white/80 text-[8px] sm:text-[9px] uppercase tracking-widest mb-3 sm:mb-4">Member Details</h4>
+                                                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                                                        <DetailItemDark label="Gender" value={activeMember.gender} />
+                                                        <DetailItemDark label="DOB" value={formatDate(activeMember.dob)} />
+                                                        <DetailItemDark label="Member ID" value={activeMember.uhid || "PENDING"} />
+                                                        <DetailItemDark label="Status" value="Active" />
+                                                    </div>
+                                                    
+                                                    {/* Download Health Card Button */}
+                                                    {policy.policy_type === 'gmi' && (
+                                                        <button
+                                                            onClick={handleDownloadECard}
+                                                            disabled={downloadingECard}
+                                                            className="w-full mt-3 sm:mt-4 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 backdrop-blur-sm text-sm"
+                                                        >
+                                                            <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                            {downloadingECard ? 'Downloading...' : 'Download Health Card'}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {policy.policy_type === 'gmi' && (
+                                            <button
+                                                onClick={() => router.visit('/employee/claims')}
+                                                className="w-full mt-3 sm:mt-4 bg-white text-purple-600 hover:bg-purple-50 border border-purple-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg text-sm"
+                                            >
+                                                <ShieldCheckIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                Claim Insurance
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 
@@ -257,7 +343,7 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-4">
                                     <DetailSectionCard 
                                         title="TPA Support" 
                                         icon={<GlobeAltIcon className="w-4 h-4 text-purple-600"/>}
@@ -290,23 +376,23 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                 </div>
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
-                                    <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h3 className="text-base font-bold text-gray-900 mb-1">
+                                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+                                    <div className="p-4 sm:p-6 lg:p-6 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                            <div className="flex-1">
+                                                <h3 className="text-sm sm:text-base lg:text-base font-bold text-gray-900 mb-1">
                                                     {!showExclusions ? 
                                                         `${policy_features?.inclusion?.length || 0} Coverages Included` : 
                                                         `${policy_features?.exclusion?.length || 0} Exclusions`
                                                     }
                                                 </h3>
-                                                <p className="text-xs text-gray-600">
+                                                <p className="text-xs text-gray-600 line-clamp-2">
                                                     {!showExclusions ? "Benefits covered under your policy" : "Conditions not covered"}
                                                 </p>
                                             </div>
                                             <button
                                                 onClick={() => setShowExclusions(!showExclusions)}
-                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                                                className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs font-bold transition-all shadow-sm whitespace-nowrap ${
                                                     showExclusions ? 
                                                         "bg-green-100 text-green-700 hover:bg-green-200" : 
                                                         "bg-red-100 text-red-700 hover:bg-red-200"
@@ -317,18 +403,18 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                         </div>
                                     </div>
 
-                                    <div className="p-6 mt-4 lg:max-h-[600px] overflow-auto lg:overflow-y-auto scrollbar-hide relative z-10">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="p-4 sm:p-6 lg:p-6 mt-4 max-h-[300px] sm:max-h-none lg:max-h-[600px] overflow-auto lg:overflow-y-auto scrollbar-hide relative z-10">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-3">
                                             {(!showExclusions ? policy_features?.inclusion : policy_features?.exclusion)?.map((item, index) => (
                                                 <div 
                                                     key={index} 
-                                                    className={`flex gap-3 p-4 rounded-2xl border transition-all hover:shadow-md ${
+                                                    className={`flex gap-2 sm:gap-3 lg:gap-3 p-3 sm:p-4 lg:p-4 rounded-xl sm:rounded-2xl border transition-all hover:shadow-md ${
                                                         showExclusions ? 
                                                             "bg-red-50/50 border-red-100 hover:bg-red-50" : 
                                                             "bg-green-50/50 border-green-100 hover:bg-green-50"
                                                     }`}
                                                 >
-                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 shadow-sm ${
+                                                    <div className={`w-8 sm:w-10 lg:w-10 h-8 sm:h-10 lg:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-sm sm:text-lg flex-shrink-0 shadow-sm ${
                                                         showExclusions ? "bg-white" : "bg-white"
                                                     }`}>
                                                         {showExclusions ? 
@@ -337,8 +423,8 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                                         }
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="font-bold text-gray-900 text-sm mb-1 leading-tight">{item.feature_title}</p>
-                                                        <p className="text-xs text-gray-600 leading-relaxed">{item.feature_desc || "Standard policy terms apply."}</p>
+                                                        <p className="font-bold text-gray-900 text-xs sm:text-sm lg:text-sm mb-0.5 sm:mb-1 leading-tight line-clamp-2">{item.feature_title}</p>
+                                                        <p className="text-xs text-gray-600 leading-snug line-clamp-2">{item.feature_desc || "Standard policy terms apply."}</p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -349,51 +435,51 @@ export default function PolicyDetail({ employee, policyDetails }) {
                     </div>
 
                         {/* RIGHT SIDE: BENEFICIARIES */}
-                        <div className="lg:col-span-4">
-                            <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-200 sticky top-6">
-                                <div className="flex items-center gap-2 mb-5 pb-4 border-b border-gray-100">
-                                    <UserGroupIcon className="w-5 h-5 text-purple-600" />
-                                    <h3 className="font-bold text-gray-900 text-base">Beneficiaries</h3>
+                        <div className="lg:col-span-4 hidden lg:block">
+                            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-5 shadow-sm border border-gray-200 lg:sticky lg:top-6">
+                                <div className="flex items-center gap-2 mb-4 pb-3 sm:mb-5 sm:pb-4 lg:pb-4 border-b border-gray-100">
+                                    <UserGroupIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                    <h3 className="font-bold text-gray-900 text-sm sm:text-base lg:text-base">Beneficiaries</h3>
                                 </div>
 
-                                <div className="space-y-2 mb-5 lg:max-h-[300px] max-h-none overflow-auto lg:overflow-y-auto scrollbar-hide">
+                                <div className="space-y-1.5 sm:space-y-2 lg:space-y-2 mb-4 sm:mb-5 lg:mb-5 max-h-[200px] sm:max-h-none lg:max-h-[300px] overflow-auto lg:overflow-y-auto scrollbar-hide">
                                     {dependents?.map((member, index) => {
                                         const isActive = activeMember?.uhid === member.uhid;
                                         return (
                                             <button
                                                 key={index}
                                                 onClick={() => setActiveMember(member)}
-                                                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+                                                className={`w-full flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all ${
                                                     isActive ? 
                                                         "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg" : 
                                                         "bg-gray-50 text-gray-700 hover:bg-gray-100"
                                                 }`}
                                             >
-                                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg ${
+                                                <div className={`w-7 sm:w-9 h-7 sm:h-9 rounded-lg flex items-center justify-center text-base sm:text-lg flex-shrink-0 ${
                                                     isActive ? "bg-white/20" : "bg-white shadow-sm"
                                                 }`}>
                                                     {getRelationIcon(member.relation)}
                                                 </div>
-                                                <div className="flex-1 text-left">
-                                                    <p className="font-bold text-xs leading-tight">{member.insured_name}</p>
-                                                    <p className={`text-[9px] uppercase font-medium tracking-wider ${
+                                                <div className="flex-1 text-left min-w-0">
+                                                    <p className="font-bold text-xs leading-tight line-clamp-1">{member.insured_name}</p>
+                                                    <p className={`text-[8px] sm:text-[9px] uppercase font-medium tracking-wider line-clamp-1 ${
                                                         isActive ? "text-white/80" : "text-gray-500"
                                                     }`}>
                                                         {member.relation}
                                                     </p>
                                                 </div>
-                                                {isActive && <CheckBadgeIcon className="w-5 h-5" />}
+                                                {isActive && <CheckBadgeIcon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />}
                                             </button>
                                         );
                                     })}
                                 </div>
 
                                 {activeMember && (
-                                    <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-5 text-white relative overflow-hidden">
+                                    <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-5 text-white relative overflow-hidden mt-4 sm:mt-5">
                                         <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
                                         <div className="relative z-10">
-                                            <h4 className="font-bold text-white/80 text-[9px] uppercase tracking-widest mb-4">Member Details</h4>
-                                            <div className="grid grid-cols-2 gap-3">
+                                            <h4 className="font-bold text-white/80 text-[8px] sm:text-[9px] uppercase tracking-widest mb-3 sm:mb-4 lg:mb-4">Member Details</h4>
+                                            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-3">
                                                 <DetailItemDark label="Gender" value={activeMember.gender} />
                                                 <DetailItemDark label="DOB" value={formatDate(activeMember.dob)} />
                                                 <DetailItemDark label="Member ID" value={activeMember.uhid || "PENDING"} />
@@ -401,25 +487,29 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                             </div>
                                             
                                             {/* Download Health Card Button */}
-                                            <button
-                                                onClick={handleDownloadECard}
-                                                disabled={downloadingECard}
-                                                className="w-full mt-4 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 backdrop-blur-sm"
-                                            >
-                                                <ArrowDownTrayIcon className="w-5 h-5" />
-                                                {downloadingECard ? 'Downloading...' : 'Download Health Card'}
-                                            </button>
+                                            {policy.policy_type === 'gmi' && (
+                                                <button
+                                                    onClick={handleDownloadECard}
+                                                    disabled={downloadingECard}
+                                                    className="w-full mt-3 sm:mt-4 lg:mt-4 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 backdrop-blur-sm text-sm"
+                                                >
+                                                    <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                    {downloadingECard ? 'Downloading...' : 'Download Health Card'}
+                                                </button>
+                                            )}
                                         </div>
                                          
                                     </div>
                                 )}
-                                <button
+                                {policy.policy_type === 'gmi' && (
+                                    <button
                                         onClick={() => router.visit('/employee/claims')}
-                                        className="w-full mt-4 bg-white text-purple-600 hover:bg-purple-50 border border-purple-200 font-semibold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
+                                        className="w-full mt-3 sm:mt-4 lg:mt-4 bg-white text-purple-600 hover:bg-purple-50 border border-purple-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg text-sm"
                                     >
-                                        <ShieldCheckIcon className="w-5 h-5" />
+                                        <ShieldCheckIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                                         Claim Insurance
                                     </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -435,27 +525,27 @@ export default function PolicyDetail({ employee, policyDetails }) {
                         ></div>
 
                         {/* Drawer */}
-                        <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 overflow-y-auto scrollbar-hide animate-slide-in-right">
-                            <div className="p-6">
+                        <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 overflow-y-auto scrollbar-hide animate-slide-in-right max-w-[90vw] sm:max-w-96 lg:max-w-96">
+                            <div className="p-4 sm:p-6 lg:p-6">
                                 {/* Header */}
-                                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-900">Claim Representatives</h3>
-                                        <p className="text-xs text-gray-500 mt-1">Connect with escalation team</p>
+                                <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-6 pb-3 sm:pb-4 lg:pb-4 border-b border-gray-200">
+                                    <div className="flex-1 pr-3">
+                                        <h3 className="text-base sm:text-lg lg:text-lg font-bold text-gray-900">Claim Representatives</h3>
+                                        <p className="text-xs text-gray-500 mt-0.5 sm:mt-1 lg:mt-1">Connect with escalation team</p>
                                     </div>
                                     <button
                                         onClick={() => setShowEscalationDrawer(false)}
-                                        className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0"
                                     >
-                                        <XCircleIcon className="w-5 h-5 text-gray-600" />
+                                        <XCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                                     </button>
                                 </div>
 
                                 {/* Escalation Cards */}
-                                <div className="space-y-4">
+                                <div className="space-y-3 sm:space-y-4 lg:space-y-4">
                                         {escalation_matrix && escalation_matrix.length > 0 ? (
                                         escalation_matrix.map((item, index) => (
-                                            <div key={index} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 border border-gray-200">
+                                            <div key={index} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-gray-200">
                                                 {/* Level 1 Contact (fallback to ID if details missing) */}
                                                 {item.claim_level_1 ? (
                                                     (() => {
@@ -653,12 +743,12 @@ export default function PolicyDetail({ employee, policyDetails }) {
 
 function StatBlock({ label, value, isHtml }) {
     return (
-        <div className="space-y-1">
-            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">{label}</p>
+        <div className="space-y-0.5 sm:space-y-1">
+            <p className="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-wider">{label}</p>
             {isHtml ? (
-                <div className="text-base font-bold text-gray-900" dangerouslySetInnerHTML={{ __html: value }} />
+                <div className="text-xs sm:text-base font-bold text-gray-900 line-clamp-2" dangerouslySetInnerHTML={{ __html: value }} />
             ) : (
-                <p className="text-base font-bold text-gray-900 break-words">{value || "—"}</p>
+                <p className="text-xs sm:text-base font-bold text-gray-900 break-words line-clamp-2">{value || "—"}</p>
             )}
         </div>
     );
@@ -666,10 +756,10 @@ function StatBlock({ label, value, isHtml }) {
 
 function DetailSectionCard({ title, icon, children }) {
     return (
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-5 shadow-sm border border-gray-200">
+            <div className="flex items-center gap-2 mb-3 sm:mb-4 lg:mb-4 pb-2 sm:pb-3 lg:pb-3 border-b border-gray-100">
                 {icon}
-                <h4 className="font-bold text-gray-900 text-sm">{title}</h4>
+                <h4 className="font-bold text-gray-900 text-xs sm:text-sm lg:text-sm">{title}</h4>
             </div>
             {children}
         </div>
@@ -678,13 +768,13 @@ function DetailSectionCard({ title, icon, children }) {
 
 function ContactLink({ icon, label, value }) {
     return (
-        <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors">
-            <div className="text-gray-400">
-                {React.cloneElement(icon, { className: "w-4 h-4" })}
+        <div className="flex items-center gap-2 sm:gap-3 p-1.5 sm:p-2 lg:p-2 hover:bg-gray-50 rounded-lg sm:rounded-xl transition-colors">
+            <div className="text-gray-400 flex-shrink-0">
+                {React.cloneElement(icon, { className: "w-3.5 h-3.5 sm:w-4 sm:h-4" })}
             </div>
-            <div>
-                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{label}</p>
-                <p className="text-xs font-bold text-gray-800">{value}</p>
+            <div className="min-w-0">
+                <p className="text-[8px] sm:text-[9px] text-gray-400 font-bold uppercase tracking-wider">{label}</p>
+                <p className="text-xs font-bold text-gray-800 truncate">{value}</p>
             </div>
         </div>
     );
@@ -693,10 +783,10 @@ function ContactLink({ icon, label, value }) {
 function TimelinePoint({ label, date, color, active }) {
     return (
         <div className="relative">
-            <div className={`absolute -left-[29px] top-1 w-3 h-3 rounded-full border-2 border-white shadow-sm ${color} ${active ? 'ring-2 ring-purple-200' : ''}`}></div>
+            <div className={`absolute -left-[29px] top-0.5 sm:top-1 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border-2 border-white shadow-sm ${color} ${active ? 'ring-2 ring-purple-200' : ''}`}></div>
             <div>
                 <p className={`text-xs font-bold ${active ? "text-purple-600" : "text-gray-900"}`}>{label}</p>
-                <p className="text-[10px] text-gray-500 font-medium">{date}</p>
+                <p className="text-[9px] sm:text-[10px] text-gray-500 font-medium">{date}</p>
             </div>
         </div>
     );
@@ -704,9 +794,9 @@ function TimelinePoint({ label, date, color, active }) {
 
 function DetailItemDark({ label, value }) {
     return (
-        <div>
-            <p className="text-[9px] text-white/60 font-bold uppercase mb-1 tracking-wider">{label}</p>
-            <p className="text-xs font-bold text-white">{value || "N/A"}</p>
+        <div className="min-w-0">
+            <p className="text-[8px] sm:text-[9px] text-white/60 font-bold uppercase mb-0.5 sm:mb-1 tracking-wider">{label}</p>
+            <p className="text-xs font-bold text-white truncate">{value || "N/A"}</p>
         </div>
     );
 }

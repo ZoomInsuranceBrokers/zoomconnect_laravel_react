@@ -167,6 +167,7 @@ export default function InitiateClaim({ employee }) {
             const response = await axios.get("/employee/claims/active-policies");
             if (response.data.success) {
                 setPolicies(response.data.data);
+                
                 // Ensure no policy is pre-selected by default — user must explicitly choose
                 setSelectedPolicy(null);
             }
@@ -357,10 +358,10 @@ export default function InitiateClaim({ employee }) {
         <EmployeeLayout>
             <Head title="Initiate Claim" />
 
-            <div className="h-screen bg-gray-50">
-                <div className="flex h-full">
-                    {/* Left Sidebar */}
-                    <div className="w-64 bg-white h-full border-r border-gray-200 p-6 flex flex-col flex-shrink-0 overflow-hidden">
+            <div className="min-h-screen bg-gray-50">
+                <div className="flex flex-col lg:flex-row lg:h-screen">
+                    {/* Left Sidebar - Horizontal on mobile, vertical on desktop */}
+                    <div className="w-full lg:w-64 bg-white lg:h-full lg:border-r border-b lg:border-b-0 border-gray-200 p-4 sm:p-6 lg:flex lg:flex-col lg:flex-shrink-0 overflow-x-auto lg:overflow-x-visible lg:overflow-hidden">
                         {/* Logo Section */}
                         {/* <div className="mb-8">
                             <div className="flex items-center gap-2 mb-2">
@@ -377,46 +378,89 @@ export default function InitiateClaim({ employee }) {
                         </div> */}
 
                         {/* Steps */}
-                        <div className="space-y-1 flex-1">
-                            {steps.map((step, index) => (
-                                <div key={step.number} className="relative">
-                                    <div
-                                        className={`flex items-center gap-3 p-3 rounded-lg transition-all ${step.isActive
-                                                ? "bg-gray-900 text-white"
-                                                : step.isCompleted
-                                                    ? "bg-purple-50 text-gray-900"
-                                                    : "text-gray-400"
-                                            }`}
-                                    >
-                                        <div
-                                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step.isActive
-                                                    ? "bg-white text-gray-900"
-                                                    : step.isCompleted
-                                                        ? "bg-purple-600 text-white"
-                                                        : "bg-gray-200 text-gray-500"
-                                                }`}
-                                        >
-                                            {step.isCompleted ? "✓" : step.number}
-                                        </div>
-                                        <span className={`text-xs font-medium ${step.isActive ? "text-white" : ""}`}>
-                                            {step.title}
+                        <div className="flex-1 overflow-auto">
+                            {/* Mobile Horizontal Timeline */}
+                            <div className="flex lg:hidden items-center gap-4 pb-4">
+                                {/* Circular progress */}
+                                <div className="relative flex-shrink-0 w-14 h-14">
+                                    <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                                        <circle cx="28" cy="28" r="24" fill="none" stroke="#e5e7eb" strokeWidth="4" />
+                                        <circle
+                                            cx="28" cy="28" r="24"
+                                            fill="none"
+                                            stroke="rgb(147,71,144)"
+                                            strokeWidth="4"
+                                            strokeLinecap="round"
+                                            strokeDasharray={`${2 * Math.PI * 24}`}
+                                            strokeDashoffset={`${2 * Math.PI * 24 * (1 - (steps.findIndex(s => s.isActive) + 1) / steps.length)}`}
+                                        />
+                                    </svg>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <span className="text-xs font-bold text-gray-800">
+                                            {steps.findIndex(s => s.isActive) + 1}/{steps.length}
                                         </span>
                                     </div>
-                                    {index < steps.length - 1 && (
-                                        <div className="ml-7 h-6 w-0.5 bg-gray-200"></div>
+                                </div>
+                                {/* Step info */}
+                                <div className="min-w-0">
+                                    <p className="text-base font-bold text-gray-900 leading-tight">
+                                        {steps.find(s => s.isActive)?.title}
+                                    </p>
+                                    {steps[steps.findIndex(s => s.isActive) + 1] && (
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            Next: {steps[steps.findIndex(s => s.isActive) + 1]?.title}
+                                        </p>
                                     )}
                                 </div>
-                            ))}
+                            </div>
+
+                            {/* Desktop Vertical Timeline */}
+                            <div className="hidden lg:flex lg:flex-col space-y-0">
+                                {steps.map((step, index) => (
+                                    <div key={step.number} className="relative flex gap-3 items-start py-1">
+                                        <div className="flex flex-col items-center flex-shrink-0">
+                                            <div
+                                                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${step.isActive
+                                                        ? "bg-indigo-600 text-white border-2 border-indigo-600"
+                                                        : step.isCompleted
+                                                            ? "bg-[rgb(147,71,144)] text-white border-2 border-[rgb(147,71,144)]"
+                                                            : "bg-gray-200 text-gray-500 border-2 border-gray-200"
+                                                    }`}
+                                                style={step.isActive && index > 0 ? { transitionDelay: '700ms' } : {}}
+                                            >
+                                                {step.isCompleted ? "✓" : step.number}
+                                            </div>
+                                            {index < steps.length - 1 && (
+                                                <div className={`w-1 h-6 mt-0.5 rounded-full origin-top transition-all duration-700 ${
+                                                    step.isCompleted 
+                                                        ? 'connector-fill bg-[rgb(147,71,144)] shadow-lg shadow-purple-400/50' 
+                                                        : 'bg-gray-300'
+                                                }`} style={{ transformOrigin: 'top' }}></div>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col justify-center pt-1">
+                                            <span className={`text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${step.isActive
+                                                    ? "text-gray-900 font-semibold"
+                                                    : step.isCompleted
+                                                        ? "text-gray-600"
+                                                        : "text-gray-400"
+                                                }`}>
+                                                {step.title}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
-                        {/* Support Section */}
-                        <div className="mt-auto space-y-4">
-                            <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                                <div className="flex flex-col items-center gap-2 mb-2 text-center">
-                                        <PhoneIcon className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                                        <div className="text-xs text-gray-700 leading-relaxed">
-                                            <div className="font-semibold text-gray-900 mb-1">Need Help?</div>
-                                            <div className="text-[11px]">
+                        {/* Support Section - Hidden on mobile */}
+                        <div className="hidden lg:block mt-auto space-y-4">
+                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
+                                <div className="flex flex-col items-center gap-1.5 text-center">
+                                        <PhoneIcon className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                                        <div className="text-xs text-gray-700 leading-tight">
+                                            <div className="font-semibold text-gray-900 text-xs">Need Help?</div>
+                                            <div className="text-[10px] mt-0.5">
                                                 Email us at <a href="mailto:support@zoomconnect.com" className="text-purple-600 font-medium hover:text-purple-700">support@zoomconnect.com</a>
                                             </div>
                                         </div>
@@ -429,7 +473,7 @@ export default function InitiateClaim({ employee }) {
                                 onMouseEnter={() => setReviewPaused(true)}
                                 onMouseLeave={() => setReviewPaused(false)}
                             >
-                                <div className="text-xs text-gray-700 leading-relaxed italic mb-3">
+                                <div className="text-[11px] text-gray-700 leading-relaxed italic mb-3">
                                     "{reviews[reviewIndex].text}"
                                 </div>
                                 <div className="mt-2 flex items-center gap-2">
@@ -441,7 +485,7 @@ export default function InitiateClaim({ employee }) {
                                         <div className="text-gray-500">{reviews[reviewIndex].role}</div>
                                     </div>
                                 </div>
-                                <div className="mt-3 flex items-center gap-2">
+                                <div className="mt-3 flex items-center justify-center gap-2">
                                     {reviews.map((_, i) => (
                                         <button
                                             key={i}
@@ -455,10 +499,12 @@ export default function InitiateClaim({ employee }) {
                     </div>
 
                     {/* Main Content */}
-                    <div className="flex-1 p-8 overflow-y-auto no-scrollbar">
+                    <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto no-scrollbar">
                         <style>{`.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }`}</style>
-                        <div className="max-w-5xl mx-auto">
+.no-scrollbar::-webkit-scrollbar { display: none; }
+@keyframes fillConnector { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+.connector-fill { animation: fillConnector 700ms ease-out forwards; }`}</style>
+                        <div className="w-full max-w-4xl mx-auto">
                             {/* Error Message Banner */}
                             {errorMessage && (
                                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
@@ -475,9 +521,9 @@ export default function InitiateClaim({ employee }) {
                             {currentStep === 1 && (
                                 <div className="animate-fadeIn">
                                     {/* Header */}
-                                    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                                        <h1 className="text-2xl font-bold text-gray-900 mb-2">Select Your Policy & Claim Type</h1>
-                                        <div className="flex items-center gap-4 text-sm flex-wrap">
+                                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+                                        <h1 className="text-base sm:text-2xl font-bold text-gray-900 mb-2 leading-tight md:leading-snug">Select Your Policy & Claim Type</h1>
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm flex-wrap">
                                             <div className="flex items-center gap-1.5">
                                                 <CheckCircleIcon className="w-4 h-4 text-green-600" />
                                                 <span className="text-gray-600">Quick & Easy Process</span>
@@ -494,8 +540,8 @@ export default function InitiateClaim({ employee }) {
                                     </div>
 
                                     {/* Policy Selection */}
-                                    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                                        <h3 className="text-base font-semibold text-gray-900 mb-4">Select Your Insurance Policy</h3>
+                                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+                                        <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-4">Select Your Insurance Policy</h3>
                                         {loading ? (
                                             <div className="text-center py-12">
                                                 <div className="animate-spin rounded-full h-10 w-10 border-b-3 border-purple-600 mx-auto"></div>
@@ -503,11 +549,13 @@ export default function InitiateClaim({ employee }) {
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
+
                                                 {policies.map((policy) => (
+
                                                     <div
                                                         key={policy.id || policy.policy_id}
                                                         onClick={() => handlePolicySelect(policy)}
-                                                        className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${isPolicySelected(policy)
+                                                        className={`relative border-2 rounded-xl p-3 sm:p-4 cursor-pointer transition-all ${isPolicySelected(policy)
                                                                 ? "border-purple-500 bg-purple-50"
                                                                 : "border-gray-200 hover:border-purple-300 bg-white"
                                                             }`}
@@ -518,21 +566,21 @@ export default function InitiateClaim({ employee }) {
                                                                 name="policy"
                                                                 checked={isPolicySelected(policy)}
                                                                 onChange={() => handlePolicySelect(policy)}
-                                                                className="mt-1 w-4 h-4 text-purple-600 focus:ring-purple-500"
+                                                                className="mt-1 w-4 h-4 text-purple-600 focus:ring-purple-500 flex-shrink-0"
                                                             />
-                                                            <div className="flex-1">
-                                                                <h3 className="text-base font-semibold text-gray-900 mb-1">
+                                                            <div className="flex-1 min-w-0">
+                                                                <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-1 break-words">
                                                                     {policy.policy_name || policy.corporate_policy_name}
                                                                 </h3>
-                                                                <p className="text-sm text-gray-600 mb-2">{policy.insurance_company_name}</p>
-                                                                <div className="flex gap-6 text-sm">
-                                                                    <div>
+                                                                <p className="text-xs sm:text-sm text-gray-600 mb-2">{policy.insurance_company_name}</p>
+                                                                <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 text-xs sm:text-sm">
+                                                                    <div className="min-w-0">
                                                                         <span className="text-gray-500">Policy No: </span>
-                                                                        <span className="font-medium text-gray-900">{policy.policy_number}</span>
+                                                                        <span className="font-medium text-gray-900 break-all">{policy.policy_number}</span>
                                                                     </div>
-                                                                    <div>
+                                                                    <div className="min-w-0">
                                                                         <span className="text-gray-500">TPA: </span>
-                                                                        <span className="font-medium text-gray-900">{policy.tpa_company_name}</span>
+                                                                        <span className="font-medium text-gray-900 break-words">{policy.tpa_company_name}</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -550,35 +598,35 @@ export default function InitiateClaim({ employee }) {
                                     </div>
 
                                     {/* Claim Type Selection */}
-                                    <div className="bg-white rounded-lg shadow-sm p-6">
-                                        <h3 className="text-base font-semibold text-gray-900 mb-4">Choose Claim Type</h3>
-                                        <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                                        <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-4">Choose Claim Type</h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div
                                                 onClick={() => handleClaimTypeSelect("intimation")}
-                                                className={`relative border-2 rounded-xl p-5 cursor-pointer transition-all ${selectedClaimType === "intimation"
+                                                className={`relative border-2 rounded-xl p-4 sm:p-5 cursor-pointer transition-all ${selectedClaimType === "intimation"
                                                         ? "border-indigo-500 bg-indigo-50"
                                                         : "border-gray-200 hover:border-indigo-300 bg-white"
                                                     }`}
                                             >
-                                                <div className="flex items-start gap-3">
+                                                <div className="flex items-start gap-3 flex-col md:flex-row">
                                                     <input
                                                         type="radio"
                                                         name="claim_type"
                                                         checked={selectedClaimType === "intimation"}
                                                         onChange={() => handleClaimTypeSelect("intimation")}
-                                                        className="mt-1 w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                                                        className="mt-1 w-4 h-4 text-indigo-600 focus:ring-indigo-500 flex-shrink-0"
                                                     />
-                                                    <div className="flex-1">
+                                                    <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2 mb-2">
-                                                            <ClockIcon className="w-5 h-5 text-indigo-600" />
-                                                            <h4 className="font-semibold text-gray-900">Cashless / Intimation</h4>
+                                                            <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 flex-shrink-0" />
+                                                            <h4 className="font-semibold text-sm sm:text-base text-gray-900">Cashless / Intimation</h4>
                                                         </div>
-                                                        <p className="text-sm text-gray-600 mb-3">
+                                                        <p className="text-xs sm:text-sm text-gray-600 mb-3">
                                                             Get treatment without paying upfront. Insurance settles directly with hospital.
                                                         </p>
-                                                        <div className="bg-indigo-100 rounded-lg p-3 space-y-1.5">
+                                                        <div className="bg-indigo-100 rounded-lg p-2 sm:p-3 space-y-1.5">
                                                             <p className="text-xs font-semibold text-indigo-900 flex items-center gap-1">
-                                                                <InformationCircleIcon className="w-3.5 h-3.5" />
+                                                                <InformationCircleIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                                                                 When to use:
                                                             </p>
                                                             <ul className="text-xs text-indigo-800 space-y-1 ml-4 list-disc">
@@ -589,7 +637,7 @@ export default function InitiateClaim({ employee }) {
                                                             </ul>
                                                         </div>
                                                         <div className="mt-3 flex items-center gap-1 text-xs text-green-700 font-medium">
-                                                            <CheckCircleIcon className="w-4 h-4" />
+                                                            <CheckCircleIcon className="w-3.5 h-3.5 flex-shrink-0" />
                                                             <span>350+ claims processed securely today</span>
                                                         </div>
                                                     </div>
@@ -598,30 +646,30 @@ export default function InitiateClaim({ employee }) {
 
                                             <div
                                                 onClick={() => handleClaimTypeSelect("reimbursement")}
-                                                className={`relative border-2 rounded-xl p-5 cursor-pointer transition-all ${selectedClaimType === "reimbursement"
+                                                className={`relative border-2 rounded-xl p-4 sm:p-5 cursor-pointer transition-all ${selectedClaimType === "reimbursement"
                                                         ? "border-green-500 bg-green-50"
                                                         : "border-gray-200 hover:border-green-300 bg-white"
                                                     }`}
                                             >
-                                                <div className="flex items-start gap-3">
+                                                <div className="flex items-start gap-3 flex-col md:flex-row">
                                                     <input
                                                         type="radio"
                                                         name="claim_type"
                                                         checked={selectedClaimType === "reimbursement"}
                                                         onChange={() => handleClaimTypeSelect("reimbursement")}
-                                                        className="mt-1 w-4 h-4 text-green-600 focus:ring-green-500"
+                                                        className="mt-1 w-4 h-4 text-green-600 focus:ring-green-500 flex-shrink-0"
                                                     />
-                                                    <div className="flex-1">
+                                                    <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2 mb-2">
-                                                            <DocumentTextIcon className="w-5 h-5 text-green-600" />
-                                                            <h4 className="font-semibold text-gray-900">Reimbursement Claim</h4>
+                                                            <DocumentTextIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                                                            <h4 className="font-semibold text-sm sm:text-base text-gray-900">Reimbursement Claim</h4>
                                                         </div>
-                                                        <p className="text-sm text-gray-600 mb-3">
+                                                        <p className="text-xs sm:text-sm text-gray-600 mb-3">
                                                             Pay yourself and submit bills later to get reimbursed after verification.
                                                         </p>
-                                                        <div className="bg-green-100 rounded-lg p-3 space-y-1.5">
+                                                        <div className="bg-green-100 rounded-lg p-2 sm:p-3 space-y-1.5">
                                                             <p className="text-xs font-semibold text-green-900 flex items-center gap-1">
-                                                                <InformationCircleIcon className="w-3.5 h-3.5" />
+                                                                <InformationCircleIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                                                                 When to use:
                                                             </p>
                                                             <ul className="text-xs text-green-800 space-y-1 ml-4 list-disc">
@@ -632,7 +680,7 @@ export default function InitiateClaim({ employee }) {
                                                             </ul>
                                                         </div>
                                                         <div className="mt-3 flex items-center gap-1 text-xs text-green-700 font-medium">
-                                                            <CheckCircleIcon className="w-4 h-4" />
+                                                            <CheckCircleIcon className="w-3.5 h-3.5 flex-shrink-0" />
                                                             <span>20+ private rooms booked this week</span>
                                                         </div>
                                                     </div>
@@ -647,11 +695,11 @@ export default function InitiateClaim({ employee }) {
                                         )}
                                     </div>
 
-                                    <div className="flex justify-end mt-6">
+                                    <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                                         <button
                                             onClick={handleNext}
                                             disabled={!selectedPolicy || !selectedClaimType || loading}
-                                            className="px-8 py-3 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all shadow-sm"
+                                            className="px-6 sm:px-8 py-2.5 sm:py-3 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all shadow-sm w-full sm:w-auto"
                                         >
                                             Continue
                                         </button>
@@ -661,29 +709,29 @@ export default function InitiateClaim({ employee }) {
 
                             {currentStep === 2 && (
                                 <div className="animate-fadeIn">
-                                    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                                        <h1 className="text-2xl font-bold text-gray-900 mb-2">Select Patient</h1>
-                                        <p className="text-sm text-gray-600">Choose the family member for whom you're filing this claim</p>
+                                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+                                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Select Patient</h1>
+                                        <p className="text-xs sm:text-sm text-gray-600">Choose the family member for whom you're filing this claim</p>
                                     </div>
 
-                                    <div className="bg-white rounded-lg shadow-sm p-6">
+                                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                                         {loading ? (
-                                            <div className="text-center py-16">
+                                            <div className="text-center py-12 sm:py-16">
                                                 <div className="animate-spin rounded-full h-10 w-10 border-b-3 border-purple-600 mx-auto"></div>
-                                                <p className="text-gray-600 mt-3 text-sm">Loading dependents...</p>
+                                                <p className="text-gray-600 mt-3 text-xs sm:text-sm">Loading dependents...</p>
                                             </div>
                                         ) : dependents.length === 0 ? (
-                                            <div className="text-center py-16">
-                                                <ExclamationCircleIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                                                <p className="text-gray-600">No dependents found for this policy</p>
+                                            <div className="text-center py-12 sm:py-16">
+                                                <ExclamationCircleIcon className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3" />
+                                                <p className="text-xs sm:text-sm text-gray-600">No dependents found for this policy</p>
                                             </div>
                                         ) : (
-                                            <div className="grid grid-cols-3 gap-4">
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                                                 {dependents.map((dependent, idx) => (
                                                     <div
                                                         key={idx}
                                                         onClick={() => handleDependentSelect(dependent)}
-                                                        className={`border-2 rounded-xl p-5 cursor-pointer transition-all text-center ${selectedDependent?.uhid === dependent.uhid
+                                                        className={`border-2 rounded-xl p-3 sm:p-5 cursor-pointer transition-all text-center ${selectedDependent?.uhid === dependent.uhid
                                                                 ? "border-purple-500 bg-purple-50"
                                                                 : "border-gray-200 hover:border-purple-300 bg-white"
                                                             }`}
@@ -700,22 +748,22 @@ export default function InitiateClaim({ employee }) {
                                                                             const seed = encodeURIComponent(dependent.insured_name || 'user');
                                                                             e.target.src = `https://avatars.dicebear.com/api/initials/${seed}.svg`;
                                                                         }}
-                                                                        className="w-16 h-16 mx-auto mb-3 rounded-full object-cover"
+                                                                        className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 rounded-full object-cover"
                                                                     />
                                                                 );
                                                             }
                                                             return (
-                                                                <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
+                                                                <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
                                                                     {dependent.insured_name?.charAt(0)?.toUpperCase()}
                                                                 </div>
                                                             );
                                                         })()}
-                                                        <h3 className="font-semibold text-gray-900 mb-1 text-sm">{dependent.insured_name}</h3>
+                                                        <h3 className="font-semibold text-gray-900 mb-1 text-xs sm:text-sm">{dependent.insured_name}</h3>
                                                         <p className="text-xs text-gray-600 mb-2">{dependent.relation || "Self"}</p>
-                                                        <p className="text-xs text-gray-500">UHID: {dependent.uhid}</p>
+                                                        <p className="text-xs text-gray-500 break-words">UHID: {dependent.uhid}</p>
                                                         {selectedDependent?.uhid === dependent.uhid && (
-                                                            <div className="mt-3">
-                                                                <CheckCircleIcon className="w-5 h-5 text-purple-600 mx-auto" />
+                                                            <div className="mt-2 sm:mt-3">
+                                                                <CheckCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mx-auto" />
                                                             </div>
                                                         )}
                                                     </div>
@@ -723,24 +771,24 @@ export default function InitiateClaim({ employee }) {
                                             </div>
                                         )}
                                         {errors.dependent && (
-                                            <div className="mt-3 flex items-center gap-2 text-sm text-red-600">
-                                                <ExclamationCircleIcon className="w-4 h-4" />
+                                            <div className="mt-3 flex items-center gap-2 text-xs sm:text-sm text-red-600">
+                                                <ExclamationCircleIcon className="w-4 h-4 flex-shrink-0" />
                                                 <span>{errors.dependent}</span>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="flex justify-between mt-6">
+                                    <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-6">
                                         <button
                                             onClick={handlePrevious}
-                                            className="px-6 py-3 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all shadow-sm"
+                                            className="px-6 py-2.5 sm:py-3 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all shadow-sm w-full sm:w-auto"
                                         >
                                             Back
                                         </button>
                                         <button
                                             onClick={handleNext}
                                             disabled={!selectedDependent}
-                                            className="px-8 py-3 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all shadow-sm"
+                                            className="px-6 sm:px-8 py-2.5 sm:py-3 bg-gray-800 text-white text-sm font-semibold rounded-lg hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all shadow-sm w-full sm:w-auto"
                                         >
                                             Continue
                                         </button>
@@ -750,16 +798,16 @@ export default function InitiateClaim({ employee }) {
 
                             {currentStep === 3 && (
                                 <div className="animate-fadeIn">
-                                    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                                        <h1 className="text-2xl font-bold text-gray-900 mb-2">Claim Details</h1>
-                                        <p className="text-sm text-gray-600">Fill in the details about hospitalization and treatment</p>
+                                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+                                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Claim Details</h1>
+                                        <p className="text-xs sm:text-sm text-gray-600">Fill in the details about hospitalization and treatment</p>
                                     </div>
 
-                                    <div className="bg-white rounded-lg shadow-sm p-6 space-y-5">
+                                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 space-y-5">
                                         {/* Date Fields */}
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                                                     Date of Admission <span className="text-red-500">*</span>
                                                 </label>
                                                 <div className="relative">
@@ -768,19 +816,19 @@ export default function InitiateClaim({ employee }) {
                                                         value={claimForm.date_of_admission}
                                                         onChange={(e) => setClaimForm({ ...claimForm, date_of_admission: e.target.value })}
                                                         max={new Date().toISOString().split('T')[0]}
-                                                        className={`w-full px-4 py-3 text-sm border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition shadow-sm cursor-pointer ${errors.date_of_admission ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'}`}
+                                                        className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition shadow-sm cursor-pointer ${errors.date_of_admission ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'}`}
                                                         style={{ colorScheme: 'light' }}
                                                     />
                                                 </div>
                                                 {errors.date_of_admission && (
                                                     <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                                                        <ExclamationCircleIcon className="w-3.5 h-3.5" />
+                                                        <ExclamationCircleIcon className="w-3 h-3 flex-shrink-0" />
                                                         {errors.date_of_admission}
                                                     </p>
                                                 )}
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                                                     Date of Discharge {selectedClaimType === 'reimbursement' && <span className="text-red-500">*</span>}
                                                 </label>
                                                 <div className="relative">
@@ -790,7 +838,7 @@ export default function InitiateClaim({ employee }) {
                                                         onChange={(e) => setClaimForm({ ...claimForm, date_of_discharge: e.target.value })}
                                                         max={new Date().toISOString().split('T')[0]}
                                                         min={claimForm.date_of_admission}
-                                                        className="w-full px-4 py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition shadow-sm hover:border-gray-400 cursor-pointer"
+                                                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition shadow-sm hover:border-gray-400 cursor-pointer"
                                                         style={{ colorScheme: 'light' }}
                                                     />
                                                 </div>
@@ -819,7 +867,7 @@ export default function InitiateClaim({ employee }) {
                                         </div>
 
                                         {/* Location */}
-                                        <div className="grid grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                             <div>
                                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                                     State <span className="text-red-500">*</span>

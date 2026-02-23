@@ -21,7 +21,7 @@ const socialLinks = [
 ];
 
 const currentYear = new Date().getFullYear();
-const officeCities = ['Gurgaon', 'Bangalore', 'Pune', 'Mumbai', 'Chennai'];
+const officeCities = ['Gurgaon', 'Bangalore', 'Mumbai', 'Chennai', 'Hyderabad','Pune'];
 
 const Footer = () => (
 	<footer className='relative w-full text-white bg-[#571754]'>

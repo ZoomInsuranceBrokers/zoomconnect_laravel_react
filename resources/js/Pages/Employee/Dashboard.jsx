@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Head, router } from '@inertiajs/react';
 import EmployeeLayout from '@/Layouts/EmployeeLayout';
 import {
@@ -24,6 +24,9 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
     const [currentExercise, setCurrentExercise] = useState(1);
     const [isPaused, setIsPaused] = useState(false);
     const [currentPolicyIndex, setCurrentPolicyIndex] = useState(0);
+    const benefitsScrollRef = useRef(null);
+    const [benefitsIndex, setBenefitsIndex] = useState(0);
+    const [benefitsCount, setBenefitsCount] = useState(0);
 
     const greeting = `Hey, ${employee?.full_name || 'User'}`;
     const allPolicies = [...(newPolicies || []), ...(policies || [])];
@@ -137,12 +140,30 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
         return () => clearInterval(t);
     }, []);
 
+    // detect benefits items count (for indicators)
+    useEffect(() => {
+        const updateCount = () => {
+            const count = benefitsScrollRef.current?.children?.length || 0;
+            setBenefitsCount(count);
+        };
+        updateCount();
+        window.addEventListener('resize', updateCount);
+        return () => window.removeEventListener('resize', updateCount);
+    }, []);
+
+    // keep benefitsIndex within bounds if count changes
+    useEffect(() => {
+        if (benefitsCount === 0) return;
+        setBenefitsIndex((idx) => Math.min(idx, Math.max(0, benefitsCount - 1)));
+    }, [benefitsCount]);
+
     const rightFeatures = [
         {
             id: 'health-card',
             title: 'Health Card',
             subtitle: 'Download your e-card',
             bg: 'from-purple-50 to-pink-50',
+            hoverBg: 'from-purple-200 to-pink-200',
             icon: CreditCardIcon,
             color: 'text-purple-600'
         },
@@ -151,6 +172,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
             title: 'Cashless Hospital',
             subtitle: 'Find nearby cashless hospitals',
             bg: 'from-blue-50 to-blue-100',
+            hoverBg: 'from-blue-100 to-blue-200',
             icon: BuildingOfficeIcon,
             color: 'text-blue-600'
         },
@@ -159,6 +181,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
             title: '50% Off',
             subtitle: 'Medicines & checkups',
             bg: 'from-emerald-50 to-green-100',
+            hoverBg: 'from-emerald-100 to-green-200',
             icon: BoltIcon,
             color: 'text-emerald-600'
         },
@@ -167,6 +190,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
             title: 'Health Check Up',
             subtitle: 'Book preventive checkup',
             bg: 'from-yellow-50 to-orange-50',
+            hoverBg: 'from-yellow-100 to-orange-100',
             icon: HeartIcon,
             color: 'text-amber-600'
         }
@@ -290,260 +314,290 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
 
 
                                         {/* Stacked Carousel */}
-                                        <div className="relative flex items-center justify-center mb-3 sm:mb-6 h-auto min-h-[240px] sm:h-64">
-                                        {/* Cards Stack */}
-                                        <div className="relative w-full max-w-2xl h-full flex items-center justify-center">
-                                            {allPolicies.map((policy, index) => {
-                                                const offset = index - currentPolicyIndex;
-                                                const isActive = index === currentPolicyIndex;
-                                                const isNext = index === currentPolicyIndex + 1;
-                                                const isPrev = index === currentPolicyIndex - 1;
-                                                
-                                                return (
-                                                    <div
-                                                        key={index}
-                                                        onClick={() => setCurrentPolicyIndex(index)}
-                                                        className={`absolute transition-all duration-500 ease-out cursor-pointer ${
-                                                            isActive 
-                                                                ? 'z-30 scale-100 opacity-100' 
-                                                                : isNext 
-                                                                    ? 'z-20 scale-95 opacity-60 translate-x-12' 
-                                                                    : isPrev
-                                                                        ? 'z-20 scale-95 opacity-60 -translate-x-12'
-                                                                        : 'z-10 scale-90 opacity-0'
-                                                        }`}
-                                                        style={{
-                                                            transform: isActive ? 'translateX(0) scale(1)' : 
-                                                                       isNext ? 'translateX(48px) scale(0.95)' :
-                                                                       isPrev ? 'translateX(-48px) scale(0.95)' :
-                                                                       'translateX(0) scale(0.9)'
-                                                        }}
-                                                    >
-                                                        <div className="min-w-[70vw] sm:w-96 md:w-[28rem] lg:w-[32rem] bg-white rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-lg">
-                                                            {/* Header */}
-                                                            <div className="flex items-center justify-between mb-2 sm:mb-4">
-                                                                <span className="text-[10px] sm:text-xs font-bold text-white bg-[rgb(147,71,144)] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                                                                    {getPolicyTypeShort(policy.policy_type)}
-                                                                </span>
-                                                            </div>
+                                        <div className="relative flex items-center justify-center mb-3 sm:mb-6 h-auto min-h-[240px] sm:h-64 ">
+                                            {/* Cards Stack */}
+                                            <div className="relative w-full max-w-2xl h-full flex items-center justify-center ">
+                                                {allPolicies.map((policy, index) => {
+                                                    const offset = index - currentPolicyIndex;
+                                                    const isActive = index === currentPolicyIndex;
+                                                    const isNext = index === currentPolicyIndex + 1;
+                                                    const isPrev = index === currentPolicyIndex - 1;
 
-                                                            {/* Policy Name */}
-                                                            <h3 className="text-sm sm:text-lg font-bold text-gray-800 mb-2 sm:mb-4">{policy.policy_name || getPolicyTypeName(policy.policy_type)}</h3>
-
-                                                            {/* Base SI and Policy No */}
-                                                            <div className="flex gap-2 sm:gap-4 mb-2 sm:mb-4">
-                                                                <div className="flex-1 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
-                                                                    <p className="text-[9px] sm:text-[10px] text-gray-500 uppercase mb-0.5 sm:mb-1">Base SI</p>
-                                                                    <p className="text-xs sm:text-sm font-bold text-gray-800">{policy.cover_string || '—'}</p>
+                                                    return (
+                                                        <div
+                                                            key={index}
+                                                            onClick={() => setCurrentPolicyIndex(index)}
+                                                            className={`absolute transition-all duration-500 ease-out cursor-pointer ${isActive
+                                                                    ? 'z-30 scale-100 opacity-100'
+                                                                    : isNext
+                                                                        ? 'z-20 scale-95 opacity-60 translate-x-12'
+                                                                        : isPrev
+                                                                            ? 'z-20 scale-95 opacity-60 -translate-x-12'
+                                                                            : 'z-10 scale-90 opacity-0'
+                                                                }`}
+                                                            style={{
+                                                                transform: isActive ? 'translateX(0) scale(1)' :
+                                                                    isNext ? 'translateX(25px) scale(0.95)' :
+                                                                        isPrev ? 'translateX(-25px) scale(0.95)' :
+                                                                            'translateX(0) scale(0.9)'
+                                                            }}
+                                                        >
+                                                            <div className="w-[70vw] sm:w-96 md:w-[28rem] lg:w-[32rem] bg-white rounded-lg sm:rounded-2xl p-3 sm:p-5 " style={{ boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0px 10px -5px rgba(0, 0, 0, 0.1)' }}>
+                                                                {/* Header */}
+                                                                <div className="flex items-center justify-between mb-2 sm:mb-4">
+                                                                    <span className="text-[10px] sm:text-xs font-bold text-white bg-[rgb(147,71,144)] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                                                                        {getPolicyTypeShort(policy.policy_type)}
+                                                                    </span>
                                                                 </div>
-                                                                <div className="flex-1 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
-                                                                    <p className="text-[9px] sm:text-[10px] text-gray-500 uppercase mb-0.5 sm:mb-1">Policy No</p>
-                                                                    <p className="text-[10px] sm:text-xs font-semibold text-gray-800 truncate">{policy.policy_number}</p>
-                                                                </div>
-                                                            </div>
 
-                                                            {/* Insured By */}
-                                                            <div className="text-[9px] sm:text-xs text-gray-500 mb-2 sm:mb-4">
-                                                                Insured by <span className="font-semibold text-gray-800">{policy.insurance_company_name}</span>
-                                                            </div>
+                                                                {/* Policy Name */}
+                                                                <h3 className="text-sm sm:text-lg font-bold text-gray-800 mb-2 sm:mb-4">{policy.policy_name || getPolicyTypeName(policy.policy_type)}</h3>
 
-                                                            {/* Actions */}
-                                                            <div className="flex items-center gap-2 sm:gap-3">
-                                                                <button 
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        const encodedId = btoa(policy.id.toString());
-                                                                        router.visit(`/employee/policy/${encodedId}`);
-                                                                    }}
-                                                                    className="bg-[rgb(147,71,144)] text-white px-2.5 sm:px-4 py-1 sm:py-2 rounded-full text-[10px] sm:text-sm font-semibold hover:bg-[rgb(106,0,102)] transition-all"
-                                                                >
-                                                                    View Details
-                                                                </button>
-                                                                {policy.policy_type === 'gmi' && (
-                                                                    <div className="relative group">
-                                                                        <button className="bg-white text-[rgb(147,71,144)] p-1.5 sm:p-2 rounded-full shadow-sm hover:shadow-md transition-all">
-                                                                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                                            </svg>
-                                                                        </button>
-                                                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                                                            Download your health card
-                                                                        </div>
+                                                                {/* Base SI and Policy No */}
+                                                                <div className="flex gap-2 sm:gap-4 mb-2 sm:mb-4">
+                                                                    <div className="flex-1 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
+                                                                        <p className="text-[9px] sm:text-[10px] text-gray-500 uppercase mb-0.5 sm:mb-1">Base SI</p>
+                                                                        <p className="text-xs sm:text-sm font-bold text-gray-800">{policy.cover_string || '—'}</p>
                                                                     </div>
-                                                                )}
+                                                                    <div className="flex-1 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg sm:rounded-xl p-2 sm:p-3">
+                                                                        <p className="text-[9px] sm:text-[10px] text-gray-500 uppercase mb-0.5 sm:mb-1">Policy No</p>
+                                                                        <p className="text-[10px] sm:text-xs font-semibold text-gray-800 truncate">{policy.policy_number}</p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Insured By */}
+                                                                <div className="text-[9px] sm:text-xs text-gray-500 mb-2 sm:mb-4">
+                                                                    Insured by <span className="font-semibold text-gray-800">{policy.insurance_company_name}</span>
+                                                                </div>
+
+                                                                {/* Actions */}
+                                                                <div className="flex items-center gap-2 sm:gap-3">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const encodedId = btoa(policy.id.toString());
+                                                                            router.visit(`/employee/policy/${encodedId}`);
+                                                                        }}
+                                                                        className="bg-[rgb(147,71,144)] text-white px-2.5 sm:px-4 py-1 sm:py-2 rounded-full text-[10px] sm:text-sm font-semibold hover:bg-[rgb(106,0,102)] transition-all"
+                                                                    >
+                                                                        View Details
+                                                                    </button>
+                                                                    {policy.policy_type === 'gmi' && (
+                                                                        <div className="relative group">
+                                                                            <button className="bg-white text-[rgb(147,71,144)] p-1.5 sm:p-2 rounded-full shadow-sm hover:shadow-md transition-all">
+                                                                                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                                </svg>
+                                                                            </button>
+                                                                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                                                Download your health card
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Navigation Arrows */}
+                                            {allPolicies.length > 1 && (
+                                                <>
+                                                    <button
+                                                        onClick={prevPolicy}
+                                                        disabled={currentPolicyIndex === 0}
+                                                        className={`absolute left-0 sm:left-4 z-40 w-7 h-7 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${currentPolicyIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-[rgb(147,71,144)] hover:text-white'}`}
+                                                    >
+                                                        <ChevronLeftIcon className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
+                                                    </button>
+                                                    <button
+                                                        onClick={nextPolicy}
+                                                        disabled={currentPolicyIndex === allPolicies.length - 1}
+                                                        className={`absolute right-0 sm:right-4 z-40 w-7 h-7 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${currentPolicyIndex === allPolicies.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-[rgb(147,71,144)] hover:text-white'}`}
+                                                    >
+                                                        <ChevronRightIcon className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
 
-                                        {/* Navigation Arrows */}
+                                        {/* Policy Count Indicator */}
                                         {allPolicies.length > 1 && (
-                                            <>
-                                                <button
-                                                    onClick={prevPolicy}
-                                                    disabled={currentPolicyIndex === 0}
-                                                    className={`absolute left-0 sm:left-4 z-40 w-7 h-7 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${currentPolicyIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-[rgb(147,71,144)] hover:text-white'}`}
-                                                >
-                                                    <ChevronLeftIcon className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
-                                                </button>
-                                                <button
-                                                    onClick={nextPolicy}
-                                                    disabled={currentPolicyIndex === allPolicies.length - 1}
-                                                    className={`absolute right-0 sm:right-4 z-40 w-7 h-7 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${currentPolicyIndex === allPolicies.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-[rgb(147,71,144)] hover:text-white'}`}
-                                                >
-                                                    <ChevronRightIcon className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
-                                                </button>
-                                            </>
+                                            <div className="flex items-center justify-center gap-2 mt-2 sm:mt-4">
+                                                <div className="flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-2 sm:px-4 py-1 sm:py-2 rounded-full border border-purple-200">
+                                                    <ShieldCheckIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[rgb(147,71,144)]" />
+                                                    <span className="text-[9px] sm:text-xs font-semibold text-gray-700">
+                                                        Policy {currentPolicyIndex + 1} of {allPolicies.length}
+                                                    </span>
+                                                    <span className="text-[9px] sm:text-xs text-gray-500 hidden md:inline">→ Swipe or use arrows to view more</span>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
+                                )}
+                            </div>
 
-                                    {/* Policy Count Indicator */}
-                                    {allPolicies.length > 1 && (
-                                        <div className="flex items-center justify-center gap-2 mt-2 sm:mt-4">
-                                            <div className="flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-2 sm:px-4 py-1 sm:py-2 rounded-full border border-purple-200">
-                                                <ShieldCheckIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[rgb(147,71,144)]" />
-                                                <span className="text-[9px] sm:text-xs font-semibold text-gray-700">
-                                                    Policy {currentPolicyIndex + 1} of {allPolicies.length}
-                                                </span>
-                                                <span className="text-[9px] sm:text-xs text-gray-500 hidden md:inline">→ Swipe or use arrows to view more</span>
+                            {/* Healthcare Benefits Section */}
+                            <div className="mt-4 sm:mt-8 mb-3 sm:mb-6">
+                                <h2 className="text-base sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-4">Healthcare benefits</h2>
+
+                                <div className="bg-gray-50 rounded-xl sm:rounded-3xl p-3 sm:p-6 relative">
+                                    <div ref={benefitsScrollRef} className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-2">
+                                        {/* Maternity Care Program */}
+                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-blue-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
+                                                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Maternity Care Program</h3>
+                                            <p className="text-[9px] sm:text-xs text-gray-600">Comprehensive maternity care, ensuring a smooth and joyful journey into parenthood.</p>
+                                        </div>
+
+                                        {/* Plan your Hospitalization */}
+                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
+                                                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Plan your Hospitalization</h3>
+                                            <p className="text-[9px] sm:text-xs text-gray-600">Surgical excellence for transformative outcomes.</p>
+                                        </div>
+
+                                        {/* Condition Management Program */}
+                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-purple-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
+                                                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Condition Management Program</h3>
+                                            <p className="text-[9px] sm:text-xs text-gray-600">Personalized support through our Condition Management Program.</p>
+                                        </div>
+
+                                        {/* Health Risk Assessment */}
+                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-orange-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
+                                                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Health Risk Assessment</h3>
+                                            <p className="text-[9px] sm:text-xs text-gray-600">Discover your health risks with a simple online assessment.</p>
+                                        </div>
+
+                                        {/* Health Checks */}
+                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-red-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
+                                                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Health Checks</h3>
+                                            <p className="text-[9px] sm:text-xs text-gray-600">Choose from a wide range of discounted health check packages & get online reports in 24-48 Hours.</p>
+                                        </div>
+
+                                        {/* Lab Tests */}
+                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-teal-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
+                                                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Lab Tests</h3>
+                                            <p className="text-[9px] sm:text-xs text-gray-600">Book lab tests from safe & trusted diagnostic centres.</p>
+                                        </div>
+
+                                        {/* View All Benefits */}
+                                        <div
+                                            onClick={() => router.visit('/employee/wellness')}
+                                            className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-purple-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                                        >
+                                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                                <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">View all benefits</h3>
+                                                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-[rgb(147,71,144)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                </svg>
                                             </div>
                                         </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                                    </div>
 
-                        {/* Healthcare Benefits Section */}
-                        <div className="mt-4 sm:mt-8 mb-3 sm:mb-6">
-                            <h2 className="text-base sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-4">Healthcare benefits</h2>
-                            
-                            <div className="bg-gray-50 rounded-xl sm:rounded-3xl p-3 sm:p-6 relative">
-                                <div className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-2">
-                                    {/* Maternity Care Program */}
-                                    <div className="flex-shrink-0 w-52 sm:w-72 h-44 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="w-8 h-8 sm:w-12 sm:h-12 bg-blue-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                                            <svg className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                            </svg>
+                                    {/* Scroll Arrows Below */}
+                                    <div className="flex items-center justify-center gap-2 sm:gap-3 mt-2 sm:mt-4">
+                                        <button
+                                            onClick={() => {
+                                                const newIndex = Math.max(0, benefitsIndex - 1);
+                                                setBenefitsIndex(newIndex);
+                                                const el = benefitsScrollRef.current?.children?.[newIndex];
+                                                el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+                                            }}
+                                            className="w-7 h-7 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all"
+                                        >
+                                            <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                                        </button>
+
+                                        <div className="flex gap-1.5 sm:gap-2">
+                                            {Array.from({ length: Math.max(benefitsCount, 1) }).map((_, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => {
+                                                        setBenefitsIndex(i);
+                                                        const el = benefitsScrollRef.current?.children?.[i];
+                                                        el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+                                                    }}
+                                                    className={`transition-all ${benefitsIndex === i ? 'w-6 sm:w-8 h-1 bg-gray-400 rounded-full' : 'w-1.5 h-1 bg-gray-300 rounded-full'}`}
+                                                    aria-label={`Go to item ${i + 1}`}
+                                                />
+                                            ))}
                                         </div>
-                                        <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Maternity Care Program</h3>
-                                        <p className="text-[9px] sm:text-xs text-gray-600">Comprehensive maternity care, ensuring a smooth and joyful journey into parenthood.</p>
-                                    </div>
 
-                                    {/* Plan your Hospitalization */}
-                                    <div className="flex-shrink-0 w-52 sm:w-72 h-44 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                                            <svg className="w-4 h-4 sm:w-6 sm:h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                            </svg>
-                                        </div>
-                                        <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Plan your Hospitalization</h3>
-                                        <p className="text-[9px] sm:text-xs text-gray-600">Surgical excellence for transformative outcomes.</p>
+                                        <button
+                                            onClick={() => {
+                                                const newIndex = Math.min(Math.max(benefitsCount - 1, 0), benefitsIndex + 1);
+                                                setBenefitsIndex(newIndex);
+                                                const el = benefitsScrollRef.current?.children?.[newIndex];
+                                                el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+                                            }}
+                                            className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all"
+                                        >
+                                            <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                                        </button>
                                     </div>
-
-                                    {/* Condition Management Program */}
-                                    <div className="flex-shrink-0 w-52 sm:w-72 h-44 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="w-8 h-8 sm:w-12 sm:h-12 bg-purple-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                                            <svg className="w-4 h-4 sm:w-6 sm:h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                            </svg>
-                                        </div>
-                                        <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Condition Management Program</h3>
-                                        <p className="text-[9px] sm:text-xs text-gray-600">Personalized support through our Condition Management Program.</p>
-                                    </div>
-
-                                    {/* Health Risk Assessment */}
-                                    <div className="flex-shrink-0 w-52 sm:w-72 h-44 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="w-8 h-8 sm:w-12 sm:h-12 bg-orange-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                                            <svg className="w-4 h-4 sm:w-6 sm:h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </div>
-                                        <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Health Risk Assessment</h3>
-                                        <p className="text-[9px] sm:text-xs text-gray-600">Discover your health risks with a simple online assessment.</p>
-                                    </div>
-
-                                    {/* Health Checks */}
-                                    <div className="flex-shrink-0 w-52 sm:w-72 h-44 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="w-8 h-8 sm:w-12 sm:h-12 bg-red-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                                            <svg className="w-4 h-4 sm:w-6 sm:h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                            </svg>
-                                        </div>
-                                        <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Health Checks</h3>
-                                        <p className="text-[9px] sm:text-xs text-gray-600">Choose from a wide range of discounted health check packages & get online reports in 24-48 Hours.</p>
-                                    </div>
-
-                                    {/* Lab Tests */}
-                                    <div className="flex-shrink-0 w-52 sm:w-72 h-44 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="w-8 h-8 sm:w-12 sm:h-12 bg-teal-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                                            <svg className="w-4 h-4 sm:w-6 sm:h-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                                            </svg>
-                                        </div>
-                                        <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">Lab Tests</h3>
-                                        <p className="text-[9px] sm:text-xs text-gray-600">Book lab tests from safe & trusted diagnostic centres.</p>
-                                    </div>
-
-                                    {/* View All Benefits */}
-                                    <div 
-                                        onClick={() => router.visit('/employee/wellness')}
-                                        className="flex-shrink-0 w-52 sm:w-72 h-44 sm:h-56 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-purple-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                                    >
-                                        <div className="flex flex-col items-center justify-center h-full text-center">
-                                            <h3 className="text-xs sm:text-base font-bold text-gray-800 mb-1 sm:mb-2">View all benefits</h3>
-                                            <svg className="w-4 h-4 sm:w-6 sm:h-6 text-[rgb(147,71,144)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Scroll Arrows Below */}
-                                <div className="flex items-center justify-center gap-2 sm:gap-3 mt-2 sm:mt-4">
-                                    <button 
-                                        onClick={() => document.querySelector('.overflow-x-auto').scrollBy({ left: -220, behavior: 'smooth' })}
-                                        className="w-7 h-7 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all"
-                                    >
-                                        <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-                                    </button>
-                                    <div className="flex gap-1.5 sm:gap-2">
-                                        <span className="w-6 sm:w-8 h-1 bg-gray-400 rounded-full"></span>
-                                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                    </div>
-                                    <button 
-                                        onClick={() => document.querySelector('.overflow-x-auto').scrollBy({ left: 280, behavior: 'smooth' })}
-                                        className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all"
-                                    >
-                                        <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 </main>
 
                 {/* Right Sidebar - Exercises List */}
-                <aside className="hidden xl:block w-96 border-l border-gray-100 overflow-y-auto scrollbar-hide">
-                    <div className="p-5">
+                <aside className="w-full xl:w-96 border-t xl:border-t-0 xl:border-l border-gray-100 overflow-y-auto scrollbar-hide">
+                    <div className="p-3 sm:p-5">
+                        <div className="mb-4 rounded-2xl p-3 sm:p-4 bg-gray-50">
+                            <div className="mb-3">
+                                <h4 className="text-sm sm:text-base font-bold text-gray-800">Get the app — quick access on mobile</h4>
+                                {/* <p className="text-[10px] sm:text-xs text-gray-500">For easy access to your health card, claims and support, download our mobile app.</p> */}
+                            </div>
+                            <img src="/assets/images/phone-with-QR.png" alt="Promo" className="w-full h-[45vh] md:h-[65vh] object-contain rounded-lg" />
+                        </div>
                         {/* Exercises List Header */}
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide">Quick Services</h3>
-                            <button className="text-gray-400 hover:text-gray-600">
+                            {/* <button className="text-gray-400 hover:text-gray-600">
                                 <Bars3Icon className="w-4 h-4" />
-                            </button>
+                            </button> */}
                         </div>
 
                         {/* Right-side Feature Cards */}
                         <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                             {rightFeatures.map((f) => {
                                 const IconComponent = f.icon;
-                                    return (
-                                    <div key={f.id} className={`relative group overflow-hidden bg-gradient-to-br ${f.bg} rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm transition transform duration-300 ease-out hover:shadow-md hover:scale-105 hover:-translate-y-1 cursor-pointer hover:[filter:brightness(1.08)_saturate(1.12)]`}>
+                                return (
+                                    <div key={f.id} className={`relative group overflow-hidden bg-gradient-to-br ${f.bg} rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm transition transform duration-300 ease-out hover:shadow-md hover:scale-105 hover:-translate-y-1 cursor-pointer `} style={{ backgroundImage: `linear-gradient(135deg, var(--tw-gradient-stops))` }}>
+                                        {/* Hover Background */}
+                                        <div className={`absolute inset-0 bg-gradient-to-br ${f.hoverBg} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+
                                         <span className="absolute inset-0 bg-gradient-to-r from-white/40 to-white/0 dark:from-white/10 dark:to-white/0 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 pointer-events-none" />
                                         <div className="relative z-10 flex items-center gap-2 sm:gap-3">
                                             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/90 rounded-lg sm:rounded-xl flex items-center justify-center p-1 shadow-sm">
@@ -571,22 +625,20 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                                         <p className="text-xs text-gray-500">At best Prices</p>
                                     </div>
                                 </div>
-                                <button className="text-purple-600 hover:text-purple-700 p-0.5 sm:p-1 rounded-md" aria-label="settings">
-                                    <span className="text-base sm:text-lg">⚙️</span>
-                                </button>
+
                             </div>
 
-                            <h4 className="text-base sm:text-lg font-semibold text-gray-800 mb-1">Book Doctors Near You</h4>
+                            <h4 className="text-sm sm:text-lg font-semibold text-gray-800 mb-1">Book Doctors Near You</h4>
                             <p className="text-[10px] sm:text-xs text-gray-600 mb-2 sm:mb-3">Expert consultations available offline for your convenience</p>
 
-                            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                                <button onClick={() => router.visit('/employee/appointments')} className="flex-1 bg-[rgb(147,71,144)] text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-semibold shadow-sm hover:bg-[rgb(106,0,102)] transition">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2 sm:mb-3">
+                                <button onClick={() => router.visit('/employee/appointments')} className="mx-auto sm:flex-1 bg-[rgb(147,71,144)] text-white px-3 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-semibold shadow-sm hover:bg-[rgb(106,0,102)] transition">
                                     Book Dr. Appointment
                                 </button>
                             </div>
 
 
-                            
+
                         </div>
 
                         {/* My Friends Section */}

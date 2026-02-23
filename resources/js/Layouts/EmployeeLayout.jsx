@@ -8,11 +8,30 @@ import {
     QuestionMarkCircleIcon,
     UserCircleIcon,
     ArrowRightOnRectangleIcon,
+    Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 
 export default function EmployeeLayout({ children, employee }) {
     const { url } = usePage();
     const [hoveredIcon, setHoveredIcon] = useState(null);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [settingsOpenMobile, setSettingsOpenMobile] = useState(false);
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
+    const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+    const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    const [passwordError, setPasswordError] = useState('');
+    const gender = (employee?.gender || '').toLowerCase();
+
+    // Avatar handling: prefer project-provided images placed under
+    // `/assets/images/avatars/male.png` and `/assets/images/avatars/female.png`.
+    // If those are not provided, fall back to an initials avatar service.
+    const assetMale = '/assets/images/employee_image/man-for-profile.png';
+    const assetFemale = '/assets/images/employee_image/woman-for-profile.png';
+    const avatarSrc = gender.startsWith('m')
+        ? assetMale
+        : gender.startsWith('f')
+        ? assetFemale
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(employee?.full_name || 'User')}&background=934790&color=fff&bold=true`;
 
     const menuItems = [
         { id: 'dashboard', label: 'Dashboard', icon: HomeIcon, route: '/employee/dashboard' },
@@ -40,8 +59,63 @@ export default function EmployeeLayout({ children, employee }) {
         }
     };
 
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        setPasswordError('');
+
+        if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+            setPasswordError('All fields are required');
+            return;
+        }
+
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            setPasswordError('New password and confirm password do not match');
+            return;
+        }
+
+        if (passwordForm.newPassword.length < 8) {
+            setPasswordError('Password must be at least 8 characters long');
+            return;
+        }
+
+        try {
+            const response = await fetch('/employee/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                },
+                body: JSON.stringify({
+                    old_password: passwordForm.oldPassword,
+                    new_password: passwordForm.newPassword,
+                    new_password_confirmation: passwordForm.confirmPassword,
+                }),
+            });
+
+            if (response.ok) {
+                setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+                setChangePasswordOpen(false);
+                alert('Password changed successfully!');
+            } else {
+                const data = await response.json();
+                setPasswordError(data.message || 'Failed to change password');
+            }
+        } catch (error) {
+            setPasswordError('Error changing password. Please try again.');
+            console.error('Password change error:', error);
+        }
+    };
+
     const isActive = (route) => {
         return url === route || url.startsWith(route);
+    };
+
+    const fmtDate = (val) => {
+        if (!val) return null;
+        // handles "YYYY-MM-DD HH:mm:ss", "YYYY-MM-DDTHH:mm:ss", or plain "YYYY-MM-DD"
+        const date = new Date(val);
+        if (isNaN(date)) return String(val).split(/[T ]/)[0];
+        return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: '2-digit' });
     };
 
     return (
@@ -64,6 +138,32 @@ export default function EmployeeLayout({ children, employee }) {
                 .animate-slide-in-right {
                     animation: slide-in-right 0.3s ease-out forwards;
                 }
+                
+                @keyframes slide-up {
+                    from {
+                        transform: translateY(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+                .animate-slide-up {
+                    animation: slide-up 0.3s ease-out forwards;
+                }
+                
+                @keyframes rotate-360 {
+                    from {
+                        transform: rotate(0deg);
+                    }
+                    to {
+                        transform: rotate(360deg);
+                    }
+                }
+                .animate-rotate {
+                    animation: rotate-90 0.6s ease-in-out forwards;
+                }
             `}} />
             
             <div className="flex flex-col lg:flex-row h-screen bg-gray-50 overflow-hidden">
@@ -73,25 +173,37 @@ export default function EmployeeLayout({ children, employee }) {
                         <img
                             src="/assets/images/Purple%20New%20ZoomConnect%20Logo-01.png"
                             alt="ZoomConnect"
-                            className="h-10 w-auto object-contain"
+                            className="h-12 w-auto object-contain"
                         />
                     </Link>
-                    <div className="flex items-center gap-3">
-                        <div className="text-right">
-                            <p className="text-sm font-semibold text-gray-800 leading-tight">
+                    <div className="flex items-center gap-3 relative">
+                        {/* <div className="text-right">
+                            <p className="text-xs font-semibold text-gray-800 leading-tight">
                                 {employee?.full_name || 'User'}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-[10px] text-gray-500">
                                 {employee?.email || ''}
                             </p>
+                        </div> */}
+
+                        {/* Settings Button - Mobile */}
+                        <div>
+                            <button
+                                onClick={() => setSettingsOpen(true)}
+                                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 border border-gray-200 shadow-sm flex items-center justify-center transition-all flex-shrink-0"
+                                title="Settings"
+                            >
+                                <Cog6ToothIcon className={`w-5 h-5 text-gray-600 ${settingsOpen ? 'animate-rotate' : ''}`} />
+                            </button>
                         </div>
+                        
                         <button
-                            onClick={handleLogout}
-                            className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center overflow-hidden transition-all flex-shrink-0"
-                            title="Logout"
+                            onClick={() => setProfileModalOpen(true)}
+                            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center overflow-hidden transition-all flex-shrink-0"
+                            title="Profile"
                         >
                             <img
-                                src={`https://ui-avatars.com/api/?name=${employee?.full_name || 'User'}`}
+                                src={avatarSrc}
                                 alt="User"
                                 className="w-full h-full object-cover"
                             />
@@ -144,14 +256,24 @@ export default function EmployeeLayout({ children, employee }) {
                             );
                         })}
                     </nav>
-                    <div className="mt-auto">
+                    <div className="mt-auto flex flex-col items-center gap-3">
+                        {/* Settings/Gear Button */}
                         <button
-                            onClick={handleLogout}
+                            onClick={() => setSettingsOpen(true)}
+                            className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 hover:text-gray-800 transition-all"
+                            title="Settings"
+                        >
+                            <Cog6ToothIcon className={`w-5 h-5 ${settingsOpen ? 'animate-rotate' : ''}`} />
+                        </button>
+
+                        {/* Profile Avatar Button */}
+                        <button
+                            onClick={() => setProfileModalOpen(true)}
                             className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center overflow-hidden transition-all"
-                            title="Logout"
+                            title="Profile"
                         >
                             <img
-                                src={`https://ui-avatars.com/api/?name=${employee?.full_name || 'User'}`}
+                                src={avatarSrc}
                                 alt="User"
                                 className="w-full h-full object-cover"
                             />
@@ -164,7 +286,7 @@ export default function EmployeeLayout({ children, employee }) {
 
                 {/* Main Content Area - Scrollable without scrollbar */}
                 <div className="flex-1 flex flex-col overflow-y-auto scrollbar-hide lg:mr-6 pb-20 lg:pb-0">
-                    <div className="w-full max-w-full px-4 sm:px-6 lg:px-0">
+                    <div className="w-full max-w-full px-3 sm:px-6 lg:px-0">
                         {children}
                     </div>
                 </div>
@@ -197,6 +319,289 @@ export default function EmployeeLayout({ children, employee }) {
                     </div>
                 </nav>
             </div>
+
+            {/* Profile Modal */}
+            {profileModalOpen && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+
+                        {/* Gradient header band */}
+                        <div className="relative bg-gradient-to-br from-[rgb(147,71,144)] to-pink-400 px-4 pt-6 pb-14">
+                            <button
+                                onClick={() => setProfileModalOpen(false)}
+                                className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+                            >
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <p className="text-white/70 text-xs md:text-base font-semibold uppercase tracking-widest text-center">My Profile</p>
+                        </div>
+
+                        {/* Avatar - overlapping header */}
+                        <div className="flex flex-col items-center -mt-10 px-4">
+                            <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white z-10">
+                                <img
+                                    src={avatarSrc}
+                                    alt="User"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            <h3 className="mt-3 text-base font-bold text-gray-900 text-center line-clamp-2 leading-tight">
+                                {employee?.full_name || 'User'}
+                            </h3>
+                            {employee?.designation && (
+                                <span className="mt-1 px-3 py-0.5 bg-purple-50 text-[rgb(147,71,144)] text-[11px] font-semibold rounded-full">
+                                    {employee.designation}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="px-4 mt-4 mb-4">
+                            <div className="bg-gray-50 rounded-xl divide-y divide-gray-100 overflow-hidden">
+                                {[
+                                    { label: 'Employee Code', value: employee?.employees_code, icon: '🪪' },
+                                    { label: 'Email', value: employee?.email, icon: '✉️' },
+                                    { label: 'Mobile', value: employee?.mobile, icon: '📱' },
+                                ].map(({ label, value, icon }) =>
+                                    value ? (
+                                        <div key={label} className="flex items-center gap-3 px-3 py-2.5">
+                                            <span className="text-base flex-shrink-0">{icon}</span>
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide leading-none">{label}</p>
+                                                <p className="text-xs font-semibold text-gray-800 mt-0.5 truncate">{value}</p>
+                                            </div>
+                                        </div>
+                                    ) : null
+                                )}
+                                {/* Date of Birth + Date of Joining: column on mobile, row on desktop */}
+                                {(fmtDate(employee?.dob) || fmtDate(employee?.date_of_joining)) && (
+                                    <div className="flex flex-col lg:flex-row lg:divide-x divide-y lg:divide-y-0 divide-gray-100">
+                                        {fmtDate(employee?.dob) && (
+                                            <div className="flex items-center gap-2 px-3 py-2.5 lg:flex-1 min-w-0">
+                                                <span className="text-base flex-shrink-0">🎂</span>
+                                                <div className="min-w-0">
+                                                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide leading-none">Date of Birth</p>
+                                                    <p className="text-xs font-semibold text-gray-800 mt-0.5 truncate">{fmtDate(employee.dob)}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {fmtDate(employee?.date_of_joining) && (
+                                            <div className="flex items-center gap-2 px-3 py-2.5 lg:flex-1 min-w-0">
+                                                <span className="text-base flex-shrink-0">📅</span>
+                                                <div className="min-w-0">
+                                                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide leading-none">Date of Joining</p>
+                                                    <p className="text-xs font-semibold text-gray-800 mt-0.5 truncate">{fmtDate(employee.date_of_joining)}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="px-4 pb-4 flex gap-2">
+                            <button
+                                onClick={() => { setProfileModalOpen(false); setChangePasswordOpen(true); }}
+                                className="flex-1 py-2.5 text-center text-xs font-semibold text-[rgb(147,71,144)] bg-purple-50 hover:bg-purple-100 active:bg-purple-200 rounded-xl transition-all border border-purple-100"
+                            >
+                                Change Password
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setProfileModalOpen(false);
+                                    await handleLogout();
+                                }}
+                                className="flex-1 py-2.5 text-center text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 active:bg-red-200 rounded-xl transition-all border border-red-100"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Settings Modal */}
+            {settingsOpen && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+
+                        {/* Gradient header band */}
+                        <div className="relative bg-gradient-to-br from-[rgb(147,71,144)] to-pink-400 px-4 pt-6 pb-14">
+                            <button
+                                onClick={() => setSettingsOpen(false)}
+                                className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+                            >
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <p className="text-white/70 text-[10px] font-semibold uppercase tracking-widest text-center">Settings</p>
+                        </div>
+
+                        {/* Gear Icon - overlapping header */}
+                        <div className="flex flex-col items-center -mt-10 px-4">
+                            <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center">
+                                <Cog6ToothIcon className="w-10 h-10 text-[rgb(147,71,144)]" />
+                            </div>
+                            <h3 className="mt-3 text-base font-bold text-gray-900 text-center">Account Settings</h3>
+                            <p className="text-xs text-gray-500 text-center mt-1">{employee?.full_name || 'User'}</p>
+                        </div>
+
+                        {/* Settings Options */}
+                        <div className="px-4 mt-4 mb-4">
+                            <div className="bg-gray-50 rounded-xl divide-y divide-gray-100 overflow-hidden">
+                                <button
+                                    onClick={() => { setSettingsOpen(false); setChangePasswordOpen(true); }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition-colors"
+                                >
+                                    <UserCircleIcon className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                                    <div className="text-left">
+                                        <p className="text-xs font-semibold">Change Password</p>
+                                        <p className="text-[10px] text-gray-400">Update your password</p>
+                                    </div>
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        setSettingsOpen(false);
+                                        await handleLogout();
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-gray-700 hover:text-red-600 transition-colors"
+                                >
+                                    <ArrowRightOnRectangleIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
+                                    <div className="text-left">
+                                        <p className="text-xs font-semibold">Logout</p>
+                                        <p className="text-[10px] text-gray-400">Sign out of your account</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Footer Info */}
+                        <div className="px-4 pb-4">
+                            <p className="text-[10px] text-gray-400 text-center">
+                                Questions? Contact <a href="/employee/help" className="text-purple-600 hover:underline">Support</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Change Password Modal */}
+            {changePasswordOpen && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
+
+                        {/* Gradient header band */}
+                        <div className="relative bg-gradient-to-br from-[rgb(147,71,144)] via-purple-500 to-pink-400 px-6 pt-7 pb-16 flex-shrink-0">
+                            <button
+                                onClick={() => { setChangePasswordOpen(false); setPasswordError(''); }}
+                                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
+                            >
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <p className="text-white/80 text-sm font-semibold uppercase tracking-widest text-center">Change Password</p>
+                        </div>
+
+                        {/* Lock Icon - overlapping header */}
+                        <div className="flex flex-col items-center -mt-8 px-6 pb-1 flex-shrink-0">
+                            <div className="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center">
+                                <svg className="w-8 h-8 text-[rgb(147,71,144)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm6-10V7a3 3 0 00-3-3H9a3 3 0 00-3 3v2" />
+                                </svg>
+                            </div>
+                            <h2 className="mt-3 text-lg font-bold text-gray-900 text-center">Secure Your Account</h2>
+                            <p className="text-xs text-gray-500 text-center mt-0.5">Create a strong password</p>
+                        </div>
+
+                        {/* Divider line */}
+                        <div className="mx-6 mt-3 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent flex-shrink-0"></div>
+
+                        {/* Form - scrollable content */}
+                        <form onSubmit={handlePasswordChange} className="px-6 pt-4 pb-6">
+                            {/* Error message */}
+                            {passwordError && (
+                                <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+                                    <p className="text-xs text-red-600 font-semibold">{passwordError}</p>
+                                </div>
+                            )}
+
+                            {/* Old Password */}
+                            <div className="mb-3">
+                                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                                    Current Password
+                                </label>
+                                <input
+                                    type="password"
+                                    value={passwordForm.oldPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+                                    placeholder="Enter current password"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent transition-all text-sm"
+                                />
+                            </div>
+
+                            {/* New Password */}
+                            <div className="mb-3">
+                                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                                    New Password
+                                </label>
+                                <input
+                                    type="password"
+                                    value={passwordForm.newPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                    placeholder="Min 8 characters"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent transition-all text-sm"
+                                />
+                            </div>
+
+                            {/* Confirm Password */}
+                            <div className="mb-4">
+                                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                                    Confirm Password
+                                </label>
+                                <input
+                                    type="password"
+                                    value={passwordForm.confirmPassword}
+                                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                    placeholder="Re-enter password"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent transition-all text-sm"
+                                />
+                            </div>
+
+                            {/* Password strength hint */}
+                            <div className="mb-4 p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                                <p className="text-[10px] text-blue-700 font-medium leading-relaxed">
+                                    💡 Mix uppercase, lowercase, numbers & symbols for strength
+                                </p>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="mb-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+
+                            {/* Buttons */}
+                            <div className="flex gap-2.5">
+                                <button
+                                    type="button"
+                                    onClick={() => { setChangePasswordOpen(false); setPasswordError(''); setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' }); }}
+                                    className="flex-1 py-2.5 text-center text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-all border border-gray-200"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 py-2.5 text-center text-xs font-semibold text-white bg-gradient-to-r from-[rgb(147,71,144)] to-pink-500 hover:from-purple-600 hover:to-pink-600 active:from-purple-700 active:to-pink-700 rounded-lg transition-all shadow-lg"
+                                >
+                                    Update
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
