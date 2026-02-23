@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\CompanyEmployee;
 use App\Models\CompanyUser;
@@ -189,6 +190,100 @@ class ApiController extends Controller
     }
 
     /**
+     * Get all active companies for employee code login
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getActiveCompanies()
+    {
+        try {
+            $companies = \App\Models\CompanyMaster::select('comp_id', 'comp_name', 'comp_code')
+                ->where('status', 1)
+                ->orderBy('comp_name')
+                ->get()
+                ->map(function($company) {
+                    return [
+                        'id' => $company->comp_id,
+                        'name' => $company->comp_name,
+                        'code' => $company->comp_code
+                    ];
+                });
+
+            return ApiResponse::success(['companies' => $companies], 'Companies fetched successfully', 200);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to fetch companies', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Login with Employee Code - Authenticate with company_id, employee_code, and password
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function loginWithEmployeeCode(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'company_id' => 'required|integer',
+            'employee_code' => 'required|string',
+            'password' => 'required|string'
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::error('Validation error', $validator->errors(), 422);
+        }
+
+        // Find employee by employee code and company ID
+        $employee = CompanyEmployee::with('company')
+            ->where('employees_code', $request->employee_code)
+            ->where('company_id', $request->company_id)
+            ->first();
+
+        if (!$employee) {
+            return ApiResponse::error('Invalid employee code or company', null, 404);
+        }
+
+        // Check if employee is deleted
+        if ($employee->is_delete == 1) {
+            return ApiResponse::error('Your account is deleted. You cannot log in.', null, 403);
+        }
+
+        // Check if employee is active
+        if ($employee->is_active == 0) {
+            return ApiResponse::error('Your account is inactive. You cannot log in.', null, 403);
+        }
+
+        // Check if company exists and is active
+        if (!$employee->company || $employee->company->status == 0) {
+            return ApiResponse::error('Your company is inactive. You cannot log in.', null, 403);
+        }
+
+        // Verify password
+        if ($employee->pwd !== $request->password) {
+            return ApiResponse::error('Invalid password. Please try again.', null, 401);
+        }
+
+        // Generate JWT token
+        $token = $this->generateJwtToken($employee);
+
+        return ApiResponse::success([
+            'token' => $token,
+            'user' => [
+                'id' => $employee->id,
+                'employee_id' => $employee->employee_id,
+                'employee_code' => $employee->employees_code,
+                'first_name' => $employee->first_name,
+                'last_name' => $employee->last_name,
+                'email' => $employee->email,
+                'mobile_no' => $employee->mobile,
+                'company_id' => $employee->company_id,
+                'company_name' => $employee->company->comp_name ?? null,
+                'location_id' => $employee->location_id
+            ]
+        ], 'Login successful', 200);
+    }
+
+    /**
      * Generate JWT token for authenticated user
      * 
      * @param CompanyEmployee $employee
@@ -285,6 +380,49 @@ class ApiController extends Controller
         // You could implement a token blacklist if needed
 
         return ApiResponse::success(null, 'Logged out successfully. Please remove token from client.', 200);
+    }
+
+    /**
+     * Reset Password - Change password for authenticated employee
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'new_password' => 'required|string|min:6',
+            'confirm_password' => 'required|string|same:new_password'
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::error('Validation error', $validator->errors(), 422);
+        }
+
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('Employee not found', null, 404);
+            }
+
+            // Update password
+            $employee->pwd = $request->new_password;
+            $employee->save();
+
+            return ApiResponse::success(null, 'Password reset successfully', 200);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Invalid token or failed to reset password', $e->getMessage(), 401);
+        }
     }
 
     /**

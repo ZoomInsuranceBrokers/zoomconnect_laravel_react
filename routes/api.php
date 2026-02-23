@@ -19,6 +19,10 @@ Route::prefix('v1')->group(function () {
     Route::post('/login/email', [App\Http\Controllers\ApiController::class, 'loginWithEmail'])->name('api.login.email');
     Route::post('/login/mobile', [App\Http\Controllers\ApiController::class, 'loginWithPhone'])->name('api.login.mobile');
     Route::post('/verify-otp', [App\Http\Controllers\ApiController::class, 'verifyOtp'])->name('api.verify.otp');
+    
+    // Employee Code Login Routes
+    Route::get('/login/companies', [App\Http\Controllers\ApiController::class, 'getActiveCompanies'])->name('api.login.companies');
+    Route::post('/login/employee-code', [App\Http\Controllers\ApiController::class, 'loginWithEmployeeCode'])->name('api.login.employee.code');
 
     // Protected Routes (require JWT token)
     Route::middleware([\App\Http\Middleware\ApiJwtMiddleware::class])->group(function () {
@@ -27,6 +31,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/employee-policies', [App\Http\Controllers\ApiController::class, 'getEmployeePolicies'])->name('api.employee.policies');
         Route::post('/logout', [App\Http\Controllers\ApiController::class, 'logout'])->name('api.logout');
         Route::post('/verify-token', [App\Http\Controllers\ApiController::class, 'verifyToken'])->name('api.verify.token');
+        
+        // Reset Password Route
+        Route::post('/reset-password', [App\Http\Controllers\ApiController::class, 'resetPassword'])->name('api.reset.password');
         
         // Policy details (uses JWT middleware to identify employee)
         Route::get('/policy-details/{policy}', [App\Http\Controllers\ApiController::class, 'getPolicyDetails'])->name('api.policy.details');
