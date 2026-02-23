@@ -66,6 +66,26 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
         }
     ];
 
+    const [showNetworkModal, setShowNetworkModal] = useState(false);
+
+    const handleQuickServiceClick = (serviceId) => {
+        if (serviceId === 'health-checkup') {
+            router.visit('/employee/wellness');
+            return;
+        }
+
+        if (serviceId === 'file-claim') {
+            router.visit('/employee/claims');
+            return;
+        }
+
+        if (serviceId === 'network-hospitals') {
+            // Show instruction modal that directs user to open policy details
+            setShowNetworkModal(true);
+            return;
+        }
+    };
+
     return (
         <EmployeeLayout employee={employee}>
             <Head title="Policies" />
@@ -215,7 +235,14 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                                                             </button>
                                                             {policy.policy_type === 'gmi' && (
                                                                 <div className="relative group">
-                                                                    <button className="bg-white text-[rgb(147,71,144)] p-1.5 sm:p-2 rounded-full shadow-sm hover:shadow-md transition-all">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const encodedId = btoa(policy.id.toString());
+                                                                            router.visit(`/employee/policy/${encodedId}`);
+                                                                        }}
+                                                                        className="bg-white text-[rgb(147,71,144)] p-1.5 sm:p-2 rounded-full shadow-sm hover:shadow-md transition-all cursor-pointer"
+                                                                        title="View Details"
+                                                                    >
                                                                         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                                         </svg>
@@ -307,7 +334,7 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                                 {quickServices.map((service) => {
                                     const IconComponent = service.icon;
                                     return (
-                                        <div key={service.id} className={`relative group overflow-hidden bg-gradient-to-br ${service.bg} rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm transition transform duration-300 ease-out hover:shadow-md hover:scale-105 hover:-translate-y-1 cursor-pointer w-full flex items-center gap-3 sm:gap-4`} style={{ backgroundImage: `linear-gradient(135deg, var(--tw-gradient-stops))` }}>
+                                        <div key={service.id} onClick={() => handleQuickServiceClick(service.id)} className={`relative group overflow-hidden bg-gradient-to-br ${service.bg} rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm transition transform duration-300 ease-out hover:shadow-md hover:scale-105 hover:-translate-y-1 cursor-pointer w-full flex items-center gap-3 sm:gap-4`} style={{ backgroundImage: `linear-gradient(135deg, var(--tw-gradient-stops))` }}>
                                             {/* Hover Background Overlay */}
                                             <div className={`absolute inset-0 bg-gradient-to-br ${service.hoverBg} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
                                             
@@ -324,6 +351,21 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                                         </div>
                                     );
                                 })}
+
+                                {/* Network instruction modal */}
+                                {showNetworkModal && (
+                                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                        <div className="absolute inset-0 bg-black/40" onClick={() => setShowNetworkModal(false)} />
+                                        <div className="relative bg-white rounded-xl shadow-lg p-4 max-w-lg w-full">
+                                            <h3 className="font-bold text-lg mb-2">Find Network Hospitals</h3>
+                                            <p className="text-sm text-gray-700 mb-4">To search network hospitals for a policy, open the policy details and click the "Find Network Hospitals" button.</p>
+                                            <div className="flex justify-end gap-2">
+                                                <button onClick={() => setShowNetworkModal(false)} className="px-3 py-2 rounded-lg bg-gray-100">Close</button>
+                                                <button onClick={() => { setShowNetworkModal(false); router.visit('/employee/policy'); }} className="px-3 py-2 rounded-lg bg-[rgb(147,71,144)] text-white">Open Policies</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -333,7 +375,7 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                             <p className="text-xs text-gray-600 mb-3">
                                 Our support team is here to assist you
                             </p>
-                            <button className="w-auto px-4 py-2 bg-[rgb(147,71,144)] text-white rounded-xl font-semibold hover:bg-[rgb(106,0,102)] transition-all text-xs inline-flex items-center justify-center">
+                            <button onClick={() => router.visit('/employee/help')} className="w-auto px-4 py-2 bg-[rgb(147,71,144)] text-white rounded-xl font-semibold hover:bg-[rgb(106,0,102)] transition-all text-xs inline-flex items-center justify-center">
                                 Contact Support
                             </button>
                         </div>
@@ -378,7 +420,7 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                                     </div>
                                     How to View Policy Details
                                 </h4>
-                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-purple-100 mb-3 sm:mb-4">
+                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-purple-100 mb-3 sm:mb-4 overflow-hidden">
                                     <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700">
                                         <li className="flex items-start gap-2">
                                             <span className="text-[rgb(147,71,144)] mt-1">•</span>
@@ -386,7 +428,7 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <span className="text-[rgb(147,71,144)] mt-1">•</span>
-                                            <span>Use the arrow buttons or click on cards to navigate between multiple policies</span>
+                                            <span>Use the arrow buttons or click on cards</span>
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <span className="text-[rgb(147,71,144)] mt-1">•</span>
@@ -419,79 +461,7 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                                 </div>
                             </div>
 
-                            {/* Query Form Section */}
-                            <div className="border-t border-gray-200 pt-3 sm:pt-6">
-                                <h4 className="text-sm sm:text-base md:text-lg font-bold text-gray-800 mb-1.5 sm:mb-2">Still facing issues?</h4>
-                                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Submit your query and our support team will get back to you within 24 hours</p>
-
-                                <div className="space-y-3 sm:space-y-4">
-                                    <div>
-                                        <label className="block text-[10px] sm:text-xs font-semibold text-gray-700 mb-1">Full Name *</label>
-                                        <input
-                                            type="text"
-                                            value={queryForm.name}
-                                            onChange={(e) => setQueryForm({ ...queryForm, name: e.target.value })}
-                                            className="w-full px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent outline-none text-xs sm:text-sm"
-                                            placeholder="Enter your full name"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                                        <div>
-                                            <label className="block text-[10px] sm:text-xs font-semibold text-gray-700 mb-1">Email *</label>
-                                            <input
-                                                type="email"
-                                                value={queryForm.email}
-                                                onChange={(e) => setQueryForm({ ...queryForm, email: e.target.value })}
-                                                className="w-full px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent outline-none text-xs sm:text-sm"
-                                                placeholder="your@email.com"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] sm:text-xs font-semibold text-gray-700 mb-1">Phone *</label>
-                                            <input
-                                                type="tel"
-                                                value={queryForm.phone}
-                                                onChange={(e) => setQueryForm({ ...queryForm, phone: e.target.value })}
-                                                className="w-full px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent outline-none text-xs sm:text-sm"
-                                                placeholder="9876543210"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-[10px] sm:text-xs font-semibold text-gray-700 mb-1">Your Query *</label>
-                                        <textarea
-                                            value={queryForm.message}
-                                            onChange={(e) => setQueryForm({ ...queryForm, message: e.target.value })}
-                                            rows="3"
-                                            className="w-full px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent outline-none text-xs sm:text-sm resize-none"
-                                            placeholder="Describe your issue or query in detail..."
-                                        ></textarea>
-                                    </div>
-
-                                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                                        <button
-                                            onClick={() => {
-                                                // Handle form submission here
-                                                console.log('Query submitted:', queryForm);
-                                                alert('Your query has been submitted successfully!');
-                                                setQueryForm({ name: '', email: '', phone: '', message: '' });
-                                                setShowHelpModal(false);
-                                            }}
-                                            className="flex-1 bg-[rgb(147,71,144)] text-white py-2 sm:py-3 rounded-lg font-semibold hover:bg-[rgb(106,0,102)] transition-all text-xs sm:text-sm"
-                                        >
-                                            Submit Query
-                                        </button>
-                                        <button
-                                            onClick={() => setShowHelpModal(false)}
-                                            className="px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all text-xs sm:text-sm"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                           
                         </div>
                     </div>
                 </div>

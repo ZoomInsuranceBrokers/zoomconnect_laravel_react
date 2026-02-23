@@ -15,7 +15,11 @@ use App\Models\CompanyUser;
 use App\Models\WellnessService;
 use App\Models\HelpSupportChat;
 use App\Models\HelpSupportStatusTracker;
+use App\Models\NaturalAddition;
+use App\Models\CompanyMaster;
+use App\Models\PolicyMaster;
 use App\Mail\SupportTicketMail;
+use App\Mail\NaturalAdditionNotification;
 use App\Services\MailService;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -95,6 +99,7 @@ class ApiController extends Controller
         // Check if user exists in CompanyEmployee table
         $employee = CompanyEmployee::where('mobile', $mobile)
             ->where('is_active', 1)
+            ->where('is_delete', 0)
             ->first();
 
         if (!$employee) {
@@ -109,15 +114,29 @@ class ApiController extends Controller
 
         // Send OTP via SMS
         try {
-            // TODO: Integrate SMS gateway service (Twilio, MSG91, etc.)
-            // For now, we'll just log it
-            \Log::info("OTP for mobile {$mobile}: {$otp}");
+            $smsMessage = urlencode("The OTP to verify your mobile number for Zoom Connect is {$otp}. Do not share this OTP with anyone for security reasons. Valid for 10 minutes.");
+            $apiUrl = "https://sms.staticking.com/index.php/smsapi/httpapi/?secret=u3ybdkzT4mOsUyPLDFG5&sender=Zoomco&tempid=1707165043797041448&receiver={$mobile}&route=TA&msgtype=1&sms={$smsMessage}";
 
-            // Example SMS integration (uncomment and configure when ready)
-            // $this->sendSMS($mobile, "Your OTP for login is: {$otp}. Valid for 10 minutes.");
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $apiUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
-            return ApiResponse::success(['mobile' => $mobile, 'otp' => $otp], 'OTP sent to your mobile successfully', 200);
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            // Log the API call
+            Log::info('Mobile OTP API Call', [
+                'mobile' => $mobile,
+                'otp' => $otp,
+                'response' => $response,
+                'http_code' => $httpCode
+            ]);
+
+            return ApiResponse::success(['mobile' => $mobile], 'OTP sent to your mobile successfully', 200);
         } catch (\Exception $e) {
+            Log::error('Failed to send mobile OTP: ' . $e->getMessage());
             return ApiResponse::error('Failed to send OTP. Please try again.', $e->getMessage(), 500);
         }
     }
@@ -161,7 +180,7 @@ class ApiController extends Controller
         if ($loginType === 'email') {
             $employee = CompanyEmployee::where('email', $loginValue)->where('is_active', 1)->first();
         } else {
-            $employee = CompanyEmployee::where('mobile_no', $loginValue)->where('is_active', 1)->first();
+            $employee = CompanyEmployee::where('mobile', $loginValue)->where('is_active', 1)->first();
         }
 
         if (!$employee) {
@@ -258,8 +277,8 @@ class ApiController extends Controller
             return ApiResponse::error('Your company is inactive. You cannot log in.', null, 403);
         }
 
-        // Verify password
-        if ($employee->pwd !== $request->password) {
+        // Verify password using Laravel Hash
+        if (!Hash::check($request->password, $employee->pwd)) {
             return ApiResponse::error('Invalid password. Please try again.', null, 401);
         }
 
@@ -299,7 +318,7 @@ class ApiController extends Controller
             'data' => [
                 'employee_id' => $employee->employee_id,
                 'email' => $employee->email,
-                'mobile' => $employee->mobile_no,
+                'mobile' => $employee->mobile,
                 'company_id' => $employee->company_id
             ]
         ];
@@ -415,13 +434,31 @@ class ApiController extends Controller
                 return ApiResponse::error('Employee not found', null, 404);
             }
 
-            // Update password
-            $employee->pwd = $request->new_password;
+            // Update password with Laravel Hash
+            $employee->pwd = Hash::make($request->new_password);
             $employee->save();
 
             return ApiResponse::success(null, 'Password reset successfully', 200);
         } catch (\Exception $e) {
             return ApiResponse::error('Invalid token or failed to reset password', $e->getMessage(), 401);
+        }
+    }
+
+    /**
+     * Get all active FAQs
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFaqs()
+    {
+        try {
+            $faqs = \App\Models\FaqMaster::where('is_active', 1)
+                ->orderBy('id', 'asc')
+                ->get(['id', 'faq_title as question', 'faq_description as answer']);
+
+            return ApiResponse::success(['faqs' => $faqs], 'FAQs fetched successfully', 200);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to fetch FAQs', $e->getMessage(), 500);
         }
     }
 
@@ -3024,6 +3061,26 @@ class ApiController extends Controller
 
         $id = DB::table('natural_addition')->insertGetId($insert);
 
+        // Send email notification to HR and CC employee
+        try {
+            $naturalAddition = NaturalAddition::find($id);
+            $company = CompanyMaster::where('comp_id', $employee->company_id)->first();
+            $policy = PolicyMaster::find($payload['policy_id'] ?? 1);
+            
+            // Get HR users for this company
+            $hrUsers = CompanyUser::where('company_id', $employee->company_id)
+                ->where('is_active', 1)
+                ->get();
+            
+            foreach ($hrUsers as $hrUser) {
+                Mail::to($hrUser->email)
+                    ->cc($employee->email)
+                    ->send(new NaturalAdditionNotification($naturalAddition, $employee, $company, $policy, 'submitted'));
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send natural addition email: ' . $e->getMessage());
+        }
+
         return ApiResponse::success(['id' => $id], 'Data Sent to the HR For the Review', 200);
     }
 
@@ -3145,6 +3202,28 @@ class ApiController extends Controller
         }
 
         DB::table('natural_addition')->where('id', $id)->update($update);
+
+        // Send email notification to HR and CC employee
+        try {
+            $naturalAddition = NaturalAddition::find($id);
+            $company = CompanyMaster::where('comp_id', $employee->company_id)->first();
+            $policy = PolicyMaster::find($payload['policy_id'] ?? 1);
+            
+            // Get HR users for this company
+            $hrUsers = CompanyUser::where('company_id', $employee->company_id)
+                ->where('is_active', 1)
+                ->get();
+            
+            $action = $naturalAddition->status === 'rejected' ? 'resubmitted' : 'edited';
+            
+            foreach ($hrUsers as $hrUser) {
+                Mail::to($hrUser->email)
+                    ->cc($employee->email)
+                    ->send(new NaturalAdditionNotification($naturalAddition, $employee, $company, $policy, $action));
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send natural addition email: ' . $e->getMessage());
+        }
 
         return ApiResponse::success([], 'Data Sent to the HR For the Review', 200);
     }

@@ -12,7 +12,9 @@ import {
     PhoneIcon,
     EnvelopeIcon,
     UserGroupIcon,
-    ArrowDownTrayIcon
+    ArrowDownTrayIcon,
+    UserPlusIcon,
+    DocumentTextIcon
 } from "@heroicons/react/24/outline";
 import { router } from "@inertiajs/react";
 
@@ -36,12 +38,162 @@ export default function PolicyDetail({ employee, policyDetails }) {
         dependents && dependents.length ? dependents[0] : null
     );
 
+    // Natural Addition states
+    const [showNaturalAdditionModal, setShowNaturalAdditionModal] = useState(false);
+    const [naturalAdditionForm, setNaturalAdditionForm] = useState({
+        dependent_name: '',
+        dependent_relation: '',
+        dependent_gender: '',
+        dependent_dob: '',
+        date_of_event: '',
+        document: null
+    });
+    const [naturalAdditionList, setNaturalAdditionList] = useState([]);
+    const [loadingNaturalAdditions, setLoadingNaturalAdditions] = useState(false);
+    const [submittingNaturalAddition, setSubmittingNaturalAddition] = useState(false);
+    const [editingNaturalAddition, setEditingNaturalAddition] = useState(null);
+
     useEffect(() => {
         // Debug: log escalation data (remove in production)
         if (typeof escalation_matrix !== 'undefined') {
             console.debug('escalation_matrix', escalation_matrix);
         }
-    }, [escalation_matrix]);
+
+        // Fetch natural addition list
+        if (policy?.natural_addition_allowed) {
+            fetchNaturalAdditionList();
+        }
+    }, [escalation_matrix, policy]);
+
+    const fetchNaturalAdditionList = async () => {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+
+        setLoadingNaturalAdditions(true);
+        try {
+            const response = await fetch(`/api/v1/natural-addition/list?policy_id=${policy.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const result = await response.json();
+            if (result.success && result.data) {
+                setNaturalAdditionList(result.data.data || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch natural additions:', error);
+        } finally {
+            setLoadingNaturalAdditions(false);
+        }
+    };
+
+    const handleNaturalAdditionSubmit = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            alert('Please login to continue');
+            return;
+        }
+
+        if (!naturalAdditionForm.document) {
+            alert('Please upload supporting document (PDF)');
+            return;
+        }
+
+        setSubmittingNaturalAddition(true);
+
+        try {
+            // Convert file to base64
+            const reader = new FileReader();
+            reader.readAsDataURL(naturalAdditionForm.document);
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+
+                const payload = {
+                    dependent_name: naturalAdditionForm.dependent_name,
+                    dependent_relation: naturalAdditionForm.dependent_relation,
+                    dependent_gender: naturalAdditionForm.dependent_gender,
+                    dependent_dob: naturalAdditionForm.dependent_dob,
+                    date_of_event: naturalAdditionForm.date_of_event || naturalAdditionForm.dependent_dob,
+                    document: base64,
+                    policy_id: policy.id
+                };
+
+                const endpoint = editingNaturalAddition
+                    ? '/api/v1/natural-addition/edit'
+                    : '/api/v1/natural-addition/';
+
+                if (editingNaturalAddition) {
+                    payload.id = editingNaturalAddition.id;
+                }
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(result.message || 'Request submitted successfully!');
+                    setShowNaturalAdditionModal(false);
+                    setNaturalAdditionForm({
+                        dependent_name: '',
+                        dependent_relation: '',
+                        dependent_gender: '',
+                        dependent_dob: '',
+                        date_of_event: '',
+                        document: null
+                    });
+                    setEditingNaturalAddition(null);
+                    fetchNaturalAdditionList();
+                } else {
+                    alert(result.message || 'Failed to submit request');
+                }
+            };
+        } catch (error) {
+            console.error('Failed to submit natural addition:', error);
+            alert('Failed to submit request. Please try again.');
+        } finally {
+            setSubmittingNaturalAddition(false);
+        }
+    };
+
+    const handleEditNaturalAddition = (request) => {
+        setEditingNaturalAddition(request);
+        setNaturalAdditionForm({
+            dependent_name: request.insured_name,
+            dependent_relation: request.relation,
+            dependent_gender: request.gender,
+            dependent_dob: request.dob,
+            date_of_event: request.date_of_event || '',
+            document: null
+        });
+        setShowNaturalAdditionModal(true);
+    };
+
+    const getStatusBadge = (status) => {
+        const statusMap = {
+            '0': { label: 'Pending', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+            'pending': { label: 'Pending', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+            '1': { label: 'Approved', color: 'bg-green-100 text-green-800 border-green-200' },
+            'approved': { label: 'Approved', color: 'bg-green-100 text-green-800 border-green-200' },
+            'rejected': { label: 'Rejected', color: 'bg-red-100 text-red-800 border-red-200' }
+        };
+        const statusInfo = statusMap[status] || statusMap['0'];
+        return (
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusInfo.color}`}>
+                {statusInfo.label}
+            </span>
+        );
+    };
 
     const handleDownloadECard = async () => {
         if (!activeMember || !policy) {
@@ -164,6 +316,29 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                     <GlobeAltIcon className="w-4 h-4 flex-shrink-0" />
                                     <span className="hidden sm:inline">Find Network Hospitals</span>
                                     <span className="sm:hidden">Hospitals</span>
+                                </button>
+                            )}
+
+                            {/* Add Natural Addition Button */}
+                            {policy.natural_addition_allowed && (
+                                <button
+                                    onClick={() => {
+                                        setEditingNaturalAddition(null);
+                                        setNaturalAdditionForm({
+                                            dependent_name: '',
+                                            dependent_relation: '',
+                                            dependent_gender: '',
+                                            dependent_dob: '',
+                                            date_of_event: '',
+                                            document: null
+                                        });
+                                        setShowNaturalAdditionModal(true);
+                                    }}
+                                    className="flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white border border-purple-400 rounded-xl text-xs font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-sm w-full sm:w-auto"
+                                >
+                                    <UserPlusIcon className="w-4 h-4 flex-shrink-0" />
+                                    <span className="hidden sm:inline">Add New Member</span>
+                                    <span className="sm:hidden">Add Member</span>
                                 </button>
                             )}
 
@@ -515,6 +690,95 @@ export default function PolicyDetail({ employee, policyDetails }) {
                     </div>
                 </div>
 
+                {/* Natural Addition Requests Section */}
+                {policy.natural_addition_allowed && activeTab === 'details' && (
+                    <div className="lg:col-span-3 mt-4">
+                        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-200">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <DocumentTextIcon className="w-5 h-5 text-purple-600" />
+                                    <h3 className="font-bold text-gray-900 text-base">Natural Addition Requests</h3>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setEditingNaturalAddition(null);
+                                        setNaturalAdditionForm({
+                                            dependent_name: '',
+                                            dependent_relation: '',
+                                            dependent_gender: '',
+                                            dependent_dob: '',
+                                            date_of_event: '',
+                                            document: null
+                                        });
+                                        setShowNaturalAdditionModal(true);
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg text-xs font-semibold hover:from-purple-700 hover:to-pink-700 transition-all"
+                                >
+                                    <UserPlusIcon className="w-4 h-4" />
+                                    Add Member
+                                </button>
+                            </div>
+
+                            <div className="text-xs text-gray-600 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <p className="font-semibold mb-1">Natural Addition Policy:</p>
+                                <p>You can add a newly married spouse or newborn child to your policy within 30 days of the event.</p>
+                            </div>
+
+                            {loadingNaturalAdditions ? (
+                                <div className="text-center py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                                    <p className="text-sm text-gray-500 mt-2">Loading requests...</p>
+                                </div>
+                            ) : naturalAdditionList.length > 0 ? (
+                                <div className="space-y-3">
+                                    {naturalAdditionList.map((request) => (
+                                        <div key={request.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div className="flex-1">
+                                                    <h4 className="font-bold text-gray-900 text-sm">{request.insured_name}</h4>
+                                                    <p className="text-xs text-gray-600">
+                                                        {request.relation} • {request.gender}
+                                                    </p>
+                                                </div>
+                                                {getStatusBadge(request.status)}
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+                                                <div>
+                                                    <span className="font-semibold">DOB:</span> {new Date(request.dob).toLocaleDateString()}
+                                                </div>
+                                                <div>
+                                                    <span className="font-semibold">Event Date:</span> {new Date(request.date_of_event).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                            {request.reason && request.status === 'rejected' && (
+                                                <div className="bg-red-50 border border-red-200 rounded-lg p-2 mb-2">
+                                                    <p className="text-xs text-red-800">
+                                                        <span className="font-semibold">Reason:</span> {request.reason}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {request.status === 'rejected' && (
+                                                <button
+                                                    onClick={() => handleEditNaturalAddition(request)}
+                                                    className="text-xs text-purple-600 hover:text-purple-800 font-semibold"
+                                                >
+                                                    Edit & Resubmit
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <UserPlusIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                    <p className="text-sm text-gray-500">No natural addition requests yet</p>
+                                    <p className="text-xs text-gray-400 mt-1">Click "Add Member" to submit a request</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Escalation Drawer - Right Side Slide-in */}
                 {showEscalationDrawer && (
                     <>
@@ -735,6 +999,140 @@ export default function PolicyDetail({ employee, policyDetails }) {
                     </>
                 )}
             </div>
+
+            {/* Natural Addition Modal */}
+            {showNaturalAdditionModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowNaturalAdditionModal(false)}>
+                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <UserPlusIcon className="w-8 h-8 text-white" />
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white">
+                                            {editingNaturalAddition ? 'Edit Natural Addition' : 'Add New Member'}
+                                        </h3>
+                                        <p className="text-purple-100 text-sm">Add spouse or newborn child to policy</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowNaturalAdditionModal(false)}
+                                    className="text-white hover:bg-white/20 rounded-lg p-2 transition-all"
+                                >
+                                    <XCircleIcon className="w-6 h-6" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleNaturalAdditionSubmit} className="p-6 space-y-4">
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                                <p className="text-xs text-yellow-800">
+                                    <strong>Important:</strong> Natural addition can be done within 30 days of marriage (for spouse) or birth (for child).
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Member Name *</label>
+                                <input
+                                    type="text"
+                                    value={naturalAdditionForm.dependent_name}
+                                    onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, dependent_name: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                                    placeholder="Enter full name"
+                                    required
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Relation *</label>
+                                    <select
+                                        value={naturalAdditionForm.dependent_relation}
+                                        onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, dependent_relation: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                                        required
+                                    >
+                                        <option value="">Select Relation</option>
+                                        <option value="SPOUSE">Spouse</option>
+                                        <option value="CHILD">Child</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Gender *</label>
+                                    <select
+                                        value={naturalAdditionForm.dependent_gender}
+                                        onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, dependent_gender: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                                        required
+                                    >
+                                        <option value="">Select Gender</option>
+                                        <option value="MALE">Male</option>
+                                        <option value="FEMALE">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Date of Birth *</label>
+                                    <input
+                                        type="date"
+                                        value={naturalAdditionForm.dependent_dob}
+                                        onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, dependent_dob: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                                        required
+                                    />
+                                </div>
+
+                                {naturalAdditionForm.dependent_relation === 'SPOUSE' && (
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Date of Marriage *</label>
+                                        <input
+                                            type="date"
+                                            value={naturalAdditionForm.date_of_event}
+                                            onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, date_of_event: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                                            required
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Supporting Document (PDF) *</label>
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, document: e.target.files[0] })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                                    required={!editingNaturalAddition}
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Upload marriage certificate (for spouse) or birth certificate (for child)
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    type="submit"
+                                    disabled={submittingNaturalAddition}
+                                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {submittingNaturalAddition ? 'Submitting...' : editingNaturalAddition ? 'Update Request' : 'Submit Request'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNaturalAdditionModal(false)}
+                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </EmployeeLayout>
     );
 }

@@ -24,6 +24,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/login/companies', [App\Http\Controllers\ApiController::class, 'getActiveCompanies'])->name('api.login.companies');
     Route::post('/login/employee-code', [App\Http\Controllers\ApiController::class, 'loginWithEmployeeCode'])->name('api.login.employee.code');
 
+    // Public Routes
+    Route::get('/faqs', [App\Http\Controllers\ApiController::class, 'getFaqs'])->name('api.faqs');
+
     // Protected Routes (require JWT token)
     Route::middleware([\App\Http\Middleware\ApiJwtMiddleware::class])->group(function () {
         Route::get('/profile', [App\Http\Controllers\ApiController::class, 'getProfile'])->name('api.profile');
