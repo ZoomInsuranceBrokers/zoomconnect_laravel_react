@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import AiChatbot from '@/Pages/Employee/AiChatbot';
 import {
     HomeIcon,
     DocumentTextIcon,
@@ -9,6 +10,9 @@ import {
     UserCircleIcon,
     ArrowRightOnRectangleIcon,
     Cog6ToothIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    LockClosedIcon,
 } from '@heroicons/react/24/outline';
 
 export default function EmployeeLayout({ children, employee }) {
@@ -18,8 +22,10 @@ export default function EmployeeLayout({ children, employee }) {
     const [settingsOpenMobile, setSettingsOpenMobile] = useState(false);
     const [profileModalOpen, setProfileModalOpen] = useState(false);
     const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-    const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    const [passwordForm, setPasswordForm] = useState({ newPassword: '', confirmPassword: '' });
     const [passwordError, setPasswordError] = useState('');
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const gender = (employee?.gender || '').toLowerCase();
 
     // Avatar handling: prefer project-provided images placed under
@@ -63,7 +69,7 @@ export default function EmployeeLayout({ children, employee }) {
         e.preventDefault();
         setPasswordError('');
 
-        if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+        if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
             setPasswordError('All fields are required');
             return;
         }
@@ -86,14 +92,13 @@ export default function EmployeeLayout({ children, employee }) {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                 },
                 body: JSON.stringify({
-                    old_password: passwordForm.oldPassword,
                     new_password: passwordForm.newPassword,
                     new_password_confirmation: passwordForm.confirmPassword,
                 }),
             });
 
             if (response.ok) {
-                setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+                setPasswordForm({ newPassword: '', confirmPassword: '' });
                 setChangePasswordOpen(false);
                 alert('Password changed successfully!');
             } else {
@@ -443,7 +448,7 @@ export default function EmployeeLayout({ children, employee }) {
 
                         {/* Gear Icon - overlapping header */}
                         <div className="flex flex-col items-center -mt-10 px-4">
-                            <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center">
+                            <div className="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center z-10">
                                 <Cog6ToothIcon className="w-10 h-10 text-[rgb(147,71,144)]" />
                             </div>
                             <h3 className="mt-3 text-base font-bold text-gray-900 text-center">Account Settings</h3>
@@ -479,12 +484,6 @@ export default function EmployeeLayout({ children, employee }) {
                             </div>
                         </div>
 
-                        {/* Footer Info */}
-                        <div className="px-4 pb-4">
-                            <p className="text-[10px] text-gray-400 text-center">
-                                Questions? Contact <a href="/employee/help" className="text-purple-600 hover:underline">Support</a>
-                            </p>
-                        </div>
                     </div>
                 </div>
             )}
@@ -492,10 +491,10 @@ export default function EmployeeLayout({ children, employee }) {
             {/* Change Password Modal */}
             {changePasswordOpen && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
 
                         {/* Gradient header band */}
-                        <div className="relative bg-gradient-to-br from-[rgb(147,71,144)] via-purple-500 to-pink-400 px-6 pt-7 pb-16 flex-shrink-0">
+                        <div className="relative bg-gradient-to-br from-[rgb(147,71,144)] to-pink-400 px-6 pt-7 pb-12 flex-shrink-0">
                             <button
                                 onClick={() => { setChangePasswordOpen(false); setPasswordError(''); }}
                                 className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all"
@@ -509,10 +508,8 @@ export default function EmployeeLayout({ children, employee }) {
 
                         {/* Lock Icon - overlapping header */}
                         <div className="flex flex-col items-center -mt-8 px-6 pb-1 flex-shrink-0">
-                            <div className="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center">
-                                <svg className="w-8 h-8 text-[rgb(147,71,144)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm6-10V7a3 3 0 00-3-3H9a3 3 0 00-3 3v2" />
-                                </svg>
+                            <div className="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center z-10">
+                                <LockClosedIcon className="w-8 h-8 text-[rgb(147,71,144)]" />
                             </div>
                             <h2 className="mt-3 text-lg font-bold text-gray-900 text-center">Secure Your Account</h2>
                             <p className="text-xs text-gray-500 text-center mt-0.5">Create a strong password</p>
@@ -530,32 +527,31 @@ export default function EmployeeLayout({ children, employee }) {
                                 </div>
                             )}
 
-                            {/* Old Password */}
-                            <div className="mb-3">
-                                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                                    Current Password
-                                </label>
-                                <input
-                                    type="password"
-                                    value={passwordForm.oldPassword}
-                                    onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
-                                    placeholder="Enter current password"
-                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent transition-all text-sm"
-                                />
-                            </div>
-
                             {/* New Password */}
                             <div className="mb-3">
-                                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                                <label className="block text-[11px] font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
                                     New Password
                                 </label>
-                                <input
-                                    type="password"
-                                    value={passwordForm.newPassword}
-                                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                                    placeholder="Min 8 characters"
-                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent transition-all text-sm"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showNewPassword ? "text" : "password"}
+                                        value={passwordForm.newPassword}
+                                        onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                        placeholder="Min 8 characters"
+                                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent transition-all text-sm"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        {showNewPassword ? (
+                                            <EyeSlashIcon className="w-5 h-5" />
+                                        ) : (
+                                            <EyeIcon className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Confirm Password */}
@@ -563,17 +559,30 @@ export default function EmployeeLayout({ children, employee }) {
                                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
                                     Confirm Password
                                 </label>
-                                <input
-                                    type="password"
-                                    value={passwordForm.confirmPassword}
-                                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                                    placeholder="Re-enter password"
-                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent transition-all text-sm"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        value={passwordForm.confirmPassword}
+                                        onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                        placeholder="Re-enter password"
+                                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(147,71,144)] focus:border-transparent transition-all text-sm"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        {showConfirmPassword ? (
+                                            <EyeSlashIcon className="w-5 h-5" />
+                                        ) : (
+                                            <EyeIcon className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Password strength hint */}
-                            <div className="mb-4 p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                            <div className="mb-4 p-1.5 bg-blue-50 rounded-lg border border-blue-100">
                                 <p className="text-[10px] text-blue-700 font-medium leading-relaxed">
                                     💡 Mix uppercase, lowercase, numbers & symbols for strength
                                 </p>
@@ -586,7 +595,7 @@ export default function EmployeeLayout({ children, employee }) {
                             <div className="flex gap-2.5">
                                 <button
                                     type="button"
-                                    onClick={() => { setChangePasswordOpen(false); setPasswordError(''); setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' }); }}
+                                    onClick={() => { setChangePasswordOpen(false); setPasswordError(''); setPasswordForm({ newPassword: '', confirmPassword: '' }); }}
                                     className="flex-1 py-2.5 text-center text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-all border border-gray-200"
                                 >
                                     Cancel
@@ -602,6 +611,7 @@ export default function EmployeeLayout({ children, employee }) {
                     </div>
                 </div>
             )}
+            <AiChatbot />
         </>
     );
 }

@@ -574,12 +574,17 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                 {/* Right Sidebar - Exercises List */}
                 <aside className="w-full xl:w-96 border-t xl:border-t-0 xl:border-l border-gray-100 overflow-y-auto scrollbar-hide">
                     <div className="p-3 sm:p-5">
-                        <div className="mb-4 rounded-2xl p-3 sm:p-4 bg-gray-50">
-                            <div className="mb-3">
-                                <h4 className="text-sm sm:text-base font-bold text-gray-800">Get the app — quick access on mobile</h4>
-                                {/* <p className="text-[10px] sm:text-xs text-gray-500">For easy access to your health card, claims and support, download our mobile app.</p> */}
-                            </div>
-                            <img src="/assets/images/phone-with-QR.png" alt="Promo" className="w-full h-[45vh] md:h-[65vh] object-contain rounded-lg" />
+                        <div className="mb-4 rounded-2xl p-3 sm:p-4">
+                           
+                            <video 
+                                src="/assets/images/employee_image/QR-video1.mp4" 
+                                alt="App Promo"
+                                className="w-full h-[45vh] md:h-[65vh] object-contain rounded-lg"
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                            />
                         </div>
                         {/* Exercises List Header */}
                         <div className="flex items-center justify-between mb-4">
