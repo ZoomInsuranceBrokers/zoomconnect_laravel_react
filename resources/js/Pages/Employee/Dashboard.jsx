@@ -328,12 +328,12 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                                                             key={index}
                                                             onClick={() => setCurrentPolicyIndex(index)}
                                                             className={`absolute transition-all duration-500 ease-out cursor-pointer ${isActive
-                                                                    ? 'z-30 scale-100 opacity-100'
-                                                                    : isNext
-                                                                        ? 'z-20 scale-95 opacity-60 translate-x-12'
-                                                                        : isPrev
-                                                                            ? 'z-20 scale-95 opacity-60 -translate-x-12'
-                                                                            : 'z-10 scale-90 opacity-0'
+                                                                ? 'z-30 scale-100 opacity-100'
+                                                                : isNext
+                                                                    ? 'z-20 scale-95 opacity-60 translate-x-12'
+                                                                    : isPrev
+                                                                        ? 'z-20 scale-95 opacity-60 -translate-x-12'
+                                                                        : 'z-10 scale-90 opacity-0'
                                                                 }`}
                                                             style={{
                                                                 transform: isActive ? 'translateX(0) scale(1)' :
@@ -575,9 +575,9 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                 <aside className="w-full xl:w-96 border-t xl:border-t-0 xl:border-l border-gray-100 overflow-y-auto scrollbar-hide">
                     <div className="p-3 sm:p-5">
                         <div className="mb-4 rounded-2xl p-3 sm:p-4">
-                           
-                            <video 
-                                src="/assets/images/employee_image/QR-video1.mp4" 
+
+                            <video
+                                src="/assets/images/employee_image/QR-video1.mp4"
                                 alt="App Promo"
                                 className="w-full h-[45vh] md:h-[65vh] object-contain rounded-lg"
                                 autoPlay
@@ -644,34 +644,6 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
 
 
 
-                        </div>
-
-                        {/* My Friends Section */}
-                        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl sm:rounded-2xl p-3 sm:p-4">
-                            <div className="flex items-center justify-between mb-2 sm:mb-3">
-                                <div className="flex items-center gap-1.5 sm:gap-2">
-                                    <UserGroupIcon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
-                                    <span className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide">My Friends</span>
-                                </div>
-                                <span className="text-xs sm:text-sm font-semibold text-gray-700">+10</span>
-                            </div>
-                            <div className="flex items-center -space-x-2">
-                                {[1, 2, 3, 4].map((i) => (
-                                    <div
-                                        key={i}
-                                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 sm:border-3 border-white overflow-hidden"
-                                    >
-                                        <img
-                                            src={`https://i.pravatar.cc/150?img=${i}`}
-                                            alt={`Friend ${i}`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                ))}
-                                <button className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 sm:border-3 border-white bg-orange-500 hover:bg-orange-600 flex items-center justify-center text-white font-bold transition-all text-xs sm:text-sm">
-                                    +
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </aside>
