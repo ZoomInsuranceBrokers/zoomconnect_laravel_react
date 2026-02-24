@@ -194,7 +194,7 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                                                                     'translateX(0) scale(0.9)'
                                                     }}
                                                 >
-                                                    <div className="w-[70vw] sm:w-96 md:w-[28rem] lg:w-[32rem] bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5" style={{ boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0px 10px -5px rgba(0, 0, 0, 0.1)' }}>
+                                                    <div className="w-[78vw] sm:w-96 md:w-[28rem] lg:w-[32rem] bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5" style={{ boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 0px 10px -5px rgba(0, 0, 0, 0.1)' }}>
                                                         {/* Header */}
                                                         <div className="flex items-center justify-between mb-2 sm:mb-4">
                                                             <span className="text-[10px] sm:text-xs font-bold text-white bg-[rgb(147,71,144)] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">

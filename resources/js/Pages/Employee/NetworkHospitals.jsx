@@ -86,21 +86,20 @@ export default function NetworkHospitals({ employee, policy, insurance_company, 
         <EmployeeLayout employee={employee}>
             <Head title="Network Hospitals" />
             {/* Top Header Bar */}
-            <div className="bg-white rounded-t-2xl px-6 py-3 mt-4">
-                <div className="flex items-center justify-between">
+            <div className="bg-white rounded-t-2xl px-4 sm:px-6 py-3 mt-2 sm:mt-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-3 sm:gap-0">
                     <button
                         onClick={() => router.visit(`/employee/policy/${btoa(policy.id)}`)}
-                        className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors group"
+                        className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors group "
                     >
-                        <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                        <span className="font-semibold">Back to Policy</span>
+                        <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
+                        <span className="font-semibold text-sm sm:text-base">Back to Policy</span>
                     </button>
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-600">{policy.policy_number}</span>
+                    <div className="flex items-center gap-2 sm:gap-3  ">
                         {insurance_company.logo && (
                             <img
                                 src={`/${insurance_company.logo}`}
-                                className="h-8 w-auto object-contain"
+                                className="h-6 sm:h-8 w-auto object-contain"
                                 alt={insurance_company.name}
                             />
                         )}
@@ -108,25 +107,20 @@ export default function NetworkHospitals({ employee, policy, insurance_company, 
                 </div>
             </div>
 
-            <div className="flex-1 flex overflow-hidden bg-white rounded-b-2xl shadow-sm mb-4">
-                {/* Main Content - 60% */}
-                <main className="flex-1 overflow-y-auto p-6 scrollbar-hide">
+            <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-white rounded-b-2xl shadow-sm mb-4">
+                {/* Main Content */}
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-hide">
                     <div className="max-w-4xl">
                         {/* Compact Title Card */}
-                        <div className="bg-gradient-to-br from-blue-100 via-blue-50 to-blue-100 rounded-3xl p-4 shadow-sm mb-6 relative">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-white/80 rounded-xl flex items-center justify-center">
-                                        <span className="text-2xl">🏥</span>
-                                    </div>
-                                    <div>
-                                        <h1 className="text-lg font-bold text-gray-800">Find Network Hospitals</h1>
-                                        <p className="text-sm text-gray-600">{policy.policy_name}</p>
-                                    </div>
+                        <div className="bg-gradient-to-br from-blue-100 via-blue-50 to-blue-100 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm mb-4 sm:mb-6 relative">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/80 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <span className="text-xl sm:text-2xl">🏥</span>
                                 </div>
-                                <button className="w-8 h-8 bg-purple-500 hover:bg-purple-600 rounded-full flex items-center justify-center shadow-md transition-all">
-                                    <HeartIcon className="w-4 h-4 text-white" />
-                                </button>
+                                <div>
+                                    <h1 className="text-sm sm:text-lg font-bold text-gray-800">Find cashless treatment facilities near you</h1>
+                                    {/* <p className="text-xs text-gray-500 mt-0.5">{policy.policy_name}</p> */}
+                                </div>
                             </div>
                         </div>
 
@@ -137,15 +131,7 @@ export default function NetworkHospitals({ employee, policy, insurance_company, 
                             <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-200/20 to-purple-200/20 rounded-full -ml-12 -mb-12"></div>
 
                             <div className="relative z-10">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center shadow-lg">
-                                        <MagnifyingGlassIcon className="w-5 h-5 text-purple-600" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-lg font-bold text-gray-900">🎯 Find cashless treatment facilities near you</h2>
-                                        <p className="text-xs text-gray-600">Flexible Search</p>
-                                    </div>
-                                </div>
+                              
 
                                 {searchType === 'pincode_only' ? (
                                     /* Pincode Only Search (PHS TPA) */
@@ -172,11 +158,11 @@ export default function NetworkHospitals({ employee, policy, insurance_company, 
                                                 className="w-full px-3 py-3 text-base rounded-xl border-2 border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all outline-none bg-white shadow-sm"
                                             />
                                         </div>
-                                        <div className="flex gap-3 pt-2">
+                                        <div className="flex gap-3 pt-2 flex-wrap">
                                             <button
                                                 onClick={handleSearch}
                                                 disabled={searching || !pincode || pincode.length !== 6}
-                                                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 text-sm"
+                                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 text-sm whitespace-nowrap"
                                             >
                                                 {searching ? (
                                                     <>
@@ -203,7 +189,7 @@ export default function NetworkHospitals({ employee, policy, insurance_company, 
                                 ) : (
                                     /* State/City OR Pincode Search */
                                     <div className="space-y-5">
-                                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-4 shadow-sm">
+                                        {/* <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-4 shadow-sm">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <span className="text-lg">🎯</span>
                                                 <span className="text-sm font-bold text-purple-800">Flexible Search</span>
@@ -211,7 +197,7 @@ export default function NetworkHospitals({ employee, policy, insurance_company, 
                                             <p className="text-sm text-purple-700">
                                                 Search by pincode OR select state and city
                                             </p>
-                                        </div>
+                                        </div> */}
 
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div className="space-y-2">
@@ -268,11 +254,11 @@ export default function NetworkHospitals({ employee, policy, insurance_company, 
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-3 pt-2">
+                                        <div className="flex gap-3 pt-2 flex-wrap">
                                             <button
                                                 onClick={handleSearch}
                                                 disabled={searching || (!pincode && !selectedState)}
-                                                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 text-sm"
+                                                className="bg-[#934790] hover:bg-[#571754] disabled:from-gray-300 disabled:to-gray-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2 text-sm whitespace-nowrap"
                                             >
                                                 {searching ? (
                                                     <>
@@ -368,29 +354,27 @@ export default function NetworkHospitals({ employee, policy, insurance_company, 
                     </div>
                 </main>
 
-                {/* Right Sidebar - 40% */}
-                <aside className="hidden xl:block w-96 border-l border-gray-100 overflow-y-auto scrollbar-hide">
-                    <div className="p-5">
+                {/* Sidebar - Visible on all screens */}
+                <aside className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-gray-100 overflow-y-auto scrollbar-hide">
+                    <div className="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
                         {/* Policy Info Card */}
-                        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-4 mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                    <DocumentTextIcon className="w-4 h-4 text-gray-600" />
-                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Policy Info</span>
-                                </div>
+                        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <DocumentTextIcon className="w-4 h-4 text-orange-600" />
+                                <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">Policy Info</span>
                             </div>
                             <div className="space-y-2">
                                 <div>
-                                    <p className="text-xs text-gray-500">Policy Name</p>
-                                    <p className="text-sm font-bold text-gray-800">{policy.policy_name}</p>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-wide">Policy Name</p>
+                                    <p className="text-sm font-bold text-gray-800 leading-snug">{policy.policy_name}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-500">Policy Number</p>
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-wide">Policy Number</p>
                                     <p className="text-sm font-semibold text-gray-700">{policy.policy_number}</p>
                                 </div>
                                 <button
                                     onClick={() => router.visit(`/employee/policy/${btoa(policy.id)}`)}
-                                    className="w-full mt-2 bg-white hover:bg-gray-50 border-2 border-orange-200 text-orange-600 font-bold py-2 px-4 rounded-xl transition-all text-xs"
+                                    className="w-full mt-1 bg-white hover:bg-orange-50 border-2 border-orange-200 text-orange-600 font-bold py-2 px-4 rounded-xl transition-all text-xs"
                                 >
                                     View Full Details
                                 </button>
@@ -399,16 +383,13 @@ export default function NetworkHospitals({ employee, policy, insurance_company, 
 
                         {/* Claim Insurance Card */}
                         <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4">
-                            <div className="flex items-start justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-2xl">📋</span>
-                                    <span className="font-bold text-gray-800 text-sm">CLAIM</span>
-                                </div>
-                                <CheckCircleIcon className="w-5 h-5 text-purple-600" />
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xl">📋</span>
+                                <span className="font-bold text-gray-800 text-sm">Start a Claim</span>
                             </div>
-                            <p className="text-xs text-gray-600 mb-3">Do you want to claim insurance?</p>
+                            <p className="text-xs text-gray-600 mb-3 leading-relaxed">Found a network hospital? You can initiate a cashless claim directly.</p>
                             <button
-                                onClick={() => router.visit('/employee/claims')}
+                                onClick={() => router.visit('/employee/claims/initiate')}
                                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg text-sm"
                             >
                                 Start Claim Process
