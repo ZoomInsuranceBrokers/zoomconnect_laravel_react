@@ -2295,6 +2295,330 @@ class EmployeeAuthController extends Controller
     }
 
     /**
+     * Natural Addition Page
+     */
+    public function naturalAddition(Request $request, $encodedPolicyId)
+    {
+        $employee = Session::get('employee_user');
+
+        if (!$employee) {
+            return redirect()->route('employee.login');
+        }
+
+        // Decode policy ID
+        $policyId = base64_decode($encodedPolicyId);
+
+        // Get policy details
+        $policy = \DB::table('policy_master')
+            ->where('id', $policyId)
+            ->where('is_active', 1)
+            ->first();
+
+        if (!$policy) {
+            return redirect()->route('employee.policy')->with('error', 'Policy not found');
+        }
+
+        // Check if employee's company matches policy company
+        if ($policy->comp_id != $employee['company_id']) {
+            return redirect()->route('employee.policy')->with('error', 'Unauthorized access to this policy');
+        }
+
+        // Check if natural addition is allowed for this policy
+        if (!$policy->natural_addition_allowed) {
+            return redirect()->route('employee.policy')->with('error', 'Natural addition is not allowed for this policy');
+        }
+
+        return Inertia::render('Employee/NaturalAddition', [
+            'employee' => $employee,
+            'policy' => [
+                'id' => $policy->id,
+                'policy_number' => $policy->policy_number,
+                'policy_name' => $policy->policy_name ?? $policy->corporate_policy_name,
+                'policy_type' => $policy->policy_type,
+                'natural_addition_allowed' => $policy->natural_addition_allowed,
+            ],
+        ]);
+    }
+
+    /**
+     * Store Natural Addition Request
+     */
+    public function naturalAdditionStore(Request $request)
+    {
+        $employee = Session::get('employee_user');
+
+        if (!$employee) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'dependent_name' => 'required|string|max:255',
+            'dependent_relation' => 'required|in:SPOUSE,CHILD',
+            'dependent_gender' => 'required|in:MALE,FEMALE',
+            'dependent_dob' => 'required|date',
+            'date_of_event' => 'nullable|date',
+            'document' => 'required|string',
+            'policy_id' => 'required|integer'
+        ]);
+
+        try {
+            // Validate policy access
+            $policy = \DB::table('policy_master')
+                ->where('id', $request->policy_id)
+                ->where('comp_id', $employee['company_id'])
+                ->where('is_active', 1)
+                ->first();
+
+            if (!$policy) {
+                return response()->json(['success' => false, 'message' => 'Policy not found'], 404);
+            }
+
+            if (!$policy->natural_addition_allowed) {
+                return response()->json(['success' => false, 'message' => 'Natural addition not allowed for this policy'], 403);
+            }
+
+            // Validate date constraints
+            $dateOfEvent = $request->date_of_event ?? $request->dependent_dob;
+            $limitDate = now()->subDays(30)->startOfDay();
+
+            if ($request->dependent_relation === 'SPOUSE' && !$request->date_of_event) {
+                return response()->json(['success' => false, 'message' => 'Date of marriage is required for spouse'], 400);
+            }
+
+            if (\Carbon\Carbon::parse($dateOfEvent)->lt($limitDate)) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Event date cannot be more than 30 days in the past'
+                ], 400);
+            }
+
+            // Check existing entries
+            $entryCount = \DB::table('natural_addition')
+                ->where('emp_id', $employee['id'])
+                ->where('policy_id', $request->policy_id)
+                ->where('relation', $request->dependent_relation)
+                ->count();
+
+            if ($request->dependent_relation === 'SPOUSE' && $entryCount >= 1) {
+                return response()->json(['success' => false, 'message' => 'You can only add 1 spouse'], 400);
+            }
+
+            if ($request->dependent_relation === 'CHILD' && $entryCount >= 2) {
+                return response()->json(['success' => false, 'message' => 'You can only add 2 children'], 400);
+            }
+
+            // Save document
+            $documentBase64 = $request->document;
+            $imageData = base64_decode($documentBase64);
+            $dir = public_path('uploads/natural_addition');
+            
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+            
+            $fileName = 'uploads/natural_addition/' . time() . '_' . rand(1000, 9999) . '.pdf';
+            file_put_contents(public_path($fileName), $imageData);
+
+            // Insert record
+            $id = \DB::table('natural_addition')->insertGetId([
+                'emp_id' => $employee['id'],
+                'emp_code' => $employee['employee_code'],
+                'policy_id' => $request->policy_id,
+                'cmp_id' => $employee['company_id'],
+                'insured_name' => $request->dependent_name,
+                'gender' => $request->dependent_gender,
+                'relation' => $request->dependent_relation,
+                'dob' => $request->dependent_dob,
+                'date_of_event' => $dateOfEvent,
+                'document' => $fileName,
+                'status' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Send email notification
+            try {
+                $naturalAddition = \DB::table('natural_addition')->where('id', $id)->first();
+                $company = \DB::table('company_master')->where('comp_id', $employee['company_id'])->first();
+                
+                $hrUsers = \DB::table('company_users')
+                    ->where('company_id', $employee['company_id'])
+                    ->where('is_active', 1)
+                    ->get();
+                
+                foreach ($hrUsers as $hrUser) {
+                    \Mail::to($hrUser->email)
+                        ->cc($employee['email'])
+                        ->send(new \App\Mail\NaturalAdditionNotification($naturalAddition, (object)$employee, $company, $policy, 'submitted'));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send natural addition email: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Request submitted successfully. HR will review your request.',
+                'data' => ['id' => $id]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Natural addition store error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to submit request'], 500);
+        }
+    }
+
+    /**
+     * Update Natural Addition Request
+     */
+    public function naturalAdditionUpdate(Request $request)
+    {
+        $employee = Session::get('employee_user');
+
+        if (!$employee) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'id' => 'required|integer',
+            'dependent_name' => 'required|string|max:255',
+            'dependent_relation' => 'required|in:SPOUSE,CHILD',
+            'dependent_gender' => 'required|in:MALE,FEMALE',
+            'dependent_dob' => 'required|date',
+            'date_of_event' => 'nullable|date',
+            'document' => 'nullable|string',
+            'policy_id' => 'required|integer'
+        ]);
+
+        try {
+            // Validate existing request
+            $existingRequest = \DB::table('natural_addition')
+                ->where('id', $request->id)
+                ->where('emp_id', $employee['id'])
+                ->first();
+
+            if (!$existingRequest) {
+                return response()->json(['success' => false, 'message' => 'Request not found'], 404);
+            }
+
+            // Validate policy access
+            $policy = \DB::table('policy_master')
+                ->where('id', $request->policy_id)
+                ->where('comp_id', $employee['company_id'])
+                ->where('is_active', 1)
+                ->first();
+
+            if (!$policy) {
+                return response()->json(['success' => false, 'message' => 'Policy not found'], 404);
+            }
+
+            // Validate date constraints
+            $dateOfEvent = $request->date_of_event ?? $request->dependent_dob;
+            $limitDate = now()->subDays(30)->startOfDay();
+
+            if ($request->dependent_relation === 'SPOUSE' && !$request->date_of_event) {
+                return response()->json(['success' => false, 'message' => 'Date of marriage is required for spouse'], 400);
+            }
+
+            if (\Carbon\Carbon::parse($dateOfEvent)->lt($limitDate)) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Event date cannot be more than 30 days in the past'
+                ], 400);
+            }
+
+            // Prepare update data
+            $updateData = [
+                'insured_name' => $request->dependent_name,
+                'gender' => $request->dependent_gender,
+                'relation' => $request->dependent_relation,
+                'dob' => $request->dependent_dob,
+                'date_of_event' => $dateOfEvent,
+                'status' => 0,
+                'updated_at' => now(),
+            ];
+
+            // Handle document upload if provided
+            if ($request->document) {
+                $documentBase64 = $request->document;
+                $imageData = base64_decode($documentBase64);
+                $dir = public_path('uploads/natural_addition');
+                
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                
+                $fileName = 'uploads/natural_addition/' . time() . '_' . rand(1000, 9999) . '.pdf';
+                file_put_contents(public_path($fileName), $imageData);
+                $updateData['document'] = $fileName;
+            }
+
+            // Update record
+            \DB::table('natural_addition')
+                ->where('id', $request->id)
+                ->update($updateData);
+
+            // Send email notification
+            try {
+                $naturalAddition = \DB::table('natural_addition')->where('id', $request->id)->first();
+                $company = \DB::table('company_master')->where('comp_id', $employee['company_id'])->first();
+                
+                $hrUsers = \DB::table('company_users')
+                    ->where('company_id', $employee['company_id'])
+                    ->where('is_active', 1)
+                    ->get();
+                
+                $action = $existingRequest->status === 'rejected' ? 'resubmitted' : 'edited';
+                
+                foreach ($hrUsers as $hrUser) {
+                    \Mail::to($hrUser->email)
+                        ->cc($employee['email'])
+                        ->send(new \App\Mail\NaturalAdditionNotification($naturalAddition, (object)$employee, $company, $policy, $action));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send natural addition email: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Request updated successfully. HR will review your updated request.'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Natural addition update error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to update request'], 500);
+        }
+    }
+
+    /**
+     * Get Natural Addition List
+     */
+    public function naturalAdditionList(Request $request, $policyId)
+    {
+        $employee = Session::get('employee_user');
+
+        if (!$employee) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        try {
+            $requests = \DB::table('natural_addition')
+                ->where('emp_id', $employee['id'])
+                ->where('policy_id', $policyId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $requests
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Natural addition list error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to fetch requests'], 500);
+        }
+    }
+
+    /**
      * Get search options for network hospitals
      */
     private function getNetworkHospitalSearchOptions($policy)

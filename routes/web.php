@@ -112,6 +112,13 @@ Route::middleware(['employee.auth'])->prefix('employee')->group(function () {
     Route::get('/policy/{encodedPolicyId}', [EmployeeAuthController::class, 'policyDetails'])->name('employee.policy.details');
     Route::get('/network-hospitals/{encodedPolicyId}', [EmployeeAuthController::class, 'networkHospitals'])->name('employee.network.hospitals');
     Route::post('/network-hospitals/search', [EmployeeAuthController::class, 'networkHospitalsSearch'])->name('employee.network.hospitals.search');
+    
+    // Natural Addition Routes
+    Route::get('/natural-addition/{encodedPolicyId}', [EmployeeAuthController::class, 'naturalAddition'])->name('employee.natural.addition');
+    Route::post('/natural-addition/store', [EmployeeAuthController::class, 'naturalAdditionStore'])->name('employee.natural.addition.store');
+    Route::post('/natural-addition/update', [EmployeeAuthController::class, 'naturalAdditionUpdate'])->name('employee.natural.addition.update');
+    Route::get('/natural-addition/list/{policyId}', [EmployeeAuthController::class, 'naturalAdditionList'])->name('employee.natural.addition.list');
+    
     Route::get('/help', [EmployeeAuthController::class, 'help'])->name('employee.help');
     Route::get('/help/faqs', [EmployeeAuthController::class, 'getFaqs'])->name('employee.help.faqs');
     Route::get('/help/tickets', [EmployeeAuthController::class, 'getTickets'])->name('employee.help.tickets');

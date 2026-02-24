@@ -320,27 +320,7 @@ export default function PolicyDetail({ employee, policyDetails }) {
                             )}
 
                             {/* Add Natural Addition Button */}
-                            {policy.natural_addition_allowed && (
-                                <button
-                                    onClick={() => {
-                                        setEditingNaturalAddition(null);
-                                        setNaturalAdditionForm({
-                                            dependent_name: '',
-                                            dependent_relation: '',
-                                            dependent_gender: '',
-                                            dependent_dob: '',
-                                            date_of_event: '',
-                                            document: null
-                                        });
-                                        setShowNaturalAdditionModal(true);
-                                    }}
-                                    className="flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white border border-purple-400 rounded-xl text-xs font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-sm w-full sm:w-auto"
-                                >
-                                    <UserPlusIcon className="w-4 h-4 flex-shrink-0" />
-                                    <span className="hidden sm:inline">Add New Member</span>
-                                    <span className="sm:hidden">Add Member</span>
-                                </button>
-                            )}
+                           
 
                             {/* Tab Buttons */}
                             <div className="flex bg-white p-1 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 w-full sm:w-auto">
@@ -504,6 +484,35 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                                 <ShieldCheckIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                                                 Claim Insurance
                                             </button>
+                                        )}
+
+                                        {/* Natural Addition Card */}
+                                        {policy.natural_addition_allowed && policy.policy_type === 'gmi' && (
+                                            <div className="mt-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200 overflow-hidden">
+                                                {/* Banner */}
+                                                <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 text-white">
+                                                    <div className="flex items-center gap-2">
+                                                        <UserPlusIcon className="w-5 h-5" />
+                                                        <div>
+                                                            <h4 className="font-bold text-sm">Natural Addition</h4>
+                                                            <p className="text-xs text-purple-100">Add Spouse or Newborn Child</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {/* Content */}
+                                                <div className="p-4">
+                                                    <p className="text-xs text-gray-600 mb-3">
+                                                        Add your newly married spouse or newborn child to the policy within 30 days of the event.
+                                                    </p>
+                                                    <button
+                                                        onClick={() => router.visit(`/employee/natural-addition/${btoa(policy.id)}`)}
+                                                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-all hover:from-purple-700 hover:to-pink-700 flex items-center justify-center gap-2 text-sm shadow-md"
+                                                    >
+                                                        <UserPlusIcon className="w-4 h-4" />
+                                                        Add New Member
+                                                    </button>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -685,99 +694,40 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                         Claim Insurance
                                     </button>
                                 )}
+
+                                {/* Natural Addition Card */}
+                                {policy.natural_addition_allowed && policy.policy_type === 'gmi' && (
+                                    <div className="mt-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200 overflow-hidden">
+                                        {/* Banner */}
+                                        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 text-white">
+                                            <div className="flex items-center gap-2">
+                                                <UserPlusIcon className="w-5 h-5" />
+                                                <div>
+                                                    <h4 className="font-bold text-sm">Natural Addition</h4>
+                                                    <p className="text-xs text-purple-100">Add Spouse or Newborn Child</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {/* Content */}
+                                        <div className="p-4">
+                                            <p className="text-xs text-gray-600 mb-3">
+                                                Add your newly married spouse or newborn child to the policy within 30 days of the event.
+                                            </p>
+                                            <button
+                                                onClick={() => router.visit(`/employee/natural-addition/${btoa(policy.id)}`)}
+                                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-all hover:from-purple-700 hover:to-pink-700 flex items-center justify-center gap-2 text-sm shadow-md"
+                                            >
+                                                <UserPlusIcon className="w-4 h-4" />
+                                                Add New Member
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Natural Addition Requests Section */}
-                {policy.natural_addition_allowed && activeTab === 'details' && (
-                    <div className="lg:col-span-3 mt-4">
-                        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-200">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2">
-                                    <DocumentTextIcon className="w-5 h-5 text-purple-600" />
-                                    <h3 className="font-bold text-gray-900 text-base">Natural Addition Requests</h3>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        setEditingNaturalAddition(null);
-                                        setNaturalAdditionForm({
-                                            dependent_name: '',
-                                            dependent_relation: '',
-                                            dependent_gender: '',
-                                            dependent_dob: '',
-                                            date_of_event: '',
-                                            document: null
-                                        });
-                                        setShowNaturalAdditionModal(true);
-                                    }}
-                                    className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg text-xs font-semibold hover:from-purple-700 hover:to-pink-700 transition-all"
-                                >
-                                    <UserPlusIcon className="w-4 h-4" />
-                                    Add Member
-                                </button>
-                            </div>
-
-                            <div className="text-xs text-gray-600 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                <p className="font-semibold mb-1">Natural Addition Policy:</p>
-                                <p>You can add a newly married spouse or newborn child to your policy within 30 days of the event.</p>
-                            </div>
-
-                            {loadingNaturalAdditions ? (
-                                <div className="text-center py-8">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-                                    <p className="text-sm text-gray-500 mt-2">Loading requests...</p>
-                                </div>
-                            ) : naturalAdditionList.length > 0 ? (
-                                <div className="space-y-3">
-                                    {naturalAdditionList.map((request) => (
-                                        <div key={request.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
-                                            <div className="flex items-start justify-between mb-3">
-                                                <div className="flex-1">
-                                                    <h4 className="font-bold text-gray-900 text-sm">{request.insured_name}</h4>
-                                                    <p className="text-xs text-gray-600">
-                                                        {request.relation} • {request.gender}
-                                                    </p>
-                                                </div>
-                                                {getStatusBadge(request.status)}
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
-                                                <div>
-                                                    <span className="font-semibold">DOB:</span> {new Date(request.dob).toLocaleDateString()}
-                                                </div>
-                                                <div>
-                                                    <span className="font-semibold">Event Date:</span> {new Date(request.date_of_event).toLocaleDateString()}
-                                                </div>
-                                            </div>
-                                            {request.reason && request.status === 'rejected' && (
-                                                <div className="bg-red-50 border border-red-200 rounded-lg p-2 mb-2">
-                                                    <p className="text-xs text-red-800">
-                                                        <span className="font-semibold">Reason:</span> {request.reason}
-                                                    </p>
-                                                </div>
-                                            )}
-                                            {request.status === 'rejected' && (
-                                                <button
-                                                    onClick={() => handleEditNaturalAddition(request)}
-                                                    className="text-xs text-purple-600 hover:text-purple-800 font-semibold"
-                                                >
-                                                    Edit & Resubmit
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-8">
-                                    <UserPlusIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                    <p className="text-sm text-gray-500">No natural addition requests yet</p>
-                                    <p className="text-xs text-gray-400 mt-1">Click "Add Member" to submit a request</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
 
                 {/* Escalation Drawer - Right Side Slide-in */}
                 {showEscalationDrawer && (
