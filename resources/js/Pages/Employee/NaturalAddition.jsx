@@ -165,7 +165,7 @@ export default function NaturalAddition({ employee, policy }) {
             <Head title="Natural Addition" />
 
             <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-8 py-4 sm:py-8 scrollbar-hide rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 mt-2 sm:mt-4">
-                <div className="max-w-6xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                         <div className="flex items-center gap-2 sm:gap-3">
@@ -204,190 +204,328 @@ export default function NaturalAddition({ employee, policy }) {
                         </button>
                     </div>
 
-                    {/* Banner Card */}
-                    <div className="relative bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 rounded-2xl p-6 sm:p-8 text-white mb-6 shadow-2xl overflow-hidden transform hover:scale-[1.01] transition-transform duration-300">
-                        {/* Animated background elements */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 animate-pulse"></div>
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-pink-400/20 rounded-full -ml-24 -mb-24"></div>
-                        
-                        <div className="relative z-10 flex items-start gap-4">
-                            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
-                                <ExclamationCircleIcon className="w-7 h-7" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-xl mb-3 flex items-center gap-2">
-                                    Natural Addition Policy
-                                    <span className="px-2 py-0.5 bg-white/20 rounded-full text-xs">Important</span>
-                                </h3>
-                                <p className="text-sm text-purple-50 mb-3 leading-relaxed">
-                                    You can add the following family members within <strong>30 days</strong> of the event:
-                                </p>
-                                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-3">
-                                    <ul className="text-sm text-white space-y-2">
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-pink-200 font-bold">✓</span>
-                                            <span>Newly married spouse (within 30 days of marriage)</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-pink-200 font-bold">✓</span>
-                                            <span>Newborn child (within 30 days of birth)</span>
-                                        </li>
-                                    </ul>
+                    {/* 60/40 Dashboard Layout */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+                        {/* Main Content - 60% (Requests List) */}
+                        <div className="lg:col-span-7 space-y-4">
+                            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <DocumentTextIcon className="w-5 h-5 text-purple-600" />
+                                    <h3 className="font-bold text-gray-900 text-lg">Your Requests</h3>
                                 </div>
-                                <div className="flex items-start gap-2 bg-purple-800/30 backdrop-blur-sm rounded-lg p-3">
-                                    <DocumentTextIcon className="w-5 h-5 text-purple-200 flex-shrink-0 mt-0.5" />
-                                    <p className="text-xs text-purple-100">
-                                        <strong>Required Documents:</strong> Marriage certificate (for spouse) or Birth certificate (for child) in PDF format
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                {/* Separator Line */}
+                                <div className="h-px bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 mb-4"></div>
 
-                    {/* Requests List */}
-                    <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
-                        <div className="flex items-center gap-2 mb-4">
-                            <DocumentTextIcon className="w-5 h-5 text-purple-600" />
-                            <h3 className="font-bold text-gray-900 text-lg">Your Requests</h3>
-                        </div>
+                                {loadingList ? (
+                                    <div className="text-center py-12">
+                                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600 mx-auto mb-3"></div>
+                                        <p className="text-sm text-gray-500">Loading requests...</p>
+                                    </div>
+                                ) : naturalAdditionList.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {naturalAdditionList.map((request, index) => {
+                                            // Get dependents for this request if available
+                                            const requestDependents = policy.policy_members?.filter(
+                                                member => member.insured_name === request.insured_name
+                                            ) || [];
 
-                        {loadingList ? (
-                            <div className="text-center py-12">
-                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600 mx-auto mb-3"></div>
-                                <p className="text-sm text-gray-500">Loading requests...</p>
-                            </div>
-                        ) : naturalAdditionList.length > 0 ? (
-                            <div className="space-y-4">
-                                {naturalAdditionList.map((request, index) => (
-                                    <div 
-                                        key={request.id} 
-                                        className="group relative bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:border-purple-300 transition-all duration-300 transform hover:-translate-y-1"
-                                        style={{ animationDelay: `${index * 100}ms` }}
-                                    >
-                                        {/* Decorative corner */}
-                                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-bl-full opacity-50"></div>
-                                        
-                                        <div className="relative z-10">
-                                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-                                                <div className="flex items-center gap-3 flex-1">
-                                                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                                        {request.insured_name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-bold text-gray-900 text-lg mb-0.5">{request.insured_name}</h4>
-                                                        <p className="text-sm text-gray-600 flex items-center gap-2">
-                                                            <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
-                                                                {request.relation}
-                                                            </span>
-                                                            <span className="text-gray-400">•</span>
-                                                            <span>{request.gender}</span>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                {getStatusBadge(request.status)}
-                                            </div>
-
-                                            <div className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100">
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                    <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                            <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                            </svg>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-xs font-semibold text-gray-500 block">Date of Birth</span>
-                                                            <span className="text-sm text-gray-900 font-medium">{new Date(request.dob).toLocaleDateString('en-GB')}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                            <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-xs font-semibold text-gray-500 block">Event Date</span>
-                                                            <span className="text-sm text-gray-900 font-medium">{new Date(request.date_of_event).toLocaleDateString('en-GB')}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-start gap-2">
-                                                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                            <ClockIcon className="w-4 h-4 text-purple-600" />
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-xs font-semibold text-gray-500 block">Submitted</span>
-                                                            <span className="text-sm text-gray-900 font-medium">{new Date(request.created_at).toLocaleDateString('en-GB')}</span>
-                                                        </div>
-                                                    </div>
-                                                    {request.document && (
-                                                        <div className="flex items-start gap-2">
-                                                            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                                <DocumentTextIcon className="w-4 h-4 text-orange-600" />
-                                                            </div>
-                                                            <div>
-                                                                <span className="text-xs font-semibold text-gray-500 block">Document</span>
-                                                                <span className="text-sm text-green-600 font-medium">✓ Attached</span>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {request.reason && request.status === 'rejected' && (
-                                                <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-400 rounded-lg p-4 mb-3 animate-pulse">
-                                                    <div className="flex items-start gap-2">
-                                                        <XCircleIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                                                        <div>
-                                                            <p className="text-sm font-semibold text-red-900 mb-1">Reason for Rejection</p>
-                                                            <p className="text-sm text-red-800">{request.reason}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {request.status === 'rejected' && (
-                                                <button
-                                                    onClick={() => handleEdit(request)}
-                                                    className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105"
+                                            return (
+                                                <div 
+                                                    key={request.id} 
+                                                    className="group relative bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:border-purple-300 transition-all duration-300 transform hover:-translate-y-1"
+                                                    style={{ animationDelay: `${index * 100}ms` }}
                                                 >
-                                                    <DocumentTextIcon className="w-4 h-4" />
-                                                    Edit & Resubmit Request
-                                                </button>
-                                            )}
+                                                    {/* Decorative corner */}
+                                                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-bl-full opacity-50"></div>
+                                                    
+                                                    <div className="relative z-10">
+                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                                                            <div className="flex items-center gap-3 flex-1">
+                                                                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                                                    {request.insured_name.charAt(0).toUpperCase()}
+                                                                </div>
+                                                                <div>
+                                                                    <h4 className="font-bold text-gray-900 text-lg mb-0.5">{request.insured_name}</h4>
+                                                                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                                                                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
+                                                                            {request.relation}
+                                                                        </span>
+                                                                        <span className="text-gray-400">•</span>
+                                                                        <span>{request.gender}</span>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            {getStatusBadge(request.status)}
+                                                        </div>
+
+                                                        {/* Separator Line */}
+                                                        <div className="h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent mb-3"></div>
+
+                                                        <div className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                                <div className="flex items-start gap-2">
+                                                                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                                        <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-xs font-semibold text-gray-500 block">Date of Birth</span>
+                                                                        <span className="text-sm text-gray-900 font-medium">{new Date(request.dob).toLocaleDateString('en-GB')}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-start gap-2">
+                                                                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                                        <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                        </svg>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-xs font-semibold text-gray-500 block">Event Date</span>
+                                                                        <span className="text-sm text-gray-900 font-medium">{new Date(request.date_of_event).toLocaleDateString('en-GB')}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-start gap-2">
+                                                                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                                        <ClockIcon className="w-4 h-4 text-purple-600" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-xs font-semibold text-gray-500 block">Submitted</span>
+                                                                        <span className="text-sm text-gray-900 font-medium">{new Date(request.created_at).toLocaleDateString('en-GB')}</span>
+                                                                    </div>
+                                                                </div>
+                                                                {request.document && (
+                                                                    <div className="flex items-start gap-2">
+                                                                        <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                                            <DocumentTextIcon className="w-4 h-4 text-orange-600" />
+                                                                        </div>
+                                                                        <div>
+                                                                            <span className="text-xs font-semibold text-gray-500 block">Document</span>
+                                                                            <span className="text-sm text-green-600 font-medium">✓ Attached</span>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Show Dependents */}
+                                                        {requestDependents.length > 0 && (
+                                                            <>
+                                                                <div className="h-px bg-gradient-to-r from-transparent via-pink-200 to-transparent mb-3"></div>
+                                                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-3 mb-3">
+                                                                    <div className="text-xs font-semibold text-gray-700 mb-2">Related Dependents</div>
+                                                                    <div className="space-y-1">
+                                                                        {requestDependents.map((dep, idx) => (
+                                                                            <div key={idx} className="flex items-center gap-2 text-xs">
+                                                                                <div className="w-6 h-6 bg-white rounded-lg flex items-center justify-center font-bold text-purple-600">
+                                                                                    {dep.insured_name.charAt(0)}
+                                                                                </div>
+                                                                                <span className="font-medium text-gray-800">{dep.insured_name}</span>
+                                                                                <span className="text-gray-400">•</span>
+                                                                                <span className="text-gray-600">{dep.relation}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )}
+
+                                                        {request.reason && request.status === 'rejected' && (
+                                                            <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-400 rounded-lg p-4 mb-3 animate-pulse">
+                                                                <div className="flex items-start gap-2">
+                                                                    <XCircleIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                                                    <div>
+                                                                        <p className="text-sm font-semibold text-red-900 mb-1">Reason for Rejection</p>
+                                                                        <p className="text-sm text-red-800">{request.reason}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {request.status === 'rejected' && (
+                                                            <button
+                                                                onClick={() => handleEdit(request)}
+                                                                className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105"
+                                                            >
+                                                                <DocumentTextIcon className="w-4 h-4" />
+                                                                Edit & Resubmit Request
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-16">
+                                        <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <UserPlusIcon className="w-12 h-12 text-purple-600" />
+                                        </div>
+                                        <p className="text-lg font-bold text-gray-900 mb-2">No Requests Yet</p>
+                                        <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
+                                            Click the "Add New Member" button above to submit your first natural addition request for your policy
+                                        </p>
+                                        <button
+                                            onClick={() => {
+                                                setEditingRequest(null);
+                                                setNaturalAdditionForm({
+                                                    dependent_name: '',
+                                                    dependent_relation: '',
+                                                    dependent_gender: '',
+                                                    dependent_dob: '',
+                                                    date_of_event: '',
+                                                    document: null
+                                                });
+                                                setShowModal(true);
+                                            }}
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                                        >
+                                            <UserPlusIcon className="w-5 h-5" />
+                                            Add First Member
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Sidebar - 40% (Policy Info & Guidelines) */}
+                        <div className="lg:col-span-5 space-y-4">
+                            {/* Policy Information Card */}
+                            <div className="relative bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 rounded-2xl p-5 sm:p-6 text-white shadow-xl overflow-hidden">
+                                {/* Animated background elements */}
+                                <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 animate-pulse"></div>
+                                <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-400/20 rounded-full -ml-16 -mb-16"></div>
+                                
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+                                            <ExclamationCircleIcon className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg flex items-center gap-2">
+                                                Natural Addition Policy
+                                            </h3>
+                                            <p className="text-xs text-purple-100">Important Guidelines</p>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-16">
-                                <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <UserPlusIcon className="w-12 h-12 text-purple-600" />
+
+                                    {/* Separator Line */}
+                                    <div className="h-px bg-white/20 mb-4"></div>
+
+                                    <p className="text-sm text-purple-50 mb-3 leading-relaxed">
+                                        You can add the following family members within <strong>30 days</strong> of the event:
+                                    </p>
+                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 mb-3">
+                                        <ul className="text-sm text-white space-y-2">
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-pink-200 font-bold">✓</span>
+                                                <span>Newly married spouse (within 30 days of marriage)</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-pink-200 font-bold">✓</span>
+                                                <span>Newborn child (within 30 days of birth)</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    {/* Separator Line */}
+                                    <div className="h-px bg-white/20 mb-3"></div>
+
+                                    <div className="flex items-start gap-2 bg-purple-800/30 backdrop-blur-sm rounded-lg p-3">
+                                        <DocumentTextIcon className="w-5 h-5 text-purple-200 flex-shrink-0 mt-0.5" />
+                                        <p className="text-xs text-purple-100">
+                                            <strong>Required Documents:</strong> Marriage certificate (for spouse) or Birth certificate (for child) in PDF format
+                                        </p>
+                                    </div>
                                 </div>
-                                <p className="text-lg font-bold text-gray-900 mb-2">No Requests Yet</p>
-                                <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
-                                    Click the "Add New Member" button above to submit your first natural addition request for your policy
-                                </p>
-                                <button
-                                    onClick={() => {
-                                        setEditingRequest(null);
-                                        setNaturalAdditionForm({
-                                            dependent_name: '',
-                                            dependent_relation: '',
-                                            dependent_gender: '',
-                                            dependent_dob: '',
-                                            date_of_event: '',
-                                            document: null
-                                        });
-                                        setShowModal(true);
-                                    }}
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-                                >
-                                    <UserPlusIcon className="w-5 h-5" />
-                                    Add First Member
-                                </button>
                             </div>
-                        )}
+
+                            {/* Current Dependents Card */}
+                            {policy.policy_members && policy.policy_members.length > 0 && (
+                                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        <h3 className="font-bold text-gray-900">Current Dependents</h3>
+                                    </div>
+
+                                    {/* Separator Line */}
+                                    <div className="h-px bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 mb-3"></div>
+
+                                    <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
+                                        {policy.policy_members.map((member, index) => (
+                                            <div key={index} className="flex items-center gap-3 p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl hover:shadow-sm transition-all">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0">
+                                                    {member.insured_name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-semibold text-gray-900 text-sm truncate">{member.insured_name}</p>
+                                                    <p className="text-xs text-gray-600 flex items-center gap-1.5">
+                                                        <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-semibold">
+                                                            {member.relation}
+                                                        </span>
+                                                        {member.dob && (
+                                                            <>
+                                                                <span className="text-gray-400">•</span>
+                                                                <span>{new Date(member.dob).toLocaleDateString('en-GB')}</span>
+                                                            </>
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Quick Stats Card */}
+                            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-5 shadow-sm border border-gray-200">
+                                <h3 className="font-bold text-gray-900 mb-3">Request Statistics</h3>
+                                
+                                {/* Separator Line */}
+                                <div className="h-px bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 mb-3"></div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-100">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <ClockIcon className="w-4 h-4 text-yellow-600" />
+                                            <span className="text-xs font-semibold text-yellow-700">Pending</span>
+                                        </div>
+                                        <p className="text-2xl font-bold text-yellow-900">
+                                            {naturalAdditionList.filter(r => r.status === '0' || r.status === 'pending').length}
+                                        </p>
+                                    </div>
+                                    <div className="bg-green-50 rounded-xl p-3 border border-green-100">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                                            <span className="text-xs font-semibold text-green-700">Approved</span>
+                                        </div>
+                                        <p className="text-2xl font-bold text-green-900">
+                                            {naturalAdditionList.filter(r => r.status === '1' || r.status === 'approved').length}
+                                        </p>
+                                    </div>
+                                    <div className="bg-red-50 rounded-xl p-3 border border-red-100">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <XCircleIcon className="w-4 h-4 text-red-600" />
+                                            <span className="text-xs font-semibold text-red-700">Rejected</span>
+                                        </div>
+                                        <p className="text-2xl font-bold text-red-900">
+                                            {naturalAdditionList.filter(r => r.status === 'rejected').length}
+                                        </p>
+                                    </div>
+                                    <div className="bg-purple-50 rounded-xl p-3 border border-purple-100">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <DocumentTextIcon className="w-4 h-4 text-purple-600" />
+                                            <span className="text-xs font-semibold text-purple-700">Total</span>
+                                        </div>
+                                        <p className="text-2xl font-bold text-purple-900">
+                                            {naturalAdditionList.length}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

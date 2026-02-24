@@ -26,6 +26,7 @@ class HelpSupportChat extends Model
         'sender_type',
         'message',
         'state_key',
+        'attachment',
         'is_resolved',
         'status',
     ];

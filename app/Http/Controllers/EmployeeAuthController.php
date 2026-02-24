@@ -1811,9 +1811,24 @@ class EmployeeAuthController extends Controller
                     ->where('ticket_id', $ticket->ticket_id)
                     ->count();
 
+                // Extract subject from message (format: "subject\n\nmessage")
+                $subject = 'Support Ticket';
+                $message = $ticket->message;
+                if ($ticket->message) {
+                    $messageParts = explode("\n\n", $ticket->message, 2);
+                    if (count($messageParts) > 1) {
+                        $subject = $messageParts[0];
+                        $message = $messageParts[1];
+                    } else {
+                        $subject = substr($ticket->message, 0, 100);
+                        $message = $ticket->message;
+                    }
+                }
+
                 return [
                     'ticket_id' => $ticket->ticket_id,
-                    'subject' => $ticket->message,
+                    'subject' => $subject,
+                    'message' => $message,
                     'status' => $ticket->status ?? 'open',
                     'is_resolved' => (bool) $ticket->is_resolved,
                     'message_count' => $messageCount,
@@ -1842,12 +1857,21 @@ class EmployeeAuthController extends Controller
         $request->validate([
             'subject' => 'required|string|max:255',
             'message' => 'required|string',
+            'document' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120', // 5MB max
         ]);
 
         // Generate unique ticket ID
         do {
             $ticketId = 'TKT-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(5));
-        } while (\DB::table('help_support_chats')->where('ticket_id', $ticketId)->exists());
+        } while (DB::table('help_support_chats')->where('ticket_id', $ticketId)->exists());
+
+        // Handle document upload if provided
+        $documentPath = null;
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $fileName = $ticketId . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $documentPath = $file->storeAs('support_tickets', $fileName, 'public');
+        }
 
         // Create initial ticket message
         $ticketData = [
@@ -1855,17 +1879,18 @@ class EmployeeAuthController extends Controller
             'emp_id' => $employee['id'],
             'cmp_id' => $employee['company_id'],
             'sender_type' => 'employee',
-            'message' => $request->subject . '\n\n' . $request->message,
+            'message' => $request->subject . "\n\n" . $request->message,
             'status' => 'open',
             'is_resolved' => false,
+            'attachment' => $documentPath,
             'created_at' => now(),
             'updated_at' => now(),
         ];
 
-        \DB::table('help_support_chats')->insert($ticketData);
+        DB::table('help_support_chats')->insert($ticketData);
 
         // Track status
-        \DB::table('help_support_status_tracker')->insert([
+        DB::table('help_support_status_tracker')->insert([
             'ticket_id' => $ticketId,
             'old_status' => null,
             'new_status' => 'open',
@@ -1874,6 +1899,192 @@ class EmployeeAuthController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // Get employee details
+        $employeeDetails = CompanyEmployee::find($employee['id']);
+
+        // Send email notification to support team
+        try {
+            $supportEmail = 'support@zoomconnect.com';
+            $subject = "🎫 New Support Ticket - {$ticketId}";
+            $appUrl = config('app.url');
+            
+            $emailBody = "
+                <!DOCTYPE html>
+                <html lang='en'>
+                <head>
+                    <meta charset='UTF-8'>
+                    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                    <title>New Support Ticket</title>
+                </head>
+                <body style='margin: 0; padding: 0; background: #764ba2; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>
+                    <table width='100%' cellpadding='0' cellspacing='0' style='background: #764ba2; padding: 40px 20px;'>
+                        <tr>
+                            <td align='center'>
+                                <table width='600' cellpadding='0' cellspacing='0' style='background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);'>
+                                    <!-- Header with Logo -->
+                                    <tr>
+                                        <td style='background: #934790; padding: 40px 30px; text-align: center;'>
+                                            <div style='background: white; width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px; display: inline-block; line-height: 80px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);'>
+                                                <svg width='50' height='50' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg' style='vertical-align: middle;'>
+                                                    <path d='M12 2L2 7L12 12L22 7L12 2Z' fill='#934790' opacity='0.3'/>
+                                                    <path d='M2 17L12 22L22 17V7L12 12L2 7V17Z' fill='#934790'/>
+                                                    <circle cx='12' cy='12' r='3' fill='#E91E63'/>
+                                                </svg>
+                                            </div>
+                                            <h1 style='color: white; margin: 0; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.2);'>
+                                                🎫 New Support Ticket
+                                            </h1>
+                                            <p style='color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 14px;'>
+                                                A new customer needs your attention
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Ticket ID Badge -->
+                                    <tr>
+                                        <td style='padding: 0 30px;'>
+                                            <table align='center' cellpadding='0' cellspacing='0' style='margin: -20px auto 0;'>
+                                                <tr>
+                                                    <td style='background: #764ba2; padding: 12px 30px; border-radius: 50px; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);'>
+                                                        <p style='color: white; margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 1px;'>
+                                                            #{$ticketId}
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Main Content -->
+                                    <tr>
+                                        <td style='padding: 30px;'>
+                                            <!-- Employee Info Card -->
+                                            <table width='100%' cellpadding='0' cellspacing='0' style='background: #f5f7fa; border-radius: 15px; padding: 25px; margin-bottom: 25px;'>
+                                                <tr>
+                                                    <td>
+                                                        <h2 style='color: #2d3748; margin: 0 0 20px; font-size: 20px; font-weight: 700;'>
+                                                            <span style='background: #934790; width: 4px; height: 24px; display: inline-block; margin-right: 12px; border-radius: 2px; vertical-align: middle;'></span>
+                                                            Customer Information
+                                                        </h2>
+                                                        <table width='100%' cellpadding='8' cellspacing='0'>
+                                                            <tr>
+                                                                <td width='40%' style='color: #4a5568; font-weight: 600; font-size: 14px;'>👤 Name:</td>
+                                                                <td style='color: #2d3748; font-size: 14px; font-weight: 500;'>{$employeeDetails->full_name}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style='color: #4a5568; font-weight: 600; font-size: 14px;'>✉️ Email:</td>
+                                                                <td style='color: #2d3748; font-size: 14px; font-weight: 500;'><a href='mailto:{$employeeDetails->email}' style='color: #934790; text-decoration: none;'>{$employeeDetails->email}</a></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style='color: #4a5568; font-weight: 600; font-size: 14px;'>📱 Mobile:</td>
+                                                                <td style='color: #2d3748; font-size: 14px; font-weight: 500;'><a href='tel:{$employeeDetails->mobile}' style='color: #934790; text-decoration: none;'>{$employeeDetails->mobile}</a></td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <!-- Query Section -->
+                                            <table width='100%' cellpadding='0' cellspacing='0' style='background: #fff8e1; border-left: 5px solid #ffa726; border-radius: 10px; margin-bottom: 20px;'>
+                                                <tr>
+                                                    <td style='padding: 20px;'>
+                                                        <h3 style='color: #e65100; margin: 0 0 12px; font-size: 16px; font-weight: 700;'>
+                                                            💬 Customer Query:
+                                                        </h3>
+                                                        <div style='background: white; padding: 15px; border-radius: 8px;'>
+                                                            <p style='color: #333; margin: 0; line-height: 1.8; font-size: 14px; white-space: pre-line;'>" . htmlspecialchars($request->message) . "</p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                            
+                                            " . ($documentPath ? "
+                                            <table width='100%' cellpadding='0' cellspacing='0' style='background: #e3f2fd; border-left: 5px solid #2196f3; border-radius: 10px; margin-bottom: 20px;'>
+                                                <tr>
+                                                    <td style='padding: 15px;'>
+                                                        <table cellpadding='0' cellspacing='0'>
+                                                            <tr>
+                                                                <td style='background: #2196f3; color: white; width: 40px; height: 40px; border-radius: 50%; text-align: center; line-height: 40px; font-size: 20px; vertical-align: top;'>
+                                                                    📎
+                                                                </td>
+                                                                <td style='padding-left: 15px; vertical-align: top;'>
+                                                                    <p style='margin: 0; color: #1565c0; font-weight: 700; font-size: 14px;'>Document Attached</p>
+                                                                    <p style='margin: 5px 0 0; color: #64b5f6; font-size: 12px;'>The customer has uploaded a supporting document</p>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            " : "") . "
+
+                                            <!-- Action Button -->
+                                            <table width='100%' cellpadding='0' cellspacing='0'>
+                                                <tr>
+                                                    <td align='center' style='padding-top: 30px;'>
+                                                        <a href='{$appUrl}' style='display: inline-block; background: #934790; color: white; text-decoration: none; padding: 15px 40px; border-radius: 50px; font-weight: 700; font-size: 16px; box-shadow: 0 8px 20px rgba(147, 71, 144, 0.3);'>
+                                                            🚀 View Ticket Dashboard
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style='background: #f7fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;'>
+                                            <p style='color: #718096; font-size: 14px; margin: 0 0 10px; font-weight: 600;'>
+                                                ZoomConnect Support System
+                                            </p>
+                                            <p style='color: #a0aec0; font-size: 12px; margin: 0 0 15px;'>
+                                                This is an automated notification. Please do not reply to this email.
+                                            </p>
+                                            <div style='border-top: 2px solid #e2e8f0; padding-top: 15px; margin-top: 15px;'>
+                                                <p style='color: #cbd5e0; font-size: 11px; margin: 0;'>
+                                                    © " . date('Y') . " ZoomConnect. All rights reserved.
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+            ";
+
+            Mail::html($emailBody, function($message) use ($supportEmail, $employeeDetails, $subject, $documentPath) {
+                $message->to($supportEmail)
+                        ->cc($employeeDetails->email)
+                        ->subject($subject);
+                
+                // Attach document if available
+                if ($documentPath) {
+                    $filePath = storage_path('app/public/' . $documentPath);
+                    if (file_exists($filePath)) {
+                        $message->attach($filePath);
+                    }
+                }
+            });
+
+            Log::info('Support ticket email sent', [
+                'ticket_id' => $ticketId,
+                'employee_id' => $employee['id'],
+                'support_email' => $supportEmail,
+                'employee_email' => $employeeDetails->email
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send support ticket email: ' . $e->getMessage(), [
+                'ticket_id' => $ticketId,
+                'employee_id' => $employee['id'],
+                'trace' => $e->getTraceAsString()
+            ]);
+            // Don't fail the ticket creation if email fails
+        }
 
         return response()->json([
             'success' => true,
@@ -1923,15 +2134,27 @@ class EmployeeAuthController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Extract subject from message (format: "subject\n\nmessage")
+        $firstMessage = $messages->first();
+        $subject = 'Support Ticket';
+        if ($firstMessage && $firstMessage->message) {
+            $messageParts = explode("\n\n", $firstMessage->message, 2);
+            if (count($messageParts) > 1) {
+                $subject = $messageParts[0];
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'data' => [
+            'ticket' => [
                 'ticket_id' => $ticket->ticket_id,
+                'subject' => $subject,
                 'status' => $ticket->status,
                 'is_resolved' => (bool) $ticket->is_resolved,
-                'messages' => $messages,
-                'status_history' => $statusHistory,
-            ]
+                'created_at' => $ticket->created_at,
+            ],
+            'messages' => $messages,
+            'status_history' => $statusHistory,
         ]);
     }
 
@@ -4312,6 +4535,66 @@ class EmployeeAuthController extends Controller
                 ];
             })
         ]);
+    }
+
+    /**
+     * Change employee password
+     */
+    public function changePassword(Request $request)
+    {
+        // Get the authenticated employee ID from session
+        $employeeId = Session::get('employee_id');
+
+        if (!$employeeId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Please login again.'
+            ], 401);
+        }
+
+        // Validate the request
+        $request->validate([
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        try {
+            // Get the employee
+            $employee = CompanyEmployee::find($employeeId);
+
+            if (!$employee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Employee not found.'
+                ], 404);
+            }
+
+            // Hash and update the password
+            $employee->pwd = Hash::make($request->new_password);
+            $employee->save();
+
+            // Log the password change
+            Log::info('Employee password changed', [
+                'employee_id' => $employeeId,
+                'employee_code' => $employee->employees_code,
+                'timestamp' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password changed successfully!'
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Password change error: ' . $e->getMessage(), [
+                'employee_id' => $employeeId,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to change password. Please try again.'
+            ], 500);
+        }
     }
 }
 

@@ -135,6 +135,9 @@ Route::middleware(['employee.auth'])->prefix('employee')->group(function () {
     // Policies route
     Route::get('/policies', [EmployeeAuthController::class, 'getPolicies'])->name('employee.policies');
 
+    // Change password route
+    Route::post('/change-password', [EmployeeAuthController::class, 'changePassword'])->name('employee.change.password');
+
     Route::post('/logout', [EmployeeAuthController::class, 'logout'])->name('employee.logout');
     Route::post('/download-ecard', [EmployeeAuthController::class, 'downloadECard'])->name('employee.download.ecard');
 });

@@ -5,6 +5,8 @@ import {
     ArrowPathIcon,
     PaperAirplaneIcon,
     CheckCircleIcon,
+    DocumentArrowUpIcon,
+    TrashIcon,
 } from '@heroicons/react/24/outline';
 import axios from 'axios';
 
@@ -13,9 +15,15 @@ export default function AiChatbot() {
     const [chatbotMessages, setChatbotMessages] = useState([]);
     const [currentConversationId, setCurrentConversationId] = useState(null);
     const [showThankYou, setShowThankYou] = useState(false);
+    const [showTicketForm, setShowTicketForm] = useState(false);
     const [chatInput, setChatInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [ticketQuery, setTicketQuery] = useState('');
+    const [ticketDocument, setTicketDocument] = useState(null);
+    const [ticketSubmitLoading, setTicketSubmitLoading] = useState(false);
+    const [ticketResultModal, setTicketResultModal] = useState({ show: false, success: false, message: '' });
     const chatEndRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -129,19 +137,38 @@ export default function AiChatbot() {
     };
 
     const handleCreateTicketFromChat = async () => {
-        if (chatbotMessages.length === 0) return;
-        setLoading(true);
-        try {
-            const firstUserMessage = chatbotMessages.find(msg => msg.sender_type === 'user');
-            const subject = firstUserMessage ? firstUserMessage.message.substring(0, 100) : 'Support Request';
-            const messageHistory = chatbotMessages
-                .map(msg => `${msg.sender_type === 'user' ? 'You' : 'Bot'}: ${msg.message}`)
-                .join('\n\n');
+        setShowTicketForm(true);
+        setShowThankYou(false);
+    };
 
-            const response = await axios.post('/employee/help/tickets', {
-                subject,
-                message: messageHistory,
-                conversation_id: currentConversationId,
+    const handleSubmitTicket = async (e) => {
+        e.preventDefault();
+        
+        if (!ticketQuery.trim()) {
+            setTicketResultModal({
+                show: true,
+                success: false,
+                message: 'Please enter your query'
+            });
+            return;
+        }
+
+        setTicketSubmitLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append('subject', ticketQuery.substring(0, 100));
+            formData.append('message', ticketQuery);
+            if (currentConversationId) {
+                formData.append('conversation_id', currentConversationId);
+            }
+            if (ticketDocument) {
+                formData.append('document', ticketDocument);
+            }
+
+            const response = await axios.post('/employee/help/tickets', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
             });
 
             if (response.data.success) {
@@ -149,14 +176,61 @@ export default function AiChatbot() {
                 setChatbotMessages([]);
                 setCurrentConversationId(null);
                 setShowThankYou(false);
-                alert('Support ticket created successfully!');
-                window.location.href = '/employee/help';
+                setShowTicketForm(false);
+                setTicketQuery('');
+                setTicketDocument(null);
+                
+                // Show success modal
+                setTicketResultModal({
+                    show: true,
+                    success: true,
+                    message: response.data.message || 'Support ticket created successfully! We will get back to you soon.',
+                    ticketId: response.data.ticket?.ticket_id
+                });
             }
         } catch (error) {
             console.error('Error creating ticket:', error);
-            alert('Failed to create ticket. Please try again.');
+            const errorMessage = error.response?.data?.message || 'Failed to create ticket. Please try again.';
+            setTicketResultModal({
+                show: true,
+                success: false,
+                message: errorMessage
+            });
         } finally {
-            setLoading(false);
+            setTicketSubmitLoading(false);
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setTicketResultModal({
+                    show: true,
+                    success: false,
+                    message: 'File size must be less than 5MB'
+                });
+                return;
+            }
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!allowedTypes.includes(file.type)) {
+                setTicketResultModal({
+                    show: true,
+                    success: false,
+                    message: 'Only images, PDF, and Word documents are allowed'
+                });
+                return;
+            }
+            setTicketDocument(file);
+        }
+    };
+
+    const removeDocument = () => {
+        setTicketDocument(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
         }
     };
 
@@ -254,7 +328,7 @@ export default function AiChatbot() {
                                 ))}
 
                                 {/* Thank You & Ticket Creation */}
-                                {showThankYou && (
+                                {showThankYou && !showTicketForm && (
                                     <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border-2 border-purple-200 shadow-md">
                                         <div className="text-center">
                                             <CheckCircleIcon className="w-9 h-9 sm:w-12 sm:h-12 text-emerald-500 mx-auto mb-2 sm:mb-3" />
@@ -272,10 +346,124 @@ export default function AiChatbot() {
                                                     disabled={loading}
                                                     className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-purple-400 to-pink-400 text-white rounded-lg sm:rounded-xl text-[10px] sm:text-xs md:text-sm font-medium hover:from-purple-500 hover:to-pink-500 transition-all shadow-md disabled:opacity-50"
                                                 >
-                                                    {loading ? 'Creating Ticket...' : 'Raise a Ticket'}
+                                                    Raise a Ticket
                                                 </button>
                                             </div>
                                         </div>
+                                    </div>
+                                )}
+
+                                {/* Ticket Form */}
+                                {showTicketForm && (
+                                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 border-2 border-purple-200 shadow-lg">
+                                        <form onSubmit={handleSubmitTicket}>
+                                            <div className="mb-4">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <h3 className="text-sm sm:text-base font-bold text-gray-800 flex items-center gap-2">
+                                                        <SparklesIcon className="w-5 h-5 text-purple-600" />
+                                                        Raise a Support Ticket
+                                                    </h3>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setShowTicketForm(false); setShowThankYou(true); }}
+                                                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                                                    >
+                                                        <XMarkIcon className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                                <p className="text-[10px] sm:text-xs text-gray-600 mb-3">
+                                                    Describe your issue and our support team will get back to you shortly.
+                                                </p>
+                                            </div>
+
+                                            {/* Query Input */}
+                                            <div className="mb-4">
+                                                <label className="block text-xs font-semibold text-gray-700 mb-2">
+                                                    Your Query <span className="text-red-500">*</span>
+                                                </label>
+                                                <textarea
+                                                    value={ticketQuery}
+                                                    onChange={(e) => setTicketQuery(e.target.value)}
+                                                    placeholder="Please describe your issue in detail..."
+                                                    rows={4}
+                                                    required
+                                                    className="w-full px-3 py-2 border-2 border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-xs sm:text-sm resize-none"
+                                                />
+                                            </div>
+
+                                            {/* Document Upload (Optional) */}
+                                            <div className="mb-4">
+                                                <label className="block text-xs font-semibold text-gray-700 mb-2">
+                                                    Supporting Document <span className="text-gray-400 font-normal">(Optional)</span>
+                                                </label>
+                                                
+                                                {!ticketDocument ? (
+                                                    <div className="relative">
+                                                        <input
+                                                            type="file"
+                                                            ref={fileInputRef}
+                                                            onChange={handleFileChange}
+                                                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+                                                            className="hidden"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => fileInputRef.current?.click()}
+                                                            className="w-full px-4 py-3 border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-all text-xs sm:text-sm text-gray-600 flex items-center justify-center gap-2"
+                                                        >
+                                                            <DocumentArrowUpIcon className="w-5 h-5 text-purple-500" />
+                                                            Click to upload file
+                                                        </button>
+                                                        <p className="text-[9px] sm:text-[10px] text-gray-500 mt-1 text-center">
+                                                            Max 5MB • JPG, PNG, PDF, DOC, DOCX
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 p-3 bg-white border-2 border-purple-200 rounded-lg">
+                                                        <DocumentArrowUpIcon className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-xs font-medium text-gray-800 truncate">{ticketDocument.name}</p>
+                                                            <p className="text-[10px] text-gray-500">{(ticketDocument.size / 1024).toFixed(1)} KB</p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={removeDocument}
+                                                            className="text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
+                                                        >
+                                                            <TrashIcon className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Submit Buttons */}
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setShowTicketForm(false); setShowThankYou(true); setTicketQuery(''); setTicketDocument(null); }}
+                                                    className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-200 transition-all"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    disabled={ticketSubmitLoading || !ticketQuery.trim()}
+                                                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-xs sm:text-sm font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                                >
+                                                    {ticketSubmitLoading ? (
+                                                        <>
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                                            Submitting...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <PaperAirplaneIcon className="w-4 h-4" />
+                                                            Submit Ticket
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
                                 )}
 
@@ -308,6 +496,99 @@ export default function AiChatbot() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Ticket Result Modal */}
+            {ticketResultModal.show && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full transform transition-all overflow-hidden">
+                        {ticketResultModal.success ? (
+                            <>
+                                {/* Success Design - Matches Image */}
+                                <div className="p-8 pt-10">
+                                    {/* Green Check Badge */}
+                                    <div className="flex justify-center mb-6">
+                                        <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+                                            <CheckCircleIcon className="w-12 h-12 text-green-500" strokeWidth={2.5} />
+                                        </div>
+                                    </div>
+
+                                    {/* Heading */}
+                                    <h2 className="text-2xl font-bold text-gray-900 text-center mb-8 leading-tight">
+                                        Your ticket has been<br />successfully submitted
+                                    </h2>
+
+                                    {/* Details Section */}
+                                    <div className="bg-gray-50 rounded-2xl p-5 mb-6 space-y-4">
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                                            <span className="text-gray-500 text-sm">Ticket ID</span>
+                                            <span className="text-gray-900 font-semibold text-sm">{ticketResultModal.ticketId || 'N/A'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                                            <span className="text-gray-500 text-sm">Status</span>
+                                            <span className="text-gray-900 font-semibold text-sm">Open</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-gray-500 text-sm">Date & Time</span>
+                                            <span className="text-gray-900 font-semibold text-sm">
+                                                {new Date().toLocaleDateString('en-US', { 
+                                                    month: '2-digit', 
+                                                    day: '2-digit', 
+                                                    year: '2-digit' 
+                                                })} {new Date().toLocaleTimeString('en-US', { 
+                                                    hour: '2-digit', 
+                                                    minute: '2-digit',
+                                                    hour12: false 
+                                                })}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Button */}
+                                    <button
+                                        onClick={() => {
+                                            setTicketResultModal({ show: false, success: false, message: '' });
+                                            window.location.href = '/employee/help';
+                                        }}
+                                        className="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-2xl font-semibold text-base transition-all shadow-lg"
+                                    >
+                                        View My Tickets
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {/* Error Design */}
+                                <div className="p-8 pt-10">
+                                    {/* Red X Badge */}
+                                    <div className="flex justify-center mb-6">
+                                        <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
+                                            <XMarkIcon className="w-12 h-12 text-red-500" strokeWidth={2.5} />
+                                        </div>
+                                    </div>
+
+                                    {/* Heading */}
+                                    <h2 className="text-2xl font-bold text-gray-900 text-center mb-4">
+                                        Something went wrong
+                                    </h2>
+
+                                    {/* Error Message */}
+                                    <p className="text-gray-600 text-center mb-8 leading-relaxed">
+                                        {ticketResultModal.message}
+                                    </p>
+
+                                    {/* Action Button */}
+                                    <button
+                                        onClick={() => setTicketResultModal({ show: false, success: false, message: '' })}
+                                        className="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-2xl font-semibold text-base transition-all shadow-lg"
+                                    >
+                                        Try Again
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

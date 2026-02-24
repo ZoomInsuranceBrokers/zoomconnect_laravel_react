@@ -486,34 +486,7 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                             </button>
                                         )}
 
-                                        {/* Natural Addition Card */}
-                                        {policy.natural_addition_allowed && policy.policy_type === 'gmi' && (
-                                            <div className="mt-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200 overflow-hidden">
-                                                {/* Banner */}
-                                                <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 text-white">
-                                                    <div className="flex items-center gap-2">
-                                                        <UserPlusIcon className="w-5 h-5" />
-                                                        <div>
-                                                            <h4 className="font-bold text-sm">Natural Addition</h4>
-                                                            <p className="text-xs text-purple-100">Add Spouse or Newborn Child</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {/* Content */}
-                                                <div className="p-4">
-                                                    <p className="text-xs text-gray-600 mb-3">
-                                                        Add your newly married spouse or newborn child to the policy within 30 days of the event.
-                                                    </p>
-                                                    <button
-                                                        onClick={() => router.visit(`/employee/natural-addition/${btoa(policy.id)}`)}
-                                                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-all hover:from-purple-700 hover:to-pink-700 flex items-center justify-center gap-2 text-sm shadow-md"
-                                                    >
-                                                        <UserPlusIcon className="w-4 h-4" />
-                                                        Add New Member
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
+
                                     </div>
                                 </div>
                             )}
@@ -621,9 +594,29 @@ export default function PolicyDetail({ employee, policyDetails }) {
                         {/* RIGHT SIDE: BENEFICIARIES */}
                         <div className="lg:col-span-4 hidden lg:block">
                             <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-5 shadow-sm border border-gray-200 lg:sticky lg:top-6">
-                                <div className="flex items-center gap-2 mb-4 pb-3 sm:mb-5 sm:pb-4 lg:pb-4 border-b border-gray-100">
-                                    <UserGroupIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                                    <h3 className="font-bold text-gray-900 text-sm sm:text-base lg:text-base">Beneficiaries</h3>
+                                <div className="flex items-center justify-between mb-4 pb-3 sm:mb-5 sm:pb-4 lg:pb-4 border-b border-gray-100">
+                                    <div className="flex items-center gap-2">
+                                        <UserGroupIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                        <h3 className="font-bold text-gray-900 text-sm sm:text-base lg:text-base">Beneficiaries</h3>
+                                    </div>
+                                    {policy.natural_addition_allowed && policy.policy_type === 'gmi' && (
+                                        <div className="relative group">
+                                            <button
+                                                onClick={() => router.visit(`/employee/natural-addition/${btoa(policy.id)}`)}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-md text-xs font-semibold"
+                                            >
+                                                <UserPlusIcon className="w-4 h-4" />
+                                                Add Natural
+                                            </button>
+                                            {/* Tooltip */}
+                                            <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                                <div className="font-semibold mb-1">Natural Addition</div>
+                                                <p className="text-gray-300 leading-relaxed">Add your newly married spouse or newborn child to the policy within 30 days of the event.</p>
+                                                {/* Arrow */}
+                                                <div className="absolute right-4 -top-1 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="space-y-1.5 sm:space-y-2 lg:space-y-2 mb-4 sm:mb-5 lg:mb-5 max-h-[200px] sm:max-h-none lg:max-h-[300px] overflow-auto lg:overflow-y-auto scrollbar-hide">
@@ -693,35 +686,6 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                         <ShieldCheckIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                                         Claim Insurance
                                     </button>
-                                )}
-
-                                {/* Natural Addition Card */}
-                                {policy.natural_addition_allowed && policy.policy_type === 'gmi' && (
-                                    <div className="mt-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200 overflow-hidden">
-                                        {/* Banner */}
-                                        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 text-white">
-                                            <div className="flex items-center gap-2">
-                                                <UserPlusIcon className="w-5 h-5" />
-                                                <div>
-                                                    <h4 className="font-bold text-sm">Natural Addition</h4>
-                                                    <p className="text-xs text-purple-100">Add Spouse or Newborn Child</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {/* Content */}
-                                        <div className="p-4">
-                                            <p className="text-xs text-gray-600 mb-3">
-                                                Add your newly married spouse or newborn child to the policy within 30 days of the event.
-                                            </p>
-                                            <button
-                                                onClick={() => router.visit(`/employee/natural-addition/${btoa(policy.id)}`)}
-                                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-all hover:from-purple-700 hover:to-pink-700 flex items-center justify-center gap-2 text-sm shadow-md"
-                                            >
-                                                <UserPlusIcon className="w-4 h-4" />
-                                                Add New Member
-                                            </button>
-                                        </div>
-                                    </div>
                                 )}
                             </div>
                         </div>

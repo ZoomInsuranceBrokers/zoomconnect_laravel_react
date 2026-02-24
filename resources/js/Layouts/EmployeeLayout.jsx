@@ -26,6 +26,7 @@ export default function EmployeeLayout({ children, employee }) {
     const [passwordError, setPasswordError] = useState('');
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [passwordResultModal, setPasswordResultModal] = useState({ show: false, success: false, message: '' });
     const gender = (employee?.gender || '').toLowerCase();
 
     // Avatar handling: prefer project-provided images placed under
@@ -97,16 +98,34 @@ export default function EmployeeLayout({ children, employee }) {
                 }),
             });
 
-            if (response.ok) {
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
                 setPasswordForm({ newPassword: '', confirmPassword: '' });
+                setShowNewPassword(false);
+                setShowConfirmPassword(false);
+                setPasswordError('');
                 setChangePasswordOpen(false);
-                alert('Password changed successfully!');
+                setPasswordResultModal({ 
+                    show: true, 
+                    success: true, 
+                    message: 'Password changed successfully! Your new password is now active.' 
+                });
             } else {
-                const data = await response.json();
                 setPasswordError(data.message || 'Failed to change password');
+                setPasswordResultModal({ 
+                    show: true, 
+                    success: false, 
+                    message: data.message || 'Failed to change password. Please try again.' 
+                });
             }
         } catch (error) {
             setPasswordError('Error changing password. Please try again.');
+            setPasswordResultModal({ 
+                show: true, 
+                success: false, 
+                message: 'Network error. Please check your connection and try again.' 
+            });
             console.error('Password change error:', error);
         }
     };
@@ -608,6 +627,57 @@ export default function EmployeeLayout({ children, employee }) {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Password Change Result Modal */}
+            {passwordResultModal.show && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-slide-up">
+                        {/* Icon and Content */}
+                        <div className="px-6 pt-8 pb-6 flex flex-col items-center text-center">
+                            {/* Success or Error Icon */}
+                            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+                                passwordResultModal.success 
+                                    ? 'bg-green-100' 
+                                    : 'bg-red-100'
+                            }`}>
+                                {passwordResultModal.success ? (
+                                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                )}
+                            </div>
+
+                            {/* Title */}
+                            <h3 className={`text-lg font-bold mb-2 ${
+                                passwordResultModal.success ? 'text-green-900' : 'text-red-900'
+                            }`}>
+                                {passwordResultModal.success ? 'Success!' : 'Error'}
+                            </h3>
+
+                            {/* Message */}
+                            <p className="text-sm text-gray-600 leading-relaxed mb-6">
+                                {passwordResultModal.message}
+                            </p>
+
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setPasswordResultModal({ show: false, success: false, message: '' })}
+                                className={`w-full py-2.5 text-center text-sm font-semibold text-white rounded-lg transition-all shadow-lg ${
+                                    passwordResultModal.success
+                                        ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:from-green-700 active:to-green-800'
+                                        : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 active:from-red-700 active:to-red-800'
+                                }`}
+                            >
+                                OK
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
