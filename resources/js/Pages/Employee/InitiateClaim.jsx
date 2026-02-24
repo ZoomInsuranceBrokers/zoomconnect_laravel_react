@@ -726,20 +726,23 @@ export default function InitiateClaim({ employee }) {
                                                 <p className="text-xs sm:text-sm text-gray-600">No dependents found for this policy</p>
                                             </div>
                                         ) : (
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                                                {dependents.map((dependent, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        onClick={() => handleDependentSelect(dependent)}
-                                                        className={`border-2 rounded-xl p-3 sm:p-5 cursor-pointer transition-all text-center ${selectedDependent?.uhid === dependent.uhid
-                                                                ? "border-purple-500 bg-purple-50"
-                                                                : "border-gray-200 hover:border-purple-300 bg-white"
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                                                {dependents.map((dependent, idx) => {
+                                                    const isSelected = selectedDependent?.uhid === dependent.uhid;
+                                                    const avatar = getDependentAvatar(dependent);
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            onClick={() => handleDependentSelect(dependent)}
+                                                            className={`relative flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
+                                                                isSelected
+                                                                    ? "border-purple-300 bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 shadow-md shadow-purple-100"
+                                                                    : "border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50 hover:border-purple-200 hover:from-purple-50 hover:to-pink-50"
                                                             }`}
-                                                    >
-                                                        {(() => {
-                                                            const avatar = getDependentAvatar(dependent);
-                                                            if (avatar) {
-                                                                return (
+                                                        >
+                                                            {/* Avatar */}
+                                                            <div className="flex-shrink-0">
+                                                                {avatar ? (
                                                                     <img
                                                                         src={avatar}
                                                                         alt={dependent.insured_name || 'Dependent'}
@@ -748,26 +751,41 @@ export default function InitiateClaim({ employee }) {
                                                                             const seed = encodeURIComponent(dependent.insured_name || 'user');
                                                                             e.target.src = `https://avatars.dicebear.com/api/initials/${seed}.svg`;
                                                                         }}
-                                                                        className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 rounded-full object-cover"
+                                                                        className={`w-11 h-11 sm:w-13 sm:h-13 rounded-full object-cover ring-2 ${isSelected ? 'ring-purple-300' : 'ring-gray-200'}`}
                                                                     />
-                                                                );
-                                                            }
-                                                            return (
-                                                                <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
-                                                                    {dependent.insured_name?.charAt(0)?.toUpperCase()}
-                                                                </div>
-                                                            );
-                                                        })()}
-                                                        <h3 className="font-semibold text-gray-900 mb-1 text-xs sm:text-sm">{dependent.insured_name}</h3>
-                                                        <p className="text-xs text-gray-600 mb-2">{dependent.relation || "Self"}</p>
-                                                        <p className="text-xs text-gray-500 break-words">UHID: {dependent.uhid}</p>
-                                                        {selectedDependent?.uhid === dependent.uhid && (
-                                                            <div className="mt-2 sm:mt-3">
-                                                                <CheckCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mx-auto" />
+                                                                ) : (
+                                                                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-base sm:text-lg font-bold ring-2 ${
+                                                                        isSelected ? 'bg-purple-100 text-purple-700 ring-purple-300' : 'bg-gray-100 text-gray-600 ring-gray-200'
+                                                                    }`}>
+                                                                        {dependent.insured_name?.charAt(0)?.toUpperCase()}
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                ))}
+
+                                                            {/* Info */}
+                                                            <div className="flex-1 min-w-0">
+                                                                <h3 className={`font-semibold text-xs sm:text-sm truncate ${isSelected ? 'text-purple-900' : 'text-gray-900'}`}>
+                                                                    {dependent.insured_name}
+                                                                </h3>
+                                                                <span className={`inline-block text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full mt-0.5 ${
+                                                                    isSelected ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'
+                                                                }`}>
+                                                                    {dependent.relation || "Self"}
+                                                                </span>
+                                                                <p className={`text-[10px] sm:text-xs mt-1 font-mono truncate ${isSelected ? 'text-purple-500' : 'text-gray-400'}`}>
+                                                                    UHID: {dependent.uhid}
+                                                                </p>
+                                                            </div>
+
+                                                            {/* Check */}
+                                                            {isSelected && (
+                                                                <div className="flex-shrink-0">
+                                                                    <CheckCircleIcon className="w-5 h-5 text-purple-500" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                         {errors.dependent && (
@@ -883,7 +901,7 @@ export default function InitiateClaim({ employee }) {
                                                             <option key={state} value={state}>{state}</option>
                                                         ))}
                                                     </select>
-                                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                                                    {/* <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" /> */}
                                                 </div>
                                                 {errors.hospital_state && (
                                                     <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
