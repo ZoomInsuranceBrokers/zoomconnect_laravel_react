@@ -1753,7 +1753,7 @@ class EmployeeAuthController extends Controller
     }
 
     /**
-     * Get FAQs
+     * Get FAQs for Employee Web Portal
      */
     public function getFaqs()
     {
@@ -1765,11 +1765,13 @@ class EmployeeAuthController extends Controller
 
         $faqs = \DB::table('faq_master')
             ->where('is_active', 1)
+            ->where('is_webportal', 1)
             ->orderBy('created_at', 'desc')
             ->get([
                 'id',
                 'faq_title as question',
                 'faq_description as answer',
+                'icon_url',
                 'created_at'
             ]);
 

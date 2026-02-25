@@ -6606,13 +6606,21 @@ class SuperAdminController extends Controller
         $request->validate([
             'faq_title' => 'required|string|max:255',
             'faq_description' => 'nullable|string',
+            'icon_url' => 'nullable|string|max:500',
             'is_active' => 'boolean',
+            'is_mobile' => 'boolean',
+            'is_webportal' => 'boolean',
+            'is_website' => 'boolean',
         ]);
 
         FaqMaster::create([
             'faq_title' => $request->faq_title,
             'faq_description' => $request->faq_description,
+            'icon_url' => $request->icon_url,
             'is_active' => $request->has('is_active') ? (bool) $request->is_active : true,
+            'is_mobile' => $request->has('is_mobile') ? (bool) $request->is_mobile : false,
+            'is_webportal' => $request->has('is_webportal') ? (bool) $request->is_webportal : false,
+            'is_website' => $request->has('is_website') ? (bool) $request->is_website : false,
         ]);
 
         return redirect()->route('superadmin.admin.faqs.index')->with('message', 'FAQ created successfully.')->with('messageType', 'success');
@@ -6630,13 +6638,21 @@ class SuperAdminController extends Controller
         $request->validate([
             'faq_title' => 'required|string|max:255',
             'faq_description' => 'nullable|string',
+            'icon_url' => 'nullable|string|max:500',
             'is_active' => 'boolean',
+            'is_mobile' => 'boolean',
+            'is_webportal' => 'boolean',
+            'is_website' => 'boolean',
         ]);
 
         $faq->update([
             'faq_title' => $request->faq_title,
             'faq_description' => $request->faq_description,
+            'icon_url' => $request->icon_url,
             'is_active' => $request->has('is_active') ? (bool) $request->is_active : true,
+            'is_mobile' => $request->has('is_mobile') ? (bool) $request->is_mobile : false,
+            'is_webportal' => $request->has('is_webportal') ? (bool) $request->is_webportal : false,
+            'is_website' => $request->has('is_website') ? (bool) $request->is_website : false,
         ]);
 
         return redirect()->route('superadmin.admin.faqs.index')->with('message', 'FAQ updated successfully.')->with('messageType', 'success');

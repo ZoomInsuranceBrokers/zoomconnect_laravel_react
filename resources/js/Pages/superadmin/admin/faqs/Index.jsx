@@ -9,7 +9,15 @@ export default function Index({ faqs = [] }) {
     const [filter, setFilter] = useState('all');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalData, setModalData] = useState({ faq_title: '', faq_description: '', is_active: true });
+    const [modalData, setModalData] = useState({ 
+        faq_title: '', 
+        faq_description: '', 
+        icon_url: '', 
+        is_active: true, 
+        is_mobile: false, 
+        is_webportal: false, 
+        is_website: false 
+    });
     const [isEditMode, setIsEditMode] = useState(false);
     const [message, setMessage] = useState(null);
     const dropdownRef = useRef(null);
@@ -55,13 +63,30 @@ export default function Index({ faqs = [] }) {
     }, []);
 
     const openCreateModal = () => {
-        setModalData({ faq_title: '', faq_description: '', is_active: true });
+        setModalData({ 
+            faq_title: '', 
+            faq_description: '', 
+            icon_url: '', 
+            is_active: true, 
+            is_mobile: false, 
+            is_webportal: false, 
+            is_website: false 
+        });
         setIsEditMode(false);
         setIsModalOpen(true);
     };
 
     const openEditModal = (faq) => {
-        setModalData({ id: faq.id, faq_title: faq.faq_title, faq_description: faq.faq_description, is_active: faq.is_active });
+        setModalData({ 
+            id: faq.id, 
+            faq_title: faq.faq_title, 
+            faq_description: faq.faq_description, 
+            icon_url: faq.icon_url || '', 
+            is_active: faq.is_active, 
+            is_mobile: faq.is_mobile || false, 
+            is_webportal: faq.is_webportal || false, 
+            is_website: faq.is_website || false 
+        });
         setIsEditMode(true);
         setIsModalOpen(true);
     };
@@ -176,6 +201,10 @@ export default function Index({ faqs = [] }) {
                                 <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Status</th>
                                 <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">Question</th>
                                 <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[250px]">Answer</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">Icon URL</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Mobile</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Web Portal</th>
+                                <th className="px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Website</th>
                             </tr>
                         </thead>
                         <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
@@ -206,6 +235,28 @@ export default function Index({ faqs = [] }) {
                                         <div className="text-[10px] font-medium text-gray-900">{faq.faq_title}</div>
                                     </td>
                                     <td className="px-3 py-2 text-[10px] text-gray-500 max-w-[250px] truncate">{faq.faq_description || '-'}</td>
+                                    <td className="px-3 py-2 text-[10px] text-gray-500 max-w-[100px] truncate">{faq.icon_url || '-'}</td>
+                                    <td className="px-3 py-2 whitespace-nowrap">
+                                        {faq.is_mobile ? (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-blue-100 text-blue-800">Yes</span>
+                                        ) : (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-gray-100 text-gray-800">No</span>
+                                        )}
+                                    </td>
+                                    <td className="px-3 py-2 whitespace-nowrap">
+                                        {faq.is_webportal ? (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-purple-100 text-purple-800">Yes</span>
+                                        ) : (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-gray-100 text-gray-800">No</span>
+                                        )}
+                                    </td>
+                                    <td className="px-3 py-2 whitespace-nowrap">
+                                        {faq.is_website ? (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-orange-100 text-orange-800">Yes</span>
+                                        ) : (
+                                            <span className="inline-flex px-2 py-1 text-[9px] font-semibold rounded bg-gray-100 text-gray-800">No</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -270,6 +321,10 @@ export default function Index({ faqs = [] }) {
                                 <label className="block text-[10px] md:text-xs font-medium mb-2">Answer</label>
                                 <textarea value={modalData.faq_description} onChange={(e) => setModalData({ ...modalData, faq_description: e.target.value })} rows={4} className={`w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-[#934790] focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`} />
                             </div>
+                            <div className="mb-4">
+                                <label className="block text-[10px] md:text-xs font-medium mb-2">Icon URL</label>
+                                <input type="text" value={modalData.icon_url} onChange={(e) => setModalData({ ...modalData, icon_url: e.target.value })} placeholder="https://example.com/icon.png" className={`w-full px-3 py-2 border text-sm rounded-xl focus:ring-2 focus:ring-[#934790] focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`} />
+                            </div>
                             <div className="flex items-center gap-3 mb-4">
                                 <label className="inline-flex items-center cursor-pointer">
                                     <input type="checkbox" checked={modalData.is_active} onChange={(e) => setModalData({ ...modalData, is_active: e.target.checked })} className="sr-only" />
@@ -278,6 +333,32 @@ export default function Index({ faqs = [] }) {
                                     </div>
                                 </label>
                                 <span className="text-xs">Active</span>
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-[10px] md:text-xs font-medium mb-3">Display On</label>
+                                <div className="flex flex-col gap-2">
+                                    <label className="inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked={modalData.is_mobile} onChange={(e) => setModalData({ ...modalData, is_mobile: e.target.checked })} className="sr-only" />
+                                        <div className={`w-10 h-5 rounded-full transition-colors duration-200 ${modalData.is_mobile ? 'bg-blue-600' : 'bg-gray-300'} flex items-center`}>
+                                            <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ${modalData.is_mobile ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                                        </div>
+                                        <span className="ml-3 text-xs">Mobile App</span>
+                                    </label>
+                                    <label className="inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked={modalData.is_webportal} onChange={(e) => setModalData({ ...modalData, is_webportal: e.target.checked })} className="sr-only" />
+                                        <div className={`w-10 h-5 rounded-full transition-colors duration-200 ${modalData.is_webportal ? 'bg-purple-600' : 'bg-gray-300'} flex items-center`}>
+                                            <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ${modalData.is_webportal ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                                        </div>
+                                        <span className="ml-3 text-xs">Employee Web Portal</span>
+                                    </label>
+                                    <label className="inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked={modalData.is_website} onChange={(e) => setModalData({ ...modalData, is_website: e.target.checked })} className="sr-only" />
+                                        <div className={`w-10 h-5 rounded-full transition-colors duration-200 ${modalData.is_website ? 'bg-orange-600' : 'bg-gray-300'} flex items-center`}>
+                                            <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ${modalData.is_website ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                                        </div>
+                                        <span className="ml-3 text-xs">Public Website</span>
+                                    </label>
+                                </div>
                             </div>
                             <div className="flex justify-end">
                                 <button type="submit" className="bg-[#934790] hover:bg-[#6A0066] text-white px-5 py-2 rounded-lg transition-colors duration-200 text-[10px] md:text-xs font-medium">Save</button>

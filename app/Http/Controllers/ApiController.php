@@ -106,16 +106,16 @@ class ApiController extends Controller
             return ApiResponse::error('User not found or inactive', null, 404);
         }
 
-        // Generate 6-digit OTP
-        $otp = rand(100000, 999999);
+        // Generate 4-digit OTP
+        $otp = rand(1000, 9999);
 
         // Store OTP in cache for 10 minutes
         Cache::put('otp_mobile_' . $mobile, $otp, now()->addMinutes(10));
 
         // Send OTP via SMS
         try {
-            $smsMessage = urlencode("The OTP to verify your mobile number for Zoom Connect is {$otp}. Do not share this OTP with anyone for security reasons. Valid for 10 minutes.");
-            $apiUrl = "https://sms.staticking.com/index.php/smsapi/httpapi/?secret=u3ybdkzT4mOsUyPLDFG5&sender=Zoomco&tempid=1707165043797041448&receiver={$mobile}&route=TA&msgtype=1&sms={$smsMessage}";
+            $smsMessage = urlencode("The OTP to verify your mobile number for Zoom Connect is {$otp}. Do not share this OTP with anyone for security reasons. Valid for 15 minutes.");
+            $apiUrl = "https://sms.staticking.com/index.php/smsapi/httpapi/?secret=u3ybdkzT4mOsUyPLDFG5&sender=Zoomco&tempid=1707165043797041448&receiver={$request->mobile}&route=TA&msgtype=1&sms={$smsMessage}";
 
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $apiUrl);
@@ -152,7 +152,7 @@ class ApiController extends Controller
         $validator = Validator::make($request->all(), [
             'login_type' => 'required|in:email,mobile',
             'login_value' => 'required',
-            'otp' => 'required|digits:6'
+            'otp' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -223,7 +223,7 @@ class ApiController extends Controller
                 ->where('status', 1)
                 ->orderBy('comp_name')
                 ->get()
-                ->map(function($company) {
+                ->map(function ($company) {
                     return [
                         'id' => $company->comp_id,
                         'name' => $company->comp_name,
@@ -449,7 +449,7 @@ class ApiController extends Controller
     }
 
     /**
-     * Get all active FAQs
+     * Get all active FAQs for Mobile App
      * 
      * @return \Illuminate\Http\JsonResponse
      */
@@ -457,8 +457,9 @@ class ApiController extends Controller
     {
         try {
             $faqs = \App\Models\FaqMaster::where('is_active', 1)
+                ->where('is_mobile', 1)
                 ->orderBy('id', 'asc')
-                ->get(['id', 'faq_title as question', 'faq_description as answer']);
+                ->get(['id', 'faq_title as question', 'faq_description as answer', 'icon_url']);
 
             return ApiResponse::success(['faqs' => $faqs], 'FAQs fetched successfully', 200);
         } catch (\Exception $e) {
@@ -495,9 +496,9 @@ class ApiController extends Controller
 
             // Get wellness services that are active and either for all companies or for this company
             $wellnessServices = WellnessService::where('status', 1)
-                ->where(function($query) use ($employee) {
+                ->where(function ($query) use ($employee) {
                     $query->where('company_id', 0)
-                          ->orWhere('company_id', $employee->company_id);
+                        ->orWhere('company_id', $employee->company_id);
                 })
                 ->with(['vendor', 'category'])
                 ->get();
@@ -536,10 +537,10 @@ class ApiController extends Controller
 
             // Get active employee policies
             $policies = $this->getActiveEmployeePolicies($employee->id);
-            
+
             // Process each policy with sum insured data and URLs
             $processedPolicies = [];
-            
+
             foreach ($policies as $policy) {
                 // Get sum insured data
                 $sumInsuredQuery = "SELECT 
@@ -559,17 +560,17 @@ class ApiController extends Controller
                     WHERE emp_id = {$employee->id} 
                     AND addition_endorsement_id != 0 
                     AND policy_id = {$policy->id}";
-                
+
                 $sumInsuredData = DB::select($sumInsuredQuery)[0] ?? null;
-                
+
                 if ($sumInsuredData) {
                     $policy->cover_string = $sumInsuredData;
-                    $policy->total_cover = ($sumInsuredData->total_base_sum_insured ?? 0) + 
-                                          ($sumInsuredData->total_topup_sum_insured ?? 0) + 
-                                          ($sumInsuredData->total_parent_sum_insured ?? 0) + 
-                                          ($sumInsuredData->parent_in_law_sum_insured ?? 0);
+                    $policy->total_cover = ($sumInsuredData->total_base_sum_insured ?? 0) +
+                        ($sumInsuredData->total_topup_sum_insured ?? 0) +
+                        ($sumInsuredData->total_parent_sum_insured ?? 0) +
+                        ($sumInsuredData->parent_in_law_sum_insured ?? 0);
                 }
-                
+
                 // Add URLs
                 $baseUrl = config('app.url');
                 $policy->download_e_card_url = $baseUrl . '/app/download-e-card/' . $policy->id;
@@ -579,7 +580,7 @@ class ApiController extends Controller
                 $policy->single_policy_detail_gpa = $baseUrl . '/app/policy-detail-gpa/' . $policy->id;
                 $policy->single_policy_detail_gtl = $baseUrl . '/app/policy-detail-gtl/' . $policy->id;
                 $policy->claim_intimation = $baseUrl . '/app/file-claim/' . $policy->id;
-                
+
                 $processedPolicies[] = $policy;
             }
 
@@ -587,7 +588,7 @@ class ApiController extends Controller
             $enrollmentAssigned = [];
             $newEnrollmentAssigned = [];
             $newEnrollmentSubmitted = [];
-            
+
             try {
                 $enrollmentAssigned = DB::select("
                     SELECT policy_enrollment_mapping_master.*, policy_master.policy_config 
@@ -667,7 +668,6 @@ class ApiController extends Controller
                 'policy_details' => $processedPolicies,
                 'enrolment' => $enrolment
             ], 'Policy details sent successfully', 200);
-
         } catch (\Exception $e) {
             return ApiResponse::error('Error fetching policies', $e->getMessage(), 500);
         }
@@ -683,7 +683,7 @@ class ApiController extends Controller
     {
         // Initialize empty array
         $policiesData = [];
-        
+
         try {
             // Get distinct TPA table names
             $tpaTables = DB::select("
@@ -1050,7 +1050,7 @@ class ApiController extends Controller
             ],
 
             // ==================== TERMINAL NODES (Final Answers) ====================
-            
+
             // Policy Details - Coverage
             'basic_coverage_info' => [
                 'message' => '✅ Your policy covers:\n• Hospitalization expenses up to ₹5 Lakhs\n• Room rent (as per policy terms)\n• ICU charges\n• Doctor fees\n• Surgical procedures\n• Medical tests & diagnostics\n\n📞 Need more details? Contact support.',
@@ -1524,7 +1524,6 @@ class ApiController extends Controller
                 'options' => $initialState['options'],
                 'state_key' => 'start',
             ], 'Chat session started successfully');
-
         } catch (\Exception $e) {
             return ApiResponse::error('Failed to start chat', $e->getMessage(), 500);
         }
@@ -1594,7 +1593,6 @@ class ApiController extends Controller
             }
 
             return ApiResponse::error('Please provide either selected_option_id or free_text_message', null, 400);
-
         } catch (\Exception $e) {
             return ApiResponse::error('Failed to process chat', $e->getMessage(), 500);
         }
@@ -1619,7 +1617,7 @@ class ApiController extends Controller
         }
 
         $currentState = $chatbotFlow[$stateKey];
-        
+
         // Find the selected option
         $selectedOption = collect($currentState['options'])->firstWhere('id', $selectedOptionId);
 
@@ -1645,7 +1643,7 @@ class ApiController extends Controller
 
         // Get next state
         $nextStateKey = $selectedOption['next'];
-        
+
         if (!isset($chatbotFlow[$nextStateKey])) {
             return ApiResponse::error('Invalid next state', null, 500);
         }
@@ -1690,9 +1688,9 @@ class ApiController extends Controller
                 . "• Start a new chat by clicking the help button\n\n"
                 . "📞 For urgent matters, call our helpline: 1800-XXX-XXXX\n\n"
                 . "Have a great day! 😊";
-            
+
             $responseData['thank_you_message'] = $thankYouMessage;
-            
+
             // Also save thank you message in chat history
             HelpSupportChat::create([
                 'ticket_id' => $ticketId,
@@ -1752,7 +1750,7 @@ class ApiController extends Controller
         try {
             $companyName = $employee->company->cmp_name ?? 'N/A';
             $userName = trim(($employee->first_name ?? '') . ' ' . ($employee->last_name ?? '')) ?: 'User';
-            
+
             Mail::to(config('mail.support_email', 'support@zoomconnect.com'))
                 ->send(new SupportTicketMail(
                     $ticketId,
@@ -1768,7 +1766,7 @@ class ApiController extends Controller
 
         // Save bot acknowledgment
         $acknowledgmentMessage = "Thank you for reaching out! Your ticket ({$ticketId}) has been created and sent to our support team. They will respond to you shortly.";
-        
+
         HelpSupportChat::create([
             'ticket_id' => $ticketId,
             'user_id' => $userId,
@@ -1856,7 +1854,6 @@ class ApiController extends Controller
                 'chat_history' => $chatHistory,
                 'status_history' => $statusHistory,
             ], 'Chat history retrieved successfully');
-
         } catch (\Exception $e) {
             return ApiResponse::error('Failed to retrieve chat history', $e->getMessage(), 500);
         }
@@ -1906,7 +1903,6 @@ class ApiController extends Controller
                 'tickets' => $tickets,
                 'total' => $tickets->count(),
             ], 'Tickets retrieved successfully');
-
         } catch (\Exception $e) {
             return ApiResponse::error('Failed to retrieve tickets', $e->getMessage(), 500);
         }
@@ -1976,7 +1972,6 @@ class ApiController extends Controller
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
             ], 'Ticket status updated successfully');
-
         } catch (\Exception $e) {
             return ApiResponse::error('Failed to update ticket status', $e->getMessage(), 500);
         }
@@ -2179,7 +2174,6 @@ class ApiController extends Controller
                 'policy_feature' => $policyFeatures,
                 'escalation_matrix' => $escalationMatrix ?? [],
             ], 'Policy details retrieved successfully');
-
         } catch (\Exception $e) {
             \Log::error('❌ Get policy details error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
@@ -2435,7 +2429,7 @@ class ApiController extends Controller
 
         foreach ($hospitals as $hospital) {
             $hospitalData = (array) $hospital;
-            
+
             $standardized[] = [
                 'hospital_id' => $hospitalData[$tpaConfig['id_column']] ?? null,
                 'hospital_name' => $hospitalData[$tpaConfig['name_column']] ?? '',
@@ -2560,7 +2554,6 @@ class ApiController extends Controller
                     'states' => $formattedStates,
                 ],
             ], 'Search options retrieved successfully');
-
         } catch (\Exception $e) {
             \Log::error('Failed to get network hospital search options: ' . $e->getMessage());
             return ApiResponse::error('Failed to retrieve search options', $e->getMessage(), 500);
@@ -2670,7 +2663,6 @@ class ApiController extends Controller
                 'total_hospitals' => count($standardizedHospitals),
                 'hospitals' => $standardizedHospitals,
             ], 'Network hospitals retrieved successfully');
-
         } catch (\Exception $e) {
             \Log::error('Failed to get network hospitals: ' . $e->getMessage());
             return ApiResponse::error('Failed to retrieve network hospitals', $e->getMessage(), 500);
@@ -2741,7 +2733,6 @@ class ApiController extends Controller
                 if ($attempts < $maxAttempts) {
                     sleep(1); // Wait 1 second before retry
                 }
-
             } catch (\Exception $e) {
                 \Log::error('PHS API Error: ' . $e->getMessage());
                 $attempts++;
@@ -2810,7 +2801,6 @@ class ApiController extends Controller
             return ApiResponse::success([
                 'surveys' => $assignedSurveys,
             ], 'Assigned surveys retrieved successfully');
-
         } catch (\Exception $e) {
             \Log::error('Failed to get assigned surveys: ' . $e->getMessage());
             return ApiResponse::error('Failed to retrieve assigned surveys', $e->getMessage(), 500);
@@ -2861,7 +2851,6 @@ class ApiController extends Controller
                 'survey_id' => $surveyId,
                 'questions' => $questions,
             ], 'Survey questions retrieved successfully');
-
         } catch (\Exception $e) {
             \Log::error('Failed to get survey questions: ' . $e->getMessage());
             return ApiResponse::error('Failed to retrieve survey questions', $e->getMessage(), 500);
@@ -2949,7 +2938,6 @@ class ApiController extends Controller
                 'assigned_survey_id' => $assignedSurveyId,
                 'responses_count' => count($insertData),
             ], 'Survey responses saved successfully');
-
         } catch (\Exception $e) {
             \Log::error('Failed to submit survey responses: ' . $e->getMessage());
             return ApiResponse::error('Failed to save survey responses', $e->getMessage(), 500);
@@ -3070,12 +3058,12 @@ class ApiController extends Controller
             $naturalAddition = NaturalAddition::find($id);
             $company = CompanyMaster::where('comp_id', $employee->company_id)->first();
             $policy = PolicyMaster::find($payload['policy_id'] ?? 1);
-            
+
             // Get HR users for this company
             $hrUsers = CompanyUser::where('company_id', $employee->company_id)
                 ->where('is_active', 1)
                 ->get();
-            
+
             foreach ($hrUsers as $hrUser) {
                 Mail::to($hrUser->email)
                     ->cc($employee->email)
@@ -3212,14 +3200,14 @@ class ApiController extends Controller
             $naturalAddition = NaturalAddition::find($id);
             $company = CompanyMaster::where('comp_id', $employee->company_id)->first();
             $policy = PolicyMaster::find($payload['policy_id'] ?? 1);
-            
+
             // Get HR users for this company
             $hrUsers = CompanyUser::where('company_id', $employee->company_id)
                 ->where('is_active', 1)
                 ->get();
-            
+
             $action = $naturalAddition->status === 'rejected' ? 'resubmitted' : 'edited';
-            
+
             foreach ($hrUsers as $hrUser) {
                 Mail::to($hrUser->email)
                     ->cc($employee->email)
@@ -3477,9 +3465,11 @@ class ApiController extends Controller
         \Log::info('PHS Claim API', ['request' => $data2, 'response' => $response]);
 
         $response = json_decode($response);
-        if (isset($response->GetClaimMISDetailsResult) &&
+        if (
+            isset($response->GetClaimMISDetailsResult) &&
             trim($response->GetClaimMISDetailsResult[0]->MESSAGE ?? '') != 'Invalid Policy Number' &&
-            trim($response->GetClaimMISDetailsResult[0]->MESSAGE ?? '') != 'No data Found') {
+            trim($response->GetClaimMISDetailsResult[0]->MESSAGE ?? '') != 'No data Found'
+        ) {
 
             foreach ($response->GetClaimMISDetailsResult as $phsClaim) {
                 if (isset($phsClaim->UNIQUE_CLAIM_NO)) {

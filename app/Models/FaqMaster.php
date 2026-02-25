@@ -14,10 +14,17 @@ class FaqMaster extends Model
     protected $fillable = [
         'faq_title',
         'faq_description',
+        'icon_url',
         'is_active',
+        'is_mobile',
+        'is_webportal',
+        'is_website',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_mobile' => 'boolean',
+        'is_webportal' => 'boolean',
+        'is_website' => 'boolean',
     ];
 }

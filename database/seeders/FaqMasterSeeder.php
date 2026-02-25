@@ -1,0 +1,261 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class FaqMasterSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $now = Carbon::now();
+
+        $faqs = [
+            // Mobile App FAQs
+            [
+                'faq_title' => 'What is ZoomConnect?',
+                'faq_description' => 'ZoomConnect is a comprehensive health insurance management platform that allows you to manage your policy, access e-cards, file claims, find hospitals, and track your health benefits - all from your mobile device.',
+                'icon_url' => 'https://example.com/icons/info.png',
+                'is_active' => true,
+                'is_mobile' => true,
+                'is_webportal' => false,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How do I access my health card?',
+                'faq_description' => 'You can access your digital health card anytime from the app. Simply login, go to the "My Card" section, and you will find your e-card with all necessary details. You can also download it as a PDF or share it directly.',
+                'icon_url' => 'https://example.com/icons/card.png',
+                'is_active' => true,
+                'is_mobile' => true,
+                'is_webportal' => false,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How do I file a claim through the app?',
+                'faq_description' => 'Filing a claim is simple: 1) Go to the "Claims" section, 2) Click on "File New Claim", 3) Select the claim type, 4) Upload required documents (bills, prescriptions, discharge summary), 5) Submit for review. You will receive notifications about your claim status.',
+                'icon_url' => 'https://example.com/icons/claim.png',
+                'is_active' => true,
+                'is_mobile' => true,
+                'is_webportal' => false,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How can I find network hospitals?',
+                'faq_description' => 'Use the "Network Hospitals" feature in the app to find nearby hospitals. You can search by location, specialty, or hospital name. The app shows you distance, contact information, and available facilities for each hospital.',
+                'icon_url' => 'https://example.com/icons/hospital.png',
+                'is_active' => true,
+                'is_mobile' => true,
+                'is_webportal' => false,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How do I track my claim status?',
+                'faq_description' => 'You can track your claim status in real-time through the "My Claims" section. Each claim shows its current status (submitted, under review, approved, or rejected) along with detailed remarks and estimated processing time.',
+                'icon_url' => 'https://example.com/icons/track.png',
+                'is_active' => true,
+                'is_mobile' => true,
+                'is_webportal' => false,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'What wellness services are available?',
+                'faq_description' => 'The app provides various wellness services including health checkup packages, fitness programs, mental health counseling, nutrition plans, telemedicine consultations, and preventive care programs. Access these through the "Wellness" section.',
+                'icon_url' => 'https://example.com/icons/wellness.png',
+                'is_active' => true,
+                'is_mobile' => true,
+                'is_webportal' => false,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+
+            // Employee Web Portal FAQs
+            [
+                'faq_title' => 'How do I login to the employee portal?',
+                'faq_description' => 'Use your registered email address and password to login to the employee portal. If you haven\'t registered yet, contact your HR department to get your credentials. You can also use the "Forgot Password" option to reset your password.',
+                'icon_url' => 'https://example.com/icons/login.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => true,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How can I add my family members?',
+                'faq_description' => 'To add family members: 1) Login to the portal, 2) Go to "My Family" section, 3) Click "Add Member", 4) Fill in the required details (name, DOB, relationship, etc.), 5) Upload necessary documents (ID proof, photos), 6) Submit for approval. Your HR will verify and approve the addition.',
+                'icon_url' => 'https://example.com/icons/family.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => true,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How do I view my policy details?',
+                'faq_description' => 'Your complete policy details including coverage amount, policy period, covered members, premium details, and benefits are available in the "My Policy" section. You can also download your policy document from there.',
+                'icon_url' => 'https://example.com/icons/policy.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => true,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'Can I download claim reports from the portal?',
+                'faq_description' => 'Yes, you can download detailed claim reports from the "Claims" section. Select the date range and claim type you want to view, and click "Download Report" to get a comprehensive PDF with all claim details, amounts, and status.',
+                'icon_url' => 'https://example.com/icons/report.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => true,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How do I raise a support ticket?',
+                'faq_description' => 'To raise a support ticket: 1) Go to "Help & Support", 2) Click "Raise Ticket", 3) Select the issue category, 4) Describe your issue in detail, 5) Attach relevant documents if needed, 6) Submit. You will receive updates on your registered email and can track the ticket status in the portal.',
+                'icon_url' => 'https://example.com/icons/support.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => true,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How do I update my profile information?',
+                'faq_description' => 'You can update your profile information including contact details, address, and emergency contacts from the "My Profile" section. Some changes may require HR approval. Profile photo can be updated directly.',
+                'icon_url' => 'https://example.com/icons/profile.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => true,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+
+            // Public Website FAQs
+            [
+                'faq_title' => 'What services does ZoomConnect offer?',
+                'faq_description' => 'ZoomConnect offers comprehensive health insurance solutions including Group Health Insurance, Corporate Wellness Programs, Claims Management, Network Hospital Services, Telemedicine, Preventive Health Checkups, and 24/7 Customer Support for corporates and their employees.',
+                'icon_url' => 'https://example.com/icons/services.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => false,
+                'is_website' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How can companies partner with ZoomConnect?',
+                'faq_description' => 'Companies can partner with us by contacting our sales team through the "Contact Us" page or by emailing sales@zoomconnect.co.in. Our team will understand your requirements, provide customized solutions, and guide you through the onboarding process.',
+                'icon_url' => 'https://example.com/icons/partner.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => false,
+                'is_website' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'What makes ZoomConnect different?',
+                'faq_description' => 'ZoomConnect stands out with its technology-first approach, seamless digital experience, quick claim settlements, extensive network of 11,000+ hospitals, comprehensive wellness programs, dedicated customer support, and transparent processes. We focus on making health insurance simple and accessible.',
+                'icon_url' => 'https://example.com/icons/unique.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => false,
+                'is_website' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How does the claims process work?',
+                'faq_description' => 'Our claims process is simple and transparent: 1) Employee files claim through app/portal with required documents, 2) Instant acknowledgment and claim number generation, 3) Quick verification by our team, 4) Approval or query within 48-72 hours, 5) Direct settlement to hospital or reimbursement to employee. Track status anytime.',
+                'icon_url' => 'https://example.com/icons/process.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => false,
+                'is_website' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'What is the network hospital coverage?',
+                'faq_description' => 'We have partnered with 11,000+ network hospitals across India covering all major cities and towns. Our network includes leading hospitals, diagnostic centers, and healthcare providers. Employees can avail cashless treatment at any network facility.',
+                'icon_url' => 'https://example.com/icons/network.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => false,
+                'is_website' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'Do you provide wellness programs?',
+                'faq_description' => 'Yes, we offer comprehensive wellness programs including preventive health checkups, fitness tracking, mental health support, nutrition counseling, yoga and meditation sessions, health awareness campaigns, smoking cessation programs, and personalized wellness plans tailored to your organization\'s needs.',
+                'icon_url' => 'https://example.com/icons/wellness-program.png',
+                'is_active' => true,
+                'is_mobile' => false,
+                'is_webportal' => false,
+                'is_website' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+
+            // FAQs for Multiple Platforms
+            [
+                'faq_title' => 'How secure is my data?',
+                'faq_description' => 'We take data security very seriously. All your data is encrypted using industry-standard encryption (AES-256), stored on secure servers with regular backups, and protected by multiple layers of security. We comply with data protection regulations and never share your information without consent.',
+                'icon_url' => 'https://example.com/icons/security.png',
+                'is_active' => true,
+                'is_mobile' => true,
+                'is_webportal' => true,
+                'is_website' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'What should I do in case of emergency hospitalization?',
+                'faq_description' => 'In case of emergency hospitalization: 1) Get admitted to nearest network hospital, 2) Inform us within 24 hours via helpline or app, 3) Provide policy details to hospital, 4) Upload admission documents through app, 5) Our team will coordinate with hospital for cashless approval. For non-network hospitals, pay and file for reimbursement.',
+                'icon_url' => 'https://example.com/icons/emergency.png',
+                'is_active' => true,
+                'is_mobile' => true,
+                'is_webportal' => true,
+                'is_website' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'faq_title' => 'How can I contact customer support?',
+                'faq_description' => 'You can reach our customer support team through multiple channels: Call our 24/7 helpline at 1800-XXX-XXXX, email us at support@zoomconnect.co.in, use the in-app chat feature, or raise a support ticket through the portal. Our team typically responds within 2-4 hours.',
+                'icon_url' => 'https://example.com/icons/contact.png',
+                'is_active' => true,
+                'is_mobile' => true,
+                'is_webportal' => true,
+                'is_website' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ];
+
+        DB::table('faq_master')->insert($faqs);
+    }
+}
