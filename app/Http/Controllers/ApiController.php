@@ -203,7 +203,9 @@ class ApiController extends Controller
                 'email' => $employee->email,
                 'mobile_no' => $employee->mobile,
                 'company_id' => $employee->company_id,
-                'location_id' => $employee->location_id
+                'location_id' => $employee->location_id,
+                'employee_code' => $employee->employees_code,
+                'first_login' => $employee->first_login
             ]
         ], 'Login successful', 200);
     }
