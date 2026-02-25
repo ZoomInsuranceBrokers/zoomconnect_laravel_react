@@ -436,6 +436,7 @@ class ApiController extends Controller
 
             // Update password with Laravel Hash
             $employee->pwd = Hash::make($request->new_password);
+            $employee->first_login = 0;
             $employee->save();
 
             return ApiResponse::success(null, 'Password reset successfully', 200);
