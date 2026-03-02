@@ -445,7 +445,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                                 <div className="bg-gray-50 rounded-xl sm:rounded-3xl p-3 sm:p-6 relative">
                                     <div ref={benefitsScrollRef} className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-2">
                                         {/* Maternity Care Program */}
-                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                        <div onClick={() => router.visit(route('employee.wellness.service', 9))} className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                                             <div className="w-8 h-8 sm:w-12 sm:h-12 bg-blue-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
                                                 <svg className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -456,7 +456,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                                         </div>
 
                                         {/* Plan your Hospitalization */}
-                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                        <div onClick={() => router.visit(route('employee.wellness.service', 7))} className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                                             <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
                                                 <svg className="w-4 h-4 sm:w-6 sm:h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -467,7 +467,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                                         </div>
 
                                         {/* Condition Management Program */}
-                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                        <div onClick={() => router.visit(route('employee.wellness.service', 8))} className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                                             <div className="w-8 h-8 sm:w-12 sm:h-12 bg-purple-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
                                                 <svg className="w-4 h-4 sm:w-6 sm:h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -478,7 +478,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                                         </div>
 
                                         {/* Health Risk Assessment */}
-                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                        <div onClick={() => router.visit(route('employee.wellness.service', 6))} className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                                             <div className="w-8 h-8 sm:w-12 sm:h-12 bg-orange-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
                                                 <svg className="w-4 h-4 sm:w-6 sm:h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -489,7 +489,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                                         </div>
 
                                         {/* Health Checks */}
-                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                        <div onClick={() => router.visit(route('employee.wellness.service', 1))} className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                                             <div className="w-8 h-8 sm:w-12 sm:h-12 bg-red-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
                                                 <svg className="w-4 h-4 sm:w-6 sm:h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -500,7 +500,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                                         </div>
 
                                         {/* Lab Tests */}
-                                        <div className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                        <div onClick={() => router.visit(route('employee.wellness.service', 2))} className="flex-shrink-0 w-52 sm:w-72 h-36 sm:h-56 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                                             <div className="w-8 h-8 sm:w-12 sm:h-12 bg-teal-100 rounded-lg sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
                                                 <svg className="w-4 h-4 sm:w-6 sm:h-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
@@ -598,8 +598,19 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                         <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                             {rightFeatures.map((f) => {
                                 const IconComponent = f.icon;
+                                const handleFeatureClick = () => {
+                                    if (f.id === 'health-card') {
+                                        router.visit('/employee/policy');
+                                    } else if (f.id === 'cashless-1') {
+                                        router.visit(route('employee.wellness.service', 5));
+                                    } else if (f.id === 'offer') {
+                                        router.visit(route('employee.wellness.service', 4));
+                                    } else if (f.id === 'checkup') {
+                                        router.visit(route('employee.wellness.service', 1));
+                                    }
+                                };
                                 return (
-                                    <div key={f.id} className={`relative group overflow-hidden bg-gradient-to-br ${f.bg} rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm transition transform duration-300 ease-out hover:shadow-md hover:scale-105 hover:-translate-y-1 cursor-pointer `} style={{ backgroundImage: `linear-gradient(135deg, var(--tw-gradient-stops))` }}>
+                                    <div key={f.id} onClick={handleFeatureClick} className={`relative group overflow-hidden bg-gradient-to-br ${f.bg} rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm transition transform duration-300 ease-out hover:shadow-md hover:scale-105 hover:-translate-y-1 cursor-pointer `} style={{ backgroundImage: `linear-gradient(135deg, var(--tw-gradient-stops))` }}>
                                         {/* Hover Background */}
                                         <div className={`absolute inset-0 bg-gradient-to-br ${f.hoverBg} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
 
@@ -637,7 +648,7 @@ export default function EmployeeDashboard({ employee, policies = [], newPolicies
                             <p className="text-[10px] sm:text-xs text-gray-600 mb-2 sm:mb-3">Expert consultations available offline for your convenience</p>
 
                             <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2 sm:mb-3">
-                                <button onClick={() => router.visit('/employee/appointments')} className="mx-auto sm:flex-1 bg-[rgb(147,71,144)] text-white px-3 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-semibold shadow-sm hover:bg-[rgb(106,0,102)] transition">
+                                <button onClick={() => router.visit(route('employee.wellness.service', 5))} className="mx-auto sm:flex-1 bg-[rgb(147,71,144)] text-white px-3 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-semibold shadow-sm hover:bg-[rgb(106,0,102)] transition">
                                     Book Dr. Appointment
                                 </button>
                             </div>
