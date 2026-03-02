@@ -180,12 +180,12 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                                                     key={index}
                                                     onClick={() => setCurrentPolicyIndex(index)}
                                                     className={`absolute transition-all duration-500 ease-out cursor-pointer ${isActive
-                                                            ? 'z-30 scale-100 opacity-100'
-                                                            : isNext
-                                                                ? 'z-20 scale-95 opacity-60 translate-x-12'
-                                                                : isPrev
-                                                                    ? 'z-20 scale-95 opacity-60 -translate-x-12'
-                                                                    : 'z-10 scale-90 opacity-0'
+                                                        ? 'z-30 scale-100 opacity-100'
+                                                        : isNext
+                                                            ? 'z-20 scale-95 opacity-60 translate-x-12'
+                                                            : isPrev
+                                                                ? 'z-20 scale-95 opacity-60 -translate-x-12'
+                                                                : 'z-10 scale-90 opacity-0'
                                                         }`}
                                                     style={{
                                                         transform: isActive ? 'translateX(0) scale(1)' :
@@ -337,7 +337,7 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                                         <div key={service.id} onClick={() => handleQuickServiceClick(service.id)} className={`relative group overflow-hidden bg-gradient-to-br ${service.bg} rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm transition transform duration-300 ease-out hover:shadow-md hover:scale-105 hover:-translate-y-1 cursor-pointer w-full flex items-center gap-3 sm:gap-4`} style={{ backgroundImage: `linear-gradient(135deg, var(--tw-gradient-stops))` }}>
                                             {/* Hover Background Overlay */}
                                             <div className={`absolute inset-0 bg-gradient-to-br ${service.hoverBg} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
-                                            
+
                                             <span className="absolute inset-0 bg-gradient-to-r from-white/40 to-white/0 dark:from-white/10 dark:to-white/0 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 pointer-events-none" />
                                             <div className="relative z-10 flex items-center gap-3 sm:gap-4 w-full">
                                                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/90 rounded-lg sm:rounded-xl flex items-center justify-center p-1 shadow-sm flex-shrink-0">
@@ -370,7 +370,7 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                         </div>
 
                         {/* Need Help Section */}
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 border border-purple-100">
+                        <div className="bg-gradient-to-br from-yello-100 to-pink-100 rounded-2xl p-4 border border-purple-100">
                             <h4 className="font-bold text-gray-800 mb-2 text-sm">Need Help?</h4>
                             <p className="text-xs text-gray-600 mb-3">
                                 Our support team is here to assist you
@@ -386,9 +386,9 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
             {/* Help Modal */}
             {showHelpModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => setShowHelpModal(false)}>
-                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-2xl w-full max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
-                        <div className="bg-gradient-to-r from-[rgb(147,71,144)] to-purple-600 p-3 sm:p-6 rounded-t-xl sm:rounded-t-2xl">
+                        <div className="bg-gradient-to-r from-[rgb(147,71,144)] to-pink-400 p-3 sm:p-6 rounded-t-xl sm:rounded-t-2xl">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 sm:gap-3">
                                     <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center">
@@ -413,55 +413,55 @@ export default function Policy({ employee, policies = [], newPolicies = [] }) {
                         {/* Modal Body */}
                         <div className="p-3 sm:p-6">
                             {/* Instructions Section */}
-                            <div className="mb-3 sm:mb-6">
-                                <h4 className="text-sm sm:text-base md:text-lg font-bold text-gray-800 mb-2 sm:mb-4 flex items-center gap-1.5 sm:gap-2">
-                                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span className="text-[10px] sm:text-xs font-bold text-[rgb(147,71,144)]">1</span>
+                            <div className="mb-2 sm:mb-4">
+                                <h4 className="text-xs sm:text-sm font-bold text-gray-800 mb-1.5 sm:mb-2 flex items-center gap-1 sm:gap-2">
+                                    <div className="w-4 h-4 sm:w-5 sm:h-5 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span className="text-[9px] sm:text-[10px] font-bold text-[rgb(147,71,144)]">1</span>
                                     </div>
                                     How to View Policy Details
                                 </h4>
-                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-purple-100 mb-3 sm:mb-4 overflow-hidden">
-                                    <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700">
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-[rgb(147,71,144)] mt-1">•</span>
+                                <div className="bg-gradient-to-br from-purple-100 to-pink-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-purple-100 mb-2 sm:mb-3 overflow-hidden">
+                                    <ul className="space-y-0.5 sm:space-y-1 text-[10px] sm:text-sm text-gray-700">
+                                        <li className="flex items-start gap-1.5">
+                                            <span className="text-[rgb(147,71,144)] mt-0.5">•</span>
                                             <span>Click on the <strong>"View Details"</strong> button on any policy card to see complete coverage information</span>
                                         </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-[rgb(147,71,144)] mt-1">•</span>
+                                        <li className="flex items-start gap-1.5">
+                                            <span className="text-[rgb(147,71,144)] mt-0.5">•</span>
                                             <span>Use the arrow buttons or click on cards</span>
                                         </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-[rgb(147,71,144)] mt-1">•</span>
+                                        <li className="flex items-start gap-1.5">
+                                            <span className="text-[rgb(147,71,144)] mt-0.5">•</span>
                                             <span>Policy details include sum insured, policy number, and insurance company information</span>
                                         </li>
                                     </ul>
                                 </div>
 
-                                <h4 className="text-sm sm:text-base md:text-lg font-bold text-gray-800 mb-2 sm:mb-4 flex items-center gap-1.5 sm:gap-2 mt-3 sm:mt-6">
-                                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span className="text-[10px] sm:text-xs font-bold text-[rgb(147,71,144)]">2</span>
+                                <h4 className="text-xs sm:text-sm font-bold text-gray-800 mb-1.5 sm:mb-2 flex items-center gap-1 sm:gap-2 mt-2 sm:mt-3">
+                                    <div className="w-4 h-4 sm:w-5 sm:h-5 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span className="text-[9px] sm:text-[10px] font-bold text-[rgb(147,71,144)]">2</span>
                                     </div>
                                     Download Health Card (GMC Only)
                                 </h4>
-                                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-blue-100 mb-3 sm:mb-4">
-                                    <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700">
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-[rgb(147,71,144)] mt-1">•</span>
+                                <div className="bg-gradient-to-br from-blue-100 to-purple-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-blue-100">
+                                    <ul className="space-y-0.5 sm:space-y-1 text-[10px] sm:text-sm text-gray-700">
+                                        <li className="flex items-start gap-1.5">
+                                            <span className="text-[rgb(147,71,144)] mt-0.5">•</span>
                                             <span>Health card download is available only for <strong>GMC (Group Medical Coverage)</strong> policies</span>
                                         </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-[rgb(147,71,144)] mt-1">•</span>
+                                        <li className="flex items-start gap-1.5">
+                                            <span className="text-[rgb(147,71,144)] mt-0.5">•</span>
                                             <span>Click the download icon button next to "View Details" to get your health card</span>
                                         </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-[rgb(147,71,144)] mt-1">•</span>
+                                        <li className="flex items-start gap-1.5">
+                                            <span className="text-[rgb(147,71,144)] mt-0.5">•</span>
                                             <span>The card will be downloaded as a PDF file that you can print or save on your device</span>
                                         </li>
                                     </ul>
                                 </div>
                             </div>
 
-                           
+
                         </div>
                     </div>
                 </div>

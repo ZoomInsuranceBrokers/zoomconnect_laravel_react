@@ -82,10 +82,16 @@ export default function InitiateClaim({ employee }) {
         file_url: "",
     });
 
+    // Helper to get consistent unique identifier for a policy
+    const getPolicyId = (policy) => {
+        return policy?.id || policy?.policy_id;
+    };
+
     // Helper to determine if a policy is selected — keeps checks explicit and boolean
-    const isPolicySelected = (policy) => Boolean(
-        selectedPolicy && (selectedPolicy.policy_id === policy.policy_id || selectedPolicy.id === policy.id)
-    );
+    const isPolicySelected = (policy) => {
+        if (!selectedPolicy || !policy) return false;
+        return getPolicyId(selectedPolicy) === getPolicyId(policy);
+    };
 
     // Return an avatar URL for a dependent.
     // Priority: explicit image fields on the dependent -> gendered default -> initials avatar.
@@ -829,14 +835,40 @@ export default function InitiateClaim({ employee }) {
                                                     Date of Admission <span className="text-red-500">*</span>
                                                 </label>
                                                 <div className="relative">
+                                                    <style>{`
+                                                        input[type="date"].hide-default-placeholder::-webkit-datetime-edit-text,
+                                                        input[type="date"].hide-default-placeholder::-webkit-datetime-edit-month-field,
+                                                        input[type="date"].hide-default-placeholder::-webkit-datetime-edit-day-field,
+                                                        input[type="date"].hide-default-placeholder::-webkit-datetime-edit-year-field {
+                                                            color: transparent;
+                                                        }
+                                                        input[type="date"].hide-default-placeholder::-webkit-calendar-picker-indicator {
+                                                            cursor: pointer;
+                                                        }
+                                                    `}</style>
                                                     <input
                                                         type="date"
                                                         value={claimForm.date_of_admission}
-                                                        onChange={(e) => setClaimForm({ ...claimForm, date_of_admission: e.target.value })}
-                                                        max={new Date().toISOString().split('T')[0]}
-                                                        className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition shadow-sm cursor-pointer ${errors.date_of_admission ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'}`}
+                                                        onChange={(e) => {
+                                                            const admissionDate = e.target.value;
+                                                            setClaimForm({ 
+                                                                ...claimForm, 
+                                                                date_of_admission: admissionDate,
+                                                                // Reset discharge date if it's before new admission date
+                                                                date_of_discharge: claimForm.date_of_discharge && claimForm.date_of_discharge < admissionDate 
+                                                                    ? '' 
+                                                                    : claimForm.date_of_discharge
+                                                            });
+                                                        }}
+                                                        onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                                                        className={`${!claimForm.date_of_admission ? 'hide-default-placeholder' : ''} w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition shadow-sm cursor-pointer ${errors.date_of_admission ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'}`}
                                                         style={{ colorScheme: 'light' }}
                                                     />
+                                                    {!claimForm.date_of_admission && (
+                                                        <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-400 pointer-events-none">
+                                                            e.g., {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 {errors.date_of_admission && (
                                                     <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
@@ -854,13 +886,18 @@ export default function InitiateClaim({ employee }) {
                                                         type="date"
                                                         value={claimForm.date_of_discharge}
                                                         onChange={(e) => setClaimForm({ ...claimForm, date_of_discharge: e.target.value })}
-                                                        max={new Date().toISOString().split('T')[0]}
+                                                        onClick={(e) => e.target.showPicker && e.target.showPicker()}
                                                         min={claimForm.date_of_admission}
-                                                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition shadow-sm hover:border-gray-400 cursor-pointer"
+                                                        className={`${!claimForm.date_of_discharge ? 'hide-default-placeholder' : ''} w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition shadow-sm hover:border-gray-400 cursor-pointer`}
                                                         style={{ colorScheme: 'light' }}
                                                     />
+                                                    {!claimForm.date_of_discharge && (
+                                                        <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-400 pointer-events-none">
+                                                            e.g., {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-1">Leave empty if still admitted</p>
+                                                {/* <p className="text-xs text-gray-500 mt-1">Must be after admission date (leave empty if still admitted)</p> */}
                                             </div>
                                         </div>
 

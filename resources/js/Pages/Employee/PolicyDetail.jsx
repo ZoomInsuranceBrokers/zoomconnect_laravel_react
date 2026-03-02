@@ -413,9 +413,29 @@ export default function PolicyDetail({ employee, policyDetails }) {
                             {activeTab === 'details' && (
                                 <div className="lg:hidden">
                                     <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-gray-200">
-                                        <div className="flex items-center gap-2 mb-4 pb-3 sm:mb-5 sm:pb-4 border-b border-gray-100">
-                                            <UserGroupIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                                            <h3 className="font-bold text-gray-900 text-sm sm:text-base">Beneficiaries</h3>
+                                        <div className="flex items-center justify-between mb-4 pb-3 sm:mb-5 sm:pb-4 border-b border-gray-100">
+                                            <div className="flex items-center gap-2">
+                                                <UserGroupIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                <h3 className="font-bold text-gray-900 text-sm sm:text-base">Beneficiaries</h3>
+                                            </div>
+                                            {policy.natural_addition_allowed && policy.policy_type === 'gmi' && (
+                                                <div className="relative group">
+                                                    <button
+                                                        onClick={() => router.visit(`/employee/natural-addition/${btoa(policy.id)}`)}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-md text-[10px] font-semibold"
+                                                    >
+                                                        <UserPlusIcon className="w-3 h-3" />
+                                                        Add Event
+                                                    </button>
+                                                    {/* Tooltip */}
+                                                    <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                                        <div className="font-semibold mb-1">Natural Addition</div>
+                                                        <p className="text-gray-300 leading-relaxed">Add your newly married spouse or newborn child to the policy within 30 days of the event.</p>
+                                                        {/* Arrow */}
+                                                        <div className="absolute right-4 -top-1 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="space-y-1.5 sm:space-y-2 mb-4 sm:mb-5 max-h-[200px] sm:max-h-none overflow-auto scrollbar-hide">
@@ -467,7 +487,7 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                                         <button
                                                             onClick={handleDownloadECard}
                                                             disabled={downloadingECard}
-                                                            className="w-full mt-3 sm:mt-4 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 backdrop-blur-sm text-sm"
+                                                            className="w-full mt-3 sm:mt-4 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 backdrop-blur-sm text-xs sm:text-sm"
                                                         >
                                                             <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                                                             {downloadingECard ? 'Downloading...' : 'Download Health Card'}
@@ -479,7 +499,7 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                         {policy.policy_type === 'gmi' && (
                                             <button
                                                 onClick={() => router.visit('/employee/claims')}
-                                                className="w-full mt-3 sm:mt-4 bg-white text-purple-600 hover:bg-purple-50 border border-purple-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg text-sm"
+                                                className="w-full mt-3 sm:mt-4 bg-white text-purple-600 hover:bg-purple-50 border border-purple-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg text-xs sm:text-sm"
                                             >
                                                 <ShieldCheckIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                                                 Claim Insurance
@@ -510,7 +530,7 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                                 {tpa_company?.name?.charAt(0)}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-gray-900 leading-none mb-1">{tpa_company?.name || "N/A"}</p>
+                                                <p className="text-xs md:text-sm font-bold text-gray-900 leading-none mb-1">{tpa_company?.name || "N/A"}</p>
                                                 <p className="text-[10px] text-gray-500">Claims Administrator</p>
                                             </div>
                                         </div>
@@ -606,7 +626,7 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-md text-xs font-semibold"
                                             >
                                                 <UserPlusIcon className="w-4 h-4" />
-                                                Add Natural
+                                                Add Event
                                             </button>
                                             {/* Tooltip */}
                                             <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -668,7 +688,7 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                                 <button
                                                     onClick={handleDownloadECard}
                                                     disabled={downloadingECard}
-                                                    className="w-full mt-3 sm:mt-4 lg:mt-4 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 backdrop-blur-sm text-sm"
+                                                    className="w-full mt-3 sm:mt-4 lg:mt-4 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-2 backdrop-blur-sm text-xs sm:text-sm"
                                                 >
                                                     <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                                                     {downloadingECard ? 'Downloading...' : 'Download Health Card'}
@@ -858,8 +878,8 @@ export default function PolicyDetail({ employee, policyDetails }) {
                                                             {item.email_id && (
                                                                 <div className="flex items-center gap-2">
                                                                     <EnvelopeIcon className="w-4 h-4 text-gray-400" />
-                                                                    <div>
-                                                                        <p className="text-[11px] font-semibold text-gray-900">{item.email_id}</p>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-[11px] font-semibold text-gray-900 break-words">{item.email_id}</p>
                                                                         <p className="text-[10px] text-gray-500">Email</p>
                                                                     </div>
                                                                 </div>

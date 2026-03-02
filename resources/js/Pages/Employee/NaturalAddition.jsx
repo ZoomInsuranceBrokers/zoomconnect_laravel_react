@@ -63,7 +63,7 @@ export default function NaturalAddition({ employee, policy }) {
 
         try {
             let documentBase64 = null;
-            
+
             if (naturalAdditionForm.document) {
                 const reader = new FileReader();
                 documentBase64 = await new Promise((resolve, reject) => {
@@ -164,10 +164,10 @@ export default function NaturalAddition({ employee, policy }) {
         <EmployeeLayout employee={employee}>
             <Head title="Natural Addition" />
 
-            <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-8 py-4 sm:py-8 scrollbar-hide rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 mt-2 sm:mt-4">
+            <div className="flex-1 overflow-y-auto px-2 sm:px-6 md:px-8 py-4 sm:py-8 scrollbar-hide rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 mt-2 sm:mt-4">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div className="flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                         <div className="flex items-center gap-2 sm:gap-3">
                             <button
                                 onClick={() => window.history.back()}
@@ -197,7 +197,7 @@ export default function NaturalAddition({ employee, policy }) {
                                 });
                                 setShowModal(true);
                             }}
-                            className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold text-xs sm:text-sm shadow-lg hover:from-purple-700 hover:to-pink-700 transition flex items-center gap-2"
+                            className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-purple-600 text-white font-semibold text-xs sm:text-sm shadow-lg hover:from-purple-700 hover:to-pink-700 transition flex items-center gap-2"
                         >
                             <UserPlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                             Add New Member
@@ -205,13 +205,13 @@ export default function NaturalAddition({ employee, policy }) {
                     </div>
 
                     {/* 60/40 Dashboard Layout */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-                        {/* Main Content - 60% (Requests List) */}
-                        <div className="lg:col-span-7 space-y-4">
-                            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <div className="grid grid-cols-1 lg:grid-cols-12">
+                            {/* Main Content - 60% (Requests List) */}
+                            <div className="lg:col-span-7 border-b lg:border-b-0 lg:border-r border-gray-200 space-y-4 p-4 sm:p-6">
                                 <div className="flex items-center gap-2 mb-4">
                                     <DocumentTextIcon className="w-5 h-5 text-purple-600" />
-                                    <h3 className="font-bold text-gray-900 text-lg">Your Requests</h3>
+                                    <h3 className="font-bold text-gray-900 text-sm sm:text-base md:text-lg">Your Requests</h3>
                                 </div>
                                 {/* Separator Line */}
                                 <div className="h-px bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 mb-4"></div>
@@ -230,20 +230,20 @@ export default function NaturalAddition({ employee, policy }) {
                                             ) || [];
 
                                             return (
-                                                <div 
-                                                    key={request.id} 
+                                                <div
+                                                    key={request.id}
                                                     className="group relative bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:border-purple-300 transition-all duration-300 transform hover:-translate-y-1"
                                                     style={{ animationDelay: `${index * 100}ms` }}
                                                 >
                                                     {/* Decorative corner */}
                                                     <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-bl-full opacity-50"></div>
-                                                    
+
                                                     <div className="relative z-10">
                                                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                                                             <div className="flex items-center gap-3 flex-1">
-                                                                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                                                {/* <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
                                                                     {request.insured_name.charAt(0).toUpperCase()}
-                                                                </div>
+                                                                </div> */}
                                                                 <div>
                                                                     <h4 className="font-bold text-gray-900 text-lg mb-0.5">{request.insured_name}</h4>
                                                                     <p className="text-sm text-gray-600 flex items-center gap-2">
@@ -261,7 +261,7 @@ export default function NaturalAddition({ employee, policy }) {
                                                         {/* Separator Line */}
                                                         <div className="h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent mb-3"></div>
 
-                                                        <div className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100">
+                                                        <div className=" rounded-xl p-4 mb-3 shadow-lg border border-gray-100">
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                                 <div className="flex items-start gap-2">
                                                                     <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -357,12 +357,12 @@ export default function NaturalAddition({ employee, policy }) {
                                         })}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-16">
-                                        <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <UserPlusIcon className="w-12 h-12 text-purple-600" />
+                                    <div className="text-center py-4 sm:py-12 md:py-16 px-4 flex flex-col items-center gap-2">
+                                        <div className="w-16 h-16 sm:w-20 md:w-24 sm:h-20 md:h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                            <UserPlusIcon className="w-8 h-8 sm:w-10 md:w-12 sm:h-10 md:h-12 text-purple-600" />
                                         </div>
-                                        <p className="text-lg font-bold text-gray-900 mb-2">No Requests Yet</p>
-                                        <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
+                                        <p className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2">No Requests Yet</p>
+                                        <p className="text-xs sm:text-sm md:text-base text-gray-500 mb-4 sm:mb-6 max-w-md mx-auto leading-relaxed">
                                             Click the "Add New Member" button above to submit your first natural addition request for your policy
                                         </p>
                                         <button
@@ -378,150 +378,189 @@ export default function NaturalAddition({ employee, policy }) {
                                                 });
                                                 setShowModal(true);
                                             }}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-base hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                                         >
-                                            <UserPlusIcon className="w-5 h-5" />
-                                            Add First Member
+                                            <UserPlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                            <span>Add First Member</span>
                                         </button>
                                     </div>
                                 )}
                             </div>
-                        </div>
 
-                        {/* Sidebar - 40% (Policy Info & Guidelines) */}
-                        <div className="lg:col-span-5 space-y-4">
-                            {/* Policy Information Card */}
-                            <div className="relative bg-gradient-to-r from-purple-600 via-purple-500 to-pink-600 rounded-2xl p-5 sm:p-6 text-white shadow-xl overflow-hidden">
-                                {/* Animated background elements */}
-                                <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 animate-pulse"></div>
-                                <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-400/20 rounded-full -ml-16 -mb-16"></div>
-                                
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
-                                            <ExclamationCircleIcon className="w-6 h-6" />
+                            {/* Sidebar - 40% (Policy Info & Guidelines) */}
+                            <div className="lg:col-span-5 space-y-4 p-4 sm:p-6">
+                                {/* Policy Information Card */}
+                                <div className="relative rounded-3xl p-5 sm:p-7 text-gray-900 
+bg-gradient-to-br from-purple-50 via-white to-purple-100 
+shadow-xl border border-purple-100 overflow-hidden">
+
+                                    {/* Decorative Glow Elements */}
+                                    <div className="absolute -top-16 -right-16 w-64 h-64 bg-purple-200 opacity-20 rounded-full blur-3xl"></div>
+                                    <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-pink-200 opacity-20 rounded-full blur-3xl"></div>
+
+                                    {/* Subtle Pattern Overlay */}
+                                    <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(circle_at_1px_1px,_#000_1px,_transparent_0)] [background-size:18px_18px]"></div>
+
+                                    <div className="relative z-10">
+
+                                        {/* Header */}
+                                        <div className="flex items-center gap-4 mb-5">
+                                            <div className="w-12 h-12 bg-white shadow-md rounded-2xl 
+      flex items-center justify-center border border-purple-200">
+                                                <ExclamationCircleIcon className="w-6 h-6 text-purple-700" />
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-bold text-sm md:text-lg flex items-center gap-2 text-gray-900">
+                                                    Natural Addition Policy
+                                                </h3>
+                                                <p className="text-xs text-purple-600 font-medium tracking-wide">
+                                                    Important Guidelines
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg flex items-center gap-2">
-                                                Natural Addition Policy
-                                            </h3>
-                                            <p className="text-xs text-purple-100">Important Guidelines</p>
+
+                                        {/* Stylish Divider */}
+                                        <div className="relative mb-5">
+                                            <div className="h-[1px] bg-gradient-to-r from-transparent via-purple-300 to-transparent"></div>
+                                            {/* <div className="absolute left-1/2 -translate-x-1/2 -top-1 w-3 h-3 bg-purple-400 rounded-full shadow"></div> */}
                                         </div>
-                                    </div>
 
-                                    {/* Separator Line */}
-                                    <div className="h-px bg-white/20 mb-4"></div>
-
-                                    <p className="text-sm text-purple-50 mb-3 leading-relaxed">
-                                        You can add the following family members within <strong>30 days</strong> of the event:
-                                    </p>
-                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 mb-3">
-                                        <ul className="text-sm text-white space-y-2">
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-pink-200 font-bold">✓</span>
-                                                <span>Newly married spouse (within 30 days of marriage)</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-pink-200 font-bold">✓</span>
-                                                <span>Newborn child (within 30 days of birth)</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-
-                                    {/* Separator Line */}
-                                    <div className="h-px bg-white/20 mb-3"></div>
-
-                                    <div className="flex items-start gap-2 bg-purple-800/30 backdrop-blur-sm rounded-lg p-3">
-                                        <DocumentTextIcon className="w-5 h-5 text-purple-200 flex-shrink-0 mt-0.5" />
-                                        <p className="text-xs text-purple-100">
-                                            <strong>Required Documents:</strong> Marriage certificate (for spouse) or Birth certificate (for child) in PDF format
+                                        <p className="text-xs md:text-sm text-gray-700 mb-4 leading-relaxed">
+                                            You can add the following family members within <strong>30 days</strong> of the event:
                                         </p>
+
+                                        {/* Benefits Card */}
+                                        <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 mb-4 
+    border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300">
+
+                                            <ul className="text-xs md:text-sm text-gray-800 space-y-3">
+
+                                                <li className="flex items-start gap-3">
+                                                    <div className="w-6 h-6 rounded-full bg-purple-100 
+          flex items-center justify-center mt-0.5">
+                                                        <span className="text-purple-600 font-bold text-xs">✓</span>
+                                                    </div>
+                                                    <span>Newly married spouse (within 30 days of marriage)</span>
+                                                </li>
+
+                                                <li className="flex items-start gap-3">
+                                                    <div className="w-6 h-6 rounded-full bg-purple-100 
+          flex items-center justify-center mt-0.5">
+                                                        <span className="text-purple-600 font-bold text-xs">✓</span>
+                                                    </div>
+                                                    <span>Newborn child (within 30 days of birth)</span>
+                                                </li>
+
+                                            </ul>
+                                        </div>
+
+                                        {/* Elegant Divider */}
+                                        <div className="relative mb-4">
+                                            <div className="h-[1px] bg-gradient-to-r from-transparent via-pink-300 to-transparent"></div>
+                                        </div>
+
+                                        {/* Document Section */}
+                                        <div className="flex items-start gap-3 bg-gradient-to-r from-yellow-50 to-yellow-100 
+    rounded-2xl p-4 border border-yellow-200 shadow-sm 
+    hover:shadow-md transition-all duration-300">
+
+                                            <div className="w-10 h-10 bg-white rounded-xl 
+      flex items-center justify-center shadow-sm border border-yellow-200">
+                                                <DocumentTextIcon className="w-5 h-5 text-yellow-700" />
+                                            </div>
+
+                                            <p className="text-xs text-yellow-800 leading-relaxed">
+                                                <strong>Required Documents:</strong> Marriage certificate (for spouse) or Birth certificate (for child) in PDF format
+                                            </p>
+                                        </div>
+
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Current Dependents Card */}
-                            {policy.policy_members && policy.policy_members.length > 0 && (
-                                <div className="bg-white rounded-2xl p-5 shadow-sm">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                        <h3 className="font-bold text-gray-900">Current Dependents</h3>
+                                {/* Current Dependents Card */}
+                                {policy.policy_members && policy.policy_members.length > 0 && (
+                                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                            <h3 className="font-bold text-gray-900">Current Dependents</h3>
+                                        </div>
+
+                                        {/* Separator Line */}
+                                        <div className="h-px bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 mb-3"></div>
+
+                                        <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
+                                            {policy.policy_members.map((member, index) => (
+                                                <div key={index} className="flex items-center gap-3 p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl hover:shadow-sm transition-all">
+                                                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0">
+                                                        {member.insured_name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-semibold text-gray-900 text-sm truncate">{member.insured_name}</p>
+                                                        <p className="text-xs text-gray-600 flex items-center gap-1.5">
+                                                            <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-semibold">
+                                                                {member.relation}
+                                                            </span>
+                                                            {member.dob && (
+                                                                <>
+                                                                    <span className="text-gray-400">•</span>
+                                                                    <span>{new Date(member.dob).toLocaleDateString('en-GB')}</span>
+                                                                </>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
+                                )}
+
+                                {/* Quick Stats Card */}
+                                <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-3 md:p-5 shadow-sm border border-gray-200">
+                                    <h3 className="font-bold text-gray-900 mb-3">Request Statistics</h3>
 
                                     {/* Separator Line */}
                                     <div className="h-px bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 mb-3"></div>
 
-                                    <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
-                                        {policy.policy_members.map((member, index) => (
-                                            <div key={index} className="flex items-center gap-3 p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl hover:shadow-sm transition-all">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0">
-                                                    {member.insured_name.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-semibold text-gray-900 text-sm truncate">{member.insured_name}</p>
-                                                    <p className="text-xs text-gray-600 flex items-center gap-1.5">
-                                                        <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-semibold">
-                                                            {member.relation}
-                                                        </span>
-                                                        {member.dob && (
-                                                            <>
-                                                                <span className="text-gray-400">•</span>
-                                                                <span>{new Date(member.dob).toLocaleDateString('en-GB')}</span>
-                                                            </>
-                                                        )}
-                                                    </p>
-                                                </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-100">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <ClockIcon className="w-4 h-4 text-yellow-600" />
+                                                <span className="text-xs font-semibold text-yellow-700">Pending</span>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Quick Stats Card */}
-                            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-5 shadow-sm border border-gray-200">
-                                <h3 className="font-bold text-gray-900 mb-3">Request Statistics</h3>
-                                
-                                {/* Separator Line */}
-                                <div className="h-px bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 mb-3"></div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-100">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <ClockIcon className="w-4 h-4 text-yellow-600" />
-                                            <span className="text-xs font-semibold text-yellow-700">Pending</span>
+                                            <p className="text-2xl font-bold text-yellow-900">
+                                                {naturalAdditionList.filter(r => r.status === '0' || r.status === 'pending').length}
+                                            </p>
                                         </div>
-                                        <p className="text-2xl font-bold text-yellow-900">
-                                            {naturalAdditionList.filter(r => r.status === '0' || r.status === 'pending').length}
-                                        </p>
-                                    </div>
-                                    <div className="bg-green-50 rounded-xl p-3 border border-green-100">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                                            <span className="text-xs font-semibold text-green-700">Approved</span>
+                                        <div className="bg-green-50 rounded-xl p-2 border border-green-100">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                                                <span className="text-xs font-semibold text-green-700">Approved</span>
+                                            </div>
+                                            <p className="text-2xl font-bold text-green-900">
+                                                {naturalAdditionList.filter(r => r.status === '1' || r.status === 'approved').length}
+                                            </p>
                                         </div>
-                                        <p className="text-2xl font-bold text-green-900">
-                                            {naturalAdditionList.filter(r => r.status === '1' || r.status === 'approved').length}
-                                        </p>
-                                    </div>
-                                    <div className="bg-red-50 rounded-xl p-3 border border-red-100">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <XCircleIcon className="w-4 h-4 text-red-600" />
-                                            <span className="text-xs font-semibold text-red-700">Rejected</span>
+                                        <div className="bg-red-50 rounded-xl p-3 border border-red-100">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <XCircleIcon className="w-4 h-4 text-red-600" />
+                                                <span className="text-xs font-semibold text-red-700">Rejected</span>
+                                            </div>
+                                            <p className="text-2xl font-bold text-red-900">
+                                                {naturalAdditionList.filter(r => r.status === 'rejected').length}
+                                            </p>
                                         </div>
-                                        <p className="text-2xl font-bold text-red-900">
-                                            {naturalAdditionList.filter(r => r.status === 'rejected').length}
-                                        </p>
-                                    </div>
-                                    <div className="bg-purple-50 rounded-xl p-3 border border-purple-100">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <DocumentTextIcon className="w-4 h-4 text-purple-600" />
-                                            <span className="text-xs font-semibold text-purple-700">Total</span>
+                                        <div className="bg-purple-50 rounded-xl p-3 border border-purple-100">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <DocumentTextIcon className="w-4 h-4 text-purple-600" />
+                                                <span className="text-xs font-semibold text-purple-700">Total</span>
+                                            </div>
+                                            <p className="text-2xl font-bold text-purple-900">
+                                                {naturalAdditionList.length}
+                                            </p>
                                         </div>
-                                        <p className="text-2xl font-bold text-purple-900">
-                                            {naturalAdditionList.length}
-                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -532,72 +571,68 @@ export default function NaturalAddition({ employee, policy }) {
 
             {/* Add/Edit Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-2xl">
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4" onClick={() => setShowModal(false)}>
+                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto scrollbar-hide" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-gradient-to-br from-[rgb(147,71,144)] to-pink-400 p-3 sm:p-4 rounded-t-xl sm:rounded-t-2xl">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <UserPlusIcon className="w-8 h-8 text-white" />
+                                <div className="flex items-center gap-2">
+                                    <UserPlusIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                     <div>
-                                        <h3 className="text-xl font-bold text-white">
+                                        <h3 className="text-sm sm:text-base font-bold text-white">
                                             {editingRequest ? 'Edit Request' : 'Add New Member'}
                                         </h3>
-                                        <p className="text-purple-100 text-sm">Fill in member details below</p>
+                                        <p className="text-purple-100 text-[10px] sm:text-xs">Fill in member details below</p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setShowModal(false)}
-                                    className="text-white hover:bg-white/20 rounded-lg p-2 transition-all"
+                                    className="bg-white/20 hover:bg-white/20 rounded-full p-1 sm:p-1.5 transition-all"
                                 >
-                                    <XCircleIcon className="w-6 h-6" />
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-lg p-4 flex items-start gap-3">
-                                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <svg className="w-5 h-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <form onSubmit={handleSubmit} className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+                            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-lg p-2 flex items-start gap-1.5">
+                                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-semibold text-yellow-900 mb-1">Important Notice</p>
-                                    <p className="text-xs text-yellow-800">
+                                    <p className="text-[10px] sm:text-xs font-semibold text-yellow-900 mb-0.5">Important Notice</p>
+                                    <p className="text-[9px] sm:text-[10px] text-yellow-800">
                                         Request must be submitted within 30 days of marriage (spouse) or birth (child).
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                    <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
+                            <div className="space-y-1">
+                                <label className="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-gray-700">
                                     Member Name *
                                 </label>
                                 <input
                                     type="text"
                                     value={naturalAdditionForm.dependent_name}
                                     onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, dependent_name: e.target.value })}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300"
+                                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300"
                                     placeholder="Enter full name"
                                     required
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                        <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                <div className="space-y-1">
+                                    <label className="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-gray-700">
                                         Relation *
                                     </label>
                                     <select
                                         value={naturalAdditionForm.dependent_relation}
                                         onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, dependent_relation: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300 bg-white"
+                                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300 bg-white"
                                         required
                                     >
                                         <option value="">Select Relation</option>
@@ -606,17 +641,14 @@ export default function NaturalAddition({ employee, policy }) {
                                     </select>
                                 </div>
 
-                                <div className="space-y-1.5">
-                                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                        <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                        </svg>
+                                <div className="space-y-1">
+                                    <label className="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-gray-700">
                                         Gender *
                                     </label>
                                     <select
                                         value={naturalAdditionForm.dependent_gender}
                                         onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, dependent_gender: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300 bg-white"
+                                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300 bg-white"
                                         required
                                     >
                                         <option value="">Select Gender</option>
@@ -626,45 +658,38 @@ export default function NaturalAddition({ employee, policy }) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                        <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                <div className="space-y-1">
+                                    <label className="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-gray-700">
                                         Date of Birth *
                                     </label>
                                     <input
                                         type="date"
                                         value={naturalAdditionForm.dependent_dob}
                                         onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, dependent_dob: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300"
+                                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300"
                                         required
                                     />
                                 </div>
 
                                 {naturalAdditionForm.dependent_relation === 'SPOUSE' && (
-                                    <div className="space-y-1.5">
-                                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                            <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                            </svg>
+                                    <div className="space-y-1">
+                                        <label className="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-gray-700">
                                             Date of Marriage *
                                         </label>
                                         <input
                                             type="date"
                                             value={naturalAdditionForm.date_of_event}
                                             onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, date_of_event: e.target.value })}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300"
+                                            className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300"
                                             required
                                         />
                                     </div>
                                 )}
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                    <DocumentTextIcon className="w-4 h-4 text-purple-600" />
+                            <div className="space-y-1">
+                                <label className="flex items-center gap-2 text-[10px] sm:text-xs font-semibold text-gray-700">
                                     Supporting Document (PDF) *
                                 </label>
                                 <div className="relative">
@@ -672,13 +697,13 @@ export default function NaturalAddition({ employee, policy }) {
                                         type="file"
                                         accept=".pdf"
                                         onChange={(e) => setNaturalAdditionForm({ ...naturalAdditionForm, document: e.target.files[0] })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-purple-600 file:to-pink-600 file:text-white hover:file:from-purple-700 hover:file:to-pink-700 file:transition-all file:cursor-pointer"
+                                        className="w-full px-2 sm:px-3 py-1.5 text-xs sm:text-sm border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-gray-300 file:mr-1.5 sm:file:mr-2 file:py-1 sm:file:py-1.5 file:px-2 sm:file:px-3 file:rounded-lg file:border-0 file:text-[9px] sm:file:text-xs file:font-semibold file:bg-gradient-to-br file:from-[rgb(147,71,144)] file:to-pink-400 file:text-white hover:file:from-purple-700 hover:file:to-pink-700 file:transition-all file:cursor-pointer"
                                         required={!editingRequest}
                                     />
                                 </div>
-                                <div className="bg-blue-50 rounded-lg p-3 mt-2">
-                                    <p className="text-xs text-blue-800 flex items-start gap-2">
-                                        <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <div className="bg-blue-50 rounded-lg p-1.5 sm:p-2 mt-1.5">
+                                    <p className="text-[9px] sm:text-[10px] text-blue-800 flex items-start gap-1">
+                                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                         <span>Upload marriage certificate (for spouse) or birth certificate (for child)</span>
@@ -686,22 +711,22 @@ export default function NaturalAddition({ employee, policy }) {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-gray-200">
+                            <div className="flex flex-col-reverse sm:flex-row gap-2 pt-2 sm:pt-3 border-t border-gray-200">
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all"
+                                    className="flex-1 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-2"
+                                    className="flex-1 bg-gradient-to-br from-[rgb(147,71,144)] to-pink-400 text-white py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-1.5"
                                 >
                                     {submitting ? (
                                         <>
-                                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <svg className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
@@ -709,7 +734,7 @@ export default function NaturalAddition({ employee, policy }) {
                                         </>
                                     ) : (
                                         <>
-                                            <CheckCircleIcon className="w-5 h-5" />
+                                            <CheckCircleIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                             <span>{editingRequest ? 'Update Request' : 'Submit Request'}</span>
                                         </>
                                     )}

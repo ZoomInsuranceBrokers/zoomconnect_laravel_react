@@ -145,13 +145,13 @@ export default function Help({ employee }) {
                                 <p className="text-xs sm:text-xs text-gray-600 mt-1">We're here to assist you!</p>
                             </div>
                         </div>
-                        
+
                         {/* Tabs - Right Side */}
                         <div className="w-full sm:w-auto flex justify-center sm:justify-start">
                             <div className="relative inline-flex bg-white rounded-full p-1 shadow-sm">
                                 {/* Sliding Background Indicator */}
                                 <div className={`absolute inset-y-1 bg-[rgb(147,71,144)] rounded-full transition-all duration-300 ease-out ${activeTab === 'faq' ? 'left-1 right-[calc(50%+2px)]' : 'left-[calc(50%+2px)] right-1'}`} />
-                                
+
                                 <button
                                     onClick={() => setActiveTab('faq')}
                                     className={`flex items-center justify-center space-x-1.5 sm:space-x-2 py-2.5 sm:py-3 px-4 sm:pl-4 sm:pr-8 rounded-full transition-all duration-300 text-xs sm:text-sm font-semibold whitespace-nowrap relative z-10 ${activeTab === 'faq'
@@ -334,7 +334,7 @@ export default function Help({ employee }) {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 max-h-[600px] overflow-y-auto scrollbar-hide">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 p-4 gap-4 sm:gap-5 max-h-[600px] overflow-y-auto scrollbar-hide ">
                                     {tickets.map((ticket, index) => {
                                         const statusConfig = {
                                             'open': {
@@ -365,47 +365,66 @@ export default function Help({ employee }) {
                                             <div
                                                 key={ticket.ticket_id}
                                                 onClick={() => handleViewTicket(ticket.ticket_id)}
-                                                className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden border border-gray-100"
-                                                    >
-                                                        <div className="p-3 sm:p-4">
-                                                            {/* Icon Badge (smaller) */}
-                                                            <div className="flex justify-center mb-3">
-                                                                <div className={`w-12 h-12 rounded-full ${config.iconBg} flex items-center justify-center`}>
-                                                                    {config.icon}
-                                                                </div>
-                                                            </div>
+                                                className="group relative bg-gradient-to-br from-white via-indigo-50 to-blue-50 rounded-2xl 
+             border border-gray-200 hover:border-gray-300 
+             shadow-sm hover:shadow-xl 
+             transition-all duration-300 
+             hover:-translate-y-1 cursor-pointer overflow-hidden"
+                                            >
+                                                <div className="p-5">
 
-                                                            {/* Ticket ID (compact) */}
-                                                            <h3 className="text-sm sm:text-base font-bold text-gray-900 text-center mb-1">
-                                                                {ticket.ticket_id}
-                                                            </h3>
-
-                                                            {/* Subject (compact) */}
-                                                            <p className="text-xs sm:text-sm text-gray-600 text-center mb-3 line-clamp-2 min-h-[2rem]">
-                                                                {ticket.subject || 'Untitled Ticket'}
-                                                            </p>
-
-                                                            {/* Compact Details Row */}
-                                                            <div className="bg-gray-50 rounded-xl p-2 mb-3 text-xs text-gray-700">
-                                                                <div className="flex items-center justify-between">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <ChatBubbleLeftRightIcon className="w-4 h-4 text-gray-500" />
-                                                                        <span className="font-medium">{ticket.message_count || 0}</span>
-                                                                    </div>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <ClockIcon className="w-4 h-4 text-gray-500" />
-                                                                        <span className="font-medium">
-                                                                            {new Date(ticket.created_at).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Action Button (small) */}
-                                                            <button className="w-full bg-gray-900 hover:bg-black text-white py-2 rounded-xl font-semibold text-sm transition-all">
-                                                                View Details
-                                                            </button>
+                                                    {/* Top Row: Icon + Status */}
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <div className={`w-12 h-12 rounded-xl ${config.iconBg} 
+                      flex items-center justify-center 
+                      shadow-md group-hover:scale-110 transition`}>
+                                                            {config.icon}
                                                         </div>
+
+                                                        <span className="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                                                            Open
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Ticket ID */}
+                                                    <h3 className="text-base font-bold text-gray-900 mb-1 group-hover:text-black">
+                                                        {ticket.ticket_id}
+                                                    </h3>
+
+                                                    {/* Subject */}
+                                                    <p className="text-sm text-gray-600 mb-4 line-clamp-2 min-h-[40px]">
+                                                        {ticket.subject || "Untitled Ticket"}
+                                                    </p>
+
+                                                    {/* Stats Section */}
+                                                    <div className="flex items-center justify-between text-sm text-gray-500 border-t pt-3">
+
+                                                        <div className="flex items-center gap-2">
+                                                            <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                                                            <span>{ticket.message_count || 0} Messages</span>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2">
+                                                            <ClockIcon className="w-4 h-4" />
+                                                            <span>
+                                                                {new Date(ticket.created_at).toLocaleDateString('en-US', {
+                                                                    month: 'short',
+                                                                    day: 'numeric'
+                                                                })}
+                                                            </span>
+                                                        </div>
+
+                                                    </div>
+
+                                                    {/* CTA */}
+                                                    <div className="mt-4">
+                                                        <div className="text-center text-sm font-semibold text-gray-800 
+                     group-hover:text-black transition">
+                                                            View Details →
+                                                        </div>
+                                                    </div>
+
+                                                </div>
                                             </div>
                                         );
                                     })}
@@ -418,67 +437,88 @@ export default function Help({ employee }) {
 
             {/* Ticket Details Modal */}
             {showTicketDetailsModal && selectedTicket && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
-                        {/* Header */}
-                        <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden transform animate-slideUp">
+                        {/* Header with gradient */}
+                        <div className="relative p-6 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 border-b border-gray-200 flex-shrink-0">
                             <div className="flex justify-between items-start gap-4">
                                 <div className="flex-1">
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedTicket.subject}</h2>
-                                    <p className="text-sm text-gray-500">Ticket #{selectedTicket.ticket_id}</p>
+                                    {/* <div className="flex items-center gap-2 mb-2">
+                                        <ChatBubbleLeftRightIcon className="w-6 h-6 text-purple-600" />
+                                        <span className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Support Ticket</span>
+                                    </div> */}
+                                    <h2 className="text-xl font-bold text-gray-900 mb-1 leading-tight">{selectedTicket.subject}</h2>
+                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <span className="font-mono">#{selectedTicket.ticket_id}</span>
+                                        <span>•</span>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusBadge(selectedTicket.status)}`}>
+                                            {selectedTicket.status.replace('_', ' ')}
+                                        </span>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={() => setShowTicketDetailsModal(false)}
-                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-white/50 rounded-xl transition-all"
                                 >
-                                    <XMarkIcon className="w-6 h-6" />
+                                    <XMarkIcon className="w-5 h-5" />
                                 </button>
                             </div>
-                            
-                            {/* Ticket Info */}
-                            <div className="mt-6 bg-gray-50 rounded-2xl p-4">
-                                <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span className="text-gray-500 text-sm">Status</span>
-                                    <span className={`text-sm font-semibold capitalize px-3 py-1 rounded-full ${getStatusBadge(selectedTicket.status)}`}>
-                                        {selectedTicket.status.replace('_', ' ')}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center py-2">
-                                    <span className="text-gray-500 text-sm">Created</span>
-                                    <span className="text-gray-900 font-semibold text-sm">
-                                        {new Date(selectedTicket.created_at).toLocaleDateString('en-US', { 
-                                            month: 'short', 
+
+                            {/* Ticket Info Cards */}
+                            <div className="mt-4 flex gap-3">
+                                <div className="flex-1 bg-white/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-200">
+                                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                                        <ClockIcon className="w-3.5 h-3.5" />
+                                        <span>Created</span>
+                                    </div>
+                                    <p className="text-xs font-semibold text-gray-900">
+                                        {new Date(selectedTicket.created_at).toLocaleDateString('en-US', {
+                                            month: 'short',
                                             day: 'numeric',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
+                                            year: 'numeric'
                                         })}
-                                    </span>
+                                    </p>
+                                </div>
+                                <div className="flex-1 bg-white/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-200">
+                                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                                        <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
+                                        <span>Messages</span>
+                                    </div>
+                                    <p className="text-xs font-semibold text-gray-900">{ticketMessages.length} replies</p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+                        {/* Messages with improved styling */}
+                        <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-gray-100 scrollbar-hide">
                             <div className="space-y-4">
                                 {ticketMessages.map((msg, index) => (
-                                    <div key={index} className={`flex ${msg.sender_type === 'employee' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-[80%] ${msg.sender_type === 'employee'
-                                            ? 'bg-gray-900 text-white'
-                                            : 'bg-white text-gray-800 border border-gray-200'
-                                            } rounded-2xl p-4 shadow-sm`}>
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <span className="text-xs font-semibold">
-                                                    {msg.sender_type === 'employee' ? 'You' : 'Support Team'}
-                                                </span>
-                                                <span className={`text-xs ${msg.sender_type === 'employee' ? 'text-gray-300' : 'text-gray-400'}`}>
-                                                    {new Date(msg.created_at).toLocaleString('en-US', {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    })}
-                                                </span>
+                                    <div key={index} className={`flex ${msg.sender_type === 'employee' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
+                                        <div className={`max-w-[85%] group ${msg.sender_type === 'employee'
+                                            ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-200'
+                                            : 'bg-white text-gray-800 border border-gray-200 shadow-md'
+                                            } rounded-2xl p-4 transition-all hover:shadow-xl`}>
+                                            <div className="flex items-start gap-2 mb-2">
+                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                                                    msg.sender_type === 'employee' 
+                                                    ? 'bg-white/20 text-white' 
+                                                    : 'bg-gradient-to-br from-purple-100 to-indigo-100 text-purple-700'
+                                                }`}>
+                                                    {msg.sender_type === 'employee' ? 'Y' : 'S'}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <span className="text-xs font-semibold block">
+                                                        {msg.sender_type === 'employee' ? 'You' : 'Support Team'}
+                                                    </span>
+                                                    <span className={`text-[10px] ${msg.sender_type === 'employee' ? 'text-purple-200' : 'text-gray-400'}`}>
+                                                        {new Date(msg.created_at).toLocaleString('en-US', {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </span>
+                                                </div>
                                             </div>
                                             <p className="text-sm whitespace-pre-line leading-relaxed">{msg.message}</p>
                                         </div>
@@ -487,25 +527,28 @@ export default function Help({ employee }) {
                             </div>
                         </div>
 
-                        {/* Reply Form */}
-                        <form onSubmit={handleSendMessage} className="p-6 border-t border-gray-200 bg-white flex-shrink-0">
-                            <div className="flex gap-3">
-                                <input
-                                    type="text"
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder="Type your reply..."
-                                    className="flex-1 px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
-                                    disabled={loading}
-                                />
+                        {/* Enhanced Reply Form */}
+                        <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200 bg-white flex-shrink-0">
+                            <div className="flex gap-2">
+                                <div className="flex-1 relative">
+                                    <input
+                                        type="text"
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        placeholder="Type your message..."
+                                        className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm transition-all"
+                                        disabled={loading}
+                                    />
+                                </div>
                                 <button
                                     type="submit"
                                     disabled={loading || !newMessage.trim()}
-                                    className="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-2xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white p-3 rounded-2xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-200 hover:shadow-xl hover:scale-105 active:scale-95"
                                 >
                                     <PaperAirplaneIcon className="w-5 h-5" />
                                 </button>
                             </div>
+                            <p className="text-xs text-gray-500 mt-2 text-center">Press Enter to send</p>
                         </form>
                     </div>
                 </div>
