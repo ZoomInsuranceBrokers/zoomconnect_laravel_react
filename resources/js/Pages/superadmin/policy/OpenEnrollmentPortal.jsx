@@ -6,7 +6,8 @@ export default function OpenEnrollmentPortal({ enrollmentDetail }) {
     const [formData, setFormData] = useState({
         enrolment_portal_name: '',
         portal_start_date: '',
-        portal_end_date: ''
+        portal_end_date: '',
+        wallet_amount: ''
     });
 
     const [errors, setErrors] = useState({});
@@ -32,7 +33,15 @@ export default function OpenEnrollmentPortal({ enrollmentDetail }) {
         e.preventDefault();
         setProcessing(true);
 
-        router.post(`/superadmin/create-enrollment-period/${enrollmentDetail.id}`, formData, {
+        // Pass wallet_amount in the formData if is_wallet is enabled
+        let submitData = { ...formData };
+        if (enrollmentDetail.is_wallet === 1) {
+            submitData.wallet_amount = formData.wallet_amount;
+        } else {
+            delete submitData.wallet_amount;
+        }
+
+        router.post(`/superadmin/create-enrollment-period/${enrollmentDetail.id}`, submitData, {
             onSuccess: (page) => {
                 // Redirect will be handled by the backend
             },
@@ -106,10 +115,16 @@ export default function OpenEnrollmentPortal({ enrollmentDetail }) {
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center">
+                                        <span className="text-gray-600 font-medium">Wallet:</span>
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${enrollmentDetail.is_wallet === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                            }`}>
+                                            {enrollmentDetail.is_wallet === 1 ? 'Wallet Active' : 'Wallet Inactive'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
                                         <span className="text-gray-600 font-medium">Status:</span>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                            enrollmentDetail.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                        }`}>
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${enrollmentDetail.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                            }`}>
                                             {enrollmentDetail.status ? 'Active' : 'Inactive'}
                                         </span>
                                     </div>
@@ -167,9 +182,8 @@ export default function OpenEnrollmentPortal({ enrollmentDetail }) {
                                                     name="enrolment_portal_name"
                                                     value={formData.enrolment_portal_name}
                                                     onChange={handleInputChange}
-                                                    className={`block w-full text-xs border rounded-lg px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-[#934790] transition-colors duration-200 ${
-                                                        errors.enrolment_portal_name ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                                                    }`}
+                                                    className={`block w-full text-xs border rounded-lg px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-[#934790] transition-colors duration-200 ${errors.enrolment_portal_name ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                                                        }`}
                                                     placeholder="e.g., Annual Benefits Enrollment 2025"
                                                 />
                                                 <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
@@ -188,6 +202,44 @@ export default function OpenEnrollmentPortal({ enrollmentDetail }) {
                                             )}
                                         </div>
 
+                                        {/* Wallet Amount Input - only if is_wallet = 1 */}
+                                        {enrollmentDetail.is_wallet === 1 && (
+                                            <div>
+                                                <label htmlFor="wallet_amount" className="flex items-center text-xs font-medium text-gray-700 mb-2">
+                                                    <svg className="w-3 h-3 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Enter Wallet Amount <span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type="number"
+                                                        id="wallet_amount"
+                                                        name="wallet_amount"
+                                                        value={formData.wallet_amount || ''}
+                                                        onChange={handleInputChange}
+                                                        min="0"
+                                                        step="0.01"
+                                                        className={`block w-full text-xs border rounded-lg px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-[#934790] transition-colors duration-200 ${errors.wallet_amount ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-gray-400'}`}
+                                                        placeholder="Enter wallet amount"
+                                                    />
+                                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                                        <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                {errors.wallet_amount && (
+                                                    <p className="mt-1 flex items-center text-xs text-red-600">
+                                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        {errors.wallet_amount}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+
                                         {/* Date Fields */}
                                         <div className="space-y-4">
                                             {/* Portal Start Date */}
@@ -205,9 +257,8 @@ export default function OpenEnrollmentPortal({ enrollmentDetail }) {
                                                         name="portal_start_date"
                                                         value={formData.portal_start_date}
                                                         onChange={handleInputChange}
-                                                        className={`block w-full text-xs border rounded-lg px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-[#934790] transition-colors duration-200 ${
-                                                            errors.portal_start_date ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                                                        }`}
+                                                        className={`block w-full text-xs border rounded-lg px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-[#934790] transition-colors duration-200 ${errors.portal_start_date ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                                                            }`}
                                                     />
                                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                                         <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,9 +291,8 @@ export default function OpenEnrollmentPortal({ enrollmentDetail }) {
                                                         name="portal_end_date"
                                                         value={formData.portal_end_date}
                                                         onChange={handleInputChange}
-                                                        className={`block w-full text-xs border rounded-lg px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-[#934790] transition-colors duration-200 ${
-                                                            errors.portal_end_date ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                                                        }`}
+                                                        className={`block w-full text-xs border rounded-lg px-3 py-2 pl-8 focus:outline-none focus:ring-2 focus:ring-[#934790] focus:border-[#934790] transition-colors duration-200 ${errors.portal_end_date ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                                                            }`}
                                                     />
                                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                                         <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

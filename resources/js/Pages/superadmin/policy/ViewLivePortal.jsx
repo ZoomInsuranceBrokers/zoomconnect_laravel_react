@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import SuperAdminLayout from '../../../Layouts/SuperAdmin/Layout';
 
 export default function ViewLivePortal({
@@ -17,6 +17,29 @@ export default function ViewLivePortal({
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+
+    // View Detail Modal
+    const [viewDetailOpen, setViewDetailOpen] = useState(false);
+    const [viewDetailLoading, setViewDetailLoading] = useState(false);
+    const [viewDetailData, setViewDetailData] = useState(null);
+    const [viewDetailEmployee, setViewDetailEmployee] = useState(null);
+
+    const handleViewDetail = async (employee) => {
+        setOpenDropdown(null);
+        setViewDetailEmployee(employee);
+        setViewDetailData(null);
+        setViewDetailOpen(true);
+        setViewDetailLoading(true);
+        try {
+            const res = await fetch(`/superadmin/policy/employee-enrolment-detail/${enrollmentPeriod.id}/employee/${employee.id}`);
+            const json = await res.json();
+            setViewDetailData(json);
+        } catch (e) {
+            setViewDetailData({ error: 'Failed to load enrollment details.' });
+        } finally {
+            setViewDetailLoading(false);
+        }
+    };
 
     // Handle success/error messages from redirects
     useEffect(() => {
@@ -438,23 +461,14 @@ export default function ViewLivePortal({
                                                                         <button
                                                                             type="button"
                                                                             className="w-full block text-left px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-                                                                            onClick={() => {
-                                                                                setOpenDropdown(null);
-                                                                                const url = `/superadmin/fill-enrollment/${enrollmentPeriod.id}/employee/${employee.id}?edit=1`;
-                                                                                try {
-                                                                                    console.log('Attempting Inertia navigation:', url);
-                                                                                    router.visit(url);
-                                                                                } catch (e) {
-                                                                                    console.warn('Inertia navigation failed, falling back to window.location.href', e);
-                                                                                    window.location.href = url;
-                                                                                }
-                                                                            }}
+                                                                            onClick={() => handleViewDetail(employee)}
                                                                         >
                                                                             <div className="flex items-center">
-                                                                                <svg className="w-3 h-3 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                <svg className="w-3 h-3 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                                                 </svg>
-                                                                                Edit Enrolment
+                                                                                View Detail
                                                                             </div>
                                                                         </button>
                                                                     )}
@@ -588,6 +602,155 @@ export default function ViewLivePortal({
                     </div>
                 </div>
             </div>
+
+            {/* View Detail Modal */}
+            {viewDetailOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={() => setViewDetailOpen(false)}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-[#934790] to-[#7a3d7a] text-white rounded-t-xl">
+                            <div>
+                                <h2 className="text-sm font-bold">
+                                    {viewDetailEmployee?.full_name || 'Employee'} — Enrollment Detail
+                                </h2>
+                                <p className="text-xs opacity-80 mt-0.5">{viewDetailEmployee?.employees_code}</p>
+                            </div>
+                            <button onClick={() => setViewDetailOpen(false)} className="text-white hover:text-gray-200 transition-colors">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="overflow-y-auto flex-1 p-5 space-y-5">
+                            {viewDetailLoading && (
+                                <div className="flex items-center justify-center py-12">
+                                    <svg className="animate-spin w-8 h-8 text-[#934790]" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                    </svg>
+                                    <span className="ml-3 text-sm text-gray-500">Loading...</span>
+                                </div>
+                            )}
+
+                            {!viewDetailLoading && viewDetailData?.error && (
+                                <div className="text-center text-sm text-red-600 py-8">{viewDetailData.error}</div>
+                            )}
+
+                            {!viewDetailLoading && viewDetailData && !viewDetailData.error && (() => {
+                                const { employee: emp, mapping, enrolment_data } = viewDetailData;
+                                const fmt = (v) => v != null && v !== '' ? v : '—';
+                                const currency = (v) => v != null ? '₹ ' + Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
+                                return (
+                                    <>
+                                        {/* Employee Info + Wallet Status */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Employee Info */}
+                                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                                <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">Employee Information</h3>
+                                                <dl className="space-y-2">
+                                                    {[['Name', emp.full_name], ['Code', emp.employees_code], ['Email', emp.email], ['Mobile', emp.mobile], ['Designation', emp.designation], ['Grade', emp.grade], ['Gender', emp.gender], ['Login Status', emp.login_status]].map(([label, val]) => (
+                                                        <div key={label} className="flex justify-between">
+                                                            <dt className="text-xs text-gray-500">{label}</dt>
+                                                            <dd className="text-xs font-medium text-gray-900 text-right">{fmt(val)}</dd>
+                                                        </div>
+                                                    ))}
+                                                </dl>
+                                            </div>
+
+                                            {/* Wallet / Status */}
+                                            <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+                                                <h3 className="text-xs font-semibold text-purple-700 uppercase tracking-wide mb-3">Wallet &amp; Portal Status</h3>
+                                                {mapping ? (
+                                                    <dl className="space-y-2">
+                                                        {[
+                                                            ['Available Balance', currency(mapping.available_balance)],
+                                                            ['Used Balance', currency(mapping.used_balance)],
+                                                            ['Use Status', mapping.use_status],
+                                                            ['View Status', mapping.view_status],
+                                                            ['Edit Option', mapping.edit_option],
+                                                        ].map(([label, val]) => (
+                                                            <div key={label} className="flex justify-between">
+                                                                <dt className="text-xs text-gray-500">{label}</dt>
+                                                                <dd className="text-xs font-medium text-gray-900 text-right">{fmt(val)}</dd>
+                                                            </div>
+                                                        ))}
+                                                    </dl>
+                                                ) : (
+                                                    <p className="text-xs text-gray-500">No mapping found.</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Enrolled Members Table */}
+                                        <div>
+                                            <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">Enrolled Members</h3>
+                                            {enrolment_data && enrolment_data.length > 0 ? (
+                                                <div className="overflow-x-auto rounded-lg border border-gray-200">
+                                                    <table className="min-w-full text-xs">
+                                                        <thead className="bg-gray-100">
+                                                            <tr>
+                                                                {['Name', 'Relation', 'Gender', 'DOB', 'Base SI', 'Plan', 'Prem. (Co.)', 'Prem. (Emp.)', 'Extra Plan', 'Extra (Co.)', 'Extra (Emp.)'].map(h => (
+                                                                    <th key={h} className="px-3 py-2 text-left font-medium text-gray-600 whitespace-nowrap">{h}</th>
+                                                                ))}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100 bg-white">
+                                                            {enrolment_data.map((row, i) => (
+                                                                <tr key={i} className={i % 2 === 0 ? '' : 'bg-gray-50'}>
+                                                                    <td className="px-3 py-2 whitespace-nowrap font-medium text-gray-900">{fmt(row.insured_name)}</td>
+                                                                    <td className="px-3 py-2 whitespace-nowrap capitalize">{fmt(row.detailed_relation || row.relation)}</td>
+                                                                    <td className="px-3 py-2 whitespace-nowrap capitalize">{fmt(row.gender)}</td>
+                                                                    <td className="px-3 py-2 whitespace-nowrap">{fmt(row.dob)}</td>
+                                                                    <td className="px-3 py-2 whitespace-nowrap">{row.base_sum_insured ? currency(row.base_sum_insured) : '—'}</td>
+                                                                    <td className="px-3 py-2">{fmt(row.base_plan_name)}</td>
+                                                                    <td className="px-3 py-2 whitespace-nowrap">{row.base_premium_on_company ? currency(row.base_premium_on_company) : '—'}</td>
+                                                                    <td className="px-3 py-2 whitespace-nowrap">{row.base_premium_on_employee ? currency(row.base_premium_on_employee) : '—'}</td>
+                                                                    <td className="px-3 py-2">{fmt(row.extra_coverage_plan_name)}</td>
+                                                                    <td className="px-3 py-2 whitespace-nowrap">{row.extra_coverage_premium_on_company ? currency(row.extra_coverage_premium_on_company) : '—'}</td>
+                                                                    <td className="px-3 py-2 whitespace-nowrap">{row.extra_coverage_premium_on_employee ? currency(row.extra_coverage_premium_on_employee) : '—'}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            ) : (
+                                                <p className="text-xs text-gray-500 text-center py-6">No enrollment records found.</p>
+                                            )}
+                                        </div>
+
+                                        {/* Audit */}
+                                        {enrolment_data && enrolment_data.length > 0 && (
+                                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                                <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Audit Info</h3>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                    {[['Created By', enrolment_data[0].created_by], ['Last Updated By', enrolment_data[0].updated_by], ['Created At', enrolment_data[0].created_at], ['Updated At', enrolment_data[0].updated_at]].map(([label, val]) => (
+                                                        <div key={label}>
+                                                            <dt className="text-xs text-gray-500">{label}</dt>
+                                                            <dd className="text-xs font-medium text-gray-900 mt-0.5">{fmt(val)}</dd>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-5 py-3 border-t border-gray-100 flex justify-end">
+                            <button
+                                onClick={() => setViewDetailOpen(false)}
+                                className="px-4 py-2 text-xs font-medium text-white bg-[#934790] hover:bg-[#7a3d7a] rounded-md transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Success/Error Message */}
             {

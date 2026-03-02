@@ -18,7 +18,8 @@ export default function FillEnrollment({
     enrollmentData = null,
     message,
     messageType,
-    error // <-- add error prop
+    error, // <-- add error prop
+    wallet_balance = 0,
 }) {
     // Show error if present
     if (error) {
@@ -167,6 +168,7 @@ export default function FillEnrollment({
                         updateFormData={updateFormData}
                         onNext={handleNextStep}
                         onPrevious={handlePreviousStep}
+                        available_balance={wallet_balance}
                     />
                 );
             case 3:
@@ -180,6 +182,7 @@ export default function FillEnrollment({
                         updateFormData={updateFormData}
                         onNext={handleNextStep}
                         onPrevious={handlePreviousStep}
+                        available_balance={wallet_balance}
                     />
                 );
             case 4:
@@ -191,6 +194,7 @@ export default function FillEnrollment({
                         formData={formData}
                         onSubmit={handleSubmit}
                         onPrevious={handlePreviousStep}
+                        available_balance={wallet_balance}
                     />
                 );
             default:

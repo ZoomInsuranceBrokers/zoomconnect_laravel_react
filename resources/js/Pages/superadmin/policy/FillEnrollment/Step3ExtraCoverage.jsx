@@ -10,6 +10,7 @@ export default function Step3ExtraCoverage({
     updateFormData,
     onNext,
     onPrevious,
+    available_balance = 0,
 }) {
     // defensive: ensure we don't read properties from undefined formData
     const fd = formData || {};
@@ -339,7 +340,7 @@ export default function Step3ExtraCoverage({
             </div>
 
             {/* Premium Summary */}
-            <PremiumSummary calc={calc} ratingConfig={ratingConfig} selectedPlanObj={selectedPlanObj} baseSI={baseSI} />
+            <PremiumSummary calc={calc} ratingConfig={ratingConfig} selectedPlanObj={selectedPlanObj} baseSI={baseSI} wallet_used={!!(fd.is_wallet || fd.wallet_used)} available_balance={available_balance} />
 
             {/* Extra Coverage Plans */}
             <div className="space-y-4">

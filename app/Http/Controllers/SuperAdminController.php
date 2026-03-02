@@ -39,6 +39,7 @@ use App\Jobs\ReplaceEscalationUserJob;
 use App\Jobs\SendPushNotificationJob;
 use App\Mail\EnrollmentConfirmation;
 
+
 class SuperAdminController extends Controller
 {
     public function dashboard()
@@ -3250,18 +3251,18 @@ class SuperAdminController extends Controller
     public function createEnrollmentPeriod(Request $request, $id)
     {
         try {
-
             // Validate the request
             $validated = $request->validate([
                 'enrolment_portal_name' => 'required|string|max:255',
                 'portal_start_date' => 'required|date',
                 'portal_end_date' => 'required|date|after:portal_start_date',
+                'wallet_amount' => 'nullable|numeric|min:0',
             ]);
 
             // Get the enrollment detail
             $enrollmentDetail = EnrollmentDetail::findOrFail($id);
 
-            // Create the enrollment period
+            // Create the enrollment period (do NOT store wallet_amount)
             $enrollmentPeriod = new \App\Models\EnrollmentPeriod();
             $enrollmentPeriod->enrolment_id = $enrollmentDetail->id;
             $enrollmentPeriod->cmp_id = $enrollmentDetail->cmp_id;
@@ -3272,6 +3273,13 @@ class SuperAdminController extends Controller
             $enrollmentPeriod->is_active = 1;
             $enrollmentPeriod->is_delete = 0;
             $enrollmentPeriod->save();
+
+            // Store wallet_amount in session for next step (if present)
+            if (isset($validated['wallet_amount'])) {
+                Session::put('wallet_amount', $validated['wallet_amount']);
+            } else {
+                Session::forget('wallet_amount');
+            }
 
             // Redirect to select employees page
             return redirect()->route('superadmin.select-employees-for-portal', $enrollmentPeriod->id)
@@ -3395,12 +3403,17 @@ class SuperAdminController extends Controller
             // Execute query and get results
             $employees = $query->orderBy('is_mapped_in_enrolment_id', 'desc')->get();
 
+            // Retrieve wallet_amount from session if present, else fallback to enrollmentDetail (for edit mode)
+            $walletAmount = Session::get('wallet_amount', $enrollmentDetail->wallet_amount ?? null);
+
             return Inertia::render('superadmin/policy/SelectEmployeesForPortal', [
                 'enrollmentPeriod' => $enrollmentPeriod,
                 'unmappedEmployees' => $employees, // All employees (mapped and unmapped)
                 'mappedEmployeeIds' => $currentPortalMappedIds, // IDs of currently selected employees
                 'familyDefinition' => $familyDefinition,
                 'gradeExclusions' => $gradeExclusions,
+                'wallet_amount' => $walletAmount,
+                'is_wallet' => $enrollmentDetail->is_wallet ?? null,
                 'debugInfo' => [
                     'sampleGrades' => DB::table('company_employees')
                         ->where('is_delete', 0)
@@ -3970,21 +3983,30 @@ class SuperAdminController extends Controller
     public function employeeMapping(Request $request)
     {
         try {
-
             $validatedData = $request->validate([
                 'office' => 'required|array|min:1',
                 'office.*' => 'integer|exists:company_employees,id',
                 'portal_id' => 'required|integer|exists:enrolment_period,id',
-                'enrolment_id' => 'required|integer'
+                'enrolment_id' => 'required|integer',
+                'wallet_amount' => 'nullable|numeric|min:0'
+            ]);
+
+            \Log::info('employeeMapping called', [
+                'validatedData' => $validatedData
             ]);
 
             $employees = $validatedData['office'];
             $portalId = $validatedData['portal_id'];
             $enrolmentId = $validatedData['enrolment_id'];
+            $walletAmount = $validatedData['wallet_amount'] ?? null;
 
             $enrollmentPeriod = \App\Models\EnrollmentPeriod::with(['enrollmentDetail.company'])->findOrFail($portalId);
 
             // Step 1: Set status = 0 for existing mappings with this portal and enrollment
+            \Log::info('Setting status=0 for existing mappings', [
+                'portalId' => $portalId,
+                'enrolmentId' => $enrolmentId
+            ]);
             DB::table('enrolment_mapping_master')
                 ->where('enrolment_period_id', $portalId)
                 ->where('enrolment_id', $enrolmentId)
@@ -4000,15 +4022,22 @@ class SuperAdminController extends Controller
 
                 if ($existingMapping) {
                     // Update existing mapping to active
+                    $updateData = ['status' => 1, 'enrolment_period_id' => $portalId, 'updated_at' => now()];
+                    if ($walletAmount !== null) {
+                        $updateData['available_balance'] = $walletAmount;
+                        $updateData['wallet_assigned'] = 1;
+                    }
+                    \Log::info('Updating existing mapping', [
+                        'employeeId' => $employeeId,
+                        'updateData' => $updateData
+                    ]);
                     DB::table('enrolment_mapping_master')
                         ->where('enrolment_id', $enrolmentId)
                         ->where('emp_id', $employeeId)
-                        ->update(['status' => 1, 'enrolment_period_id' => $portalId, 'updated_at' => now()]);
-
-                    // If no current mapping exists, continue (don't create new one)
+                        ->update($updateData);
                 } else {
                     // Employee doesn't exist in enrollment, create new mapping
-                    DB::table('enrolment_mapping_master')->insert([
+                    $insertData = [
                         'emp_id' => $employeeId,
                         'cmp_id' =>  $enrollmentPeriod->cmp_id, // Default to 1 if no session
                         'enrolment_id' => $enrolmentId,
@@ -4018,7 +4047,16 @@ class SuperAdminController extends Controller
                         'status' => 1,
                         'created_at' => now(),
                         'updated_at' => now()
+                    ];
+                    if ($walletAmount !== null) {
+                        $insertData['available_balance'] = $walletAmount;
+                        $insertData['wallet_assigned'] = 1;
+                    }
+                    \Log::info('Inserting new mapping', [
+                        'employeeId' => $employeeId,
+                        'insertData' => $insertData
                     ]);
+                    DB::table('enrolment_mapping_master')->insert($insertData);
                 }
             }
 
@@ -4041,8 +4079,7 @@ class SuperAdminController extends Controller
                     ->with('messageType', 'success');
             }
         } catch (\Exception $e) {
-
-            Log::error('Employee mapping failed: ' . $e->getMessage());
+            \Log::error('Employee mapping failed: ' . $e->getMessage());
             return redirect()->back()
                 ->with('message', 'Failed to assign employees. Please try again.')
                 ->with('messageType', 'error')
@@ -4388,6 +4425,7 @@ class SuperAdminController extends Controller
 
             // --- FETCH EXISTING ENROLLMENT DATA FOR EDIT MODE ---
             $enrollmentData = null;
+            $walletBalance = null;
             $mapping = \DB::table('enrolment_mapping_master')
                 ->where('emp_id', $employeeId)
                 ->where('enrolment_period_id', $enrollmentPeriodId)
@@ -4395,6 +4433,7 @@ class SuperAdminController extends Controller
                 ->where('status', 1)
                 ->first();
             if ($mapping) {
+                $walletBalance = $mapping->available_balance ?? null;
                 $enrollmentRows = \DB::table('new_enrolment_data')
                     ->where('enrolment_mapping_id', $mapping->id)
                     ->where('is_delete', 0)
@@ -4447,6 +4486,7 @@ class SuperAdminController extends Controller
                 'extraCoveragePlans' => $extraCoveragePlans,
                 'enrollmentStatements' => $enrollmentStatements,
                 'enrollmentData' => $enrollmentData,
+                'wallet_balance' => $walletBalance,
             ]);
         } catch (\Exception $e) {
             Log::error('Fill enrollment page failed: ' . $e->getMessage());
@@ -4495,6 +4535,8 @@ class SuperAdminController extends Controller
                 'selectedPlans' => 'nullable|array',
                 'extraCoverage' => 'nullable',
                 'premiumCalculations' => 'nullable|array',
+                'is_wallet' => 'nullable',
+                'wallet_used' => 'nullable',
             ]);
 
             \Log::info('🎯 Starting enrollment submission', [
@@ -4681,14 +4723,40 @@ class SuperAdminController extends Controller
             }
 
             // Update mapping master status if mapping exists
+            $walletDeducted = 0;
             if ($mappingId) {
+                $updateFields = [
+                    'submit_status' => 1,
+                    'updated_at' => now()
+                ];
+
+                // If wallet was used, deduct from available_balance and add to used_balance
+                $isWalletUsed = !empty($validated['is_wallet']) || !empty($validated['wallet_used']);
+                if ($isWalletUsed) {
+                    $mappingRow = DB::table('enrolment_mapping_master')->where('id', $mappingId)->first();
+                    if ($mappingRow) {
+                        $employeePayable = floatval($premiumCalc['employeePayable'] ?? 0);
+                        $availableBalance = floatval($mappingRow->available_balance ?? 0);
+                        $walletAmountUsed = min($employeePayable, $availableBalance);
+                        if ($walletAmountUsed > 0) {
+                            $updateFields['available_balance'] = max(0, $availableBalance - $walletAmountUsed);
+                            $updateFields['used_balance'] = floatval($mappingRow->used_balance ?? 0) + $walletAmountUsed;
+                            $walletDeducted = $walletAmountUsed;
+                            \Log::info('💳 Wallet deduction applied', [
+                                'mapping_id' => $mappingId,
+                                'wallet_amount_used' => $walletAmountUsed,
+                                'previous_available' => $availableBalance,
+                                'new_available' => $updateFields['available_balance'],
+                                'new_used' => $updateFields['used_balance'],
+                            ]);
+                        }
+                    }
+                }
+
                 $updated = DB::table('enrolment_mapping_master')
                     ->where('id', $mappingId)
                     ->where('emp_id', $employee->id)
-                    ->update([
-                        'submit_status' => 1,
-                        'updated_at' => now()
-                    ]);
+                    ->update($updateFields);
 
                 if ($updated > 0) {
                     \Log::info('📝 Mapping status updated', [
@@ -4715,13 +4783,33 @@ class SuperAdminController extends Controller
 
             // Send enrollment confirmation email (in background to avoid blocking)
             try {
+                $ratingConfig = $enrollmentDetail->rating_config ?? [];
+                $companyContribPerc = $ratingConfig['company_contribution_percentage']
+                    ?? $ratingConfig['company_contribution_percent']
+                    ?? 0;
+
                 $enrollmentData = [
-                    'employee' => $employee,
-                    'dependents' => $dependents,
-                    'base_premium' => $basePremium,
-                    'extra_coverage_premium' => $extraCoveragePremium,
-                    'company_contribution' => $companyContribution,
-                    'total_premium' => $premiumCalc['employeePayable'] ?? 0,
+                    'employee'                      => $employee,
+                    'dependents'                    => $dependents,
+                    'base_premium'                  => $basePremium,
+                    'topup_premium'                 => $premiumCalc['topupPremium'] ?? 0,
+                    'extra_coverage_premium'        => $extraCoveragePremium,
+                    'gst'                           => $premiumCalc['gst'] ?? 0,
+                    'gross_plus_gst'                => $premiumCalc['grossPlusGst'] ?? 0,
+                    'company_contribution'          => $companyContribution,
+                    'company_contribution_percentage' => $companyContribPerc,
+                    'wallet_deduction'              => $walletDeducted,
+                    'is_wallet'                     => $walletDeducted > 0,
+                    'total_premium'                 => $premiumCalc['employeePayable'] ?? 0,
+                    'policy_name'                   => $enrollmentDetail->corporate_enrolment_name ?? $enrollmentDetail->enrolment_name ?? null,
+                    'policy_start_date'             => $enrollmentDetail->policy_start_date ?? null,
+                    'policy_end_date'               => $enrollmentDetail->policy_end_date ?? null,
+                    'portal_name'                   => $enrollmentPeriod->enrolment_portal_name ?? null,
+                    'extra_coverage'                => $validated['extraCoverage'] ?? null,
+                    'selected_plans'                => $validated['selectedPlans'] ?? [],
+                    'proration_factor'              => $premiumCalc['prorationFactor'] ?? 1,
+                    'remaining_days'                => $premiumCalc['remainingDays'] ?? null,
+                    'total_policy_days'             => $premiumCalc['totalPolicyDays'] ?? null,
                 ];
 
                 // Queue email for async sending (recommended)
@@ -5121,6 +5209,87 @@ class SuperAdminController extends Controller
     /**
      * Download enrolled employee data as CSV for a given enrollment period
      */
+    /**
+     * Get employee enrollment detail as JSON for the View Detail modal
+     */
+    public function getEmployeeEnrolmentDetail($enrollmentPeriodId, $employeeId)
+    {
+        try {
+            $enrollmentPeriod = \DB::table('enrolment_period')->where('id', $enrollmentPeriodId)->first();
+            if (!$enrollmentPeriod) {
+                return response()->json(['error' => 'Enrollment period not found.'], 404);
+            }
+            $enrollmentDetail = \DB::table('enrolment_details')->where('id', $enrollmentPeriod->enrolment_id)->first();
+
+            // Get the mapping for this employee
+            $mapping = \DB::table('enrolment_mapping_master')
+                ->where('enrolment_id', $enrollmentDetail->id)
+                ->where('enrolment_period_id', $enrollmentPeriod->id)
+                ->where('emp_id', $employeeId)
+                ->first();
+
+            // Get employee details
+            $employee = \DB::table('company_employees')->where('id', $employeeId)->first();
+
+            // Get enrollment records
+            $enrolmentData = $mapping
+                ? \App\Models\NewEnrolmentData::where('emp_id', $employeeId)
+                ->where('enrolment_mapping_id', $mapping->id)
+                ->where('enrolment_portal_id', $enrollmentPeriod->id)
+                ->where('enrolment_id', $enrollmentDetail->id)
+                ->get()
+                : collect([]);
+
+            return response()->json([
+                'employee' => [
+                    'id'             => $employee->id ?? null,
+                    'full_name'      => $employee->full_name ?? '',
+                    'employees_code' => $employee->employees_code ?? '',
+                    'email'          => $employee->email ?? '',
+                    'designation'    => $employee->designation ?? '',
+                    'grade'          => $employee->grade ?? '',
+                    'gender'         => $employee->gender ?? '',
+                    'mobile'         => $employee->mobile ?? '',
+                    'login_status'   => isset($employee->first_login) ? ($employee->first_login == 1 ? 'Not Logged In' : 'Logged In') : 'N/A',
+                ],
+                'mapping' => $mapping ? [
+                    'submit_status'     => $mapping->submit_status,
+                    'available_balance' => $mapping->available_balance ?? 0,
+                    'used_balance'      => $mapping->used_balance ?? 0,
+                    'use_status'        => isset($mapping->use_status) ? ($mapping->use_status == 1 ? 'Used' : 'Not Used') : 'N/A',
+                    'view_status'       => isset($mapping->view_status) ? ($mapping->view_status == 1 ? 'Viewed' : 'Not Viewed') : 'N/A',
+                    'edit_option'       => isset($mapping->edit_option) ? ($mapping->edit_option == 1 ? 'Available' : 'Not Available') : 'N/A',
+                ] : null,
+                'enrolment_data' => $enrolmentData->map(function ($d) {
+                    return [
+                        'insured_name'                        => $d->insured_name,
+                        'relation'                            => $d->relation,
+                        'detailed_relation'                   => $d->detailed_relation,
+                        'gender'                              => $d->gender,
+                        'dob'                                 => $d->dob,
+                        'base_sum_insured'                    => $d->base_sum_insured,
+                        'base_plan_name'                      => $d->base_plan_name,
+                        'base_premium_on_company'             => $d->base_premium_on_company,
+                        'base_premium_on_employee'            => $d->base_premium_on_employee,
+                        'extra_coverage_plan_name'            => $d->extra_coverage_plan_name,
+                        'extra_coverage_premium_on_company'   => $d->extra_coverage_premium_on_company,
+                        'extra_coverage_premium_on_employee'  => $d->extra_coverage_premium_on_employee,
+                        'created_by'                          => $d->created_by,
+                        'updated_by'                          => $d->updated_by,
+                        'created_at'                          => $d->created_at,
+                        'updated_at'                          => $d->updated_at,
+                    ];
+                })->values(),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('getEmployeeEnrolmentDetail failed: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch enrollment detail.'], 500);
+        }
+    }
+
+    /**
+     * Download enrolled employee data as CSV for a given enrollment period
+     */
     public function downloadEnrolledData($enrollmentPeriodId)
     {
         try {
@@ -5166,6 +5335,14 @@ class SuperAdminController extends Controller
                         'Extra Coverage Plan Name' => $data->extra_coverage_plan_name,
                         'Extra Coverage Premium (Company)' => $data->extra_coverage_premium_on_company,
                         'Extra Coverage Premium (Employee)' => $data->extra_coverage_premium_on_employee,
+                        'Available Balance' => $mapping->available_balance ?? '',
+                        'Used Balance' => $mapping->used_balance ?? '',
+                        'Use Status' => isset($mapping->use_status) ? ($mapping->use_status == 1 ? 'Used' : 'Not Used') : '',
+                        'View Status' => isset($mapping->view_status) ? ($mapping->view_status == 1 ? 'Viewed' : 'Not Viewed') : '',
+                        'Edit' => isset($mapping->edit_option) ? ($mapping->edit_option == 1 ? 'Available' : 'Not Available') : '',
+                        'Initially Created By' => $data->created_by ?? '',
+                        'Last Updated By' => $data->updated_by ?? '',
+                        'Login Status' => ($employee && isset($employee->first_login)) ? ($employee->first_login == 1 ? 'Not Logged In' : 'Logged In') : '',
                         'Created At' => $data->created_at,
                         'Updated At' => $data->updated_at,
                     ];
