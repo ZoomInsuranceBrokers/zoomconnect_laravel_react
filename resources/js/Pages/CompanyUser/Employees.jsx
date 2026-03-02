@@ -3,7 +3,7 @@ import { router } from '@inertiajs/react';
 import CompanyUserLayout from '@/Layouts/CompanyUserLayout';
 import {
     FiSearch, FiFilter, FiDownload, FiX, FiChevronLeft, FiChevronRight,
-    FiUsers, FiUserCheck, FiUserX, FiUserPlus, FiCalendar, FiMail, 
+    FiUsers, FiUserCheck, FiUserX, FiUserPlus, FiCalendar, FiMail,
     FiPhone, FiMapPin, FiBriefcase, FiAward
 } from 'react-icons/fi';
 
@@ -73,7 +73,7 @@ export default function Employees({ user, employees, stats, filters, currentFilt
                 <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-blue-200/30 to-transparent blur-[100px] rounded-full"></div>
             </div>
 
-       
+
 
             {/* 70-30 Split Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
@@ -94,7 +94,7 @@ export default function Employees({ user, employees, stats, filters, currentFilt
                                 />
                             </div>
                             <div className="flex gap-2">
-                                <button 
+                                <button
                                     onClick={() => setShowFilterModal(true)}
                                     className="flex items-center gap-2 px-3 py-2 text-xs font-medium border border-gray-200 rounded-xl hover:bg-gray-50 bg-white transition-all"
                                 >
@@ -106,7 +106,7 @@ export default function Employees({ user, employees, stats, filters, currentFilt
                                         </span>
                                     )}
                                 </button>
-                                <button 
+                                <button
                                     onClick={exportToCSV}
                                     className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-[#2d2d2d] text-white rounded-xl hover:bg-[#1f1f1f] transition-all"
                                 >
@@ -117,11 +117,11 @@ export default function Employees({ user, employees, stats, filters, currentFilt
                         </div>
                     </div>
 
-                    {/* Employees Table */}
+                    {/* Employees Table: sticky header, scrollable body */}
                     <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-2xl shadow-sm overflow-hidden">
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50/80 border-b border-gray-200">
+                                <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">Full Name</th>
                                         <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">Emp Code</th>
@@ -134,22 +134,17 @@ export default function Employees({ user, employees, stats, filters, currentFilt
                                 <tbody className="divide-y divide-gray-100">
                                     {employees?.data?.length > 0 ? (
                                         employees.data.map((employee) => (
-                                            <tr 
-                                                key={employee.id} 
+                                            <tr
+                                                key={employee.id}
                                                 onClick={() => viewEmployeeDetails(employee)}
                                                 className="hover:bg-purple-50/50 transition-colors cursor-pointer"
                                             >
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-[11px] font-bold">
-                                                            {employee.first_name?.[0]}{employee.last_name?.[0]}
-                                                        </div>
                                                         <div className="leading-tight">
                                                             <div className="text-xs font-medium text-gray-900">{employee.full_name}</div>
                                                             <div className="text-[10px] mt-0.5">
-                                                                <span className={`px-2 py-0.5 inline-flex text-[10px] leading-5 font-semibold rounded-full ${
-                                                                    employee.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                                }`}>
+                                                                <span className={`px-2 py-0.5 inline-flex text-[10px] leading-5 font-semibold rounded-full ${employee.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                                                     {employee.is_active ? 'Active' : 'Inactive'}
                                                                 </span>
                                                             </div>
@@ -159,9 +154,7 @@ export default function Employees({ user, employees, stats, filters, currentFilt
                                                 <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-700 font-mono">{employee.employees_code || 'N/A'}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-600">{employee.email}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-600">{employee.location?.branch_name || 'N/A'}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-600">
-                                                    {employee.date_of_joining ? new Date(employee.date_of_joining).toLocaleDateString() : 'N/A'}
-                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-600">{employee.date_of_joining ? new Date(employee.date_of_joining).toLocaleDateString() : 'N/A'}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-600">{employee.designation || 'N/A'}</td>
                                             </tr>
                                         ))
@@ -176,45 +169,44 @@ export default function Employees({ user, employees, stats, filters, currentFilt
 
                         {/* Pagination */}
                         {employees?.data?.length > 0 && (
-                            <div className="bg-gray-50/80 px-4 py-3 flex items-center justify-between border-t border-gray-200">
-                                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                                    <div>
-                                        <p className="text-xs text-gray-700">
-                                            Showing <span className="font-medium">{employees.from}</span> to{' '}
-                                            <span className="font-medium">{employees.to}</span> of{' '}
-                                            <span className="font-medium">{employees.total}</span> employees
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                            <div className="bg-gray-50/80 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200">
+                                <div>
+                                    <p className="text-xs text-gray-700">
+                                        Showing <span className="font-medium">{employees.from}</span> to{' '}
+                                        <span className="font-medium">{employees.to}</span> of{' '}
+                                        <span className="font-medium">{employees.total}</span> employees
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto max-w-full">
+                                    <button
+                                        onClick={() => router.visit(employees.prev_page_url)}
+                                        disabled={!employees.prev_page_url}
+                                        className="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        <FiChevronLeft className="h-4 w-4" />
+                                    </button>
+                                    
+                                    <div className="bg-white/80 border border-gray-300 rounded-full px-2 sm:px-4 py-2 flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                                        {employees.links?.filter(link => link.label !== '&laquo; Previous' && link.label !== 'Next &raquo;').map((link, index) => (
                                             <button
-                                                onClick={() => router.visit(employees.prev_page_url)}
-                                                disabled={!employees.prev_page_url}
-                                                className="relative inline-flex items-center px-2 py-1.5 rounded-l-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                                            >
-                                                <FiChevronLeft className="h-3 w-3" />
-                                            </button>
-                                            {employees.links?.filter(link => link.label !== '&laquo; Previous' && link.label !== 'Next &raquo;').map((link, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => router.visit(link.url)}
-                                                    className={`relative inline-flex items-center px-3 py-1.5 border text-xs font-medium ${
-                                                        link.active
-                                                            ? 'z-10 bg-purple-50 border-purple-500 text-purple-600'
-                                                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                key={index}
+                                                onClick={() => router.visit(link.url)}
+                                                className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs font-semibold transition-all flex items-center justify-center flex-shrink-0 ${link.active
+                                                        ? 'bg-purple-500 text-white'
+                                                        : 'text-gray-600 hover:bg-gray-100'
                                                     }`}
-                                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                                />
-                                            ))}
-                                            <button
-                                                onClick={() => router.visit(employees.next_page_url)}
-                                                disabled={!employees.next_page_url}
-                                                className="relative inline-flex items-center px-2 py-1.5 rounded-r-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                                            >
-                                                <FiChevronRight className="h-3 w-3" />
-                                            </button>
-                                        </nav>
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        ))}
                                     </div>
+
+                                    <button
+                                        onClick={() => router.visit(employees.next_page_url)}
+                                        disabled={!employees.next_page_url}
+                                        className="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        <FiChevronRight className="h-4 w-4" />
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -289,7 +281,7 @@ export default function Employees({ user, employees, stats, filters, currentFilt
                 </div>
             </div>
 
-              {showFilterModal && (
+            {showFilterModal && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="w-full max-w-3xl bg-gradient-to-br from-white/80 to-white/70 rounded-3xl shadow-2xl ring-1 ring-black/5 overflow-hidden">
                         {/* Header */}
@@ -314,14 +306,14 @@ export default function Employees({ user, employees, stats, filters, currentFilt
                         {/* Active chips */}
                         <div className="px-6 py-3 border-b border-white/30 bg-white/60">
                             <div className="flex flex-wrap gap-2">
-                                {Object.entries(filterValues).filter(([k,v]) => v !== undefined && v !== null && v !== '').map(([k,v]) => (
+                                {Object.entries(filterValues).filter(([k, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => (
                                     <div key={k} className="flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs">
-                                        <span className="font-medium capitalize">{k.replace('_',' ')}</span>
+                                        <span className="font-medium capitalize">{k.replace('_', ' ')}</span>
                                         <span className="opacity-80">{v}</span>
                                         <button onClick={() => handleFilterChange(k, '')} className="ml-1 text-purple-600/80">×</button>
                                     </div>
                                 ))}
-                                {Object.entries(filterValues).filter(([k,v]) => v !== undefined && v !== null && v !== '').length === 0 && (
+                                {Object.entries(filterValues).filter(([k, v]) => v !== undefined && v !== null && v !== '').length === 0 && (
                                     <div className="text-xs text-gray-500">No filters selected</div>
                                 )}
                             </div>
@@ -430,17 +422,17 @@ export default function Employees({ user, employees, stats, filters, currentFilt
             {showEmployeeModal && selectedEmployee && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-5 flex items-center justify-between">
+                        <div className="sticky top-0 bg-[#934790] px-6 py-5 flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-lg font-bold border-2 border-white/30">
+                                <div className="w-14 h-14 bg-[#f2d7b3]/40 backdrop-blur-sm rounded-full flex items-center justify-center text-[#8b6e47] text-lg font-bold border-2 border-[#d4a574]/50">
                                     {selectedEmployee.first_name?.[0]}{selectedEmployee.last_name?.[0]}
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-semibold text-white">{selectedEmployee.full_name}</h3>
-                                    <p className="text-sm text-white/80">{selectedEmployee.designation || 'Employee'}</p>
+                                    <h3 className="text-xl font-semibold text-[#4a3728]">{selectedEmployee.full_name}</h3>
+                                    <p className="text-sm text-[#6b5037]/80">{selectedEmployee.designation || 'Employee'}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setShowEmployeeModal(false)} className="text-white/80 hover:text-white">
+                            <button onClick={() => setShowEmployeeModal(false)} className="text-[#6b5037]/80 hover:text-[#4a3728]">
                                 <FiX className="w-6 h-6" />
                             </button>
                         </div>

@@ -3225,7 +3225,8 @@ class EmployeeAuthController extends Controller
                     'city' => 'city',
                     'state' => 'state',
                     'pincode' => 'pincode',
-                    'phone' => 'contact_no',
+                    'phone' => 'landLineNumber',
+                    'mobile' => 'landLineNumber2',
                 ]
             ],
             65 => [ // Vidal
@@ -3247,12 +3248,14 @@ class EmployeeAuthController extends Controller
                 'table' => 'fhpl_network_hospitals',
                 'columns' => [
                     'policy_id' => 'policy_id',
-                    'hospital_name' => 'provider_name',
-                    'address_line_1' => 'address',
-                    'city' => 'city',
-                    'state' => 'state',
+                    'hospital_name' => 'hospital_name',
+                    'address_line_1' => 'address_line_1',
+                    'address_line_2' => 'address_line_2',
+                    'city' => 'city_name',
+                    'state' => 'state_name',
                     'pincode' => 'pincode',
-                    'phone' => 'contact_no',
+                    'phone' => 'phone_number',
+                    'email' => 'email',
                 ]
             ],
             67 => [ // Mediassist
@@ -3280,6 +3283,8 @@ class EmployeeAuthController extends Controller
                     'city' => 'city',
                     'state' => 'state',
                     'pincode' => 'pincode',
+                    'phone' => 'phone',
+                    'mobile' => 'mobile',
                 ]
             ],
             69 => [ // Care
@@ -3298,11 +3303,13 @@ class EmployeeAuthController extends Controller
                 'table' => 'ewa_network_hospitals',
                 'columns' => [
                     'policy_id' => 'policy_id',
-                    'hospital_name' => 'provider_name',
-                    'address_line_1' => 'address',
-                    'city' => 'city',
-                    'state' => 'state',
+                    'hospital_name' => 'hospital_name',
+                    'address_line_1' => 'address_line_1',
+                    'address_line_2' => 'address_line_2',
+                    'city' => 'city_name',
+                    'state' => 'state_name',
                     'pincode' => 'pincode',
+                    'phone' => 'phone_number',
                 ]
             ],
             73 => [ // Ericson
