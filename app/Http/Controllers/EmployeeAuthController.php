@@ -198,15 +198,26 @@ class EmployeeAuthController extends Controller
         }
 
         // Check password
-        if ($employee->pwd !== $request->password) {
+        // Try with Hash::check first (for hashed passwords)
+        $passwordValid = Hash::check($request->password, $employee->pwd);
+        
+        // If hash check fails, try direct comparison (for legacy non-hashed passwords)
+        if (!$passwordValid && $employee->pwd === $request->password) {
+            $passwordValid = true;
+        }
+
+        if (!$passwordValid) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid password. Please try again.'
             ], 401);
         }
 
+        // Store login type for first login flow
+        Session::put('employee_login_type', 'employee_code');
+
         // Login successful - authenticate user
-        return $this->authenticateEmployee($employee);
+        return $this->authenticateEmployee($employee, 'employee_code');
     }
 
     /**
@@ -252,7 +263,7 @@ class EmployeeAuthController extends Controller
     /**
      * Authenticate employee and create session
      */
-    private function authenticateEmployee($employee)
+    private function authenticateEmployee($employee, $loginMethod = null)
     {
         // Log the login attempt
         try {
@@ -264,6 +275,11 @@ class EmployeeAuthController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to log employee login: ' . $e->getMessage());
+        }
+
+        // Determine login method from session if not provided
+        if (!$loginMethod) {
+            $loginMethod = Session::get('employee_login_type', 'email');
         }
 
         // Set comprehensive employee session
@@ -289,7 +305,18 @@ class EmployeeAuthController extends Controller
             'is_active' => $employee->is_active,
             'first_login' => $employee->first_login,
             'set_profile' => $employee->set_profile,
+            'login_method' => $loginMethod,
         ]);
+
+        // Check if this is first login
+        if ($employee->first_login == 1) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Please complete your profile setup.',
+                'first_login' => true,
+                'redirect' => route('employee.first.login')
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -408,6 +435,299 @@ class EmployeeAuthController extends Controller
 
         // Authenticate employee
         return $this->authenticateEmployee($employee);
+    }
+
+    /**
+     * Show First Login Page
+     */
+    public function firstLogin()
+    {
+        $employee = Session::get('employee_user');
+        
+        if (!$employee) {
+            return redirect()->route('employee.login')->with('error', 'Please login first.');
+        }
+
+        // If first_login is 0, redirect to dashboard
+        if ($employee['first_login'] == 0) {
+            return redirect()->route('employee.dashboard');
+        }
+
+        return Inertia::render('Employee/FirstLogin', [
+            'employee' => $employee
+        ]);
+    }
+
+    /**
+     * Send Mobile OTP for First Login
+     */
+    public function sendMobileOtpFirstLogin(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required|digits:10'
+        ]);
+
+        $employee = Session::get('employee_user');
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expired. Please login again.'
+            ], 401);
+        }
+
+        // Check if mobile number is already taken by another active employee
+        $existingEmployee = CompanyEmployee::where('mobile', $request->mobile)
+            ->where('is_active', 1)
+            ->where('is_delete', 0)
+            ->where('id', '!=', $employee['id'])
+            ->first();
+
+        if ($existingEmployee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This mobile number is already registered with another employee.'
+            ], 400);
+        }
+
+        // Generate 4-digit OTP
+        $otp = rand(1000, 9999);
+        
+        // Store OTP in session with 15 minute expiry
+        Session::put('first_login_mobile_otp', $otp);
+        Session::put('first_login_mobile_otp_expires', now()->addMinutes(15));
+        Session::put('first_login_mobile', $request->mobile);
+
+        // Send OTP via SMS API
+        try {
+            $smsMessage = urlencode("The OTP to verify your mobile number for Zoom Connect is {$otp}. Do not share this OTP with anyone for security reasons. Valid for 15 minutes.");
+            $apiUrl = "https://sms.staticking.com/index.php/smsapi/httpapi/?secret=u3ybdkzT4mOsUyPLDFG5&sender=Zoomco&tempid=1707165043797041448&receiver={$request->mobile}&route=TA&msgtype=1&sms={$smsMessage}";
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $apiUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            // Log the API call
+            Log::info('First Login Mobile OTP API Call', [
+                'mobile' => $request->mobile,
+                'otp' => $otp,
+                'response' => $response,
+                'http_code' => $httpCode
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'OTP sent successfully to your mobile number.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send first login mobile OTP: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send OTP. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Verify Mobile OTP for First Login
+     */
+    public function verifyMobileOtpFirstLogin(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required|digits:10',
+            'otp' => 'required|digits:4'
+        ]);
+
+        $employee = Session::get('employee_user');
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expired. Please login again.'
+            ], 401);
+        }
+
+        $storedOtp = Session::get('first_login_mobile_otp');
+        $otpExpires = Session::get('first_login_mobile_otp_expires');
+        $storedMobile = Session::get('first_login_mobile');
+
+        if (!$storedOtp || !$otpExpires || !$storedMobile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP not found. Please request a new OTP.'
+            ], 400);
+        }
+
+        if (now()->greaterThan($otpExpires)) {
+            Session::forget(['first_login_mobile_otp', 'first_login_mobile_otp_expires', 'first_login_mobile']);
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP has expired. Please request a new one.'
+            ], 400);
+        }
+
+        if ($request->mobile !== $storedMobile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mobile number does not match.'
+            ], 400);
+        }
+
+        if ($request->otp != $storedOtp) {
+            // Allow developer bypass OTP '0000' only in non-production environments
+            if ($request->otp === '0000' && env('APP_ENV') !== 'production') {
+                Log::warning('First Login Mobile OTP bypass used', [
+                    'mobile' => $request->mobile,
+                    'employee_id' => $employee['id'],
+                    'ip' => $request->ip() ?? 'unknown'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid OTP. Please try again.'
+                ], 400);
+            }
+        }
+
+        // Update employee mobile number
+        try {
+            $employeeModel = CompanyEmployee::find($employee['id']);
+            if ($employeeModel) {
+                $employeeModel->mobile = $request->mobile;
+                $employeeModel->save();
+
+                // Update session
+                $employee['mobile'] = $request->mobile;
+                Session::put('employee_user', $employee);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to update employee mobile: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update mobile number. Please try again.'
+            ], 500);
+        }
+
+        // Clear OTP session data
+        Session::forget(['first_login_mobile_otp', 'first_login_mobile_otp_expires', 'first_login_mobile']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mobile number verified successfully!'
+        ]);
+    }
+
+    /**
+     * Reset Password for First Login
+     */
+    public function resetPasswordFirstLogin(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|min:6',
+            'confirm_password' => 'required|same:password'
+        ]);
+
+        $employee = Session::get('employee_user');
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expired. Please login again.'
+            ], 401);
+        }
+
+        try {
+            $employeeModel = CompanyEmployee::find($employee['id']);
+            if ($employeeModel) {
+                // Update password and set first_login to 0
+                $employeeModel->pwd = Hash::make($request->password);
+                $employeeModel->first_login = 0;
+                $employeeModel->save();
+
+                // Update session
+                $employee['first_login'] = 0;
+                Session::put('employee_user', $employee);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Password set successfully! Redirecting to dashboard...',
+                    'redirect' => route('employee.dashboard')
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Employee not found.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to reset password for first login: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to set password. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Update Mobile for First Login (for mobile login users who don't need OTP)
+     */
+    public function updateMobileFirstLogin(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required|digits:10'
+        ]);
+
+        $employee = Session::get('employee_user');
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expired. Please login again.'
+            ], 401);
+        }
+
+        // Check if mobile number is already taken by another active employee
+        $existingEmployee = CompanyEmployee::where('mobile', $request->mobile)
+            ->where('is_active', 1)
+            ->where('is_delete', 0)
+            ->where('id', '!=', $employee['id'])
+            ->first();
+
+        if ($existingEmployee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This mobile number is already registered with another employee.'
+            ], 400);
+        }
+
+        try {
+            $employeeModel = CompanyEmployee::find($employee['id']);
+            if ($employeeModel) {
+                $employeeModel->mobile = $request->mobile;
+                $employeeModel->save();
+
+                // Update session
+                $employee['mobile'] = $request->mobile;
+                Session::put('employee_user', $employee);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Mobile number updated successfully!'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Employee not found.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to update mobile for first login: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update mobile number. Please try again.'
+            ], 500);
+        }
     }
 
     /**

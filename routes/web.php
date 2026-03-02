@@ -99,7 +99,16 @@ Route::middleware(['redirect.if.employee'])->group(function () {
 
 // Employee Authenticated Routes
 Route::middleware(['employee.auth'])->prefix('employee')->group(function () {
-    Route::get('/dashboard', [EmployeeAuthController::class, 'dashboard'])->name('employee.dashboard');
+    // First Login Routes (no first_login check middleware)
+    Route::get('/first-login', [EmployeeAuthController::class, 'firstLogin'])->name('employee.first.login');
+    Route::post('/first-login/send-mobile-otp', [EmployeeAuthController::class, 'sendMobileOtpFirstLogin'])->name('employee.first.login.send.mobile.otp');
+    Route::post('/first-login/verify-mobile-otp', [EmployeeAuthController::class, 'verifyMobileOtpFirstLogin'])->name('employee.first.login.verify.mobile.otp');
+    Route::post('/first-login/update-mobile', [EmployeeAuthController::class, 'updateMobileFirstLogin'])->name('employee.first.login.update.mobile');
+    Route::post('/first-login/reset-password', [EmployeeAuthController::class, 'resetPasswordFirstLogin'])->name('employee.first.login.reset.password');
+
+    // Protected routes (require first_login to be 0)
+    Route::middleware(['check.first.login'])->group(function () {
+        Route::get('/dashboard', [EmployeeAuthController::class, 'dashboard'])->name('employee.dashboard');
     Route::get('/home', [EmployeeAuthController::class, 'home'])->name('employee.home');
     Route::get('/wellness', [EmployeeAuthController::class, 'wellness'])->name('employee.wellness');
     Route::get('/wellness/service/{wellnessId}', [EmployeeAuthController::class, 'openWellnessService'])->name('employee.wellness.service');
@@ -140,6 +149,7 @@ Route::middleware(['employee.auth'])->prefix('employee')->group(function () {
 
     Route::post('/logout', [EmployeeAuthController::class, 'logout'])->name('employee.logout');
     Route::post('/download-ecard', [EmployeeAuthController::class, 'downloadECard'])->name('employee.download.ecard');
+    });
 });
 
 ////////////////////////////////////////////////////////////////////////////////
