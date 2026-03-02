@@ -29,6 +29,7 @@ export default function Step2ChoosePlans({
     updateFormData,
     onNext,
     onPrevious,
+    available_balance = 0, // comes from wallet_balance (available_balance in enrolment_mapping_master)
 }) {
     // Note: debug logging referencing `selection` is placed later,
     // after `selection` is declared to avoid TDZ (temporal dead zone) errors.
@@ -1094,7 +1095,7 @@ export default function Step2ChoosePlans({
             </div>
 
             {/* Premium Summary component (shared) */}
-            <PremiumSummary calc={calc} ratingConfig={ratingConfig} selectedPlanObj={selectedPlanObj} baseSI={baseSI} />
+            <PremiumSummary calc={calc} ratingConfig={ratingConfig} selectedPlanObj={selectedPlanObj} baseSI={baseSI} wallet_used={!!selection.wallet} available_balance={available_balance} />
 
             {/* Plans list */}
             <div className="space-y-4">

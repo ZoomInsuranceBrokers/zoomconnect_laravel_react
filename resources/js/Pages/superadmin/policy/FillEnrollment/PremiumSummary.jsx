@@ -1,10 +1,10 @@
 import React from 'react';
 
-export default function PremiumSummary({ calc = {}, ratingConfig = {}, selectedPlanObj = null, baseSI = null }) {
+export default function PremiumSummary({ calc = {}, ratingConfig = {}, selectedPlanObj = null, baseSI = null, wallet_used = false, available_balance = 0 }) {
   const formatCurrency = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(amount || 0));
 
   const ratorLabel = String(ratingConfig.plan_type || ratingConfig.rator_type || 'simple');
-  
+
   // Extract pro-rata information
   const prorationFactor = calc.prorationFactor || calc.proration_factor || 1;
   const remainingDays = calc.remainingDays || calc.remaining_days || 0;
@@ -32,9 +32,15 @@ export default function PremiumSummary({ calc = {}, ratingConfig = {}, selectedP
   const companyContributionAmount = (calc.companyContributionAmount !== undefined && calc.companyContributionAmount !== null)
     ? Number(calc.companyContributionAmount)
     : (companyPerc > 0 ? Math.round(grossPlusGst * (companyPerc / 100)) : 0);
-  const employeePayable = (calc.employeePayable !== undefined && calc.employeePayable !== null)
+  let employeePayable = (calc.employeePayable !== undefined && calc.employeePayable !== null)
     ? Number(calc.employeePayable)
     : Math.max(0, grossPlusGst - companyContributionAmount);
+
+  let walletDeduction = 0;
+  if (wallet_used && available_balance > 0) {
+    walletDeduction = Math.min(employeePayable, Number(available_balance));
+    employeePayable = Math.max(0, employeePayable - walletDeduction);
+  }
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
@@ -94,6 +100,12 @@ export default function PremiumSummary({ calc = {}, ratingConfig = {}, selectedP
             <span className="font-semibold text-green-600">-{formatCurrency(companyContributionAmount)}</span>
           </div>
         )}
+        {wallet_used && walletDeduction > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-blue-700">Wallet Deduction</span>
+            <span className="font-semibold text-purple-700">- {formatCurrency(walletDeduction)}</span>
+          </div>
+        )}
         <div className="flex items-center justify-between pt-2 border-t border-blue-300">
           <span className="text-lg font-medium text-blue-900">Employee Payable</span>
           <span className="text-xl font-bold text-blue-900">{formatCurrency(employeePayable)}</span>
@@ -101,7 +113,11 @@ export default function PremiumSummary({ calc = {}, ratingConfig = {}, selectedP
       </div>
 
       <div className="mt-3 pt-3 border-t border-blue-200 text-xs text-gray-700">
-        <p className="font-medium">Calculation: ({formatCurrency(basePremium)} + {formatCurrency(topupPremium)} + {formatCurrency(extraCoveragePremium)}) + GST 18% = {formatCurrency(grossPlusGst)} - Company {companyPerc}% = {formatCurrency(employeePayable)}</p>
+        <p className="font-medium">
+          Calculation: ({formatCurrency(basePremium)} + {formatCurrency(topupPremium)} + {formatCurrency(extraCoveragePremium)}) + GST 18% = {formatCurrency(grossPlusGst)} - Company {companyPerc}%
+          {wallet_used && walletDeduction > 0 ? ` - Wallet ${formatCurrency(walletDeduction)}` : ''}
+          = {formatCurrency(employeePayable)}
+        </p>
       </div>
     </div>
   );

@@ -76,7 +76,7 @@ const FamilyIcons = {
         </div>
     ),
     others: (
-         <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center">
             <img
                 src="/assets/images/enrolment/others.png"
                 alt="Others"
@@ -88,13 +88,14 @@ const FamilyIcons = {
 };
 
 export default function CreateEnrollment({ companies, messageTemplates }) {
-        const { darkMode } = useTheme();
+    const { darkMode } = useTheme();
     const [step, setStep] = useState(1);
     const [previewTemplate, setPreviewTemplate] = useState(null);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [stepErrors, setStepErrors] = useState({});
     const [isValidating, setIsValidating] = useState(false);
     const [gradeInputValue, setGradeInputValue] = useState('');
+    const [isWallet, setIsWallet] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         // Basic Details
@@ -103,6 +104,7 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
         corporate_enrolment_name: '',
         policy_start_date: '',
         policy_end_date: '',
+        is_wallet: 0,
 
         // Family Definition
         family_defination: {
@@ -666,7 +668,7 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
 
         console.log('Validating step:', step);
 
-        switch(step) {
+        switch (step) {
             case 1:
                 validationErrors = validateStep1();
                 break;
@@ -725,15 +727,13 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
         <div className="flex items-center justify-center mb-8">
             {[1, 2, 3, 4, 5, 6].map((stepNum) => (
                 <React.Fragment key={stepNum}>
-                    <div className={`flex items-center justify-center w-8  md:w-8 md:h-8 rounded-full ${
-                        step >= stepNum ? 'bg-[#934790] text-white' : 'bg-gray-200 text-gray-600'
-                    }`}>
+                    <div className={`flex items-center justify-center w-8  md:w-8 md:h-8 rounded-full ${step >= stepNum ? 'bg-[#934790] text-white' : 'bg-gray-200 text-gray-600'
+                        }`}>
                         {stepNum}
                     </div>
                     {stepNum < 6 && (
-                        <div className={`w-12 h-1 ${
-                            step > stepNum ? 'bg-[#934790]' : 'bg-gray-200'
-                        }`} />
+                        <div className={`w-12 h-1 ${step > stepNum ? 'bg-[#934790]' : 'bg-gray-200'
+                            }`} />
                     )}
                 </React.Fragment>
             ))}
@@ -755,7 +755,7 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                     {/* Step Indicator */}
                     {renderStepIndicator()}
 
-                    <form onSubmit={handleSubmit} className={`rounded-lg border p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}> 
+                    <form onSubmit={handleSubmit} className={`rounded-lg border p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                         {/* Step 1: Basic Information */}
                         {step === 1 && (
                             <div>
@@ -876,9 +876,8 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                         const memberTitle = memberType.charAt(0).toUpperCase() + memberType.slice(1).replace(/_/g, ' ');
 
                                         return (
-                                            <div key={memberType} className={`border-2 rounded-lg p-4 transition-all duration-200 ${
-                                                isEnabled ? 'border-[#934790] bg-purple-50' : 'border-gray-200 bg-white'
-                                            }`}>
+                                            <div key={memberType} className={`border-2 rounded-lg p-4 transition-all duration-200 ${isEnabled ? 'border-[#934790] bg-purple-50' : 'border-gray-200 bg-white'
+                                                }`}>
                                                 <div className="text-center mb-4">
                                                     {icon}
                                                     <h3 className="text-sm font-medium text-gray-900 mt-2">{memberTitle}</h3>
@@ -1010,6 +1009,25 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                     </div>
                                 )}
 
+                                {/* Is Wallet Toggle */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                                        Is Wallet
+                                    </label>
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            id="isWalletToggle"
+                                            checked={isWallet}
+                                            onChange={e => {
+                                                setIsWallet(e.target.checked);
+                                                setData('is_wallet', e.target.checked ? 1 : 0);
+                                            }}
+                                            className="toggle-checkbox mr-2"
+                                        />
+                                        <span className="text-sm">{isWallet ? 'Enabled' : 'Disabled'}</span>
+                                    </div>
+                                </div>
                                 {/* Plan Type Selection */}
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -1314,242 +1332,242 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                     <div>
                                         <div className="flex items-center justify-between mb-4">
                                             <h3 className="text-md font-medium text-gray-900">Plan Options</h3>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const newPlan = {
-                                                    id: Date.now(),
-                                                    plan_name: '',
-                                                    sum_insured: '',
-                                                    premium_amount: '',
-                                                    age_brackets: []
-                                                };
-                                                setData('rating_config', {
-                                                    ...data.rating_config,
-                                                    plans: [...data.rating_config.plans, newPlan]
-                                                });
-                                            }}
-                                            className="px-4 py-2 bg-[#934790] text-white rounded-lg hover:bg-[#7a3a78] transition-colors"
-                                        >
-                                            Add Plan
-                                        </button>
-                                    </div>
-
-                                    {stepErrors.plans && (
-                                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                                            <p className="text-red-600 text-sm">{stepErrors.plans}</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newPlan = {
+                                                        id: Date.now(),
+                                                        plan_name: '',
+                                                        sum_insured: '',
+                                                        premium_amount: '',
+                                                        age_brackets: []
+                                                    };
+                                                    setData('rating_config', {
+                                                        ...data.rating_config,
+                                                        plans: [...data.rating_config.plans, newPlan]
+                                                    });
+                                                }}
+                                                className="px-4 py-2 bg-[#934790] text-white rounded-lg hover:bg-[#7a3a78] transition-colors"
+                                            >
+                                                Add Plan
+                                            </button>
                                         </div>
-                                    )}
 
-                                    <div className="space-y-4">
-                                        {data.rating_config.plans.map((plan, index) => (
-                                            <div key={plan.id} className="border border-gray-200 rounded-lg p-4">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <h4 className="text-sm font-medium text-gray-900">
-                                                        {plan.plan_name ? `${plan.plan_name}` : `Plan ${index + 1}`}
-                                                    </h4>
-                                                    {data.rating_config.plans.length > 1 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const updatedPlans = data.rating_config.plans.filter((_, i) => i !== index);
-                                                                setData('rating_config', {
-                                                                    ...data.rating_config,
-                                                                    plans: updatedPlans
-                                                                });
-                                                            }}
-                                                            className="text-red-600 hover:text-red-800"
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    )}
-                                                </div>
+                                        {stepErrors.plans && (
+                                            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                                <p className="text-red-600 text-sm">{stepErrors.plans}</p>
+                                            </div>
+                                        )}
 
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Plan Name *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={plan.plan_name}
-                                                            onChange={(e) => {
-                                                                const updatedPlans = [...data.rating_config.plans];
-                                                                updatedPlans[index].plan_name = e.target.value;
-                                                                setData('rating_config', {
-                                                                    ...data.rating_config,
-                                                                    plans: updatedPlans
-                                                                });
-                                                            }}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
-                                                            placeholder="e.g., Gold Plan, Basic Plan"
-                                                        />
-                                                        {stepErrors[`plan_${index}_name`] && (
-                                                            <p className="text-red-600 text-sm mt-1">{stepErrors[`plan_${index}_name`]}</p>
-                                                        )}
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Sum Insured (₹)
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            value={plan.sum_insured}
-                                                            onChange={(e) => {
-                                                                const updatedPlans = [...data.rating_config.plans];
-                                                                updatedPlans[index].sum_insured = e.target.value;
-                                                                setData('rating_config', {
-                                                                    ...data.rating_config,
-                                                                    plans: updatedPlans
-                                                                });
-                                                            }}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
-                                                            placeholder="e.g., 500000"
-                                                        />
-                                                        {stepErrors[`plan_${index}_sum_insured`] && (
-                                                            <p className="text-red-600 text-sm mt-1">{stepErrors[`plan_${index}_sum_insured`]}</p>
-                                                        )}
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Base Premium (₹)
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            step="0.01"
-                                                            value={plan.premium_amount}
-                                                            onChange={(e) => {
-                                                                const updatedPlans = [...data.rating_config.plans];
-                                                                updatedPlans[index].premium_amount = e.target.value;
-                                                                setData('rating_config', {
-                                                                    ...data.rating_config,
-                                                                    plans: updatedPlans
-                                                                });
-                                                            }}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
-                                                            placeholder="e.g., 1200.00"
-                                                        />
-                                                        {stepErrors[`plan_${index}_premium`] && (
-                                                            <p className="text-red-600 text-sm mt-1">{stepErrors[`plan_${index}_premium`]}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Age-based configuration */}
-                                                {data.rating_config.plan_type === 'age_based' && (
-                                                    <div className="mt-4">
-                                                        <div className="flex items-center justify-between mb-3">
-                                                            <label className="text-sm font-medium text-gray-700">
-                                                                Age-Based Premium Brackets
-                                                            </label>
+                                        <div className="space-y-4">
+                                            {data.rating_config.plans.map((plan, index) => (
+                                                <div key={plan.id} className="border border-gray-200 rounded-lg p-4">
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <h4 className="text-sm font-medium text-gray-900">
+                                                            {plan.plan_name ? `${plan.plan_name}` : `Plan ${index + 1}`}
+                                                        </h4>
+                                                        {data.rating_config.plans.length > 1 && (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
-                                                                    const updatedPlans = [...data.rating_config.plans];
-                                                                    if (!updatedPlans[index].age_brackets) {
-                                                                        updatedPlans[index].age_brackets = [];
-                                                                    }
-                                                                    updatedPlans[index].age_brackets.push({
-                                                                        id: Date.now(),
-                                                                        min_age: '',
-                                                                        max_age: '',
-                                                                        premium_amount: ''
-                                                                    });
+                                                                    const updatedPlans = data.rating_config.plans.filter((_, i) => i !== index);
                                                                     setData('rating_config', {
                                                                         ...data.rating_config,
                                                                         plans: updatedPlans
                                                                     });
                                                                 }}
-                                                                className="text-sm text-[#934790] hover:text-[#7a3a78]"
+                                                                className="text-red-600 hover:text-red-800"
                                                             >
-                                                                Add Age Bracket
+                                                                Remove
                                                             </button>
-                                                        </div>
-
-                                                        {plan.age_brackets?.map((bracket, bracketIndex) => (
-                                                            <div key={bracket.id} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3 p-3 bg-gray-50 rounded">
-                                                                <div>
-                                                                    <label className="block text-xs text-gray-600 mb-1">Min Age</label>
-                                                                    <input
-                                                                        type="number"
-                                                                        placeholder="18"
-                                                                        value={bracket.min_age}
-                                                                        onChange={(e) => {
-                                                                            const updatedPlans = [...data.rating_config.plans];
-                                                                            updatedPlans[index].age_brackets[bracketIndex].min_age = e.target.value;
-                                                                            setData('rating_config', {
-                                                                                ...data.rating_config,
-                                                                                plans: updatedPlans
-                                                                            });
-                                                                        }}
-                                                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="block text-xs text-gray-600 mb-1">Max Age</label>
-                                                                    <input
-                                                                        type="number"
-                                                                        placeholder="30"
-                                                                        value={bracket.max_age}
-                                                                        onChange={(e) => {
-                                                                            const updatedPlans = [...data.rating_config.plans];
-                                                                            updatedPlans[index].age_brackets[bracketIndex].max_age = e.target.value;
-                                                                            setData('rating_config', {
-                                                                                ...data.rating_config,
-                                                                                plans: updatedPlans
-                                                                            });
-                                                                        }}
-                                                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="block text-xs text-gray-600 mb-1">Premium (₹)</label>
-                                                                    <input
-                                                                        type="number"
-                                                                        step="0.01"
-                                                                        placeholder="1200.00"
-                                                                        value={bracket.premium_amount}
-                                                                        onChange={(e) => {
-                                                                            const updatedPlans = [...data.rating_config.plans];
-                                                                            updatedPlans[index].age_brackets[bracketIndex].premium_amount = e.target.value;
-                                                                            setData('rating_config', {
-                                                                                ...data.rating_config,
-                                                                                plans: updatedPlans
-                                                                            });
-                                                                        }}
-                                                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
-                                                                    />
-                                                                </div>
-                                                                <div className="flex items-end">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => {
-                                                                            const updatedPlans = [...data.rating_config.plans];
-                                                                            updatedPlans[index].age_brackets = updatedPlans[index].age_brackets.filter((_, bi) => bi !== bracketIndex);
-                                                                            setData('rating_config', {
-                                                                                ...data.rating_config,
-                                                                                plans: updatedPlans
-                                                                            });
-                                                                        }}
-                                                                        className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
-                                                                    >
-                                                                        Remove
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-
-                                                        {(!plan.age_brackets || plan.age_brackets.length === 0) && (
-                                                            <p className="text-sm text-gray-500 italic">No age brackets configured. Base premium will apply to all ages.</p>
                                                         )}
                                                     </div>
-                                                )}
-                                            </div>
-                                        ))}
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Plan Name *
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={plan.plan_name}
+                                                                onChange={(e) => {
+                                                                    const updatedPlans = [...data.rating_config.plans];
+                                                                    updatedPlans[index].plan_name = e.target.value;
+                                                                    setData('rating_config', {
+                                                                        ...data.rating_config,
+                                                                        plans: updatedPlans
+                                                                    });
+                                                                }}
+                                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                                                placeholder="e.g., Gold Plan, Basic Plan"
+                                                            />
+                                                            {stepErrors[`plan_${index}_name`] && (
+                                                                <p className="text-red-600 text-sm mt-1">{stepErrors[`plan_${index}_name`]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Sum Insured (₹)
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                value={plan.sum_insured}
+                                                                onChange={(e) => {
+                                                                    const updatedPlans = [...data.rating_config.plans];
+                                                                    updatedPlans[index].sum_insured = e.target.value;
+                                                                    setData('rating_config', {
+                                                                        ...data.rating_config,
+                                                                        plans: updatedPlans
+                                                                    });
+                                                                }}
+                                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                                                placeholder="e.g., 500000"
+                                                            />
+                                                            {stepErrors[`plan_${index}_sum_insured`] && (
+                                                                <p className="text-red-600 text-sm mt-1">{stepErrors[`plan_${index}_sum_insured`]}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Base Premium (₹)
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                value={plan.premium_amount}
+                                                                onChange={(e) => {
+                                                                    const updatedPlans = [...data.rating_config.plans];
+                                                                    updatedPlans[index].premium_amount = e.target.value;
+                                                                    setData('rating_config', {
+                                                                        ...data.rating_config,
+                                                                        plans: updatedPlans
+                                                                    });
+                                                                }}
+                                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                                                placeholder="e.g., 1200.00"
+                                                            />
+                                                            {stepErrors[`plan_${index}_premium`] && (
+                                                                <p className="text-red-600 text-sm mt-1">{stepErrors[`plan_${index}_premium`]}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Age-based configuration */}
+                                                    {data.rating_config.plan_type === 'age_based' && (
+                                                        <div className="mt-4">
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                <label className="text-sm font-medium text-gray-700">
+                                                                    Age-Based Premium Brackets
+                                                                </label>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const updatedPlans = [...data.rating_config.plans];
+                                                                        if (!updatedPlans[index].age_brackets) {
+                                                                            updatedPlans[index].age_brackets = [];
+                                                                        }
+                                                                        updatedPlans[index].age_brackets.push({
+                                                                            id: Date.now(),
+                                                                            min_age: '',
+                                                                            max_age: '',
+                                                                            premium_amount: ''
+                                                                        });
+                                                                        setData('rating_config', {
+                                                                            ...data.rating_config,
+                                                                            plans: updatedPlans
+                                                                        });
+                                                                    }}
+                                                                    className="text-sm text-[#934790] hover:text-[#7a3a78]"
+                                                                >
+                                                                    Add Age Bracket
+                                                                </button>
+                                                            </div>
+
+                                                            {plan.age_brackets?.map((bracket, bracketIndex) => (
+                                                                <div key={bracket.id} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3 p-3 bg-gray-50 rounded">
+                                                                    <div>
+                                                                        <label className="block text-xs text-gray-600 mb-1">Min Age</label>
+                                                                        <input
+                                                                            type="number"
+                                                                            placeholder="18"
+                                                                            value={bracket.min_age}
+                                                                            onChange={(e) => {
+                                                                                const updatedPlans = [...data.rating_config.plans];
+                                                                                updatedPlans[index].age_brackets[bracketIndex].min_age = e.target.value;
+                                                                                setData('rating_config', {
+                                                                                    ...data.rating_config,
+                                                                                    plans: updatedPlans
+                                                                                });
+                                                                            }}
+                                                                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="block text-xs text-gray-600 mb-1">Max Age</label>
+                                                                        <input
+                                                                            type="number"
+                                                                            placeholder="30"
+                                                                            value={bracket.max_age}
+                                                                            onChange={(e) => {
+                                                                                const updatedPlans = [...data.rating_config.plans];
+                                                                                updatedPlans[index].age_brackets[bracketIndex].max_age = e.target.value;
+                                                                                setData('rating_config', {
+                                                                                    ...data.rating_config,
+                                                                                    plans: updatedPlans
+                                                                                });
+                                                                            }}
+                                                                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="block text-xs text-gray-600 mb-1">Premium (₹)</label>
+                                                                        <input
+                                                                            type="number"
+                                                                            step="0.01"
+                                                                            placeholder="1200.00"
+                                                                            value={bracket.premium_amount}
+                                                                            onChange={(e) => {
+                                                                                const updatedPlans = [...data.rating_config.plans];
+                                                                                updatedPlans[index].age_brackets[bracketIndex].premium_amount = e.target.value;
+                                                                                setData('rating_config', {
+                                                                                    ...data.rating_config,
+                                                                                    plans: updatedPlans
+                                                                                });
+                                                                            }}
+                                                                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="flex items-end">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const updatedPlans = [...data.rating_config.plans];
+                                                                                updatedPlans[index].age_brackets = updatedPlans[index].age_brackets.filter((_, bi) => bi !== bracketIndex);
+                                                                                setData('rating_config', {
+                                                                                    ...data.rating_config,
+                                                                                    plans: updatedPlans
+                                                                                });
+                                                                            }}
+                                                                            className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
+                                                                        >
+                                                                            Remove
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+
+                                                            {(!plan.age_brackets || plan.age_brackets.length === 0) && (
+                                                                <p className="text-sm text-gray-500 italic">No age brackets configured. Base premium will apply to all ages.</p>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
                                 )}
 
                                 {/* Per Life Configuration */}
@@ -2170,245 +2188,245 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                             </div>
                                         ) : (
                                             data.extra_coverage_plans.map((plan, planIndex) => (
-                                            <div key={plan.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <h3 className="text-lg font-medium text-gray-900">
-                                                        {plan.plan_name ? `${plan.plan_name}` : `Extra Coverage Plan ${planIndex + 1}`}
-                                                    </h3>
-                                                    {data.extra_coverage_plans.length > 0 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const newPlans = data.extra_coverage_plans.filter(p => p.id !== plan.id);
-                                                                setData('extra_coverage_plans', newPlans);
-                                                            }}
-                                                            className="text-red-600 hover:text-red-800 text-sm"
-                                                        >
-                                                            Remove Plan
-                                                        </button>
-                                                    )}
-                                                </div>
-
-                                                {/* Plan Basic Info */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Plan Name *
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={plan.plan_name}
-                                                            onChange={(e) => {
-                                                                const newPlans = [...data.extra_coverage_plans];
-                                                                newPlans[planIndex].plan_name = e.target.value;
-                                                                setData('extra_coverage_plans', newPlans);
-                                                            }}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
-                                                            placeholder="e.g., Basic Extra Cover, Premium Extra Cover"
-                                                        />
+                                                <div key={plan.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <h3 className="text-lg font-medium text-gray-900">
+                                                            {plan.plan_name ? `${plan.plan_name}` : `Extra Coverage Plan ${planIndex + 1}`}
+                                                        </h3>
+                                                        {data.extra_coverage_plans.length > 0 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newPlans = data.extra_coverage_plans.filter(p => p.id !== plan.id);
+                                                                    setData('extra_coverage_plans', newPlans);
+                                                                }}
+                                                                className="text-red-600 hover:text-red-800 text-sm"
+                                                            >
+                                                                Remove Plan
+                                                            </button>
+                                                        )}
                                                     </div>
 
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Base Premium Amount (₹)
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            step="0.01"
-                                                            value={plan.premium_amount}
-                                                            onChange={(e) => {
-                                                                const newPlans = [...data.extra_coverage_plans];
-                                                                newPlans[planIndex].premium_amount = e.target.value;
-                                                                setData('extra_coverage_plans', newPlans);
-                                                            }}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
-                                                            placeholder="e.g., 500.00"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* Extra Coverage Options */}
-                                                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                                                    <h4 className="text-md font-medium text-gray-900 mb-4">Extra Coverage Options</h4>
-
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                        {/* Co-Pay Coverage */}
-                                                        <div className="border border-gray-200 rounded-lg p-4">
-                                                            <div className="flex items-center mb-3">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    id={`co_pay_${plan.id}`}
-                                                                    checked={plan.extra_coverages.co_pay.enabled}
-                                                                    onChange={(e) => {
-                                                                        const newPlans = [...data.extra_coverage_plans];
-                                                                        newPlans[planIndex].extra_coverages.co_pay.enabled = e.target.checked;
-                                                                        setData('extra_coverage_plans', newPlans);
-                                                                    }}
-                                                                    className="rounded border-gray-300 text-[#934790] focus:ring-[#934790] focus:ring-offset-0"
-                                                                />
-                                                                <label htmlFor={`co_pay_${plan.id}`} className="ml-2 text-sm font-medium text-gray-700">
-                                                                    Co-Pay
-                                                                </label>
-                                                            </div>
-
-                                                            {plan.extra_coverages.co_pay.enabled && (
-                                                                <div className="space-y-3">
-                                                                    <div>
-                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                                            Coverage Name
-                                                                        </label>
-                                                                        <input
-                                                                            type="text"
-                                                                            value={plan.extra_coverages.co_pay.name}
-                                                                            onChange={(e) => {
-                                                                                const newPlans = [...data.extra_coverage_plans];
-                                                                                newPlans[planIndex].extra_coverages.co_pay.name = e.target.value;
-                                                                                setData('extra_coverage_plans', newPlans);
-                                                                            }}
-                                                                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
-                                                                            placeholder="Co-Pay"
-                                                                        />
-                                                                    </div>
-                                                                    <div>
-                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                                            Amount (₹)
-                                                                        </label>
-                                                                        <input
-                                                                            type="number"
-                                                                            step="0.01"
-                                                                            value={plan.extra_coverages.co_pay.amount}
-                                                                            onChange={(e) => {
-                                                                                const newPlans = [...data.extra_coverage_plans];
-                                                                                newPlans[planIndex].extra_coverages.co_pay.amount = e.target.value;
-                                                                                setData('extra_coverage_plans', newPlans);
-                                                                            }}
-                                                                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
-                                                                            placeholder="e.g., 500"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            )}
+                                                    {/* Plan Basic Info */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Plan Name *
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={plan.plan_name}
+                                                                onChange={(e) => {
+                                                                    const newPlans = [...data.extra_coverage_plans];
+                                                                    newPlans[planIndex].plan_name = e.target.value;
+                                                                    setData('extra_coverage_plans', newPlans);
+                                                                }}
+                                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                                                placeholder="e.g., Basic Extra Cover, Premium Extra Cover"
+                                                            />
                                                         </div>
 
-                                                        {/* Maternity Coverage */}
-                                                        <div className="border border-gray-200 rounded-lg p-4">
-                                                            <div className="flex items-center mb-3">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    id={`maternity_${plan.id}`}
-                                                                    checked={plan.extra_coverages.maternity.enabled}
-                                                                    onChange={(e) => {
-                                                                        const newPlans = [...data.extra_coverage_plans];
-                                                                        newPlans[planIndex].extra_coverages.maternity.enabled = e.target.checked;
-                                                                        setData('extra_coverage_plans', newPlans);
-                                                                    }}
-                                                                    className="rounded border-gray-300 text-[#934790] focus:ring-[#934790] focus:ring-offset-0"
-                                                                />
-                                                                <label htmlFor={`maternity_${plan.id}`} className="ml-2 text-sm font-medium text-gray-700">
-                                                                    Maternity
-                                                                </label>
-                                                            </div>
-
-                                                            {plan.extra_coverages.maternity.enabled && (
-                                                                <div className="space-y-3">
-                                                                    <div>
-                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                                            Coverage Name
-                                                                        </label>
-                                                                        <input
-                                                                            type="text"
-                                                                            value={plan.extra_coverages.maternity.name}
-                                                                            onChange={(e) => {
-                                                                                const newPlans = [...data.extra_coverage_plans];
-                                                                                newPlans[planIndex].extra_coverages.maternity.name = e.target.value;
-                                                                                setData('extra_coverage_plans', newPlans);
-                                                                            }}
-                                                                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
-                                                                            placeholder="Maternity"
-                                                                        />
-                                                                    </div>
-                                                                    <div>
-                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                                            Coverage Amount (₹)
-                                                                        </label>
-                                                                        <input
-                                                                            type="number"
-                                                                            step="0.01"
-                                                                            value={plan.extra_coverages.maternity.amount}
-                                                                            onChange={(e) => {
-                                                                                const newPlans = [...data.extra_coverage_plans];
-                                                                                newPlans[planIndex].extra_coverages.maternity.amount = e.target.value;
-                                                                                setData('extra_coverage_plans', newPlans);
-                                                                            }}
-                                                                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
-                                                                            placeholder="e.g., 50000"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Room Rent Coverage */}
-                                                        <div className="border border-gray-200 rounded-lg p-4">
-                                                            <div className="flex items-center mb-3">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    id={`room_rent_${plan.id}`}
-                                                                    checked={plan.extra_coverages.room_rent.enabled}
-                                                                    onChange={(e) => {
-                                                                        const newPlans = [...data.extra_coverage_plans];
-                                                                        newPlans[planIndex].extra_coverages.room_rent.enabled = e.target.checked;
-                                                                        setData('extra_coverage_plans', newPlans);
-                                                                    }}
-                                                                    className="rounded border-gray-300 text-[#934790] focus:ring-[#934790] focus:ring-offset-0"
-                                                                />
-                                                                <label htmlFor={`room_rent_${plan.id}`} className="ml-2 text-sm font-medium text-gray-700">
-                                                                    Room Rent
-                                                                </label>
-                                                            </div>
-
-                                                            {plan.extra_coverages.room_rent.enabled && (
-                                                                <div className="space-y-3">
-                                                                    <div>
-                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                                            Coverage Name
-                                                                        </label>
-                                                                        <input
-                                                                            type="text"
-                                                                            value={plan.extra_coverages.room_rent.name}
-                                                                            onChange={(e) => {
-                                                                                const newPlans = [...data.extra_coverage_plans];
-                                                                                newPlans[planIndex].extra_coverages.room_rent.name = e.target.value;
-                                                                                setData('extra_coverage_plans', newPlans);
-                                                                            }}
-                                                                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
-                                                                            placeholder="Room Rent"
-                                                                        />
-                                                                    </div>
-                                                                    <div>
-                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                                            Daily Limit (₹)
-                                                                        </label>
-                                                                        <input
-                                                                            type="number"
-                                                                            step="0.01"
-                                                                            value={plan.extra_coverages.room_rent.amount}
-                                                                            onChange={(e) => {
-                                                                                const newPlans = [...data.extra_coverage_plans];
-                                                                                newPlans[planIndex].extra_coverages.room_rent.amount = e.target.value;
-                                                                                setData('extra_coverage_plans', newPlans);
-                                                                            }}
-                                                                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
-                                                                            placeholder="e.g., 2000"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            )}
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Base Premium Amount (₹)
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                value={plan.premium_amount}
+                                                                onChange={(e) => {
+                                                                    const newPlans = [...data.extra_coverage_plans];
+                                                                    newPlans[planIndex].premium_amount = e.target.value;
+                                                                    setData('extra_coverage_plans', newPlans);
+                                                                }}
+                                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#934790] focus:border-transparent"
+                                                                placeholder="e.g., 500.00"
+                                                            />
                                                         </div>
                                                     </div>
+
+                                                    {/* Extra Coverage Options */}
+                                                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                                                        <h4 className="text-md font-medium text-gray-900 mb-4">Extra Coverage Options</h4>
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                            {/* Co-Pay Coverage */}
+                                                            <div className="border border-gray-200 rounded-lg p-4">
+                                                                <div className="flex items-center mb-3">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        id={`co_pay_${plan.id}`}
+                                                                        checked={plan.extra_coverages.co_pay.enabled}
+                                                                        onChange={(e) => {
+                                                                            const newPlans = [...data.extra_coverage_plans];
+                                                                            newPlans[planIndex].extra_coverages.co_pay.enabled = e.target.checked;
+                                                                            setData('extra_coverage_plans', newPlans);
+                                                                        }}
+                                                                        className="rounded border-gray-300 text-[#934790] focus:ring-[#934790] focus:ring-offset-0"
+                                                                    />
+                                                                    <label htmlFor={`co_pay_${plan.id}`} className="ml-2 text-sm font-medium text-gray-700">
+                                                                        Co-Pay
+                                                                    </label>
+                                                                </div>
+
+                                                                {plan.extra_coverages.co_pay.enabled && (
+                                                                    <div className="space-y-3">
+                                                                        <div>
+                                                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                                                Coverage Name
+                                                                            </label>
+                                                                            <input
+                                                                                type="text"
+                                                                                value={plan.extra_coverages.co_pay.name}
+                                                                                onChange={(e) => {
+                                                                                    const newPlans = [...data.extra_coverage_plans];
+                                                                                    newPlans[planIndex].extra_coverages.co_pay.name = e.target.value;
+                                                                                    setData('extra_coverage_plans', newPlans);
+                                                                                }}
+                                                                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
+                                                                                placeholder="Co-Pay"
+                                                                            />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                                                Amount (₹)
+                                                                            </label>
+                                                                            <input
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                value={plan.extra_coverages.co_pay.amount}
+                                                                                onChange={(e) => {
+                                                                                    const newPlans = [...data.extra_coverage_plans];
+                                                                                    newPlans[planIndex].extra_coverages.co_pay.amount = e.target.value;
+                                                                                    setData('extra_coverage_plans', newPlans);
+                                                                                }}
+                                                                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
+                                                                                placeholder="e.g., 500"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Maternity Coverage */}
+                                                            <div className="border border-gray-200 rounded-lg p-4">
+                                                                <div className="flex items-center mb-3">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        id={`maternity_${plan.id}`}
+                                                                        checked={plan.extra_coverages.maternity.enabled}
+                                                                        onChange={(e) => {
+                                                                            const newPlans = [...data.extra_coverage_plans];
+                                                                            newPlans[planIndex].extra_coverages.maternity.enabled = e.target.checked;
+                                                                            setData('extra_coverage_plans', newPlans);
+                                                                        }}
+                                                                        className="rounded border-gray-300 text-[#934790] focus:ring-[#934790] focus:ring-offset-0"
+                                                                    />
+                                                                    <label htmlFor={`maternity_${plan.id}`} className="ml-2 text-sm font-medium text-gray-700">
+                                                                        Maternity
+                                                                    </label>
+                                                                </div>
+
+                                                                {plan.extra_coverages.maternity.enabled && (
+                                                                    <div className="space-y-3">
+                                                                        <div>
+                                                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                                                Coverage Name
+                                                                            </label>
+                                                                            <input
+                                                                                type="text"
+                                                                                value={plan.extra_coverages.maternity.name}
+                                                                                onChange={(e) => {
+                                                                                    const newPlans = [...data.extra_coverage_plans];
+                                                                                    newPlans[planIndex].extra_coverages.maternity.name = e.target.value;
+                                                                                    setData('extra_coverage_plans', newPlans);
+                                                                                }}
+                                                                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
+                                                                                placeholder="Maternity"
+                                                                            />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                                                Coverage Amount (₹)
+                                                                            </label>
+                                                                            <input
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                value={plan.extra_coverages.maternity.amount}
+                                                                                onChange={(e) => {
+                                                                                    const newPlans = [...data.extra_coverage_plans];
+                                                                                    newPlans[planIndex].extra_coverages.maternity.amount = e.target.value;
+                                                                                    setData('extra_coverage_plans', newPlans);
+                                                                                }}
+                                                                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
+                                                                                placeholder="e.g., 50000"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Room Rent Coverage */}
+                                                            <div className="border border-gray-200 rounded-lg p-4">
+                                                                <div className="flex items-center mb-3">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        id={`room_rent_${plan.id}`}
+                                                                        checked={plan.extra_coverages.room_rent.enabled}
+                                                                        onChange={(e) => {
+                                                                            const newPlans = [...data.extra_coverage_plans];
+                                                                            newPlans[planIndex].extra_coverages.room_rent.enabled = e.target.checked;
+                                                                            setData('extra_coverage_plans', newPlans);
+                                                                        }}
+                                                                        className="rounded border-gray-300 text-[#934790] focus:ring-[#934790] focus:ring-offset-0"
+                                                                    />
+                                                                    <label htmlFor={`room_rent_${plan.id}`} className="ml-2 text-sm font-medium text-gray-700">
+                                                                        Room Rent
+                                                                    </label>
+                                                                </div>
+
+                                                                {plan.extra_coverages.room_rent.enabled && (
+                                                                    <div className="space-y-3">
+                                                                        <div>
+                                                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                                                Coverage Name
+                                                                            </label>
+                                                                            <input
+                                                                                type="text"
+                                                                                value={plan.extra_coverages.room_rent.name}
+                                                                                onChange={(e) => {
+                                                                                    const newPlans = [...data.extra_coverage_plans];
+                                                                                    newPlans[planIndex].extra_coverages.room_rent.name = e.target.value;
+                                                                                    setData('extra_coverage_plans', newPlans);
+                                                                                }}
+                                                                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
+                                                                                placeholder="Room Rent"
+                                                                            />
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                                                Daily Limit (₹)
+                                                                            </label>
+                                                                            <input
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                value={plan.extra_coverages.room_rent.amount}
+                                                                                onChange={(e) => {
+                                                                                    const newPlans = [...data.extra_coverage_plans];
+                                                                                    newPlans[planIndex].extra_coverages.room_rent.amount = e.target.value;
+                                                                                    setData('extra_coverage_plans', newPlans);
+                                                                                }}
+                                                                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#934790]"
+                                                                                placeholder="e.g., 2000"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))
+                                            ))
                                         )}
                                     </div>
                                 </div>
@@ -2474,11 +2492,10 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                                     {messageTemplates && messageTemplates.filter(template => template.status).map((template) => (
                                                         <div
                                                             key={template.id}
-                                                            className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                                                                data.mail_configuration.enrollment_mail.template_id == template.id
+                                                            className={`border rounded-lg p-4 cursor-pointer transition-all ${data.mail_configuration.enrollment_mail.template_id == template.id
                                                                     ? 'border-[#934790] bg-purple-50'
                                                                     : 'border-gray-200 hover:border-gray-300'
-                                                            }`}
+                                                                }`}
                                                             onClick={() => setData('mail_configuration', {
                                                                 ...data.mail_configuration,
                                                                 enrollment_mail: {
@@ -2549,11 +2566,10 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                                         {messageTemplates && messageTemplates.filter(template => template.status).map((template) => (
                                                             <div
                                                                 key={template.id}
-                                                                className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                                                                    data.mail_configuration.reminder_mail.template_id == template.id
+                                                                className={`border rounded-lg p-4 cursor-pointer transition-all ${data.mail_configuration.reminder_mail.template_id == template.id
                                                                         ? 'border-[#934790] bg-purple-50'
                                                                         : 'border-gray-200 hover:border-gray-300'
-                                                                }`}
+                                                                    }`}
                                                                 onClick={() => setData('mail_configuration', {
                                                                     ...data.mail_configuration,
                                                                     reminder_mail: {
@@ -2814,7 +2830,7 @@ export default function CreateEnrollment({ companies, messageTemplates }) {
                                                                         <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                                                                     </svg>
                                                                 </button>
-                                            </span>
+                                                            </span>
                                                         ))}
                                                     </div>
                                                     <p className="text-xs text-gray-500 mt-2">

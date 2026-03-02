@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function Step4Summary({ employee, enrollmentDetail, availablePlans, formData, onSubmit, onPrevious }) {
+export default function Step4Summary({ employee, enrollmentDetail, availablePlans, formData, onSubmit, onPrevious, available_balance = 0 }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [agreementAccepted, setAgreementAccepted] = useState(false);
 
@@ -270,19 +270,31 @@ export default function Step4Summary({ employee, enrollmentDetail, availablePlan
                             )}</span>
                         </div>
                     )}
+                    {!!(formData.is_wallet || formData.wallet_used) && available_balance > 0 && (() => {
+                        const basePayable = formData.premiumCalculations?.employeePayable != null
+                            ? Number(formData.premiumCalculations.employeePayable)
+                            : Math.max(0, (formData.premiumCalculations?.grossPlusGst || 0) - (formData.premiumCalculations?.companyContributionAmount || 0));
+                        const walletDeduction = Math.min(basePayable, Number(available_balance));
+                        return walletDeduction > 0 ? (
+                            <div className="flex items-center justify-between">
+                                <span className="text-green-700">Wallet Deduction</span>
+                                <span className="font-semibold text-purple-700">-{formatCurrency(walletDeduction)}</span>
+                            </div>
+                        ) : null;
+                    })()}
                     <div className="border-t border-green-300 pt-3">
                         <div className="flex items-center justify-between">
                             <span className="text-lg font-medium text-green-900">Employee Annual Payable</span>
                             <span className="text-2xl font-bold text-green-900">
-                                {formatCurrency(
-                                    formData.premiumCalculations?.employeePayable != null
-                                        ? formData.premiumCalculations.employeePayable
-                                        : (Number(formData.premiumCalculations?.grossPlusGst || 0) - (
-                                            formData.premiumCalculations?.companyContributionAmount != null
-                                                ? formData.premiumCalculations.companyContributionAmount
-                                                : Math.round((formData.premiumCalculations?.grossPlusGst || 0) * (companyPerc / 100))
-                                        ))
-                                )}
+                                {(() => {
+                                    const basePayable = formData.premiumCalculations?.employeePayable != null
+                                        ? Number(formData.premiumCalculations.employeePayable)
+                                        : Math.max(0, (Number(formData.premiumCalculations?.grossPlusGst || 0)) - (formData.premiumCalculations?.companyContributionAmount != null ? formData.premiumCalculations.companyContributionAmount : Math.round((formData.premiumCalculations?.grossPlusGst || 0) * (companyPerc / 100))));
+                                    const walletDeduction = (!!(formData.is_wallet || formData.wallet_used) && available_balance > 0)
+                                        ? Math.min(basePayable, Number(available_balance))
+                                        : 0;
+                                    return formatCurrency(Math.max(0, basePayable - walletDeduction));
+                                })()}
                             </span>
                         </div>
                     </div>

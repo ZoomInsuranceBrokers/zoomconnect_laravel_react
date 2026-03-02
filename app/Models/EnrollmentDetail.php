@@ -40,6 +40,7 @@ class EnrollmentDetail extends Model
         'auto_reminder_enable',
         'manual_reminder_enable',
         'status',
+        'is_wallet',
     ];
 
     protected $casts = [

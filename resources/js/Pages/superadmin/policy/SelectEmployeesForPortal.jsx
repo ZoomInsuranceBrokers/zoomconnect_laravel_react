@@ -129,7 +129,9 @@ export default function SelectEmployeesForPortal({
     unmappedEmployees,
     mappedEmployeeIds,
     familyDefinition,
-    gradeExclusions
+    gradeExclusions,
+    wallet_amount,
+    is_wallet
 }) {
     // Initialize selected employees based on mapped employees for creation_status = 2
     const [selectedEmployees, setSelectedEmployees] = useState(
@@ -164,13 +166,15 @@ export default function SelectEmployeesForPortal({
         const query = searchQuery.toLowerCase();
         return employeesList.filter(employee => {
             return (employee.full_name?.toLowerCase() || '').includes(query) ||
-                   (employee.employees_code?.toLowerCase() || '').includes(query) ||
-                   (employee.email?.toLowerCase() || '').includes(query) ||
-                   (employee.grade?.toLowerCase() || '').includes(query) ||
-                   (employee.designation?.toLowerCase() || '').includes(query);
+                (employee.employees_code?.toLowerCase() || '').includes(query) ||
+                (employee.email?.toLowerCase() || '').includes(query) ||
+                (employee.grade?.toLowerCase() || '').includes(query) ||
+                (employee.designation?.toLowerCase() || '').includes(query);
         });
     }, [employeesList, searchQuery]);
 
+    // Debug: Log wallet_amount and is_wallet
+    console.log('wallet_amount:', wallet_amount, 'is_wallet:', is_wallet);
     // Event handlers
     const handleSelectAll = (e) => {
         if (e.target.checked) {
@@ -203,24 +207,35 @@ export default function SelectEmployeesForPortal({
 
         setProcessing(true);
 
+        // Use wallet_amount prop directly if is_wallet is enabled
+        let walletAmount = null;
+        if (is_wallet === 1 && wallet_amount) {
+            walletAmount = wallet_amount;
+        }
+
+        // Debug: Show what will be sent
+        console.log('Submitting formData:', {
+            office: selectedEmployees,
+            portal_id: enrollmentPeriod.id,
+            enrolment_id: enrollmentPeriod.enrolment_id,
+            ...(walletAmount !== null && walletAmount !== '' && { wallet_amount: walletAmount })
+        });
+
         const formData = {
             office: selectedEmployees,
             portal_id: enrollmentPeriod.id,
-            enrolment_id: enrollmentPeriod.enrolment_id
+            enrolment_id: enrollmentPeriod.enrolment_id,
+            ...(walletAmount !== null && walletAmount !== '' && { wallet_amount: walletAmount })
         };
-
-        console.log('Submitting form data:', formData);
-        console.log('Route URL:', route('superadmin.policy.employee-mapping'));
 
         router.post(route('superadmin.policy.employee-mapping'), formData, {
             preserveState: false,
             onFinish: () => setProcessing(false),
             onSuccess: (page) => {
-                console.log('Success response:', page);
+                // ...existing code...
             },
             onError: (errors) => {
-                console.error('Assignment failed:', errors);
-                setProcessing(false);
+                // ...existing code...
             }
         });
     };
@@ -284,9 +299,9 @@ export default function SelectEmployeesForPortal({
                                     </h3>
                                     <div className="mt-2 text-sm text-blue-700">
                                         <p>
-                                            • Previously selected employees are already checked<br/>
-                                            • You can uncheck employees to remove them from the portal<br/>
-                                            • You can check additional employees to add them to the portal<br/>
+                                            • Previously selected employees are already checked<br />
+                                            • You can uncheck employees to remove them from the portal<br />
+                                            • You can check additional employees to add them to the portal<br />
                                             • Use the search function to find specific employees
                                         </p>
                                     </div>
@@ -335,11 +350,10 @@ export default function SelectEmployeesForPortal({
                             <button
                                 type="submit"
                                 disabled={selectedEmployees.length === 0 || processing}
-                                className={`w-60 py-2 px-4 rounded-md text-xs font-medium transition-colors duration-200 ${
-                                    selectedEmployees.length > 0 && !processing
+                                className={`w-60 py-2 px-4 rounded-md text-xs font-medium transition-colors duration-200 ${selectedEmployees.length > 0 && !processing
                                         ? 'text-white bg-[#934790] hover:bg-[#7a3d7a] focus:ring-[#934790] focus:outline-none focus:ring-2 focus:ring-offset-2'
                                         : 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                                }`}
+                                    }`}
                             >
                                 {processing ? (
                                     <>

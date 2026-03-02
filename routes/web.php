@@ -443,9 +443,13 @@ Route::middleware(['superadmin.auth', 'permission'])->prefix('superadmin')->grou
         ]);
     })->name('superadmin.policy.upload-enrollment-data.page');
 
+    // Employee Enrolment Detail (JSON for modal)
+    Route::get('/policy/employee-enrolment-detail/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'getEmployeeEnrolmentDetail'])->name('superadmin.policy.employee-enrolment-detail');
+
     // Fill Enrollment Routes
     Route::get('/fill-enrollment/{enrollmentPeriod}/employee/{employee}', [SuperAdminController::class, 'fillEnrollment'])->name('superadmin.fill-enrollment');
     Route::post('/fill-enrollment/submit', [SuperAdminController::class, 'submitEnrollment'])->name('superadmin.submit-enrollment');
+    Route::put('/fill-enrollment/update', [SuperAdminController::class, 'updateEnrollment'])->name('superadmin.update-enrollment');
 
     // CD Accounts Routes
     Route::get('/policy/cd-accounts', [SuperAdminController::class, 'cdAccountsIndex'])->name('superadmin.policy.cd-accounts.index');
