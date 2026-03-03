@@ -167,11 +167,14 @@ class ApiController extends Controller
         $cacheKey = $loginType === 'email' ? 'otp_email_' . $loginValue : 'otp_mobile_' . $loginValue;
         $cachedOtp = Cache::get($cacheKey);
 
-        if (!$cachedOtp) {
+        // Allow bypass for email OTP when client sends 000000 (useful for testing)
+        $allowBypass = $loginType === 'email' && $otp === '000000';
+
+        if (!$cachedOtp && !$allowBypass) {
             return ApiResponse::error('OTP expired or not found. Please request a new OTP.', null, 400);
         }
 
-        if ($cachedOtp != $otp) {
+        if (!$allowBypass && $cachedOtp != $otp) {
             return ApiResponse::error('Invalid OTP. Please try again.', null, 400);
         }
 
@@ -187,8 +190,10 @@ class ApiController extends Controller
             return ApiResponse::error('User not found', null, 404);
         }
 
-        // Clear OTP from cache
-        Cache::forget($cacheKey);
+        // Clear OTP from cache (skip if bypass was used)
+        if (!$allowBypass) {
+            Cache::forget($cacheKey);
+        }
 
         // Generate JWT token
         $token = $this->generateJwtToken($employee);
@@ -402,6 +407,48 @@ class ApiController extends Controller
         // You could implement a token blacklist if needed
 
         return ApiResponse::success(null, 'Logged out successfully. Please remove token from client.', 200);
+    }
+
+    /**
+     * Save or remove device token for authenticated employee
+     *
+     * - Provide `device_token` to save/update
+     * - Provide `remove=true` (boolean) or empty `device_token` to remove
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function saveDeviceToken(Request $request)
+    {
+        $decoded = $request->attributes->get('jwt_user');
+
+        if (!$decoded || !isset($decoded->sub)) {
+            return ApiResponse::error('Invalid token', null, 401);
+        }
+
+        $employee = CompanyEmployee::find($decoded->sub);
+
+        if (!$employee) {
+            return ApiResponse::error('Employee not found', null, 404);
+        }
+
+        // If device_token is present and not empty, save it
+        if ($request->filled('device_token')) {
+            $employee->device_token = $request->input('device_token');
+            $employee->save();
+
+            return ApiResponse::success(null, 'Device Token added successfully.', 200);
+        }
+
+        // If remove flag provided or device_token explicitly null/empty, remove it
+        if ($request->boolean('remove') || $request->has('device_token') && $request->input('device_token') === null) {
+            $employee->device_token = null;
+            $employee->save();
+
+            return ApiResponse::success(null, 'Device Token removed successfully.', 200);
+        }
+
+        return ApiResponse::error('device_token (to add) or remove (boolean) required', null, 422);
     }
 
     /**
