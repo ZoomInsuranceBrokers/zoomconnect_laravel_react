@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 use App\Models\User;
 use App\Models\CompanyEmployee;
 use App\Models\CompanyUser;
@@ -195,6 +196,9 @@ class ApiController extends Controller
             Cache::forget($cacheKey);
         }
 
+        // Create session for webview access
+        $this->createEmployeeSession($employee);
+
         // Generate JWT token
         $token = $this->generateJwtToken($employee);
 
@@ -337,6 +341,44 @@ class ApiController extends Controller
     }
 
     /**
+     * Create employee session for webview access
+     * 
+     * @param CompanyEmployee $employee
+     * @return void
+     */
+    private function createEmployeeSession($employee)
+    {
+        // Clear any existing session
+        Session::forget('employee_user');
+
+        // Set comprehensive employee session (same structure as web login)
+        Session::put('employee_user', [
+            'id' => $employee->id,
+            'employee_code' => $employee->employees_code,
+            'full_name' => $employee->full_name,
+            'first_name' => $employee->first_name,
+            'last_name' => $employee->last_name,
+            'email' => $employee->email,
+            'mobile' => $employee->mobile,
+            'gender' => $employee->gender,
+            'photo' => $employee->photo,
+            'designation' => $employee->designation,
+            'grade' => $employee->grade,
+            'dob' => $employee->dob,
+            'date_of_joining' => $employee->date_of_joining,
+            'company_id' => $employee->company_id,
+            'location_id' => $employee->location_id,
+            'company_name' => $employee->company->comp_name ?? null,
+            'company_code' => $employee->company->comp_code ?? null,
+            'location_name' => $employee->location->location_name ?? null,
+            'is_active' => $employee->is_active,
+            'first_login' => $employee->first_login,
+            'set_profile' => $employee->set_profile,
+            'login_method' => 'api',
+        ]);
+    }
+
+    /**
      * Verify JWT token
      * 
      * @param Request $request
@@ -381,11 +423,14 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('User not found', null, 404);
             }
+
+            // Create/refresh session for webview access
+            $this->createEmployeeSession($employee);
 
             return ApiResponse::success([
                 'user' => $employee
@@ -405,6 +450,10 @@ class ApiController extends Controller
     {
         // Since JWT is stateless, we can't truly "invalidate" a token
         // You could implement a token blacklist if needed
+
+        // Clear employee session
+        Session::forget('employee_user');
+        Session::flush();
 
         return ApiResponse::success(null, 'Logged out successfully. Please remove token from client.', 200);
     }
@@ -426,7 +475,7 @@ class ApiController extends Controller
             return ApiResponse::error('Invalid token', null, 401);
         }
 
-        $employee = CompanyEmployee::find($decoded->sub);
+        $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
         if (!$employee) {
             return ApiResponse::error('Employee not found', null, 404);
@@ -478,7 +527,7 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('Employee not found', null, 404);
@@ -535,7 +584,7 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('User not found', null, 404);
@@ -549,6 +598,12 @@ class ApiController extends Controller
                 })
                 ->with(['vendor', 'category'])
                 ->get();
+
+            // Add webview URL to each service
+            $baseUrl = config('app.url');
+            foreach ($wellnessServices as $service) {
+                $service->webview_url = $baseUrl . 'employee/wellness/service/' . $service->id;
+            }
 
             return ApiResponse::success([
                 'services' => $wellnessServices
@@ -576,11 +631,14 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('User not found', null, 404);
             }
+
+            // Create/refresh session for webview access
+            $this->createEmployeeSession($employee);
 
             // Get active employee policies
             $policies = $this->getActiveEmployeePolicies($employee->id);
@@ -2024,6 +2082,586 @@ class ApiController extends Controller
         }
     }
 
+    // ============================================
+    // Chatbot Conversation Methods (Separate from Tickets)
+    // ============================================
+
+    /**
+     * Get all chatbot conversations for authenticated employee
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getChatbotConversations(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Get all chatbot conversations with message count
+            $conversations = DB::table('chatbot_conversations')
+                ->select('id', 'conversation_id', 'current_state', 'is_completed', 'created_at', 'updated_at')
+                ->selectRaw('(SELECT COUNT(*) FROM chatbot_messages WHERE chatbot_messages.conversation_id = chatbot_conversations.conversation_id) as message_count')
+                ->where('emp_id', $employee->id)
+                ->where('cmp_id', $employee->company_id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return ApiResponse::success([
+                'conversations' => $conversations
+            ], 'Chatbot conversations retrieved successfully');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to retrieve conversations', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Start a new chatbot conversation
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function startChatbot(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Generate unique conversation ID
+            $conversationId = 'CHAT-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
+
+            // Create conversation record
+            DB::table('chatbot_conversations')->insert([
+                'conversation_id' => $conversationId,
+                'emp_id' => $employee->id,
+                'cmp_id' => $employee->company_id,
+                'current_state' => 'start',
+                'is_completed' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Get initial chatbot message
+            $chatbotFlow = \App\Services\ChatbotFlowService::getNextStep('start');
+
+            // Save bot message
+            DB::table('chatbot_messages')->insert([
+                'conversation_id' => $conversationId,
+                'sender_type' => 'bot',
+                'message' => $chatbotFlow['message'],
+                'options' => json_encode($chatbotFlow['options']),
+                'state' => 'start',
+                'created_at' => now(),
+            ]);
+
+            return ApiResponse::success([
+                'conversation_id' => $conversationId,
+                'message' => $chatbotFlow['message'],
+                'options' => $chatbotFlow['options'],
+                'show_thank_you' => $chatbotFlow['show_thank_you'] ?? false,
+            ], 'Chatbot conversation started successfully');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to start chatbot', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Process chatbot response
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function chatbotRespond(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'conversation_id' => 'required|string',
+                'selected_option' => 'required|string',
+            ]);
+
+            if ($validator->fails()) {
+                return ApiResponse::error('Validation failed', $validator->errors(), 422);
+            }
+
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Get conversation
+            $conversation = DB::table('chatbot_conversations')
+                ->where('conversation_id', $request->conversation_id)
+                ->where('emp_id', $employee->id)
+                ->first();
+
+            if (!$conversation) {
+                return ApiResponse::error('Conversation not found', null, 404);
+            }
+
+            // Save user selection
+            DB::table('chatbot_messages')->insert([
+                'conversation_id' => $request->conversation_id,
+                'sender_type' => 'user',
+                'message' => $request->selected_option,
+                'state' => $conversation->current_state,
+                'created_at' => now(),
+            ]);
+
+            // Get next step
+            $nextStep = \App\Services\ChatbotFlowService::getNextStep($conversation->current_state, $request->selected_option);
+
+            if (isset($nextStep['error'])) {
+                return ApiResponse::error($nextStep['message'], null, 400);
+            }
+
+            // Update conversation state
+            DB::table('chatbot_conversations')
+                ->where('conversation_id', $request->conversation_id)
+                ->update([
+                    'current_state' => $nextStep['state'],
+                    'is_completed' => $nextStep['show_thank_you'] ?? false,
+                    'updated_at' => now(),
+                ]);
+
+            // Save bot response
+            DB::table('chatbot_messages')->insert([
+                'conversation_id' => $request->conversation_id,
+                'sender_type' => 'bot',
+                'message' => $nextStep['message'],
+                'options' => json_encode($nextStep['options']),
+                'state' => $nextStep['state'],
+                'created_at' => now(),
+            ]);
+
+            return ApiResponse::success([
+                'message' => $nextStep['message'],
+                'options' => $nextStep['options'],
+                'show_thank_you' => $nextStep['show_thank_you'] ?? false,
+                'state' => $nextStep['state'],
+            ], 'Response processed successfully');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to process response', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get single chatbot conversation with all messages
+     * 
+     * @param Request $request
+     * @param string $conversationId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getChatbotConversation(Request $request, $conversationId)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Get conversation
+            $conversation = DB::table('chatbot_conversations')
+                ->where('conversation_id', $conversationId)
+                ->where('emp_id', $employee->id)
+                ->first();
+
+            if (!$conversation) {
+                return ApiResponse::error('Conversation not found', null, 404);
+            }
+
+            // Get all messages
+            $messages = DB::table('chatbot_messages')
+                ->where('conversation_id', $conversationId)
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            return ApiResponse::success([
+                'conversation' => $conversation,
+                'messages' => $messages
+            ], 'Conversation retrieved successfully');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to retrieve conversation', $e->getMessage(), 500);
+        }
+    }
+
+    // ============================================
+    // Support Ticket Methods (Escalation from Chatbot)
+    // ============================================
+
+    /**
+     * Create a new support ticket (for unresolved issues)
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createSupportTicket(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'subject' => 'required|string|max:255',
+                'message' => 'required|string',
+                'document' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120', // 5MB max
+            ]);
+
+            if ($validator->fails()) {
+                return ApiResponse::error('Validation failed', $validator->errors(), 422);
+            }
+
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Generate unique ticket ID
+            do {
+                $ticketId = 'TKT-' . date('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(5));
+            } while (DB::table('help_support_chats')->where('ticket_id', $ticketId)->exists());
+
+            // Handle document upload if provided
+            $documentPath = null;
+            if ($request->hasFile('document')) {
+                $file = $request->file('document');
+                $fileName = $ticketId . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $documentPath = $file->storeAs('support_tickets', $fileName, 'public');
+            }
+
+            // Create initial ticket message
+            $ticketData = [
+                'ticket_id' => $ticketId,
+                'emp_id' => $employee->id,
+                'cmp_id' => $employee->company_id,
+                'sender_type' => 'employee',
+                'message' => $request->subject . "\n\n" . $request->message,
+                'status' => 'open',
+                'is_resolved' => false,
+                'attachment' => $documentPath,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            DB::table('help_support_chats')->insert($ticketData);
+
+            // Track status
+            DB::table('help_support_status_tracker')->insert([
+                'ticket_id' => $ticketId,
+                'old_status' => null,
+                'new_status' => 'open',
+                'changed_by' => $employee->id,
+                'remarks' => 'Ticket created via mobile app',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Send email notification to support team
+            try {
+                $supportEmail = config('mail.support_email', 'support@zoomconnect.com');
+                $companyName = $employee->company->comp_name ?? 'N/A';
+                $userName = trim(($employee->first_name ?? '') . ' ' . ($employee->last_name ?? '')) ?: 'User';
+
+                Mail::to($supportEmail)
+                    ->cc($employee->email)
+                    ->send(new SupportTicketMail(
+                        $ticketId,
+                        $userName,
+                        $employee->email ?? 'N/A',
+                        $request->message,
+                        $companyName,
+                        $employee->employee_id ?? null
+                    ));
+
+                Log::info('Support ticket email sent', [
+                    'ticket_id' => $ticketId,
+                    'employee_id' => $employee->id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send support ticket email: ' . $e->getMessage());
+                // Don't fail the ticket creation if email fails
+            }
+
+            return ApiResponse::success([
+                'ticket_id' => $ticketId
+            ], 'Support ticket created successfully');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to create ticket', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get all support tickets for authenticated employee
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSupportTickets(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            $tickets = DB::table('help_support_chats')
+                ->where('emp_id', $employee->id)
+                ->where('cmp_id', $employee->company_id)
+                ->whereNotNull('ticket_id')
+                ->select(
+                    'ticket_id',
+                    'message',
+                    'status',
+                    'is_resolved',
+                    'created_at',
+                    'updated_at'
+                )
+                ->groupBy('ticket_id')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($ticket) {
+                    // Get message count for each ticket
+                    $messageCount = DB::table('help_support_chats')
+                        ->where('ticket_id', $ticket->ticket_id)
+                        ->count();
+
+                    // Extract subject from message (format: "subject\n\nmessage")
+                    $subject = 'Support Ticket';
+                    $message = $ticket->message;
+                    if ($ticket->message) {
+                        $messageParts = explode("\n\n", $ticket->message, 2);
+                        if (count($messageParts) > 1) {
+                            $subject = $messageParts[0];
+                            $message = $messageParts[1];
+                        } else {
+                            $subject = substr($ticket->message, 0, 100);
+                            $message = $ticket->message;
+                        }
+                    }
+
+                    return [
+                        'ticket_id' => $ticket->ticket_id,
+                        'subject' => $subject,
+                        'message' => $message,
+                        'status' => $ticket->status ?? 'open',
+                        'is_resolved' => (bool) $ticket->is_resolved,
+                        'message_count' => $messageCount,
+                        'created_at' => $ticket->created_at,
+                        'updated_at' => $ticket->updated_at,
+                    ];
+                });
+
+            return ApiResponse::success([
+                'tickets' => $tickets
+            ], 'Support tickets retrieved successfully');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to retrieve tickets', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get ticket details with chat history
+     * 
+     * @param Request $request
+     * @param string $ticketId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSupportTicketDetails(Request $request, $ticketId)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Verify ticket belongs to employee
+            $ticket = DB::table('help_support_chats')
+                ->where('ticket_id', $ticketId)
+                ->where('emp_id', $employee->id)
+                ->where('cmp_id', $employee->company_id)
+                ->first();
+
+            if (!$ticket) {
+                return ApiResponse::error('Ticket not found', null, 404);
+            }
+
+            // Get all messages for this ticket
+            $messages = DB::table('help_support_chats')
+                ->where('ticket_id', $ticketId)
+                ->orderBy('created_at', 'asc')
+                ->get([
+                    'id',
+                    'sender_type',
+                    'message',
+                    'attachment',
+                    'created_at'
+                ]);
+
+            // Get status history
+            $statusHistory = DB::table('help_support_status_tracker')
+                ->where('ticket_id', $ticketId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Extract subject from message (format: "subject\n\nmessage")
+            $firstMessage = $messages->first();
+            $subject = 'Support Ticket';
+            if ($firstMessage && $firstMessage->message) {
+                $messageParts = explode("\n\n", $firstMessage->message, 2);
+                if (count($messageParts) > 1) {
+                    $subject = $messageParts[0];
+                }
+            }
+
+            return ApiResponse::success([
+                'ticket' => [
+                    'ticket_id' => $ticket->ticket_id,
+                    'subject' => $subject,
+                    'status' => $ticket->status,
+                    'is_resolved' => (bool) $ticket->is_resolved,
+                    'created_at' => $ticket->created_at,
+                ],
+                'messages' => $messages,
+                'status_history' => $statusHistory,
+            ], 'Ticket details retrieved successfully');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to retrieve ticket details', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Add message to existing support ticket
+     * 
+     * @param Request $request
+     * @param string $ticketId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function addSupportTicketMessage(Request $request, $ticketId)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'message' => 'required|string',
+            ]);
+
+            if ($validator->fails()) {
+                return ApiResponse::error('Validation failed', $validator->errors(), 422);
+            }
+
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Verify ticket belongs to employee
+            $ticket = DB::table('help_support_chats')
+                ->where('ticket_id', $ticketId)
+                ->where('emp_id', $employee->id)
+                ->where('cmp_id', $employee->company_id)
+                ->first();
+
+            if (!$ticket) {
+                return ApiResponse::error('Ticket not found', null, 404);
+            }
+
+            // Add new message
+            DB::table('help_support_chats')->insert([
+                'ticket_id' => $ticketId,
+                'emp_id' => $employee->id,
+                'cmp_id' => $employee->company_id,
+                'sender_type' => 'employee',
+                'message' => $request->message,
+                'status' => $ticket->status,
+                'is_resolved' => $ticket->is_resolved,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return ApiResponse::success(null, 'Message added successfully');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Failed to add message', $e->getMessage(), 500);
+        }
+    }
+
     /**
      * Get Policy Details with TPA-specific data
      * 
@@ -2043,7 +2681,7 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('User not found', null, 404);
@@ -2511,7 +3149,7 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('User not found', null, 404);
@@ -2633,7 +3271,7 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('User not found', null, 404);
@@ -2811,7 +3449,7 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('Employee not found', null, 404);
@@ -2880,7 +3518,7 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('Employee not found', null, 404);
@@ -2937,7 +3575,7 @@ class ApiController extends Controller
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
 
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('Employee not found', null, 404);
@@ -3005,7 +3643,7 @@ class ApiController extends Controller
         try {
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('Employee Not Found', null, 404);
@@ -3143,7 +3781,7 @@ class ApiController extends Controller
         try {
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('Employee Not Found', null, 404);
@@ -3281,7 +3919,7 @@ class ApiController extends Controller
         try {
             $secret = config('app.key');
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
-            $employee = CompanyEmployee::find($decoded->sub);
+            $employee = CompanyEmployee::with('company')->find($decoded->sub);
 
             if (!$employee) {
                 return ApiResponse::error('Employee Not Found', null, 404);
@@ -3916,5 +4554,59 @@ class ApiController extends Controller
     {
         // Implement Health India auth token logic
         return env('HEALTH_INDIA_AUTH_TOKEN', '');
+    }
+
+    public function getBanners(Request $request)
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+
+        try {
+            $secret = config('app.key');
+            $decoded = JWT::decode($token, new Key($secret, 'HS256'));
+
+            $employee = CompanyEmployee::find($decoded->sub);
+
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+
+            // Dummy banners with public placeholder images
+            $allBanners = [
+                [
+                    'id' => 1,
+                    'title' => 'Health Insurance Enrollment',
+                    'button_text' => 'Enroll Now',
+                    'banner_image' => 'https://picsum.photos/1200/400?random=1',
+                    'banner_link' => 'https://portal.zoomconnect.co.in/'
+                ],
+                [
+                    'id' => 2,
+                    'title' => 'Download Your E-Card',
+                    'button_text' => 'Download',
+                    'banner_image' => 'https://picsum.photos/1200/400?random=2',
+                    'banner_link' => 'https://portal.zoomconnect.co.in/'
+                ],
+                [
+                    'id' => 3,
+                    'title' => 'Wellness Program',
+                    'button_text' => 'Explore',
+                    'banner_image' => 'https://picsum.photos/1200/400?random=3',
+                    'banner_link' => 'https://portal.zoomconnect.co.in/'
+                ],
+            ];
+
+            // Pick 2 random banners
+            $randomBanners = collect($allBanners)->random(2)->values();
+
+            return ApiResponse::success([
+                'banners' => $randomBanners
+            ], 'Banners fetched successfully', 200);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Invalid or expired token', $e->getMessage(), 401);
+        }
     }
 }
