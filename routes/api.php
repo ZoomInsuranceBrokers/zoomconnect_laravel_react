@@ -35,6 +35,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [App\Http\Controllers\ApiController::class, 'logout'])->name('api.logout');
         Route::post('/verify-token', [App\Http\Controllers\ApiController::class, 'verifyToken'])->name('api.verify.token');
         Route::post('/download-ecard', [App\Http\Controllers\ApiController::class, 'downloadECard'])->name('api.download.ecard');
+        // Add /device-token endpoint to save or remove device tokens for authenticated employee
+        Route::post('/device-token', [App\Http\Controllers\ApiController::class, 'saveDeviceToken'])->name('api.device.token');
+
         // Reset Password Route
         Route::post('/reset-password', [App\Http\Controllers\ApiController::class, 'resetPassword'])->name('api.reset.password');
 
@@ -44,8 +47,9 @@ Route::prefix('v1')->group(function () {
         // Download E-Card for employee
         Route::post('/download-ecard', [App\Http\Controllers\ApiController::class, 'downloadECard'])->name('api.download.ecard');
 
+        Route::post('/get-banners', [App\Http\Controllers\ApiController::class, 'getBanners'])->name('api.get.banners');
         // ============================================
-        // Help / Support Chat API Routes
+        // Help / Support Chat API Routes (Legacy)
         // ============================================
         Route::prefix('help')->group(function () {
             // Start a new help chat session
@@ -67,6 +71,48 @@ Route::prefix('v1')->group(function () {
             // Update ticket status (resolve, close, etc.)
             Route::patch('/ticket/{ticket_id}/status', [App\Http\Controllers\ApiController::class, 'updateHelpTicketStatus'])
                 ->name('api.help.ticket.status');
+        });
+
+        // ============================================
+        // Chatbot Conversation API Routes (Separate from Tickets)
+        // ============================================
+        Route::prefix('chatbot')->group(function () {
+            // Get all chatbot conversations
+            Route::get('/conversations', [App\Http\Controllers\ApiController::class, 'getChatbotConversations'])
+                ->name('api.chatbot.conversations');
+
+            // Start a new chatbot conversation
+            Route::post('/start', [App\Http\Controllers\ApiController::class, 'startChatbot'])
+                ->name('api.chatbot.start');
+
+            // Process chatbot response
+            Route::post('/respond', [App\Http\Controllers\ApiController::class, 'chatbotRespond'])
+                ->name('api.chatbot.respond');
+
+            // Get single chatbot conversation with all messages
+            Route::get('/conversation/{conversationId}', [App\Http\Controllers\ApiController::class, 'getChatbotConversation'])
+                ->name('api.chatbot.conversation');
+        });
+
+        // ============================================
+        // Support Ticket API Routes (Escalation from Chatbot)
+        // ============================================
+        Route::prefix('support')->group(function () {
+            // Create a new support ticket
+            Route::post('/tickets', [App\Http\Controllers\ApiController::class, 'createSupportTicket'])
+                ->name('api.support.ticket.create');
+
+            // Get all support tickets
+            Route::get('/tickets', [App\Http\Controllers\ApiController::class, 'getSupportTickets'])
+                ->name('api.support.tickets');
+
+            // Get ticket details with messages
+            Route::get('/tickets/{ticketId}', [App\Http\Controllers\ApiController::class, 'getSupportTicketDetails'])
+                ->name('api.support.ticket.details');
+
+            // Add message to existing ticket
+            Route::post('/tickets/{ticketId}/message', [App\Http\Controllers\ApiController::class, 'addSupportTicketMessage'])
+                ->name('api.support.ticket.message');
         });
 
         // ============================================

@@ -3,7 +3,7 @@ import { Link, router } from '@inertiajs/react';
 import CompanyUserLayout from '@/Layouts/CompanyUserLayout';
 import axios from 'axios';
 import {
-    FiArrowLeft, FiShield, FiFileText, FiCalendar, FiCheckCircle, 
+    FiArrowLeft, FiShield, FiFileText, FiCalendar, FiCheckCircle,
     FiClock, FiDownload, FiExternalLink, FiSearch, FiEye, FiAlertCircle,
     FiFilter, FiX, FiUserPlus, FiUserMinus, FiUser, FiMail, FiHash
 } from 'react-icons/fi';
@@ -25,7 +25,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
         if (selectedEndorsement?.id) {
             setLoadingMembers(true);
             setMemberData(null);
-            
+
             axios.get(`/company-user/api/endorsements/${selectedEndorsement.id}/details`)
                 .then(response => {
                     setMemberData(response.data);
@@ -69,7 +69,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
     };
 
     const getStatusBadge = (status) => {
-        switch(parseInt(status)) {
+        switch (parseInt(status)) {
             case 1:
                 return (
                     <span className="px-3 py-1 text-[10px] font-semibold rounded-full bg-green-100 text-green-800 flex items-center gap-1">
@@ -93,7 +93,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
         }
     };
 
-    const filteredEndorsements = endorsements?.data?.filter(endo => 
+    const filteredEndorsements = endorsements?.data?.filter(endo =>
         endo.endorsement_no?.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
 
@@ -107,17 +107,19 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
 
             {/* Back Button & Header */}
             <div className="mb-6">
-                <Link 
+                <Link
                     href="/company-user/policies"
-                    className="inline-flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+                    className="inline-flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 mb-4 transition-colors font-semibold"
                 >
-                    <FiArrowLeft className="w-4 h-4" />
-                    <span>Back to Policies</span>
+                    <div className="rounded-full bg-white p-1 w-fit">
+                        <FiArrowLeft className="w-4 h-4" />
+                    </div>                    <span>Back to Policies</span>
                 </Link>
 
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-light text-[#1f1f1f] mb-2">
+
+                        <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mt-3">
                             Policy Endorsements
                         </h1>
                         <p className="text-sm text-gray-500">
@@ -127,8 +129,8 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
                             {policy?.insurance?.insurance_comp_icon_url ? (
-                                <img 
-                                    src={policy.insurance.insurance_comp_icon_url} 
+                                <img
+                                    src={policy.insurance.insurance_comp_icon_url}
                                     alt={policy.insurance.insurance_company_name}
                                     className="w-8 h-8 object-contain"
                                 />
@@ -142,13 +144,13 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
 
             {/* 70-30 Grid Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-                
+
                 {/* LEFT: 70% - Endorsements Table */}
                 <div className="lg:col-span-7">
-                    
+
                     {/* Search Bar */}
                     <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-2xl p-4 mb-4 shadow-sm">
-                        <div className="flex gap-3 items-center">
+                        <div className="flex gap-3 items-start sm:flex-row flex-col">
                             <div className="flex-1 relative">
                                 <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                                 <input
@@ -159,22 +161,24 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <button 
-                                onClick={() => setShowFilterModal(true)}
-                                className="flex items-center gap-2 px-3 py-2 text-xs font-medium border border-gray-200 rounded-xl hover:bg-gray-50 bg-white transition-all relative"
-                            >
-                                <FiFilter className="w-3.5 h-3.5" />
-                                <span>Filter</span>
-                                {activeFilterCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 text-white rounded-full text-[10px] flex items-center justify-center">
-                                        {activeFilterCount}
-                                    </span>
-                                )}
-                            </button>
-                            <button className="flex items-center gap-2 px-4 py-2 text-xs font-medium bg-[#2d2d2d] text-white rounded-xl hover:bg-[#1f1f1f] transition-all">
-                                <FiDownload className="w-3.5 h-3.5" />
-                                Export
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setShowFilterModal(true)}
+                                    className="flex items-center gap-2 px-3 py-2 text-xs font-medium border border-gray-200 rounded-xl hover:bg-gray-50 bg-white transition-all relative"
+                                >
+                                    <FiFilter className="w-3.5 h-3.5" />
+                                    <span>Filter</span>
+                                    {activeFilterCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 text-white rounded-full text-[10px] flex items-center justify-center">
+                                            {activeFilterCount}
+                                        </span>
+                                    )}
+                                </button>
+                                <button className="flex items-center gap-2 px-4 py-2 text-xs font-medium bg-[#2d2d2d] text-white rounded-xl hover:bg-[#1f1f1f] transition-all">
+                                    <FiDownload className="w-3.5 h-3.5" />
+                                    Export
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -194,11 +198,10 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                 <tbody className="divide-y divide-gray-100">
                                     {filteredEndorsements.length > 0 ? (
                                         filteredEndorsements.map((endorsement, idx) => (
-                                            <tr 
+                                            <tr
                                                 key={endorsement.id}
-                                                className={`hover:bg-purple-50/50 transition-colors cursor-pointer ${
-                                                    selectedEndorsement?.id === endorsement.id ? 'bg-purple-50/50' : ''
-                                                }`}
+                                                className={`hover:bg-purple-50/50 transition-colors cursor-pointer ${selectedEndorsement?.id === endorsement.id ? 'bg-purple-50/50' : ''
+                                                    }`}
                                                 onClick={() => setSelectedEndorsement(endorsement)}
                                             >
                                                 <td className="px-4 py-3 whitespace-nowrap">
@@ -287,13 +290,12 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                             <Link
                                                 key={idx}
                                                 href={link.url || '#'}
-                                                className={`px-3 py-1 text-xs rounded-lg transition-all ${
-                                                    link.active 
-                                                        ? 'bg-[#2d2d2d] text-white' 
-                                                        : link.url 
-                                                            ? 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200' 
+                                                className={`px-3 py-1 text-xs rounded-lg transition-all ${link.active
+                                                        ? 'bg-[#2d2d2d] text-white'
+                                                        : link.url
+                                                            ? 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
                                                             : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                }`}
+                                                    }`}
                                                 disabled={!link.url}
                                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                             />
@@ -307,7 +309,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
 
                 {/* RIGHT: 30% - Details Panel */}
                 <div className="lg:col-span-3 space-y-4">
-                    
+
                     {/* Selected Endorsement Details */}
                     {selectedEndorsement ? (
                         <>
@@ -316,13 +318,13 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                     <FiFileText className="w-4 h-4" />
                                     Endorsement Details
                                 </h3>
-                                
+
                                 <div className="space-y-4">
                                     <div>
                                         <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Endorsement Number</div>
                                         <div className="text-sm font-semibold text-gray-900">{selectedEndorsement.endorsement_no}</div>
                                     </div>
-                                    
+
                                     <div className="pt-3 border-t border-gray-100">
                                         <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Date</div>
                                         <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
@@ -330,7 +332,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                             {formatDate(selectedEndorsement.endorsement_date)}
                                         </div>
                                     </div>
-                                    
+
                                     <div className="pt-3 border-t border-gray-100">
                                         <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Status</div>
                                         <div className="mt-1">
@@ -361,7 +363,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                             </a>
                                         </div>
                                     )}
-                                    
+
                                     <div className="pt-3 border-t border-gray-100">
                                         <Link
                                             href={`/company-user/endorsements/${selectedEndorsement.id}/details`}
@@ -388,19 +390,17 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                 <div className="flex border-b border-gray-200 bg-gray-50/50">
                                     <button
                                         onClick={() => setActiveTab('additions')}
-                                        className={`flex-1 px-4 py-3 text-xs font-semibold transition-all ${
-                                            activeTab === 'additions'
+                                        className={`flex-1 px-4 py-3 text-xs font-semibold transition-all ${activeTab === 'additions'
                                                 ? 'text-green-600 border-b-2 border-green-600 bg-white'
                                                 : 'text-gray-500 hover:text-gray-700'
-                                        }`}
+                                            }`}
                                     >
                                         <div className="flex items-center justify-center gap-2">
                                             <FiUserPlus className="w-3.5 h-3.5" />
                                             <span>Additions</span>
                                             {memberData && (
-                                                <span className={`px-2 py-0.5 rounded-full text-[10px] ${
-                                                    activeTab === 'additions' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'
-                                                }`}>
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'additions' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'
+                                                    }`}>
                                                     {memberData.additionMembers?.length || 0}
                                                 </span>
                                             )}
@@ -408,19 +408,17 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('deletions')}
-                                        className={`flex-1 px-4 py-3 text-xs font-semibold transition-all ${
-                                            activeTab === 'deletions'
+                                        className={`flex-1 px-4 py-3 text-xs font-semibold transition-all ${activeTab === 'deletions'
                                                 ? 'text-red-600 border-b-2 border-red-600 bg-white'
                                                 : 'text-gray-500 hover:text-gray-700'
-                                        }`}
+                                            }`}
                                     >
                                         <div className="flex items-center justify-center gap-2">
                                             <FiUserMinus className="w-3.5 h-3.5" />
                                             <span>Deletions</span>
                                             {memberData && (
-                                                <span className={`px-2 py-0.5 rounded-full text-[10px] ${
-                                                    activeTab === 'deletions' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'
-                                                }`}>
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'deletions' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'
+                                                    }`}>
                                                     {memberData.deletionMembers?.length || 0}
                                                 </span>
                                             )}
@@ -550,7 +548,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                     {/* Policy Info */}
                     <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-2xl p-5 shadow-sm">
                         <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">Policy Info</h3>
-                        
+
                         <div className="space-y-3">
                             <div>
                                 <div className="text-[10px] text-gray-500 mb-0.5 uppercase tracking-wider">Policy Name</div>
@@ -574,7 +572,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                     {/* Quick Stats */}
                     <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-2xl p-5 shadow-sm">
                         <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">Statistics</h3>
-                        
+
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs text-gray-600">Total Endorsements</span>
@@ -596,7 +594,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                     </div>
 
                     {/* Help Card */}
-                    
+
                 </div>
             </div>
 
@@ -626,7 +624,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                     type="text"
                                     placeholder="Search by endorsement number..."
                                     value={filterValues.search}
-                                    onChange={(e) => setFilterValues({...filterValues, search: e.target.value})}
+                                    onChange={(e) => setFilterValues({ ...filterValues, search: e.target.value })}
                                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
                                 />
                             </div>
@@ -638,7 +636,7 @@ export default function PolicyEndorsements({ user, policy, endorsements, filters
                                 </label>
                                 <select
                                     value={filterValues.status}
-                                    onChange={(e) => setFilterValues({...filterValues, status: e.target.value})}
+                                    onChange={(e) => setFilterValues({ ...filterValues, status: e.target.value })}
                                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
                                 >
                                     <option value="">All Status</option>

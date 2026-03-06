@@ -144,7 +144,7 @@ export default function Enrollments({ user, enrollments, filters = {} }) {
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 w-full md:w-auto justify-end">
                                 <button 
                                     onClick={() => setShowFilterModal(true)}
                                     className="relative flex items-center gap-2 px-3 py-2 text-xs border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors bg-white"
@@ -214,7 +214,7 @@ export default function Enrollments({ user, enrollments, filters = {} }) {
                                 </div>
                             ))
                         ) : (
-                            <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-2xl p-12 text-center">
+                            <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-2xl p-6 sm:8 text-center">
                                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <FiUsers className="w-8 h-8 text-gray-400" />
                                 </div>
@@ -307,7 +307,7 @@ export default function Enrollments({ user, enrollments, filters = {} }) {
                                 </div>
                             </>
                         ) : (
-                            <div className="text-center py-12">
+                            <div className="text-center py-2 sm:py-12">
                                 <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <FiUsers className="w-8 h-8 text-purple-500" />
                                 </div>
