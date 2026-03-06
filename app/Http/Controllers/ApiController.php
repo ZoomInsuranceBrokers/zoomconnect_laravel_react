@@ -30,7 +30,7 @@ class ApiController extends Controller
 {
     /**
      * Login with Email - Send OTP to email
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -81,7 +81,7 @@ class ApiController extends Controller
 
     /**
      * Login with Phone - Send OTP via SMS
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -144,7 +144,7 @@ class ApiController extends Controller
 
     /**
      * Verify OTP and return JWT token
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -222,7 +222,7 @@ class ApiController extends Controller
 
     /**
      * Get all active companies for employee code login
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function getActiveCompanies()
@@ -248,7 +248,7 @@ class ApiController extends Controller
 
     /**
      * Login with Employee Code - Authenticate with company_id, employee_code, and password
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -316,7 +316,7 @@ class ApiController extends Controller
 
     /**
      * Generate JWT token for authenticated user
-     * 
+     *
      * @param CompanyEmployee $employee
      * @return string
      */
@@ -380,7 +380,7 @@ class ApiController extends Controller
 
     /**
      * Verify JWT token
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -407,7 +407,7 @@ class ApiController extends Controller
 
     /**
      * Get user profile
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -433,7 +433,8 @@ class ApiController extends Controller
             $this->createEmployeeSession($employee);
 
             return ApiResponse::success([
-                'user' => $employee
+                'user' => $employee,
+                'company' => $company
             ], 'Profile fetched', 200);
         } catch (\Exception $e) {
             return ApiResponse::error('Invalid or expired token', $e->getMessage(), 401);
@@ -442,7 +443,7 @@ class ApiController extends Controller
 
     /**
      * Logout - Invalidate token (optional, as JWT is stateless)
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -502,7 +503,7 @@ class ApiController extends Controller
 
     /**
      * Reset Password - Change password for authenticated employee
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -546,7 +547,7 @@ class ApiController extends Controller
 
     /**
      * Get all active FAQs for Mobile App
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function getFaqs()
@@ -568,7 +569,7 @@ class ApiController extends Controller
      * Returns services that are active and either:
      * - Available for all companies (company_id = 0)
      * - Specifically for the user's company
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -615,7 +616,7 @@ class ApiController extends Controller
 
     /**
      * Get all policies for authenticated employee
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -648,22 +649,22 @@ class ApiController extends Controller
 
             foreach ($policies as $policy) {
                 // Get sum insured data
-                $sumInsuredQuery = "SELECT 
-                    SUM({$policy->tpa_table_name}.base_sum_insured) AS total_base_sum_insured, 
-                    SUM({$policy->tpa_table_name}.topup_sum_insured) AS total_topup_sum_insured, 
-                    SUM({$policy->tpa_table_name}.parent_sum_insured) AS total_parent_sum_insured, 
+                $sumInsuredQuery = "SELECT
+                    SUM({$policy->tpa_table_name}.base_sum_insured) AS total_base_sum_insured,
+                    SUM({$policy->tpa_table_name}.topup_sum_insured) AS total_topup_sum_insured,
+                    SUM({$policy->tpa_table_name}.parent_sum_insured) AS total_parent_sum_insured,
                     SUM({$policy->tpa_table_name}.parent_in_law_sum_insured) AS parent_in_law_sum_insured,
-                    SUM({$policy->tpa_table_name}.base_premium_on_company + {$policy->tpa_table_name}.base_premium_on_employee + 
-                        {$policy->tpa_table_name}.topup_premium_on_company + {$policy->tpa_table_name}.topup_premium_on_employee + 
-                        {$policy->tpa_table_name}.parent_premium_on_company + {$policy->tpa_table_name}.parent_premium_on_employee + 
+                    SUM({$policy->tpa_table_name}.base_premium_on_company + {$policy->tpa_table_name}.base_premium_on_employee +
+                        {$policy->tpa_table_name}.topup_premium_on_company + {$policy->tpa_table_name}.topup_premium_on_employee +
+                        {$policy->tpa_table_name}.parent_premium_on_company + {$policy->tpa_table_name}.parent_premium_on_employee +
                         {$policy->tpa_table_name}.parent_in_law_premium_on_company + {$policy->tpa_table_name}.parent_in_law_premium_on_employee) AS total_premium_amt,
-                    SUM({$policy->tpa_table_name}.pro_rata_base_premium_on_company + {$policy->tpa_table_name}.pro_rata_base_premium_on_employee + 
-                        {$policy->tpa_table_name}.pro_rata_topup_premium_on_company + {$policy->tpa_table_name}.pro_rata_topup_premium_on_employee + 
-                        {$policy->tpa_table_name}.pro_rata_parent_premium_on_company + {$policy->tpa_table_name}.pro_rata_parent_premium_on_employee + 
+                    SUM({$policy->tpa_table_name}.pro_rata_base_premium_on_company + {$policy->tpa_table_name}.pro_rata_base_premium_on_employee +
+                        {$policy->tpa_table_name}.pro_rata_topup_premium_on_company + {$policy->tpa_table_name}.pro_rata_topup_premium_on_employee +
+                        {$policy->tpa_table_name}.pro_rata_parent_premium_on_company + {$policy->tpa_table_name}.pro_rata_parent_premium_on_employee +
                         {$policy->tpa_table_name}.pro_rata_parent_in_law_premium_on_company + {$policy->tpa_table_name}.pro_rata_parent_in_law_premium_on_employee) AS total_pro_rate_premium_amt
-                    FROM {$policy->tpa_table_name} 
-                    WHERE emp_id = {$employee->id} 
-                    AND addition_endorsement_id != 0 
+                    FROM {$policy->tpa_table_name}
+                    WHERE emp_id = {$employee->id}
+                    AND addition_endorsement_id != 0
                     AND policy_id = {$policy->id}";
 
                 $sumInsuredData = DB::select($sumInsuredQuery)[0] ?? null;
@@ -696,13 +697,13 @@ class ApiController extends Controller
 
             try {
                 $enrollmentAssigned = DB::select("
-                    SELECT policy_enrollment_mapping_master.*, policy_master.policy_config 
-                    FROM policy_enrollment_mapping_master 
-                    INNER JOIN policy_master ON policy_master.id = policy_enrollment_mapping_master.policy_id 
+                    SELECT policy_enrollment_mapping_master.*, policy_master.policy_config
+                    FROM policy_enrollment_mapping_master
+                    INNER JOIN policy_master ON policy_master.id = policy_enrollment_mapping_master.policy_id
                     WHERE policy_enrollment_mapping_master.emp_id = {$employee->id}
-                    AND policy_enrollment_mapping_master.policy_issued = 0 
-                    AND policy_enrollment_mapping_master.submit_status = 0 
-                    AND policy_master.policy_end_date >= CURDATE() 
+                    AND policy_enrollment_mapping_master.policy_issued = 0
+                    AND policy_enrollment_mapping_master.submit_status = 0
+                    AND policy_master.policy_end_date >= CURDATE()
                     AND policy_master.is_active = 1
                 ");
             } catch (\Exception $e) {
@@ -711,23 +712,23 @@ class ApiController extends Controller
 
             try {
                 $newEnrollmentAssigned = DB::select("
-                    SELECT emm.*, ep.portal_start_date, ep.portal_end_date, ed.enrolment_name, ed.rator_type 
-                    FROM enrolment_mapping_master emm 
-                    INNER JOIN enrolment_period ep ON ep.id = emm.enrolment_period_id 
-                    INNER JOIN enrolment_details ed ON ed.id = emm.enrolment_id 
-                    WHERE ep.portal_start_date <= CONVERT_TZ(NOW(), '+00:00', '+05:30') 
-                    AND ep.portal_end_date > CONVERT_TZ(NOW(), '+00:00', '+05:30') 
-                    AND ep.is_active = 1 
-                    AND emm.status = 1 
-                    AND emm.submit_status = 0 
+                    SELECT emm.*, ep.portal_start_date, ep.portal_end_date, ed.enrolment_name, ed.rator_type
+                    FROM enrolment_mapping_master emm
+                    INNER JOIN enrolment_period ep ON ep.id = emm.enrolment_period_id
+                    INNER JOIN enrolment_details ed ON ed.id = emm.enrolment_id
+                    WHERE ep.portal_start_date <= CONVERT_TZ(NOW(), '+00:00', '+05:30')
+                    AND ep.portal_end_date > CONVERT_TZ(NOW(), '+00:00', '+05:30')
+                    AND ep.is_active = 1
+                    AND emm.status = 1
+                    AND emm.submit_status = 0
                     AND emm.emp_id = {$employee->id}
                     AND ((ed.id = 94 AND NOT EXISTS (
-                        SELECT 1 FROM zoom_enrolment_data zed 
-                        WHERE zed.emp_id = emm.emp_id 
+                        SELECT 1 FROM zoom_enrolment_data zed
+                        WHERE zed.emp_id = emm.emp_id
                         AND zed.enrolment_portal_id = emm.enrolment_period_id
                     )) OR (ed.id <> 94 AND NOT EXISTS (
-                        SELECT 1 FROM enrolment_data ed1 
-                        WHERE ed1.emp_id = emm.emp_id 
+                        SELECT 1 FROM enrolment_data ed1
+                        WHERE ed1.emp_id = emm.emp_id
                         AND ed1.enrolment_portal_id = emm.enrolment_period_id
                     )))
                     ORDER BY ep.portal_end_date DESC
@@ -738,23 +739,23 @@ class ApiController extends Controller
 
             try {
                 $newEnrollmentSubmitted = DB::select("
-                    SELECT emm.*, ep.portal_start_date, ep.portal_end_date, ed.enrolment_name, ed.rator_type 
-                    FROM enrolment_mapping_master emm 
-                    INNER JOIN enrolment_period ep ON ep.id = emm.enrolment_period_id 
-                    INNER JOIN enrolment_details ed ON ed.id = emm.enrolment_id 
-                    WHERE ep.portal_start_date <= CONVERT_TZ(NOW(), '+00:00', '+05:30') 
+                    SELECT emm.*, ep.portal_start_date, ep.portal_end_date, ed.enrolment_name, ed.rator_type
+                    FROM enrolment_mapping_master emm
+                    INNER JOIN enrolment_period ep ON ep.id = emm.enrolment_period_id
+                    INNER JOIN enrolment_details ed ON ed.id = emm.enrolment_id
+                    WHERE ep.portal_start_date <= CONVERT_TZ(NOW(), '+00:00', '+05:30')
                     AND ep.portal_end_date > DATE_SUB(NOW(), INTERVAL 50 DAY)
-                    AND ep.is_active = 1 
-                    AND emm.status = 1 
-                    AND emm.submit_status = 1 
+                    AND ep.is_active = 1
+                    AND emm.status = 1
+                    AND emm.submit_status = 1
                     AND emm.emp_id = {$employee->id}
                     AND ((ed.id = 94 AND EXISTS (
-                        SELECT 1 FROM zoom_enrolment_data zed 
-                        WHERE zed.emp_id = emm.emp_id 
+                        SELECT 1 FROM zoom_enrolment_data zed
+                        WHERE zed.emp_id = emm.emp_id
                         AND zed.enrolment_portal_id = emm.enrolment_period_id
                     )) OR (ed.id <> 94 AND EXISTS (
-                        SELECT 1 FROM enrolment_data ed1 
-                        WHERE ed1.emp_id = emm.emp_id 
+                        SELECT 1 FROM enrolment_data ed1
+                        WHERE ed1.emp_id = emm.emp_id
                         AND ed1.enrolment_portal_id = emm.enrolment_period_id
                     )))
                     ORDER BY ep.portal_end_date DESC
@@ -780,7 +781,7 @@ class ApiController extends Controller
 
     /**
      * Get active employee policies
-     * 
+     *
      * @param int $employeeId
      * @return array
      */
@@ -792,16 +793,16 @@ class ApiController extends Controller
         try {
             // Get distinct TPA table names
             $tpaTables = DB::select("
-                SELECT DISTINCT tpa_master.tpa_table_name 
-                FROM policy_mapping_master 
-                INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id 
-                INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id 
-                INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id 
-                INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id 
-                WHERE policy_mapping_master.status = 1 
-                AND policy_endorsements.status = 1 
-                AND policy_master.is_old = 0 
-                AND policy_master.policy_end_date >= CURRENT_TIMESTAMP 
+                SELECT DISTINCT tpa_master.tpa_table_name
+                FROM policy_mapping_master
+                INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id
+                INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id
+                INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id
+                INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id
+                WHERE policy_mapping_master.status = 1
+                AND policy_endorsements.status = 1
+                AND policy_master.is_old = 0
+                AND policy_master.policy_end_date >= CURRENT_TIMESTAMP
                 AND policy_mapping_master.emp_id = {$employeeId}
             ");
 
@@ -812,29 +813,29 @@ class ApiController extends Controller
 
             foreach ($tpaTables as $tpaTable) {
                 $policies = DB::select("
-                    SELECT DISTINCT 
-                        policy_master.*, 
-                        policy_mapping_master.emp_id, 
-                        policy_mapping_master.id AS mapping_id, 
-                        policy_mapping_master.addition_endorsement_id, 
-                        insurance_master.insurance_company_name, 
-                        insurance_master.insurance_comp_icon_url, 
-                        tpa_master.tpa_company_name, 
-                        tpa_master.tpa_table_name 
-                    FROM policy_mapping_master 
-                    INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id 
-                    INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id 
-                    INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id 
-                    INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id 
-                    JOIN {$tpaTable->tpa_table_name} ON {$tpaTable->tpa_table_name}.mapping_id = policy_mapping_master.id 
-                    WHERE policy_mapping_master.status = 1 
-                    AND policy_endorsements.status = 1 
-                    AND policy_master.is_old = 0 
-                    AND policy_master.policy_end_date >= CURRENT_TIMESTAMP 
+                    SELECT DISTINCT
+                        policy_master.*,
+                        policy_mapping_master.emp_id,
+                        policy_mapping_master.id AS mapping_id,
+                        policy_mapping_master.addition_endorsement_id,
+                        insurance_master.insurance_company_name,
+                        insurance_master.insurance_comp_icon_url,
+                        tpa_master.tpa_company_name,
+                        tpa_master.tpa_table_name
+                    FROM policy_mapping_master
+                    INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id
+                    INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id
+                    INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id
+                    INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id
+                    JOIN {$tpaTable->tpa_table_name} ON {$tpaTable->tpa_table_name}.mapping_id = policy_mapping_master.id
+                    WHERE policy_mapping_master.status = 1
+                    AND policy_endorsements.status = 1
+                    AND policy_master.is_old = 0
+                    AND policy_master.policy_end_date >= CURRENT_TIMESTAMP
                     AND policy_mapping_master.emp_id = {$employeeId}
-                    AND {$tpaTable->tpa_table_name}.addition_endorsement_id IS NOT NULL 
-                    AND {$tpaTable->tpa_table_name}.deletion_endorsement_id IS NULL 
-                    AND {$tpaTable->tpa_table_name}.updation_endorsement_id IS NULL 
+                    AND {$tpaTable->tpa_table_name}.addition_endorsement_id IS NOT NULL
+                    AND {$tpaTable->tpa_table_name}.deletion_endorsement_id IS NULL
+                    AND {$tpaTable->tpa_table_name}.updation_endorsement_id IS NULL
                     AND {$tpaTable->tpa_table_name}.addition_endorsement_id != 0
                 ");
 
@@ -852,7 +853,7 @@ class ApiController extends Controller
 
     /**
      * Send SMS helper function
-     * 
+     *
      * @param string $mobile
      * @param string $message
      * @return bool
@@ -867,7 +868,7 @@ class ApiController extends Controller
         $authKey = config('services.msg91.auth_key');
         $senderId = config('services.msg91.sender_id');
         $route = '4';
-        
+
         $url = "https://api.msg91.com/api/sendhttp.php";
         $postData = [
             'authkey' => $authKey,
@@ -876,16 +877,16 @@ class ApiController extends Controller
             'sender' => $senderId,
             'route' => $route
         ];
-        
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
+
         $response = curl_exec($ch);
         curl_close($ch);
-        
+
         return true;
         */
 
@@ -1367,7 +1368,7 @@ class ApiController extends Controller
                 'show_thank_you' => true,
             ],
             'non_covered_info' => [
-                'message' => '❌ Treatment Not Covered:\nCommon exclusions:\n• Cosmetic procedures\n• Dental (except accident)\n• Alternative medicine\n• Self-inflicted injuries\n\n📄 Check exclusions list in policy document.',
+                'message' => '❌ Treatment Not Covered:\nCommon exclusions:\n• Cosmetic procedures\n• Dental (except accident)\n• Alternative medicine\n• Self-inflicted injuries\n• Drug/alcohol abuse\n• War & nuclear risks\n\n📄 Check exclusions list in policy document.',
                 'options' => [],
                 'show_thank_you' => true,
             ],
@@ -1568,7 +1569,7 @@ class ApiController extends Controller
 
     /**
      * Start a new help chat session
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -1636,7 +1637,7 @@ class ApiController extends Controller
 
     /**
      * Continue chat conversation
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -1705,7 +1706,7 @@ class ApiController extends Controller
 
     /**
      * Handle chatbot option selection
-     * 
+     *
      * @param string $ticketId
      * @param int $userId
      * @param string $stateKey
@@ -1815,7 +1816,7 @@ class ApiController extends Controller
 
     /**
      * Handle free text message (unresolved query)
-     * 
+     *
      * @param string $ticketId
      * @param int $userId
      * @param string $message
@@ -1897,7 +1898,7 @@ class ApiController extends Controller
 
     /**
      * Get chat history for a specific ticket
-     * 
+     *
      * @param Request $request
      * @param string $ticketId
      * @return \Illuminate\Http\JsonResponse
@@ -1966,7 +1967,7 @@ class ApiController extends Controller
 
     /**
      * Get all tickets for the authenticated user
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -2015,7 +2016,7 @@ class ApiController extends Controller
 
     /**
      * Update ticket status
-     * 
+     *
      * @param Request $request
      * @param string $ticketId
      * @return \Illuminate\Http\JsonResponse
@@ -2664,7 +2665,7 @@ class ApiController extends Controller
 
     /**
      * Get Policy Details with TPA-specific data
-     * 
+     *
      * @param Request $request
      * @param int $policy_id
      * @return \Illuminate\Http\JsonResponse
@@ -2869,7 +2870,7 @@ class ApiController extends Controller
 
     /**
      * Get TPA-specific table data based on policy configuration
-     * 
+     *
      * @param object $policy
      * @param object $employee
      * @param object $mappingData
@@ -2916,17 +2917,17 @@ class ApiController extends Controller
             // Get cover summary string
             $coverQuery = "
                 SELECT CONCAT_WS(
-                    ' <br> & <br>', 
+                    ' <br> & <br>',
                     IF(SUM(base_sum_insured) > 0, CONCAT('Base SI <br> Rs. ', FORMAT(SUM(base_sum_insured), 0)), NULL),
                     IF(SUM(topup_sum_insured) > 0, CONCAT('Top Up SI <br> Rs. ', FORMAT(SUM(topup_sum_insured), 0)), NULL),
                     IF(SUM(parent_sum_insured) > 0, CONCAT('Parents SI <br> Rs. ', FORMAT(SUM(parent_sum_insured), 0)), NULL),
                     IF(SUM(parent_in_law_sum_insured) > 0, CONCAT('Parents in Law SI <br> Rs. ', FORMAT(SUM(parent_in_law_sum_insured), 0)), NULL)
-                ) AS output_string 
+                ) AS output_string
                 FROM {$tableName}
-                WHERE cmp_id = ? 
-                AND policy_id = ? 
-                AND emp_id = ? 
-                AND mapping_id = ? 
+                WHERE cmp_id = ?
+                AND policy_id = ?
+                AND emp_id = ?
+                AND mapping_id = ?
                 AND addition_endorsement_id = ?
             ";
 
@@ -2948,7 +2949,7 @@ class ApiController extends Controller
 
     /**
      * Get TPA table configuration (table name and primary key)
-     * 
+     *
      * @param int $tpaId
      * @return array
      */
@@ -2976,7 +2977,7 @@ class ApiController extends Controller
 
     /**
      * Check if a string is valid JSON
-     * 
+     *
      * @param string $string
      * @return bool
      */
@@ -2986,9 +2987,93 @@ class ApiController extends Controller
         return json_last_error() === JSON_ERROR_NONE;
     }
 
+    public function downloadECard(Request $request)
+    {
+        $token = $request->bearerToken();
+        if (!$token) {
+            return ApiResponse::error('Token not provided', null, 401);
+        }
+        try {
+            $secret = config('app.key');
+            $decoded = \Firebase\JWT\JWT::decode($token, new \Firebase\JWT\Key($secret, 'HS256'));
+            $employee = CompanyEmployee::find($decoded->sub);
+            if (!$employee) {
+                return ApiResponse::error('User not found', null, 404);
+            }
+            $request->validate([
+                'policy_id' => 'required|integer',
+                'uhid' => 'nullable|string',
+                'dob' => 'nullable|date'
+            ]);
+            $policy = DB::table('policy_master')
+                ->where('id', $request->policy_id)
+                ->first();
+            if (!$policy) {
+                return ApiResponse::error('Policy not found', null, 404);
+            }
+            $employeeData = DB::table('company_employees')
+                ->where('id', $employee->id)
+                ->first();
+            if (!$employeeData) {
+                return ApiResponse::error('Employee data not found', null, 404);
+            }
+            $data = [
+                'policy' => $policy,
+                'employee' => $employeeData,
+                'emp_id' => $employeeData->employees_code ?? $employee->employees_code,
+                'policy_number' => $policy->policy_number,
+                'dob' => $request->dob ?? $employeeData->dob,
+                'uhid' => $request->uhid,
+                'policy_start_date' => $policy->policy_start_date ?? null,
+                'policy_end_date' => $policy->policy_end_date ?? null,
+            ];
+            switch ($policy->tpa_id) {
+                case 60:
+                    return $this->demo_new_download_e_card($data);
+                case 62:
+                    return $this->phs_download_e_card($data);
+                case 63:
+                    return $this->icici_download_e_card($data);
+                case 64:
+                    return $this->go_digit_download_e_card($data);
+                case 65:
+                    return $this->vidal_new_download_e_card($data);
+                case 66:
+                    return $this->fhpl_new_download_e_card($data);
+                case 67:
+                    return $this->mediassist_download_e_card($data);
+                case 68:
+                    return $this->safeway_download_e_card($data);
+                case 69:
+                    return $this->care_download_e_card($data);
+                case 70:
+                    return $this->health_india_download_e_card($data);
+                case 71:
+                    return $this->ewa_download_e_card($data);
+                case 72:
+                    return $this->sbi_download_e_card($data);
+                case 73:
+                    return $this->ericson_download_e_card($data);
+                case 74:
+                    return $this->future_generali_download_e_card($data);
+                case 75:
+                    return $this->ab_download_e_card($data);
+                case 76:
+                    return $this->iffco_download_e_card($data);
+                case 77:
+                    return $this->reliance_download_e_card($data);
+                default:
+                    return ApiResponse::error('E-Card download not available for this TPA', null, 400);
+            }
+        } catch (\Exception $e) {
+            \Log::error('E-Card download error: ' . $e->getMessage());
+            return ApiResponse::error('Failed to download E-Card', $e->getMessage(), 500);
+        }
+    }
+
     /**
      * Get network hospital table configuration for each TPA
-     * 
+     *
      * @param int $tpaId
      * @return array|null
      */
@@ -3426,14 +3511,13 @@ class ApiController extends Controller
 
         return ApiResponse::error('Failed to retrieve PHS network hospitals after multiple attempts', null, 500);
     }
-
     // ============================================
     // Survey APIs
     // ============================================
 
     /**
      * Get assigned surveys for the authenticated employee
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -3461,22 +3545,22 @@ class ApiController extends Controller
 
             // Get assigned surveys with submission status
             $sql = "
-                SELECT 
-                    cas.*, 
-                    CASE 
+                SELECT
+                    cas.*,
+                    CASE
                         WHEN EXISTS (
-                            SELECT 1 
-                            FROM survey_responses sr 
-                            WHERE sr.assigned_survey_id = cas.id 
+                            SELECT 1
+                            FROM survey_responses sr
+                            WHERE sr.assigned_survey_id = cas.id
                             AND sr.emp_id = ?
-                        ) THEN 1 
-                        ELSE 0 
+                        ) THEN 1
+                        ELSE 0
                     END AS is_submit
-                FROM 
+                FROM
                     company_assign_survey cas
-                WHERE 
-                    cas.comp_id = ? 
-                    AND cas.survey_start_date <= ? 
+                WHERE
+                    cas.comp_id = ?
+                    AND cas.survey_start_date <= ?
                     AND cas.survey_end_date >= ?
                 LIMIT 1
             ";
@@ -3494,7 +3578,7 @@ class ApiController extends Controller
 
     /**
      * Get survey questions for a specific survey
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -3544,7 +3628,7 @@ class ApiController extends Controller
 
     /**
      * Submit survey responses
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -3972,19 +4056,19 @@ class ApiController extends Controller
 
         // Get all active policies for this employee
         $allPolicies = DB::select(
-            "SELECT policy_mapping_master.policy_id, policy_master.policy_name, policy_master.policy_start_date, 
-            policy_master.policy_end_date, policy_master.policy_number, policy_master.policy_type, policy_master.tpa_id, 
-            insurance_master.insurance_company_name, insurance_master.insurance_comp_icon_url, tpa_master.tpa_table_name AS tpa_table 
-            FROM policy_mapping_master 
-            INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id 
-            INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id 
-            INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id 
-            INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id 
-            WHERE policy_mapping_master.emp_id = ? 
-            AND policy_mapping_master.status = 1 
-            AND policy_master.policy_status = 1 
-            AND policy_endorsements.status = 1 
-            AND policy_mapping_master.addition_endorsement_id IS NOT NULL 
+            "SELECT policy_mapping_master.policy_id, policy_master.policy_name, policy_master.policy_start_date,
+            policy_master.policy_end_date, policy_master.policy_number, policy_master.policy_type, policy_master.tpa_id,
+            insurance_master.insurance_company_name, insurance_master.insurance_comp_icon_url, tpa_master.tpa_table_name AS tpa_table
+            FROM policy_mapping_master
+            INNER JOIN policy_master ON policy_master.id = policy_mapping_master.policy_id
+            INNER JOIN insurance_master ON policy_master.ins_id = insurance_master.id
+            INNER JOIN tpa_master ON policy_master.tpa_id = tpa_master.id
+            INNER JOIN policy_endorsements ON policy_mapping_master.addition_endorsement_id = policy_endorsements.id
+            WHERE policy_mapping_master.emp_id = ?
+            AND policy_mapping_master.status = 1
+            AND policy_master.policy_status = 1
+            AND policy_endorsements.status = 1
+            AND policy_mapping_master.addition_endorsement_id IS NOT NULL
             AND policy_master.is_active = 1",
             [$employee->id]
         );
@@ -4178,14 +4262,11 @@ class ApiController extends Controller
                         'last_query_reason' => '',
                         'query_letter' => '',
                         'paid_amt' => $phsClaim->Amount_Cleared ?? '',
-                        'deduction_reasons' => '',
+                        'deduction_reasons' => $phsClaim->DEDUCTION_REASONS ?? '',
                         'settlment_letter' => $phsClaim->SETTLEMENT_LETTER ?? '',
                         'tpa_claim_id' => $phsClaim->UNIQUE_CLAIM_NO,
-                        'claim_intimation_no' => '',
                         'type_of_claim' => $phsClaim->TYPE_OF_CLAIM ?? '',
                         'claim_mode' => $phsClaim->TYPE_OF_CLAIM ?? '',
-                        'rejection_date' => '',
-                        'rejection_reason' => '',
                         'claim_status' => $phsClaim->CLAIM_STATUS ?? '',
                     ];
                 }
@@ -4538,24 +4619,1052 @@ class ApiController extends Controller
     }
 
     // Helper methods for auth tokens
-    private function getIciciAuthToken($scope)
+    private function ghip_sso_encrypt($employeeId, $corporateCode, $issueDate)
     {
-        // Implement ICICI auth token logic
-        return env('ICICI_AUTH_TOKEN', '');
+        $issueDate = str_replace(['-', '_'], '/', $issueDate);
+        $ssoParams = array(
+            'EmployeeId' => $employeeId,
+            'CorporateCode' => $corporateCode,
+            'IssueDate' => $issueDate
+        );
+
+        $key = 'b14ca5898a4e4133bbce2ea2315a1916';
+        $paramsToEncrypt = json_encode($ssoParams);
+        $paramsToEncryptUtf8 = mb_convert_encoding($paramsToEncrypt, 'UTF-8');
+        $raw = openssl_encrypt($paramsToEncryptUtf8, "AES-256-CBC", substr($key, 0, 32), OPENSSL_RAW_DATA, str_repeat("\0", 16));
+        $encrypted = base64_encode($raw);
+        $ssoUrl = 'https://preenrolluat.reliancegeneral.co.in/cp-member?sso=' . $encrypted;
+
+        return $ssoUrl;
     }
 
-    private function getFhplAuthToken()
+    // ========== Helper methods for TPA authentication tokens ==========
+
+    private function icici_auth_token($scope)
     {
-        // Implement FHPL auth token logic
-        return env('FHPL_AUTH_TOKEN', '');
+        $data = array(
+            'username' => 'ZoomInsur',
+            'password' => 'xUCfV8J6S64ahZW',
+            'client_id' => 'ZoomInsur',
+            'client_secret' => 'f2tn56Dr6oS4yJwWysPJTxpEQAncUC7n1l8i0UgoXAeMLk7LB7iBGfGrKnBYmxn8',
+            'scope' => $scope,
+            'grant_type' => 'password'
+        );
+        $curl = curl_init();
+        // Convert the data array to a URL-encoded string
+        $request = http_build_query($data);
+
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL => 'https://janus.icicilombard.com/generate-jwt-token',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $request,
+                CURLOPT_HTTPHEADER => array(
+                    'Content-Type: application/x-www-form-urlencoded'
+                ),
+            )
+        );
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $responseData = json_decode($response, true);
+        return $responseData['access_token'] ?? null;
     }
 
-    private function getHealthIndiaAuthToken()
+    private function go_digit_auth_token()
     {
-        // Implement Health India auth token logic
-        return env('HEALTH_INDIA_AUTH_TOKEN', '');
+        $curl = curl_init();
+
+        $data = array(
+            'username' => '76831512',
+            'password' => 'Digit@351$',
+        );
+
+        $request = json_encode($data);
+
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL => 'https://oneapi.godigit.com/OneAPI/digit/generateAuthKey',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $request,
+                CURLOPT_HTTPHEADER => array(
+                    'Content-Type: application/json'
+                ),
+            )
+        );
+        $response = curl_exec($curl);
+        $http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if ($http_status == 200) {
+            $response_data = json_decode($response, true);
+            return $response_data['access_token'] ?? null;
+        }
+
+        return null;
     }
 
+    private function fhpl_new_authentication_api()
+    {
+        $curl = curl_init();
+
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL => 'https://bconnect-api.fhpl.net/token',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => 'UserName=ZoomInsurance&Password=fhla209oz&grant_type=password',
+                CURLOPT_HTTPHEADER => array(
+                    'Content-Type: application/x-www-form-urlencoded'
+                ),
+            )
+        );
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $responseData = json_decode($response);
+
+        Log::channel('single')->info('FHPL Auth Request', [
+            'request' => 'UserName=ZoomInsurance&Password=fhla209oz&grant_type=password',
+            'response' => $response
+        ]);
+
+        return $responseData->access_token ?? null;
+    }
+
+    private function care_token()
+    {
+        $curl = curl_init();
+
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL => 'https://rhiclapi.religarehealthinsurance.com/accessToken.php',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => array('api_key' => '63dcc08fce352'),
+            )
+        );
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $data = json_decode($response, true);
+
+        if (
+            isset($data['response']['status']) && $data['response']['status'] == 1 &&
+            isset($data['response']['message']) && $data['response']['message'] == "success"
+        ) {
+            return $data['response']['listOfToken'][0]['tokenValue'] ?? null;
+        }
+
+        return null;
+    }
+
+    private function encrypt_data_care($data)
+    {
+        $key = '63dcc08fce352';
+        $method = 'AES-128-ECB';
+        $encrypted = openssl_encrypt($data, $method, $key, OPENSSL_RAW_DATA);
+        return base64_encode($encrypted);
+    }
+
+    private function health_india_auth_token()
+    {
+        $curl = curl_init();
+
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL => 'https://software.healthindiatpa.com/HiWebApi/ZOOM/ValidateCredentials',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => '{
+                    "USERNAME": "tL5fqFWl5YG/meWZi7jfZg==",
+                    "PASSWORD": "45f2/P1j4zY4odQTIrVxvCmFE/qdPLZAPm70p3mI0qQ="
+                }',
+                CURLOPT_HTTPHEADER => array(
+                    'Content-Type: application/json'
+                ),
+            )
+        );
+
+        $response = curl_exec($curl);
+        $http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if ($http_status == 200) {
+            $response_data = json_decode($response, true);
+            return $response_data['RESULT'] ?? null;
+        }
+
+        return null;
+    }
+
+    private function future_generali_auth_token()
+    {
+        $curl = curl_init();
+
+        $data = array(
+            'username' => '76831512',
+            'password' => 'Digit@351$',
+        );
+
+        $request = json_encode($data);
+
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL => 'https://oneapi.godigit.com/OneAPI/digit/generateAuthKey',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $request,
+                CURLOPT_HTTPHEADER => array(
+                    'Content-Type: application/json'
+                ),
+            )
+        );
+        $response = curl_exec($curl);
+        $http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if ($http_status == 200) {
+            $response_data = json_decode($response, true);
+            return $response_data['access_token'] ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Demo TPA E-Card Download
+     */
+    private function demo_new_download_e_card($data)
+    {
+        $maxRetries = 3;
+        $retryCount = 0;
+
+        do {
+            $curl = curl_init();
+
+            $requestData = json_encode([
+                "USERNAME" => "ZOOM-ADMIN",
+                "PASSWORD" => "ADMIN-USER@389",
+                "POLICY_NUMBER" => $data['policy_number'],
+                "EMPLOYEE_NUMBER" => $data['emp_id'],
+            ]);
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://webintegrations.paramounttpa.com/ZoomBrokerAPI/Service1.svc/GetFamilyECard',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_HTTPHEADER => ['Content-Type:application/json'],
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $requestData,
+            ]);
+
+            $response = curl_exec($curl);
+            curl_close($curl);
+
+            \Log::channel('single')->info('Demo E-Card Request', [
+                'request' => $requestData,
+                'response' => $response
+            ]);
+
+            $responseData = json_decode($response);
+
+            if (
+                !empty($responseData) && gettype($responseData) != 'string' && $responseData != null &&
+                isset($responseData->GetFamilyECardResult[0]->STATUS) &&
+                $responseData->GetFamilyECardResult[0]->STATUS == 'SUCCESS'
+            ) {
+                $url = $responseData->GetFamilyECardResult[0]->E_Card;
+                return response()->json(['success' => true, 'url' => $url]);
+            }
+
+            $retryCount++;
+        } while ($retryCount < $maxRetries);
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Kindly Try again Later'], 500);
+    }
+
+    /**
+     * PHS TPA E-Card Download
+     */
+    private function phs_download_e_card($data)
+    {
+        $maxRetries = 10;
+        $retryCount = 0;
+
+        do {
+            $curl = curl_init();
+
+            $requestData = json_encode([
+                "USERNAME" => "ZOOM-ADMIN",
+                "PASSWORD" => "ADMIN-USER@389",
+                "POLICY_NUMBER" => $data['policy_number'],
+                "EMPLOYEE_NUMBER" => $data['emp_id'],
+            ]);
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://webintegrations.paramounttpa.com/ZoomBrokerAPI/Service1.svc/GetFamilyECard',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_HTTPHEADER => ['Content-Type:application/json'],
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $requestData,
+            ]);
+
+            $response = curl_exec($curl);
+            curl_close($curl);
+
+            \Log::channel('single')->info('PHS E-Card Request', [
+                'request' => $requestData,
+                'response' => $response
+            ]);
+
+            $responseData = json_decode($response);
+
+            if (
+                !empty($responseData) && gettype($responseData) != 'string' && $responseData != null &&
+                isset($responseData->GetFamilyECardResult[0]->STATUS) &&
+                $responseData->GetFamilyECardResult[0]->STATUS == 'SUCCESS'
+            ) {
+                $url = $responseData->GetFamilyECardResult[0]->E_Card;
+                return response()->json(['success' => true, 'url' => $url]);
+            }
+
+            $retryCount++;
+        } while ($retryCount < $maxRetries);
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Kindly Try again Later'], 500);
+    }
+
+    /**
+     * ICICI TPA E-Card Download
+     */
+    private function icici_download_e_card($data)
+    {
+        $authToken = $this->icici_auth_token('esbhealth');
+
+        if (!$authToken) {
+            return response()->json(['success' => false, 'message' => 'Failed to authenticate with ICICI'], 500);
+        }
+
+        $curl = curl_init();
+
+        $dobFormatted = date("d-M-Y", strtotime($data['dob']));
+
+        $jsonData = json_encode([
+            "CorrelationId" => "e909d465-ebe6-4d0c-bfd3-86e8ef731362",
+            "UHIDNo" => $data['emp_id'],
+            "DOB" => $dobFormatted,
+            "CompanyName" => null,
+            "Age" => "",
+            "MemberId" => "",
+            "PolicyType" => "Corporate",
+            "PolicyNo" => ""
+        ]);
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://janus.icicilombard.com/health/ilservices/health/v2/healthcard/fetch',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $jsonData,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $authToken,
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::channel('single')->info('ICICI E-Card Request', [
+            'request' => $jsonData,
+            'response' => substr($response, 0, 500)
+        ]);
+
+        if (strpos($response, '%PDF-1.') !== false) {
+            $base64Pdf = base64_encode($response);
+            return response()->json(['success' => true, 'pdf' => $base64Pdf, 'type' => 'pdf']);
+        } else {
+            $responseData = json_decode($response, true);
+            $errorMessage = $responseData['errorText'] ?? 'Unknown error';
+            return response()->json(['success' => false, 'message' => $errorMessage], 500);
+        }
+    }
+
+    /**
+     * Go Digit TPA E-Card Download
+     */
+    private function go_digit_download_e_card($data)
+    {
+        $authToken = $this->go_digit_auth_token();
+
+        if (!$authToken) {
+            return response()->json(['success' => false, 'message' => 'Failed to authenticate with Go Digit'], 500);
+        }
+
+        $curl = curl_init();
+
+        $headers = [
+            'Authorization: Bearer ' . $authToken,
+            'Content-Type: application/json',
+            'IntegrationID: 20780-0100'
+        ];
+
+        $requestData = json_encode([
+            "gMCSMEGMCSMEDownloadDocuments" => [
+                "gstNumber" => "",
+                "partnerReferenceNumber" => $data['emp_id'],
+                "documents" => [
+                    [
+                        "fromDate" => $data['policy_start_date'],
+                        "toDate" => $data['policy_end_date'],
+                        "asOnDate" => "",
+                        "documentType" => "CPE"
+                    ]
+                ],
+                "cutomerAccount" => "",
+                "headerParam" => [
+                    "Authorization" => "Q0DKCSJJKVBLTLOLU9INUPRPL63KJZE0"
+                ],
+                "masterPolicyNumber" => $data['policy_number'],
+                "policyNumber" => ""
+            ]
+        ]);
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://oneapi.godigit.com/OneAPI/v1/executor',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $requestData,
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $responseData = json_decode($response, true);
+
+        \Log::channel('single')->info('Go Digit E-Card Request', [
+            'request' => $requestData,
+            'response' => $response
+        ]);
+
+        $documentLink = $responseData['GMC SME-GMC SME Download Documents']['resposeBody']['documents'][0]['documentLink'] ?? null;
+
+        if ($documentLink) {
+            preg_match('/s3Link=(https?:\/\/[^\)]*)/', $documentLink, $matches);
+
+            if (!empty($matches[1])) {
+                $s3Url = $matches[1];
+                return response()->json(['success' => true, 's3_url' => $s3Url]);
+            }
+        }
+
+        return response()->json(['success' => false, 'message' => 'Unable to retrieve the E-Card link.'], 500);
+    }
+
+    /**
+     * Vidal TPA E-Card Download
+     */
+    private function vidal_new_download_e_card($data)
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://tips.vidalhealthtpa.com/rest/vidalbrokerservices/ecardservice',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_HTTPHEADER => [
+                'username: ZoomC_prod',
+                'password: ZoomC@prod',
+                'policyNo: ' . $data['policy_number'],
+                'enrollmentNo:' . $data['uhid'],
+                'Authorization: Basic dmlkYWxicm9rZXJwcm9kbG9naW46dmlkYWxwcm9kQDEyMw=='
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::channel('single')->info('Vidal E-Card Request', [
+            'policy_number' => $data['policy_number'],
+            'uhid' => $data['uhid'],
+            'response' => $response
+        ]);
+
+        $responseData = json_decode($response);
+
+        if (isset($responseData[0]->Result[0]->{"ECardDownloadLink"})) {
+            $url = $responseData[0]->Result[0]->{"ECardDownloadLink"};
+            return response()->json(['success' => true, 'url' => $url]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Try Again Later'], 500);
+    }
+
+    /**
+     * MediAssist TPA E-Card Download
+     */
+    private function mediassist_download_e_card($data)
+    {
+        $maxRetries = 3;
+        $retryCount = 0;
+
+        do {
+            $curl = curl_init();
+
+            $requestData = json_encode([
+                "employeeId" => $data['emp_id'],
+                "PolicyNo" => $data['policy_number']
+            ]);
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://apiintegration.mediassist.in/ClaimAPIServiceV2/ClaimService/EcardUrl',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $requestData,
+                CURLOPT_HTTPHEADER => [
+                    'Username: ZoomInsBroker',
+                    'Password: zun@t+GJA{1PZeFHTXo$j',
+                    'Content-Type: application/json',
+                ],
+            ]);
+
+            $response = curl_exec($curl);
+            curl_close($curl);
+
+            \Log::channel('single')->info('MediAssist E-Card Request', [
+                'request' => $requestData,
+                'response' => $response
+            ]);
+
+            $responseData = json_decode($response);
+
+            if (
+                !empty($responseData) && gettype($responseData) != 'string' && $responseData != null &&
+                isset($responseData->isSuccess) && $responseData->isSuccess
+            ) {
+                $url = $responseData->ecardUrl;
+                return response()->json(['success' => true, 'url' => $url]);
+            }
+
+            $retryCount++;
+        } while ($retryCount < $maxRetries);
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Kindly Try again Later'], 500);
+    }
+
+    /**
+     * FHPL TPA E-Card Download
+     */
+    private function fhpl_new_download_e_card($data)
+    {
+        $authToken = $this->fhpl_new_authentication_api();
+
+        if (!$authToken) {
+            return response()->json(['success' => false, 'message' => 'Failed to authenticate with FHPL'], 500);
+        }
+
+        $curl = curl_init();
+
+        $postFields = 'UserName=ZoomInsurance&Password=fhla209oz&EmployeeID=' . $data['emp_id'] . '&PolicyNumber=' . $data['policy_number'];
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://bconnect-api.fhpl.net/api/GetEcard',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $postFields,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: bearer ' . $authToken,
+                'Content-Type: application/x-www-form-urlencoded'
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::channel('single')->info('FHPL E-Card Request', [
+            'request' => $postFields,
+            'response' => $response
+        ]);
+
+        $responseData = json_decode($response);
+
+        if (isset($responseData[0]->STATUS) && $responseData[0]->STATUS == 'SUCCESS') {
+            return response()->json(['success' => true, 'url' => $responseData[0]->E_Card]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Something Try Again Later.'], 500);
+    }
+
+    /**
+     * Safeway TPA E-Card Download
+     */
+    private function safeway_download_e_card($data)
+    {
+        $curl = curl_init();
+
+        $requestData = json_encode([
+            "Username" => "AGSW4",
+            "Password" => "AGSW@4",
+            "PolicyNo" => $data['policy_number'],
+            "Employeecode" => $data['emp_id'],
+        ]);
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'http://brokerapi.safewaytpa.in/api/EcardEmpMember',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $requestData,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::channel('single')->info('Safeway E-Card Request', [
+            'request' => $requestData,
+            'response' => $response
+        ]);
+
+        $responseData = json_decode($response);
+
+        if (isset($responseData->Status) && $responseData->Status == 1) {
+            return response()->json(['success' => true, 'e_card_url' => $responseData->E_Card]);
+        }
+
+        return response()->json(['success' => false, 'message' => $responseData->Message ?? 'Failed to download E-Card'], 500);
+    }
+
+    /**
+     * Care TPA E-Card Download
+     */
+    private function care_download_e_card($data)
+    {
+        $token = $this->care_token();
+
+        if (!$token) {
+            return response()->json(['success' => false, 'message' => 'Failed to authenticate with Care'], 500);
+        }
+
+        $requestArray = [
+            "apikey" => "63dcc08fce352",
+            "customer_id" => "",
+            "employee_id" => $data['emp_id'],
+            "member_name" => "",
+            "member_dob" => "",
+            "policy_number" => $data['policy_number'],
+            "product_code" => "",
+            "addon_code" => "",
+            "policy_type" => "corporate",
+            "policy_end_date" => "",
+            "policy_start_date" => "",
+            "card_type" => "HCK"
+        ];
+
+        $jsonData = json_encode($requestArray);
+        $encryptedData = $this->encrypt_data_care($jsonData);
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://rhiclapi.religarehealthinsurance.com/getHealthAndOpdCard.php',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => ['req_data' => $encryptedData],
+            CURLOPT_HTTPHEADER => ['Authorization: Bearer' . $token],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::channel('single')->info('Care E-Card Request', [
+            'request' => $requestArray,
+            'response' => substr($response, 0, 500)
+        ]);
+
+        if (strpos($response, '%PDF-1.') !== false) {
+            $base64Pdf = base64_encode($response);
+            return response()->json(['success' => true, 'pdf' => $base64Pdf, 'type' => 'pdf']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Failed to download E-Card'], 500);
+    }
+    /**
+     * Health India TPA E-Card Download
+     */
+    private function health_india_download_e_card($data)
+    {
+        $authToken = $this->health_india_auth_token();
+
+        if (!$authToken) {
+            return response()->json(['success' => false, 'message' => 'Failed to authenticate with Health India'], 500);
+        }
+
+        $maxRetries = 3;
+        $retryCount = 0;
+
+        do {
+            $curl = curl_init();
+
+            $requestData = json_encode([
+                "ACCESS_TOKEN" => $authToken,
+                "POLICY_NUMBER" => $data['policy_number'],
+                "EMPLOYEE_NUMBER" => $data['emp_id']
+            ]);
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://software.healthindiatpa.com/HiWebApi/ZOOM/GetFamilyECard',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $requestData,
+                CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            ]);
+
+            $response = curl_exec($curl);
+            curl_close($curl);
+
+            $responseData = json_decode($response, true);
+
+            \Log::channel('single')->info('Health India E-Card Request', [
+                'request' => $requestData,
+                'response' => $response
+            ]);
+
+            if (isset($responseData['MESSAGE']) && $responseData['MESSAGE'] == "SUCCESS") {
+                $documentLink = $responseData["RESULT"];
+                return response()->json(['success' => true, 'url' => $documentLink]);
+            }
+
+            $retryCount++;
+        } while ($retryCount < $maxRetries);
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Kindly Try again Later'], 500);
+    }
+
+    /**
+     * EWA TPA E-Card Download
+     */
+    private function ewa_download_e_card($data)
+    {
+        $maxRetries = 10;
+        $retryCount = 0;
+
+        do {
+            $curl = curl_init();
+
+            $requestData = json_encode([
+                "userName" => "nipun.bansal@zoominsurancebrokers.com",
+                "password" => "Test@123",
+                "policyNo" => $data['policy_number'],
+                "empCode" => $data['emp_id'],
+            ]);
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://apiadmin.ewatpa.com/zoom/getEcard',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_HTTPHEADER => ['Content-Type:application/json'],
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $requestData,
+            ]);
+
+            $response = curl_exec($curl);
+            curl_close($curl);
+
+            $cleanedResponse = preg_replace('/^\)\]\}\',\s*/', '', $response);
+            $responseData = json_decode($cleanedResponse, true);
+
+            \Log::channel('single')->info('EWA E-Card Request', [
+                'request' => $requestData,
+                'response' => $response
+            ]);
+
+            if (!empty($responseData) && isset($responseData['message']) &&
+                $responseData['message'] == 'family id card created') {
+                $base64Pdf = $responseData['body'];
+                return response()->json(['success' => true, 'pdf' => $base64Pdf, 'type' => 'pdf']);
+            }
+
+            $retryCount++;
+        } while ($retryCount < $maxRetries);
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Kindly Try again Later'], 500);
+    }
+
+    /**
+     * SBI TPA E-Card Download
+     */
+    private function sbi_download_e_card($data)
+    {
+        if ($data['policy_number'] == "41010240900000211-00") {
+            $pdfUrl = url('uploads/sbi_ecards/resman/41010240900000211-00_' . $data['emp_id'] . '.pdf');
+            return response()->json(['success' => true, 'url' => $pdfUrl]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Kindly Try again Later'], 500);
+    }
+
+    /**
+     * Ericson TPA E-Card Download
+     */
+    private function ericson_download_e_card($data)
+    {
+        $maxRetries = 10;
+        $retryCount = 0;
+
+        do {
+            $postData = [
+                'UserName' => 'ZOOM INSURANCE BROKERS PVT LTD',
+                'Password' => '384',
+                'PolicyNo' => $data['policy_number'],
+                'EmpCode' => $data['emp_id'],
+                'TPAID' => '',
+            ];
+
+            $curl = curl_init();
+
+            curl_setopt_array($curl, [
+                CURLOPT_URL => 'https://sata.ericsontpa.com/sataservices/ericsontpaservices.asmx/Get_Ecard',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => http_build_query($postData),
+                CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded'],
+            ]);
+
+            $response = curl_exec($curl);
+            curl_close($curl);
+
+            \Log::channel('single')->info('Ericson E-Card Request', [
+                'request' => $postData,
+                'response' => $response
+            ]);
+
+            $responseData = json_decode($response);
+
+            if (!empty($responseData) && isset($responseData->result[0]->URL)) {
+                $url = $responseData->result[0]->URL;
+                return response()->json(['success' => true, 'url' => $url]);
+            }
+
+            $retryCount++;
+        } while ($retryCount < $maxRetries);
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Kindly Try again Later'], 500);
+    }
+
+    /**
+     * Future Generali TPA E-Card Download
+     */
+    private function future_generali_download_e_card($data)
+    {
+        $authToken = $this->future_generali_auth_token();
+
+        if (!$authToken) {
+            return response()->json(['success' => false, 'message' => 'Failed to authenticate with Future Generali'], 500);
+        }
+
+        $curl = curl_init();
+
+        $requestData = json_encode([
+            "UniqueRequestID" => "3456wert787654",
+            "MasterPolicyumber" => $data['policy_number'],
+            "EmployeeCode" => $data['emp_id'],
+            "BrokerCode" => "60000272",
+            "VenderCode" => "345676dfg543"
+        ]);
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://uat-internal-apigw.futuregenerali.in:8243/HealthClaim-Process/1.0.0/HealthClaim_V1/GetFamilyEcardBytes',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $requestData,
+            CURLOPT_HTTPHEADER => [
+                'accept: */*',
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $authToken
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        \Log::channel('single')->info('Future Generali E-Card Request', [
+            'request' => $requestData,
+            'response' => substr($response, 0, 500)
+        ]);
+
+        $responseData = json_decode($response);
+
+        // Handle response based on API structure
+        if ($responseData && isset($responseData->Status) && $responseData->Status == 'SUCCESS') {
+            return response()->json(['success' => true, 'url' => $responseData->E_Card ?? null]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Something Try Again Later.'], 500);
+    }
+
+    /**
+     * AB TPA E-Card Download
+     */
+    private function ab_download_e_card($data)
+    {
+        if ($data['policy_number'] == "2-81-25-00005037-000") {
+            $pdfUrl = url('uploads/ab_ecard/bharatpe/' . $data['emp_id'] . '.pdf');
+            return response()->json(['success' => true, 'url' => $pdfUrl]);
+        } elseif ($data['policy_number'] == "2-81-25-00003199-000") {
+            $dir = public_path('uploads/ab_ecard/global_step/');
+            $pattern = $dir . $data['emp_id'] . '_*.pdf';
+            $files = glob($pattern);
+
+            if ($files && count($files) > 0) {
+                $filename = basename($files[0]);
+                $pdfUrl = url('uploads/ab_ecard/global_step/' . $filename);
+                return response()->json(['success' => true, 'url' => $pdfUrl]);
+            }
+
+            return response()->json(['success' => false, 'message' => 'E-Card not found for this Employee ID'], 404);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Kindly Try again Later'], 500);
+    }
+
+    /**
+     * IFFCO TPA E-Card Download
+     */
+    private function iffco_download_e_card($data)
+    {
+        if ($data['policy_number'] == "H1605551") {
+            $pdfUrl = url('uploads/iffco_ecard/econ/' . $data['emp_id'] . '.PDF');
+            return response()->json(['success' => true, 'url' => $pdfUrl]);
+        } elseif ($data['policy_number'] == "H1611550") {
+            $pdfUrl = url('uploads/iffco_ecard/vdc/' . $data['emp_id'] . '.PDF');
+            return response()->json(['success' => true, 'url' => $pdfUrl]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Something Went Wrong! Kindly Try again Later'], 500);
+    }
+
+    /**
+     * Reliance TPA E-Card Download
+     */
+    private function reliance_download_e_card($data)
+    {
+        $employeeId = $data['emp_id'];
+        $corporateCode = 'BTP1';
+        $issueDate = $data['policy_start_date'];
+
+        $ssoUrl = $this->ghip_sso_encrypt($employeeId, $corporateCode, $issueDate);
+
+        return response()->json(['success' => true, 'url' => $ssoUrl]);
+    }
+
+    /**
+     * GHIP SSO Encryption for Reliance
+     */
     public function getBanners(Request $request)
     {
         $token = $request->bearerToken();

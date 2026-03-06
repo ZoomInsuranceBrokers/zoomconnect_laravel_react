@@ -34,6 +34,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/employee-policies', [App\Http\Controllers\ApiController::class, 'getEmployeePolicies'])->name('api.employee.policies');
         Route::post('/logout', [App\Http\Controllers\ApiController::class, 'logout'])->name('api.logout');
         Route::post('/verify-token', [App\Http\Controllers\ApiController::class, 'verifyToken'])->name('api.verify.token');
+        Route::post('/download-ecard', [App\Http\Controllers\ApiController::class, 'downloadECard'])->name('api.download.ecard');
         // Add /device-token endpoint to save or remove device tokens for authenticated employee
         Route::post('/device-token', [App\Http\Controllers\ApiController::class, 'saveDeviceToken'])->name('api.device.token');
 
